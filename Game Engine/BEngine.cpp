@@ -179,6 +179,8 @@ bool BEngine::LoadEffect(UINT iID,const char* pFile)
 			return false;
 		}
 
+		m_Effects.insert(make_pair(iID,pEffect));
+
 		return true;
 	}
 

@@ -175,6 +175,8 @@ bool BEngine::LoadXFile(UINT iXID, UINT iEffectID, const char* pFile, T& funct)
 	pMesh = temp;
 	temp = 0;
 
+	mesh.pMesh = pMesh;
+
 	// Get the size of the attribute buffer
 	DWORD iAttribSize = 0;
 	pMesh->GetAttributeTable(0,&iAttribSize);
@@ -182,14 +184,14 @@ bool BEngine::LoadXFile(UINT iXID, UINT iEffectID, const char* pFile, T& funct)
 	// alloc enough memory for all of the mtrls
 	mesh.mrtl.resize(iAttribSize + 1);
 
-	// Get Pointer to mtrl to extract it
-	D3DXMATERIAL* pMtrl = static_cast<D3DXMATERIAL*>(pTempMtrl->GetBufferPointer());
-
 	// Get Effect
 	ID3DXEffect* pEffect = m_Effects[iEffectID];
 	mesh.pEffect = pEffect;
 
-	for(DWORD i = 0; i < iAttribSize + 1; ++i)
+	// Get Pointer to mtrl to extract it
+	D3DXMATERIAL* pMtrl = static_cast<D3DXMATERIAL*>(pTempMtrl->GetBufferPointer());
+
+	for(DWORD i = 0; i < iAttribSize; ++i)
 	{
 		// Load Texture
 		IDirect3DTexture9* pTexture = 0;

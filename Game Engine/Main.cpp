@@ -13,7 +13,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		switch(i)
 		{
-			case 2:
+			case 0:
+
+				pEffect->SetBool(
 
 				break;
 
