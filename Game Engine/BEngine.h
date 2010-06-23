@@ -18,6 +18,7 @@ using namespace stdext;
 struct Mtrl
 {
 	IDirect3DTexture9* pTexture;
+	D3DXHANDLE ParamBlock;
 	D3DMATERIAL9 mtrl;
 };
 
@@ -25,7 +26,6 @@ struct Mesh
 {
 	ID3DXMesh* pMesh;
 	ID3DXEffect* pEffect;
-	D3DXHANDLE ParamBlock;
 	vector<Mtrl> mrtl;
 };
 
@@ -56,7 +56,7 @@ public:
 	template< class T >
 	bool LoadXFile(UINT iXID, UINT iEffectID, const char* pFile, T& funct);
 	
-	bool RenderMesh(UINT iID);
+	bool RenderMesh(UINT iID) const;
 	
 	// Texture
 	bool LoadTexture(UINT iID, const char* pFile);
@@ -84,6 +84,8 @@ private:
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
 	ID3DXEffectPool* m_pEffectPool;
+
+
 	D3DPRESENT_PARAMETERS m_D3DParameters;
 	HWND m_hWindowHandle;
 
@@ -94,6 +96,9 @@ private:
 	float m_fDT;
 	float m_fStartCount;
 	float m_fSecsPerCount;
+
+	D3DXMATRIX m_View;
+	D3DXMATRIX m_Proj;
 
 	hash_map<UINT,Mesh> m_Meshes;
 	hash_map<UINT,ID3DXEffect*> m_Effects;
@@ -208,7 +213,7 @@ bool BEngine::LoadXFile(UINT iXID, UINT iEffectID, const char* pFile, T& funct)
 		// Record parameters to set for this mesh
 		pEffect->BeginParameterBlock();
 		funct(pEffect,mesh.mrtl[i],i);
-		mesh.ParamBlock = pEffect->EndParameterBlock();
+		mesh.mrtl[i].ParamBlock = pEffect->EndParameterBlock();
 
 	}
 

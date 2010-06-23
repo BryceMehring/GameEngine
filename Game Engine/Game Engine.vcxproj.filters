@@ -8,6 +8,9 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{13a448d8-8ba7-48fb-ae29-66a9078c5725}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{023931b9-2f26-429e-83ea-763e42e6d275}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -17,6 +20,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VertexStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -30,5 +36,13 @@
     <ClInclude Include="VertexStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Lighting.fx">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

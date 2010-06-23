@@ -48,6 +48,11 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 	// Create pool to share parameters
 	D3DXCreateEffectPool(&m_pEffectPool);
 
+	// create transformation matrices
+	float X = (float)m_D3DParameters.BackBufferWidth;
+	float Y = (float)m_D3DParameters.BackBufferHeight;
+	D3DXMatrixPerspectiveFovLH(&m_Proj,D3DX_PI * 0.25f,X/Y,1.0f,5000.0f);
+
 }
 
 BEngine::~BEngine()
@@ -187,6 +192,34 @@ bool BEngine::LoadEffect(UINT iID,const char* pFile)
 	return false;
 }
 
+bool BEngine::RenderMesh(UINT iID) const
+{
+	const Mesh& mesh = m_Meshes.find(iID)->second;
+	ID3DXEffect* pEffect = mesh.pEffect;
+
+	// Loop through all of the subsets
+	for(int j = 0; j < m_Meshes.size(); ++j)
+	{
+		pEffect->ApplyParameterBlock(mesh.mrtl[j].ParamBlock);
+
+		UINT i = 0;
+		pEffect->Begin(&i,0);
+
+		for(int p = 0; p < i; ++p)
+		{
+			pEffect->BeginPass(p);
+
+			mesh.pMesh->DrawSubset(j);
+		
+			pEffect->EndPass();
+		}
+		pEffect->End();
+		pEffect->EndParameterBlock();
+	}
+
+	return true;
+}
+
 void BEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 {
 	WNDCLASS wc;
@@ -306,7 +339,7 @@ bool BEngine::IsDeviceLost()
 
 void BEngine::OnLostDevice()
 {
-
+	 
 }
 
 void BEngine::OnResetDevice()
