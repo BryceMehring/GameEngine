@@ -39,6 +39,9 @@
     <ClInclude Include="BCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Lighting.fx">

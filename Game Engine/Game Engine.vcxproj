@@ -61,6 +61,7 @@
     <ClInclude Include="BCamera.h" />
     <ClInclude Include="BEngine.h" />
     <ClInclude Include="Interfaces.h" />
+    <ClInclude Include="Mtrl.h" />
     <ClInclude Include="VertexStream.h" />
   </ItemGroup>
   <ItemGroup>

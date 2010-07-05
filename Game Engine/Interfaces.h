@@ -1,6 +1,6 @@
 
 #pragma once
-#include <d3dx9math.h>
+#include "Mtrl.h"
 
 class IRefCounting
 {
@@ -29,4 +29,13 @@ private:
 
 	int m_iCounter;
 
+};
+
+class IFunct
+{
+public:
+
+	virtual ~IFunct() {}
+
+	virtual void SetParameters(ID3DXEffect* pEffect, const Mtrl& mtrl, DWORD i) = 0;
 };

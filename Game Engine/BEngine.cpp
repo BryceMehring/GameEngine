@@ -42,16 +42,15 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 	}
 
 	// post-Initialize
+
+	// streams
 	m_p3Device->AddRef();
 	InitializeVertexStreams(m_p3Device); // might not need to be a global function
 
 	// Create pool to share parameters
 	D3DXCreateEffectPool(&m_pEffectPool);
 
-	// create transformation matrices
-	float X = (float)m_D3DParameters.BackBufferWidth;
-	float Y = (float)m_D3DParameters.BackBufferHeight;
-	D3DXMatrixPerspectiveFovLH(&m_Proj,D3DX_PI * 0.25f,X/Y,1.0f,5000.0f);
+
 
 }
 
@@ -169,12 +168,15 @@ void BEngine::Present()
 
 bool BEngine::LoadEffect(UINT iID,const char* pFile)
 {
+	// 1. Check to see if the effect is already loaded
 	if(m_Effects.find(iID) == m_Effects.end())
 	{
+		// 2. Load the effect
 		ID3DXEffect* pEffect = 0;
 		ID3DXBuffer* pErrors = 0;
 		D3DXCreateEffectFromFile(m_p3Device,pFile,0,0,D3DXSHADER_DEBUG,m_pEffectPool,&pEffect,&pErrors);
 
+		// 3. If there are errors, deal with them
 		if(pErrors)
 		{
 			char* pMsg = static_cast<char*>(pErrors->GetBufferPointer());
@@ -184,6 +186,7 @@ bool BEngine::LoadEffect(UINT iID,const char* pFile)
 			return false;
 		}
 
+		// 4. Insert effect into data structure
 		m_Effects.insert(make_pair(iID,pEffect));
 
 		return true;
@@ -192,15 +195,114 @@ bool BEngine::LoadEffect(UINT iID,const char* pFile)
 	return false;
 }
 
+bool BEngine::AddEffectParameter(UINT iEffectID, const char* pName, const char* pKey)
+{
+	Effect& effect = m_Effects[iEffectID];
+	effect.pEffect->GetP
+
+}
+
+// Load a mesh along with its mtrls and effects.
+bool BEngine::LoadXFile(UINT iXID, UINT iEffectID, const char* pFile)
+{
+	Mesh mesh;
+
+	ID3DXMesh* temp = 0;
+	ID3DXMesh* pMesh = 0;
+
+	ID3DXBuffer* pTempMtrl = 0;
+	ID3DXBuffer* pAdj = 0;
+
+	DWORD iNumMtrl = 0;
+
+	// Load Mesh from file
+	D3DXLoadMeshFromX(pFile,D3DXMESH_SYSTEMMEM,m_p3Device,&pAdj,&pTempMtrl,0,&iNumMtrl,&pMesh);
+
+	// change vertex format
+	CloneMesh(pMesh,&temp,D3DXMESH_SYSTEMMEM);
+	
+	pMesh = temp;
+	temp = 0;
+
+	// optimize mesh
+	pMesh->Optimize(D3DXMESH_MANAGED | D3DXMESHOPT_COMPACT |
+		D3DXMESHOPT_ATTRSORT | D3DXMESHOPT_VERTEXCACHE,
+		static_cast<DWORD*>(pAdj->GetBufferPointer()),0,0,0,&temp);
+
+	pMesh = temp;
+	temp = 0;
+
+	mesh.pMesh = pMesh;
+
+	// Get the size of the attribute buffer
+	DWORD iAttribSize = 0;
+	pMesh->GetAttributeTable(0,&iAttribSize);
+
+	// alloc enough memory for all of the mtrls
+	mesh.mrtl.resize(iAttribSize + 1);
+
+	// Get Effect
+	auto& pEffect = m_Effects[iEffectID];
+	mesh.pEffect->pEffect = pEffect;
+
+	// Get Pointer to mtrl to extract it
+	D3DXMATERIAL* pMtrl = static_cast<D3DXMATERIAL*>(pTempMtrl->GetBufferPointer());
+
+	for(DWORD i = 0; i < iAttribSize; ++i)
+	{
+		// Load Texture
+		IDirect3DTexture9* pTexture = 0;
+
+		// If There is a texture
+		if(pMtrl[i].pTextureFilename)
+		{
+			D3DXCreateTextureFromFile(m_p3Device,pMtrl[i].pTextureFilename,&pTexture);
+		}
+
+		mesh.mrtl[i].mtrl = pMtrl[i].MatD3D;
+		mesh.mrtl[i].pTexture = pTexture;
+	}
+
+	m_Meshes.insert(make_pair(iXID,mesh));
+	return true;
+}
+
 bool BEngine::RenderMesh(UINT iID) const
 {
-	const Mesh& mesh = m_Meshes.find(iID)->second;
-	ID3DXEffect* pEffect = mesh.pEffect;
+	auto& mesh = m_Meshes.find(iID)->second;
+	auto* pEffect = mesh.pEffect->pEffect;
+
+	auto& parameters = mesh.pEffect->m_hParameters;
+	auto& tech = mesh.pEffect->m_hTech;
+
+	// Get view matrix
+	BCamera* pCam = BCamera::GetInstance();
+
+	const D3DXMATRIX* pVP = 0;
+	
+	pCam->BuildViewMatrix(mesh.pos); // this is not correct, build view matrix elsewhere
+	pCam->GetMatrices(&pVP);
+
+	// Create World Matrix
+	D3DXMATRIX W;
+	D3DXMatrixTranslation(&W,mesh.pos.x,mesh.pos.y,mesh.pos.z);
+
+	// World Inverse Transpose
+	D3DXMATRIX WIT;
+	D3DXMatrixInverse(&WIT,NULL,&W);
+	D3DXMatrixTranspose(&WIT,&WIT);
+
+	pEffect->SetMatrix(parameters["World"],&W);
+	pEffect->SetMatrix(parameters["WIT"],&WIT);
+	pEffect->SetMatrix(parameters["WVP"],&(*pVP * W));
 
 	// Loop through all of the subsets
 	for(int j = 0; j < m_Meshes.size(); ++j)
 	{
-		pEffect->ApplyParameterBlock(mesh.mrtl[j].ParamBlock);
+		pEffect->SetTechnique(tech[j]);
+
+		pEffect->SetValue(parameters["gObjectMrtl"],(void*)&mesh.mrtl[j].mtrl,sizeof(D3DMATERIAL9));
+		pEffect->SetTexture(parameters["gTex"],mesh.mrtl[j].pTexture);
 
 		UINT i = 0;
 		pEffect->Begin(&i,0);
@@ -214,7 +316,6 @@ bool BEngine::RenderMesh(UINT iID) const
 			pEffect->EndPass();
 		}
 		pEffect->End();
-		pEffect->EndParameterBlock();
 	}
 
 	return true;

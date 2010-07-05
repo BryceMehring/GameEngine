@@ -6,6 +6,9 @@
 #include <string>
 #include <hash_map>
 
+#include "BCamera.h"
+#include "Interfaces.h"
+
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
 #pragma comment(lib,"dinput8.lib")
@@ -14,18 +17,33 @@
 using namespace std;
 using namespace stdext;
 
-
-struct Mtrl
+enum EEffect
 {
-	IDirect3DTexture9* pTexture;
-	D3DXHANDLE ParamBlock;
-	D3DMATERIAL9 mtrl;
+	// Transformations
+	World,
+	WorldViewProj,
+	WorldInverseTranspose,
+
+};
+
+struct Effect
+{
+
+	ID3DXEffect* pEffect;
+
+	// maybe can use ints in the future for a faster search, with enums - they are not dynamic ???
+	hash_map<UINT,D3DXHANDLE> m_hTech;
+	hash_map<string,D3DXHANDLE> m_hParameters;
 };
 
 struct Mesh
 {
 	ID3DXMesh* pMesh;
-	ID3DXEffect* pEffect;
+	Effect* pEffect;
+	IFunct* pFunct;
+	
+	D3DXVECTOR3 pos;
+	
 	vector<Mtrl> mrtl;
 };
 
@@ -49,13 +67,13 @@ public:
 
 	// effects              
 	bool LoadEffect(UINT iID,const char* pFile);
-	bool AddEffectTech(UINT iID, UINT iEffectID, const char* pName);
-	bool AddEffectParameter(UINT iID, UINT iEffectID, const char* pName);
+	bool AddEffectTech(UINT iID, UINT iEffectID, const char* pName); // ?? questionable
+	
+	bool AddEffectParameter(UINT iEffectID, const char* pName, const char* pKey);
+	//bool AddEffectParameter(UINT iEffectID, const char* pName, UINT iIndex, const char* pKey);
 
 	// Mesh
-	template< class T >
-	bool LoadXFile(UINT iXID, UINT iEffectID, const char* pFile, T& funct);
-	
+	bool LoadXFile(UINT iXID, UINT iEffectID, const char* pFile);
 	bool RenderMesh(UINT iID) const;
 	
 	// Texture
@@ -85,7 +103,6 @@ private:
 	IDirect3D9* m_pDirect3D;
 	ID3DXEffectPool* m_pEffectPool;
 
-
 	D3DPRESENT_PARAMETERS m_D3DParameters;
 	HWND m_hWindowHandle;
 
@@ -97,11 +114,8 @@ private:
 	float m_fStartCount;
 	float m_fSecsPerCount;
 
-	D3DXMATRIX m_View;
-	D3DXMATRIX m_Proj;
-
 	hash_map<UINT,Mesh> m_Meshes;
-	hash_map<UINT,ID3DXEffect*> m_Effects;
+	hash_map<UINT,Effect> m_Effects;
 	hash_map<UINT,IDirect3DTexture9*> m_Textures;
 
 	// Direct input
@@ -149,77 +163,7 @@ private:
 
 };
 
-// Load a mesh along with its mtrls and effects.
-template< class T >
-bool BEngine::LoadXFile(UINT iXID, UINT iEffectID, const char* pFile, T& funct)
-{
-	Mesh mesh;
 
-	ID3DXMesh* temp = 0;
-	ID3DXMesh* pMesh = 0;
-
-	ID3DXBuffer* pTempMtrl = 0;
-	ID3DXBuffer* pAdj = 0;
-
-	DWORD iNumMtrl = 0;
-
-	// Load Mesh from file
-	D3DXLoadMeshFromX(pFile,D3DXMESH_SYSTEMMEM,m_p3Device,&pAdj,&pTempMtrl,0,&iNumMtrl,&pMesh);
-
-	// change vertex format
-	CloneMesh(pMesh,&temp,D3DXMESH_SYSTEMMEM);
-	
-	pMesh = temp;
-	temp = 0;
-
-	// optimize mesh
-	pMesh->Optimize(D3DXMESH_MANAGED | D3DXMESHOPT_COMPACT |
-		D3DXMESHOPT_ATTRSORT | D3DXMESHOPT_VERTEXCACHE,
-		static_cast<DWORD*>(pAdj->GetBufferPointer()),0,0,0,&temp);
-
-	pMesh = temp;
-	temp = 0;
-
-	mesh.pMesh = pMesh;
-
-	// Get the size of the attribute buffer
-	DWORD iAttribSize = 0;
-	pMesh->GetAttributeTable(0,&iAttribSize);
-
-	// alloc enough memory for all of the mtrls
-	mesh.mrtl.resize(iAttribSize + 1);
-
-	// Get Effect
-	ID3DXEffect* pEffect = m_Effects[iEffectID];
-	mesh.pEffect = pEffect;
-
-	// Get Pointer to mtrl to extract it
-	D3DXMATERIAL* pMtrl = static_cast<D3DXMATERIAL*>(pTempMtrl->GetBufferPointer());
-
-	for(DWORD i = 0; i < iAttribSize; ++i)
-	{
-		// Load Texture
-		IDirect3DTexture9* pTexture = 0;
-
-		// If There is a texture
-		if(pMtrl[i].pTextureFilename)
-		{
-			D3DXCreateTextureFromFile(m_p3Device,pMtrl[i].pTextureFilename,&pTexture);
-		}
-
-		mesh.mrtl[i].mtrl = pMtrl[i].MatD3D;
-		mesh.mrtl[i].pTexture = pTexture;
-
-		// Record parameters to set for this mesh
-		pEffect->BeginParameterBlock();
-		funct(pEffect,mesh.mrtl[i],i);
-		mesh.mrtl[i].ParamBlock = pEffect->EndParameterBlock();
-
-	}
-
-	m_Meshes.insert(make_pair(iXID,mesh));
-	return true;
-}
 
 /*
 
