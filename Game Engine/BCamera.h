@@ -7,7 +7,7 @@ class BCamera
 public:
 
 	// Initializes DirextX along with Windows
-	static bool Initialize();
+	static BCamera* Initialize();
 	
 	// Deletes everything from memory
 	static bool Delete();

@@ -50,7 +50,10 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 	// Create pool to share parameters
 	D3DXCreateEffectPool(&m_pEffectPool);
 
-
+	// Camera initialize 
+	BCamera* pCam = BCamera::Initialize();
+	pCam->BuildProjectMatrix(m_D3DParameters.BackBufferHeight,m_D3DParameters.BackBufferHeight);
+	pCam->BuildViewMatrix(D3DXVECTOR3(3,3,3));
 
 }
 
@@ -61,6 +64,8 @@ BEngine::~BEngine()
 	m_pEffectPool->Release();
 
 	DeleteVertexStreams();
+
+	BCamera::Delete();
 }
 
 BEngine* BEngine::GetInstance()
@@ -145,6 +150,8 @@ bool BEngine::Begin()
 
 		m_fStartCount = prevTimeStamp;
 
+
+
 		return true;
 	}
 	return false;
@@ -194,12 +201,17 @@ bool BEngine::LoadEffect(UINT iID,const char* pFile)
 
 	return false;
 }
-
-bool BEngine::AddEffectParameter(UINT iEffectID, const char* pName, const char* pKey)
+ 
+void BEngine::AddEffectTech(UINT iEffectID, const char* pName, UINT iSubset)
 {
 	Effect& effect = m_Effects[iEffectID];
-	effect.pEffect->GetP
+	effect.m_hTech[iSubset] = effect.pEffect->GetTechniqueByName(pName);
+}
 
+void BEngine::AddEffectParameter(UINT iEffectID, const char* pName, const char* pKey)
+{
+	Effect& effect = m_Effects[iEffectID];
+	effect.m_hParameters[pKey] = effect.pEffect->GetParameterByName(0,pName);
 }
 
 // Load a mesh along with its mtrls and effects.
@@ -242,8 +254,10 @@ bool BEngine::LoadXFile(UINT iXID, UINT iEffectID, const char* pFile)
 	mesh.mrtl.resize(iAttribSize + 1);
 
 	// Get Effect
-	auto& pEffect = m_Effects[iEffectID];
-	mesh.pEffect->pEffect = pEffect;
+	{
+		Effect& eff = m_Effects[iEffectID];
+		mesh.pEffect->pEffect = eff.pEffect;
+	}
 
 	// Get Pointer to mtrl to extract it
 	D3DXMATERIAL* pMtrl = static_cast<D3DXMATERIAL*>(pTempMtrl->GetBufferPointer());
@@ -274,14 +288,6 @@ bool BEngine::RenderMesh(UINT iID) const
 
 	auto& parameters = mesh.pEffect->m_hParameters;
 	auto& tech = mesh.pEffect->m_hTech;
-
-	// Get view matrix
-	BCamera* pCam = BCamera::GetInstance();
-
-	const D3DXMATRIX* pVP = 0;
-	
-	pCam->BuildViewMatrix(mesh.pos); // this is not correct, build view matrix elsewhere
-	pCam->GetMatrices(&pVP);
 
 	// Create World Matrix
 	D3DXMATRIX W;

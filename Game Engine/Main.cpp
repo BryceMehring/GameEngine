@@ -14,7 +14,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	pEngine->LoadEffect(0,"Lighting.fx");
 
-
 	pEngine->LoadXFile(0,0,"bigship1.x");
 
 	while(pEngine->Update())

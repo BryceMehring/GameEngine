@@ -31,6 +31,9 @@ struct Effect
 
 	ID3DXEffect* pEffect;
 
+	D3DXHANDLE* pTech;
+	unsigned int iNumTech;
+
 	// maybe can use ints in the future for a faster search, with enums - they are not dynamic ???
 	hash_map<UINT,D3DXHANDLE> m_hTech;
 	hash_map<string,D3DXHANDLE> m_hParameters;
@@ -67,9 +70,9 @@ public:
 
 	// effects              
 	bool LoadEffect(UINT iID,const char* pFile);
-	bool AddEffectTech(UINT iID, UINT iEffectID, const char* pName); // ?? questionable
 	
-	bool AddEffectParameter(UINT iEffectID, const char* pName, const char* pKey);
+	void AddEffectTech(UINT iEffectID, const char* pName, UINT iSubset); // ?? questionable
+	void AddEffectParameter(UINT iEffectID, const char* pName, const char* pKey);
 	//bool AddEffectParameter(UINT iEffectID, const char* pName, UINT iIndex, const char* pKey);
 
 	// Mesh

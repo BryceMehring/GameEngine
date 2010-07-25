@@ -1,14 +1,16 @@
 #include "BCamera.h"
 
-bool BCamera::Initialize()
+BCamera* BCamera::s_pInstance = 0;
+
+BCamera* BCamera::Initialize()
 {
 	if(s_pInstance == NULL)
 	{
 		s_pInstance = new BCamera();
-		return true;
+		return s_pInstance;
 	}
 
-	return false;
+	return 0;
 }
 
 bool BCamera::Delete()
