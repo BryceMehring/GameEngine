@@ -1,18 +1,11 @@
 
 #pragma once
 
-#include <d3dx9.h>
-#include <dinput.h>
-#include <string>
-#include <hash_map>
+#include "StdAfx.h"
 
 #include "BCamera.h"
 #include "Interfaces.h"
-
-#pragma comment(lib,"d3d9.lib")
-#pragma comment(lib,"d3dx9.lib")
-#pragma comment(lib,"dinput8.lib")
-#pragma comment(lib,"dxguid.lib")
+#include "Singleton.h"
 
 using namespace std;
 using namespace stdext;
@@ -26,7 +19,7 @@ enum EEffect
 
 };
 
-struct Effect
+/*struct Effect
 {
 
 	ID3DXEffect* pEffect;
@@ -48,8 +41,7 @@ struct Mesh
 	D3DXVECTOR3 pos;
 	
 	vector<Mtrl> mrtl;
-};
-
+};*/
 
 class BEngine
 {
@@ -58,10 +50,10 @@ public:
 	static BEngine* GetInstance();
 
 	// Initializes DirextX along with Windows
-	static bool Initialize(HINSTANCE hInstance,const string& winCaption);
+	static void Initialize(HINSTANCE hInstance,const string& winCaption);
 	
 	// Deletes everything from memory
-	static bool Delete();
+	static void Delete();
 	
 	bool Update();
 	bool Begin();
@@ -76,22 +68,13 @@ public:
 	//bool AddEffectParameter(UINT iEffectID, const char* pName, UINT iIndex, const char* pKey);
 
 	// Mesh
-	bool LoadXFile(UINT iXID, UINT iEffectID, const char* pFile);
+	/*bool LoadXFile(UINT iXID, UINT iEffectID, const char* pFile);
 	bool RenderMesh(UINT iID) const;
 	
 	// Texture
 	bool LoadTexture(UINT iID, const char* pFile);
 	bool AutoGenSphereTexCoords(UINT iMesh);
-	bool AutoGenCyclTexCoords(UINT iMesh, int axis);
-
-	// Input functions
-	void Poll();
-	bool KeyDown(char Key);
-	bool MouseClick(int Button);
-
-	int MouseX();
-	int MouseY();
-	int MouseZ();
+	bool AutoGenCyclTexCoords(UINT iMesh, int axis);*/
 
 	IDirect3DDevice9* GetDevice();
 
@@ -104,7 +87,7 @@ private:
 
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
-	ID3DXEffectPool* m_pEffectPool;
+	//ID3DXEffectPool* m_pEffectPool;
 
 	D3DPRESENT_PARAMETERS m_D3DParameters;
 	HWND m_hWindowHandle;
@@ -117,31 +100,13 @@ private:
 	float m_fStartCount;
 	float m_fSecsPerCount;
 
-	hash_map<UINT,Mesh> m_Meshes;
+	/*hash_map<UINT,Mesh> m_Meshes;
 	hash_map<UINT,Effect> m_Effects;
-	hash_map<UINT,IDirect3DTexture9*> m_Textures;
-
-	// Direct input
-	/*
-
-	// Interface
-	IDirectInput8* m_pDirectInput;
-
-	// Keyboard
-	IDirectInputDevice8* m_pKeyboard;
-	char m_KeyboardState[256];
-
-	// Mouse
-	IDirectInputDevice8* m_pMouse;
-	DIMOUSESTATE2 m_MouseState;
-	D3DXVECTOR3 m_Pos;*/
-
+	hash_map<UINT,IDirect3DTexture9*> m_Textures;*/
 
 	/*
 	Enter something here!!!///////
 	*/
-
-
 
 
 	BEngine(HINSTANCE hInstance,const string& winCaption);
@@ -154,9 +119,9 @@ private:
 	void InitializeWindows(HINSTANCE hInstance, const string& winCaption);
 	void InitializeDirectX();
 
-	void InitalizeVertexFormat(); //???
+	//void InitalizeVertexFormat(); //???
 
-	void CloneMesh(ID3DXMesh* pMesh, ID3DXMesh** pClonedMesh, DWORD options);
+	//void CloneMesh(ID3DXMesh* pMesh, ID3DXMesh** pClonedMesh, DWORD options);
 	
 	bool IsDeviceLost();
 	void OnLostDevice();

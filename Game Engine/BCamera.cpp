@@ -1,34 +1,7 @@
+#include "StdAfx.h"
 #include "BCamera.h"
 
-BCamera* BCamera::s_pInstance = 0;
-
-BCamera* BCamera::Initialize()
-{
-	if(s_pInstance == NULL)
-	{
-		s_pInstance = new BCamera();
-		return s_pInstance;
-	}
-
-	return 0;
-}
-
-bool BCamera::Delete()
-{
-	if(s_pInstance)
-	{
-		delete s_pInstance;
-
-		return true;
-	}
-
-	return false;
-}
-
-BCamera* BCamera::GetInstance()
-{
-	return s_pInstance;
-}
+IMPL_SINGLETON(BCamera);
 
 void BCamera::BuildProjectMatrix(float X, float Y)
 {

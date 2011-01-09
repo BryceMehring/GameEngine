@@ -1,3 +1,4 @@
+#include "StdAfx.h"
 
 #include "BEngine.h"
 #include "VertexStream.h"
@@ -15,7 +16,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-// Define static data
 BEngine* BEngine::s_pInstance;
 
 BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
@@ -48,12 +48,12 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 	InitializeVertexStreams(m_p3Device); // might not need to be a global function
 
 	// Create pool to share parameters
-	D3DXCreateEffectPool(&m_pEffectPool);
+	//D3DXCreateEffectPool(&m_pEffectPool);
 
 	// Camera initialize 
-	BCamera* pCam = BCamera::Initialize();
-	pCam->BuildProjectMatrix(m_D3DParameters.BackBufferHeight,m_D3DParameters.BackBufferHeight);
-	pCam->BuildViewMatrix(D3DXVECTOR3(3,3,3));
+	BCamera& cam = BCamera::Instance();
+	cam.BuildProjectMatrix(m_D3DParameters.BackBufferHeight,m_D3DParameters.BackBufferHeight);
+	cam.BuildViewMatrix(D3DXVECTOR3(3,3,3));
 
 }
 
@@ -61,7 +61,7 @@ BEngine::~BEngine()
 {
 	m_pDirect3D->Release();
 	m_p3Device->Release();
-	m_pEffectPool->Release();
+	//m_pEffectPool->Release();
 
 	DeleteVertexStreams();
 
@@ -86,25 +86,18 @@ IDirect3DDevice9* BEngine::GetDevice()
 	return m_p3Device;
 }
 
-bool BEngine::Initialize(HINSTANCE hInstance,const string& winCaption)
+void BEngine::Initialize(HINSTANCE hInstance,const string& winCaption)
 {
 	if(s_pInstance == NULL)
 	{
 		s_pInstance = new BEngine(hInstance,winCaption);
-		return true;
 	}
-	return false;
 }
 
-bool BEngine::Delete()
+void BEngine::Delete()
 {
-	if(s_pInstance)
-	{
-		delete s_pInstance;
-		return true;
-	}
-
-	return false;
+	delete s_pInstance;
+	s_pInstance = NULL;
 }
 
 bool BEngine::Update()
@@ -173,7 +166,7 @@ void BEngine::Present()
 	m_p3Device->Present(0,0,0,0);
 }
 
-bool BEngine::LoadEffect(UINT iID,const char* pFile)
+/*bool BEngine::LoadEffect(UINT iID,const char* pFile)
 {
 	// 1. Check to see if the effect is already loaded
 	if(m_Effects.find(iID) == m_Effects.end())
@@ -300,7 +293,7 @@ bool BEngine::RenderMesh(UINT iID) const
 
 	pEffect->SetMatrix(parameters["World"],&W);
 	pEffect->SetMatrix(parameters["WIT"],&WIT);
-	pEffect->SetMatrix(parameters["WVP"],&(*pVP * W));
+	//pEffect->SetMatrix(parameters["WVP"],&(*pVP * W));
 
 	// Loop through all of the subsets
 	for(int j = 0; j < m_Meshes.size(); ++j)
@@ -325,7 +318,7 @@ bool BEngine::RenderMesh(UINT iID) const
 	}
 
 	return true;
-}
+}*/
 
 void BEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 {
@@ -396,7 +389,7 @@ void BEngine::InitializeDirectX()
 	    &m_p3Device);      // return created device
 }
 
-void BEngine::CloneMesh(ID3DXMesh* pMesh, ID3DXMesh** ppClonedMesh , DWORD options)
+/*void BEngine::CloneMesh(ID3DXMesh* pMesh, ID3DXMesh** ppClonedMesh , DWORD options)
 {
 	// New Vertex decl
 	D3DVERTEXELEMENT9 elements[MAXD3DDECLLENGTH];
@@ -408,7 +401,7 @@ void BEngine::CloneMesh(ID3DXMesh* pMesh, ID3DXMesh** ppClonedMesh , DWORD optio
 
 	// Free memory
 	pMesh->Release();
-}
+}*/
 
 bool BEngine::IsDeviceLost()
 {
