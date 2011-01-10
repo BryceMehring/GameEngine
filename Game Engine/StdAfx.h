@@ -5,3 +5,5 @@
 #include <dinput.h>
 #include <string>
 #include <hash_map>
+#include <fstream>
+#include <sstream>

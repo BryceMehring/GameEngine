@@ -56,6 +56,7 @@
   <ItemGroup>
     <ClCompile Include="BCamera.cpp" />
     <ClCompile Include="BEngine.cpp" />
+    <ClCompile Include="BFont.cpp" />
     <ClCompile Include="BInput.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="VertexStream.cpp" />
@@ -63,6 +64,7 @@
   <ItemGroup>
     <ClInclude Include="BCamera.h" />
     <ClInclude Include="BEngine.h" />
+    <ClInclude Include="BFont.h" />
     <ClInclude Include="BInput.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="Mtrl.h" />

@@ -28,6 +28,9 @@
     <ClCompile Include="BInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BFont.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Interfaces.h">
@@ -54,7 +57,8 @@
     <ClInclude Include="BInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StdAfx.h">
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="BFont.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

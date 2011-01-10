@@ -2,6 +2,7 @@
 
 #include "BEngine.h"
 #include "VertexStream.h"
+#include "BFont.h"
 
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -44,8 +45,8 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 	// post-Initialize
 
 	// streams
-	m_p3Device->AddRef();
-	InitializeVertexStreams(m_p3Device); // might not need to be a global function
+	/*m_p3Device->AddRef();
+	InitializeVertexStreams(m_p3Device);*/ // might not need to be a global function
 
 	// Create pool to share parameters
 	//D3DXCreateEffectPool(&m_pEffectPool);
@@ -63,9 +64,10 @@ BEngine::~BEngine()
 	m_p3Device->Release();
 	//m_pEffectPool->Release();
 
-	DeleteVertexStreams();
+	//DeleteVertexStreams();
 
 	BCamera::Delete();
+	BFont::Delete();
 }
 
 BEngine* BEngine::GetInstance()
@@ -126,6 +128,26 @@ bool BEngine::Update()
 			Sleep(20);
 			Update();
 		}
+		else
+		{
+			// clear the screen, get ready to render
+			Begin();
+
+			// Draw font, need to add this to a function
+			BFont& font = BFont::Instance();
+			ID3DXFont* pFont = font.GetFont("default");
+
+			RECT rec = {0,0,800,800};
+
+			ostringstream mode;
+
+			for(int i = 0; i < m_mode.size(); ++i)
+			{
+				mode << m_mode[i].Width << " x " << m_mode[i].Height << endl;
+			}
+
+			pFont->DrawText(0,mode.str().c_str(),-1,&rec,DT_WORDBREAK,D3DCOLOR_XRGB(255,255,255));
+		}
     }
 
 	return true;
@@ -142,8 +164,6 @@ bool BEngine::Begin()
 		QueryPerformanceCounter((LARGE_INTEGER*)&prevTimeStamp);
 
 		m_fStartCount = prevTimeStamp;
-
-
 
 		return true;
 	}
@@ -163,7 +183,26 @@ bool BEngine::End()
 
 void BEngine::Present()
 {
+	// Before we present the screen to the screen, we must stop rendering to the back buffer
+	End();
+
 	m_p3Device->Present(0,0,0,0);
+}
+
+// 
+void BEngine::EnumerateDisplayAdaptors()
+{
+	D3DDISPLAYMODE mode;
+	for(int i = 0; i < m_pDirect3D->GetAdapterCount(); ++i)
+	{
+		UINT n = m_pDirect3D->GetAdapterModeCount(i,D3DFMT_X8R8G8B8);
+
+		for(int j = 0; j < n; ++j)
+		{
+			m_pDirect3D->EnumAdapterModes(i,D3DFMT_X8R8G8B8,j,&mode);
+			m_mode.push_back(mode);
+		}
+	}
 }
 
 /*bool BEngine::LoadEffect(UINT iID,const char* pFile)
@@ -357,6 +396,8 @@ void BEngine::InitializeDirectX()
     m_pDirect3D = Direct3DCreate9(D3D_SDK_VERSION);
 	if( !m_pDirect3D ) { throw std::string("Direct3DCreate9 Failed"); }
 
+	EnumerateDisplayAdaptors();
+
 	// Fill out the D3DPRESENT_PARAMETERS structure.
 	
 	m_D3DParameters.BackBufferWidth            = 0;
@@ -439,12 +480,12 @@ bool BEngine::IsDeviceLost()
 
 void BEngine::OnLostDevice()
 {
-	 
+	 m_pFont->OnLostDevice();
 }
 
 void BEngine::OnResetDevice()
 {
-
+	m_pFont->OnResetDevice();
 }
 
 void BEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)

@@ -56,19 +56,19 @@ public:
 	static void Delete();
 	
 	bool Update();
-	bool Begin();
-	bool End();
 	void Present();
 
+	void EnumerateDisplayAdaptors();
+
 	// effects              
-	bool LoadEffect(UINT iID,const char* pFile);
+	/*bool LoadEffect(UINT iID,const char* pFile);
 	
 	void AddEffectTech(UINT iEffectID, const char* pName, UINT iSubset); // ?? questionable
 	void AddEffectParameter(UINT iEffectID, const char* pName, const char* pKey);
 	//bool AddEffectParameter(UINT iEffectID, const char* pName, UINT iIndex, const char* pKey);
 
 	// Mesh
-	/*bool LoadXFile(UINT iXID, UINT iEffectID, const char* pFile);
+	bool LoadXFile(UINT iXID, UINT iEffectID, const char* pFile);
 	bool RenderMesh(UINT iID) const;
 	
 	// Texture
@@ -87,7 +87,9 @@ private:
 
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
-	//ID3DXEffectPool* m_pEffectPool;
+	ID3DXFont* m_pFont;
+
+	vector<D3DDISPLAYMODE> m_mode;
 
 	D3DPRESENT_PARAMETERS m_D3DParameters;
 	HWND m_hWindowHandle;
@@ -119,6 +121,9 @@ private:
 	void InitializeWindows(HINSTANCE hInstance, const string& winCaption);
 	void InitializeDirectX();
 
+	bool Begin();
+	bool End();
+
 	//void InitalizeVertexFormat(); //???
 
 	//void CloneMesh(ID3DXMesh* pMesh, ID3DXMesh** pClonedMesh, DWORD options);
@@ -127,11 +132,9 @@ private:
 	void OnLostDevice();
 	void OnResetDevice();
 
-	void EnableFullscreen(bool b);
+	//void EnableFullscreen(bool b);
 
 };
-
-
 
 /*
 
