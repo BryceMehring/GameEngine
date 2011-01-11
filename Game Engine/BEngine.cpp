@@ -132,25 +132,28 @@ bool BEngine::Update()
 		{
 			// clear the screen, get ready to render
 			Begin();
-
-			// Draw font, need to add this to a function
-			BFont& font = BFont::Instance();
-			ID3DXFont* pFont = font.GetFont("default");
-
-			RECT rec = {0,0,800,800};
-
-			ostringstream mode;
-
-			for(int i = 0; i < m_mode.size(); ++i)
-			{
-				mode << m_mode[i].Width << " x " << m_mode[i].Height << endl;
-			}
-
-			pFont->DrawText(0,mode.str().c_str(),-1,&rec,DT_WORDBREAK,D3DCOLOR_XRGB(255,255,255));
 		}
     }
 
 	return true;
+}
+
+void BEngine::RenderOptions()
+{
+	// Draw font, need to add this to a function
+	BFont& font = BFont::Instance();
+	ID3DXFont* pFont = font.GetFont("default");
+
+	RECT rec = {0,0,800,800};
+
+	ostringstream mode;
+
+	for(int i = 0; i < m_mode.size(); ++i)
+	{
+		mode << m_mode[i].Width << " x " << m_mode[i].Height << endl;
+	}
+
+	pFont->DrawText(0,mode.str().c_str(),-1,&rec,DT_WORDBREAK,D3DCOLOR_XRGB(255,255,255));
 }
 
 bool BEngine::Begin()

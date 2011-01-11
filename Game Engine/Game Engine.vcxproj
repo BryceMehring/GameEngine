@@ -37,7 +37,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -59,6 +59,7 @@
     <ClCompile Include="BFont.cpp" />
     <ClCompile Include="BInput.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="TextParser.cpp" />
     <ClCompile Include="VertexStream.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +71,7 @@
     <ClInclude Include="Mtrl.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="Singleton.h" />
+    <ClInclude Include="TextParser.h" />
     <ClInclude Include="VertexStream.h" />
   </ItemGroup>
   <ItemGroup>

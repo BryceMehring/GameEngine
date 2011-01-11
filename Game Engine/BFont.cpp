@@ -10,8 +10,8 @@ BFont::BFont()
 {
 	D3DXFONT_DESC desc;
 
-	desc.Height = 25;
-	desc.Width = 15;
+	desc.Height = 15;
+	desc.Width = 5;
 	desc.Weight = 50;
 	desc.MipLevels = 1;
 	desc.Italic = false;

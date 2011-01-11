@@ -6,11 +6,12 @@
 #include "BCamera.h"
 #include "Interfaces.h"
 #include "Singleton.h"
+#include "TextParser.h"
 
 using namespace std;
 using namespace stdext;
 
-enum EEffect
+/*enum EEffect
 {
 	// Transformations
 	World,
@@ -19,7 +20,9 @@ enum EEffect
 
 };
 
-/*struct Effect
+
+
+struct Effect
 {
 
 	ID3DXEffect* pEffect;
@@ -43,6 +46,65 @@ struct Mesh
 	vector<Mtrl> mrtl;
 };*/
 
+
+// Base pugin
+class IPlugin : public IRefCounting
+{
+public:
+
+	virtual ~IPlugin() {}
+
+	virtual string& GetName() = 0;
+	virtual int GetVersionNumber() = 0;
+};
+
+class IGamePlugin : public IPlugin
+{
+public:
+
+	virtual ~IGamePlugin() {}
+
+	//....
+
+};
+
+// more specific plug-in
+class IRenderingPlugin : public IPlugin
+{
+public:
+
+	virtual ~IRenderingPlugin() {}
+
+	virtual void Begin() = 0;
+	virtual void End() = 0;
+	virtual void Present() = 0;
+	virtual void DrawText() = 0;
+
+	///.....
+
+};
+
+class IInputPlugin : public IPlugin
+{
+public:
+
+	virtual ~IInputPlugin() {}
+
+	virtual void Poll() = 0;
+	virtual bool KeyDown(char Key) = 0;
+	virtual bool MouseClick(int Button) = 0;
+
+	virtual int MouseX() = 0;
+	virtual int MouseY() = 0;
+	virtual int MouseZ() = 0;
+
+};
+
+// ************************
+// This really should just manage everything, do not implement it here
+// All of the different sub parts of the engine should be independent, they should be their own dll.
+// Then this class would load the dll's dynamically and be the leader of the game without knowing its implementation details.
+// ***********************
 class BEngine
 {
 public:
@@ -123,6 +185,8 @@ private:
 
 	bool Begin();
 	bool End();
+
+	void RenderOptions();
 
 	//void InitalizeVertexFormat(); //???
 

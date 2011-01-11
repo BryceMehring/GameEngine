@@ -19,6 +19,10 @@
 #define NULL 0
 #endif
 
+class Singleton
+{
+};
+
 #define DECLARE_SINGLETON(C) \
 	private: \
 		static C* s_pInstance; \
