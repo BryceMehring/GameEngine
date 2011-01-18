@@ -48,57 +48,7 @@ struct Mesh
 
 
 // Base pugin
-class IPlugin : public IRefCounting
-{
-public:
 
-	virtual ~IPlugin() {}
-
-	virtual string& GetName() = 0;
-	virtual int GetVersionNumber() = 0;
-};
-
-class IGamePlugin : public IPlugin
-{
-public:
-
-	virtual ~IGamePlugin() {}
-
-	//....
-
-};
-
-// more specific plug-in
-class IRenderingPlugin : public IPlugin
-{
-public:
-
-	virtual ~IRenderingPlugin() {}
-
-	virtual void Begin() = 0;
-	virtual void End() = 0;
-	virtual void Present() = 0;
-	virtual void DrawText() = 0;
-
-	///.....
-
-};
-
-class IInputPlugin : public IPlugin
-{
-public:
-
-	virtual ~IInputPlugin() {}
-
-	virtual void Poll() = 0;
-	virtual bool KeyDown(char Key) = 0;
-	virtual bool MouseClick(int Button) = 0;
-
-	virtual int MouseX() = 0;
-	virtual int MouseY() = 0;
-	virtual int MouseZ() = 0;
-
-};
 
 // ************************
 // This really should just manage everything, do not implement it here
