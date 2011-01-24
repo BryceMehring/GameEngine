@@ -22,6 +22,7 @@ BEngine* BEngine::s_pInstance;
 BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 {
 	// Default values
+	m_hInstance = hInstance;
 	m_bPaused = false;
 	m_ClearBuffers = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
 
@@ -33,7 +34,7 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 	// Initialize
 	try
 	{
-		InitializeWindows(hInstance,winCaption);
+		InitializeWindows(m_hInstance,winCaption);
 		InitializeDirectX();
 	}
 	catch(string error)
@@ -52,9 +53,9 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 	//D3DXCreateEffectPool(&m_pEffectPool);
 
 	// Camera initialize 
-	BCamera& cam = BCamera::Instance();
+	/*BCamera& cam = BCamera::Instance();
 	cam.BuildProjectMatrix(m_D3DParameters.BackBufferHeight,m_D3DParameters.BackBufferHeight);
-	cam.BuildViewMatrix(D3DXVECTOR3(3,3,3));
+	cam.BuildViewMatrix(D3DXVECTOR3(3,3,3));*/
 
 }
 
@@ -66,8 +67,8 @@ BEngine::~BEngine()
 
 	//DeleteVertexStreams();
 
-	BCamera::Delete();
-	BFont::Delete();
+	/*BCamera::Delete();
+	BFont::Delete();*/
 }
 
 BEngine* BEngine::GetInstance()
@@ -141,7 +142,7 @@ bool BEngine::Update()
 void BEngine::RenderOptions()
 {
 	// Draw font, need to add this to a function
-	BFont& font = BFont::Instance();
+	/*BFont& font = BFont::Instance();
 	ID3DXFont* pFont = font.GetFont("default");
 
 	RECT rec = {0,0,800,800};
@@ -153,7 +154,7 @@ void BEngine::RenderOptions()
 		mode << m_mode[i].Width << " x " << m_mode[i].Height << endl;
 	}
 
-	pFont->DrawText(0,mode.str().c_str(),-1,&rec,DT_WORDBREAK,D3DCOLOR_XRGB(255,255,255));
+	pFont->DrawText(0,mode.str().c_str(),-1,&rec,DT_WORDBREAK,D3DCOLOR_XRGB(255,255,255));*/
 }
 
 bool BEngine::Begin()

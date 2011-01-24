@@ -6,7 +6,6 @@
 #include "BCamera.h"
 #include "Interfaces.h"
 #include "Singleton.h"
-#include "TextParser.h"
 
 using namespace std;
 using namespace stdext;
@@ -92,6 +91,9 @@ public:
 
 	void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
 
+	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
+	HWND GetWindowHandle() const { return m_hWindowHandle; }
+
 private:
 
 	// Single Instance of the class.
@@ -105,6 +107,7 @@ private:
 
 	D3DPRESENT_PARAMETERS m_D3DParameters;
 	HWND m_hWindowHandle;
+	HINSTANCE m_hInstance;
 
 	DWORD m_ClearBuffers;
 

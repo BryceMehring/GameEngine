@@ -5,6 +5,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game Engine", "Game Engine\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectX Input DLL", "DirectX Input DLL\DirectX Input DLL.vcxproj", "{3852E544-DBED-4930-847F-989DDBED5DC7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Plugin Manager", "Plugin Manager\Plugin Manager.vcxproj", "{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test Application", "Test Application\Test Application.vcxproj", "{C4A62CD5-27F0-4490-B864-CC6498A1EB2D}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -23,6 +27,14 @@ Global
 		{3852E544-DBED-4930-847F-989DDBED5DC7}.Debug|Win32.Build.0 = Debug|Win32
 		{3852E544-DBED-4930-847F-989DDBED5DC7}.Release|Win32.ActiveCfg = Release|Win32
 		{3852E544-DBED-4930-847F-989DDBED5DC7}.Release|Win32.Build.0 = Release|Win32
+		{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}.Debug|Win32.Build.0 = Debug|Win32
+		{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}.Release|Win32.ActiveCfg = Release|Win32
+		{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}.Release|Win32.Build.0 = Release|Win32
+		{C4A62CD5-27F0-4490-B864-CC6498A1EB2D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C4A62CD5-27F0-4490-B864-CC6498A1EB2D}.Debug|Win32.Build.0 = Debug|Win32
+		{C4A62CD5-27F0-4490-B864-CC6498A1EB2D}.Release|Win32.ActiveCfg = Release|Win32
+		{C4A62CD5-27F0-4490-B864-CC6498A1EB2D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

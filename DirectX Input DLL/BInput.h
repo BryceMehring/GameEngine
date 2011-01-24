@@ -1,23 +1,18 @@
+
 #pragma once
+#ifndef _DINPUT_
+#define _DINPUT_
 
 // This is the DirectX Input Plug-in class
 // All that's needed is too implement the functions provided in the abstract interface
-#include "Interfaces.h"
 #include "PluginManager.h"
-
 #include <d3dx9.h>
+
 #include <dinput.h>
-
-#pragma comment(lib,"d3d9.lib")
-#pragma comment(lib,"d3dx9.lib")
-
-#pragma comment(lib,"dinput8.lib")
-#pragma comment(lib,"dxguid.lib")
-
 
 //PLUGIN_CREATION_DECL(CreateInputPlugin);
 // Input plug-in deceleration
-extern "C" PLUGINDECL IPlugin* CreateInputPlugin(PluginManager& mgr);
+extern "C" PLUGINDECL IPlugin* CreatePlugin(PluginManager* mgr);
 
 class DirectInput : public IInputPlugin
 {
@@ -38,11 +33,11 @@ public:
 
 protected:
 
-	DirectInput(PluginManager& mgr);
+	DirectInput(PluginManager* mgr);
 	virtual ~DirectInput();
 
 	// Plug-in Manager
-	PluginManager& m_mgr;
+	PluginManager* m_mgr;
 
 	// Interface
 	IDirectInput8* m_pDirectInput;
@@ -56,5 +51,7 @@ protected:
 	DIMOUSESTATE2 m_MouseState;
 	D3DXVECTOR3 m_Pos; 
 
-	friend PLUGINDECL IPlugin* CreateInputPlugin(PluginManager& mgr);
+	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager* mgr);
 };
+
+#endif

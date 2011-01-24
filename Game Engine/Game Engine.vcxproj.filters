@@ -13,28 +13,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VertexStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BCamera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BInput.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BFont.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PluginManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,31 +27,13 @@
     <ClInclude Include="VertexStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BCamera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Mtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Singleton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Singleton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BInput.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StdAfx.h" />
-    <ClInclude Include="BFont.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PluginManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Lighting.fx">
