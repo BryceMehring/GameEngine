@@ -30,9 +30,6 @@
     <ClInclude Include="Mtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Singleton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>

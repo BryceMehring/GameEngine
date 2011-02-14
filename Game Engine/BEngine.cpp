@@ -4,14 +4,14 @@
 #include "VertexStream.h"
 #include "BFont.h"
 
+BEngine* g_pEngine = NULL;
+
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	BEngine* pEngine = BEngine::GetInstance();
-
 	// Don't start processing messages until the application has been created.
-	if(pEngine)
+	if(g_pEngine)
 	{
-		pEngine->MsgProc(msg, wParam, lParam);
+		g_pEngine->MsgProc(msg, wParam, lParam);
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -44,6 +44,9 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 	}
 
 	// post-Initialize
+	D3DXFONT_DESC desc;
+	ZeroMemory(&desc,sizeof(desc));
+	D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
 
 	// streams
 	/*m_p3Device->AddRef();
@@ -61,6 +64,7 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 
 BEngine::~BEngine()
 {
+	m_pFont->Release();
 	m_pDirect3D->Release();
 	m_p3Device->Release();
 	//m_pEffectPool->Release();
@@ -71,36 +75,10 @@ BEngine::~BEngine()
 	BFont::Delete();*/
 }
 
-BEngine* BEngine::GetInstance()
-{
-	BEngine* pInstance = NULL;
-
-	if(s_pInstance)
-	{
-		pInstance = s_pInstance;
-	}
-
-	return pInstance;
-}
-
 IDirect3DDevice9* BEngine::GetDevice()
 {
 	m_p3Device->AddRef();
 	return m_p3Device;
-}
-
-void BEngine::Initialize(HINSTANCE hInstance,const string& winCaption)
-{
-	if(s_pInstance == NULL)
-	{
-		s_pInstance = new BEngine(hInstance,winCaption);
-	}
-}
-
-void BEngine::Delete()
-{
-	delete s_pInstance;
-	s_pInstance = NULL;
 }
 
 bool BEngine::Update()
@@ -183,6 +161,12 @@ bool BEngine::End()
 	m_p3Device->EndScene();
 		
 	return true;
+}
+
+void BEngine::DrawText(char* p)
+{
+	RECT r = {0,0,40,40};
+	m_pFont->DrawText(0,p,-1,&r,DT_NOCLIP,0xffffffff);
 }
 
 void BEngine::Present()
