@@ -2,19 +2,16 @@
 // 1/20/2011
 
 // Read chapter 16, use the dynamic object mapper with the DLL files.
-
-
 #include "PluginManager.h"
-#include "BEngine.h"
 
-PluginManager::PluginManager()
+
+PluginManager::PluginManager() : m_pEngine(g_pEngine)
 {
-
 }
 
 PluginManager::~PluginManager()
 {
-	for(std::vector<BasicDLL>::iterator iter = m_dlls.begin(); iter != m_dlls.end(); ++iter)
+	for(std::vector<PluginInfo>::iterator iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
 	{
 		FreeLibrary(iter->mod);
 	}
@@ -22,23 +19,28 @@ PluginManager::~PluginManager()
 
 HINSTANCE PluginManager::GetHINSTANCE() const
 {
-	BEngine* pEngine = BEngine::GetInstance();
-	return pEngine->GetHINSTANCE();
+	return m_pEngine->GetHINSTANCE();
 }
 
 HWND PluginManager::GetWindowHandle() const
 {
-	BEngine* pEngine = BEngine::GetInstance();
-	return pEngine->GetWindowHandle();
+	return m_pEngine->GetWindowHandle();
 }
 
 IPlugin* PluginManager::LoadDLL(char* pDLL)
 {
-	BasicDLL dll;
+	PluginInfo dll;
 	dll.mod = LoadLibrary(pDLL);
-	dll.func = (CREATEPLUGIN)GetProcAddress(dll.mod,"CreatePlugin");
 
-	m_dlls.push_back(dll);
+	if(!dll.mod)
+	{
+		//error?
+	}
 
-	return m_dlls.back().func(this);
+	CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress(dll.mod,"CreatePlugin");
+	dll.pPlugin = pFunct(this);
+
+	m_plugins.push_back(dll);
+
+	return dll.pPlugin;
 }

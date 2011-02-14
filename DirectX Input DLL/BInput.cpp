@@ -1,8 +1,12 @@
+
 #include "BInput.h"
 
+
 #pragma comment(lib,"d3d9.lib")
+#pragma comment(lib,"d3dx9.lib")
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
+
 
 // Input plug-in implementation
 PLUGINDECL IPlugin* CreatePlugin(PluginManager* mgr)
@@ -12,8 +16,6 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager* mgr)
 
 DirectInput::DirectInput(PluginManager* mgr) : m_mgr(mgr)
 {
-	m_mgr->AddRef();
-
 	ZeroMemory(m_KeyboardState,sizeof(m_KeyboardState));
 	ZeroMemory(&m_MouseState,sizeof(m_MouseState));
 
@@ -35,7 +37,7 @@ DirectInput::DirectInput(PluginManager* mgr) : m_mgr(mgr)
 
 DirectInput::~DirectInput()
 {
-	m_mgr->Release();
+	//m_mgr->Release();
 
 	m_pDirectInput->Release();
 
@@ -44,6 +46,11 @@ DirectInput::~DirectInput()
 
 	m_pKeyboard->Release();
 	m_pMouse->Release();
+}
+
+void DirectInput::GetName(std::string& name)
+{
+	name = "DirectInput";
 }
 
 void DirectInput::Poll()
@@ -58,6 +65,7 @@ void DirectInput::Poll()
 		m_pKeyboard->Acquire();
 	}
 
+	// Poll mouse
 	hr = m_pMouse->GetDeviceState(sizeof(m_MouseState),&m_MouseState);
 
 	if(FAILED(hr))
@@ -90,4 +98,9 @@ int DirectInput::MouseY()
 int DirectInput::MouseZ()
 {
 	return m_MouseState.lZ;
+}
+
+void DirectInput::About()
+{
+	MessageBox(m_mgr->GetWindowHandle(),"DirectInput DLL\nProgrammed By Bryce Mehring","About",MB_OK);
 }

@@ -1,6 +1,5 @@
 
 #include "BEngine.h"
-#include "BCamera.h"
 #include "BFont.h"
 
 #include "PluginManager.h"
@@ -17,22 +16,34 @@ using namespace std;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	BEngine::Initialize(hInstance,"Test");
-	BEngine* pEngine = BEngine::GetInstance();
-
+	g_pEngine = new BEngine(hInstance,"Test");
 	PluginManager* pPluginMgr = new PluginManager();
 
 	IInputPlugin* pInput  = static_cast<IInputPlugin*>(pPluginMgr->LoadDLL("DirectX Input DLL.dll"));
+	pInput->About();
+	
+	char buffer[32];
+	ZeroMemory(buffer,32);
+	int mouseXCoord = 0;
+	int mouseYCoord = 0;
 
-	pInput->Poll();
-	int mouseXCoord = pInput->MouseX();
-
-	while(pEngine->Update())
+	while(g_pEngine->Update())
 	{
-		pEngine->Present();
+		pInput->Poll();
+		mouseXCoord += pInput->MouseX();
+		mouseYCoord += pInput->MouseY();
+
+		if(pInput->MouseClick(0))
+		{
+			wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",mouseXCoord,mouseYCoord);
+		}
+
+		g_pEngine->DrawText(buffer);
+		g_pEngine->Present();
 	}
 
-	BEngine::Delete();
+	g_pEngine->Release();
+	pPluginMgr->Release();
 
 	return 0;
 }

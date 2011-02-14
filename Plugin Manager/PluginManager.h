@@ -4,22 +4,14 @@
 #pragma once
 #include <Windows.h>
 #include <vector>
-#include "Singleton.h"
+#include "BEngine.h"
 #include "Interfaces.h"
 
-// Macros
-#define PLUGINDECL __declspec(dllexport)
-
-class PluginManager;
-typedef IPlugin* (*CREATEPLUGIN)(PluginManager* mgr);
-
-
-struct BasicDLL
+struct PluginInfo
 {
+	IPlugin* pPlugin;
 	HMODULE mod;
-	CREATEPLUGIN func;
 };
-
 
 class PluginManager : public RefCounting
 {
@@ -42,6 +34,7 @@ public:
 
 private:
 
-	std::vector<BasicDLL> m_dlls;
+	BEngine* m_pEngine;
+	std::vector<PluginInfo> m_plugins;
 	
 };
