@@ -16,18 +16,20 @@ using namespace std;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	g_pEngine = new BEngine(hInstance,"Test");
-	PluginManager* pPluginMgr = new PluginManager();
+	PluginManager& pluginManager = PluginManager::Instance();
 
-	IInputPlugin* pInput  = static_cast<IInputPlugin*>(pPluginMgr->LoadDLL("DirectX Input DLL.dll"));
-	pInput->About();
-	
-	char buffer[32];
+	// I want to put all of this Initialization into a dll
+	BEngine::Initialize(hInstance,"Test");
+	BEngine* pEngine = BEngine::GetInstance();
+
+	IKMInput* pInput  = static_cast<IKMInput*>(pluginManager.LoadDLL("DirectX Input DLL.dll"));
+
+	char buffer[64];
 	ZeroMemory(buffer,32);
-	int mouseXCoord = 0;
 	int mouseYCoord = 0;
+	int mouseXCoord = 0;
 
-	while(g_pEngine->Update())
+	while(pEngine->Update())
 	{
 		pInput->Poll();
 		mouseXCoord += pInput->MouseX();
@@ -38,14 +40,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",mouseXCoord,mouseYCoord);
 		}
 
-		g_pEngine->DrawText(buffer);
-		g_pEngine->Present();
+		pEngine->DrawText(buffer);
+		pEngine->Present();
 	}
 
-	g_pEngine->Release();
-	pPluginMgr->Release();
+	BEngine::Delete();
+	PluginManager::Delete();
 
 	return 0;
 }
-                
-                                                                                                  
+				
+																								  
