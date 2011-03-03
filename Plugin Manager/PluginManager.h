@@ -6,6 +6,7 @@
 #include <vector>
 #include "BEngine.h"
 #include "Interfaces.h"
+#include "Singleton.h"
 
 struct PluginInfo
 {
@@ -13,7 +14,7 @@ struct PluginInfo
 	HMODULE mod;
 };
 
-class PluginManager : public RefCounting
+class PluginManager
 {
 public:
 
@@ -22,19 +23,22 @@ public:
 	   This class is also a singleton because it needs global access.
 	*/
 
-	PluginManager();
-	virtual ~PluginManager();
+	DECLARE_SINGLETON(PluginManager);
 
 	HINSTANCE GetHINSTANCE() const;
 	HWND GetWindowHandle() const;
 
+	IPlugin* GetPlugin(unsigned int index);
 	IPlugin* LoadDLL(char* pDLL);
 	//void LoadAllPlugins(char* pDictionary);
 
 
 private:
 
-	BEngine* m_pEngine;
+	PluginManager();
+	virtual ~PluginManager();
+
+	BEngine& m_engine;
 	std::vector<PluginInfo> m_plugins;
 	
 };
