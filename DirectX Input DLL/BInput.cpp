@@ -9,28 +9,28 @@
 
 
 // Input plug-in implementation
-PLUGINDECL IPlugin* CreatePlugin(PluginManager* mgr)
+PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 {
 	return new DirectInput(mgr);
 }
 
-DirectInput::DirectInput(PluginManager* mgr) : m_mgr(mgr)
+DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr)
 {
 	ZeroMemory(m_KeyboardState,sizeof(m_KeyboardState));
 	ZeroMemory(&m_MouseState,sizeof(m_MouseState));
 
-	DirectInput8Create(m_mgr->GetHINSTANCE(),DIRECTINPUT_VERSION,IID_IDirectInput8A,(void**)&m_pDirectInput,0);
+	DirectInput8Create(m_mgr.GetHINSTANCE(),DIRECTINPUT_VERSION,IID_IDirectInput8A,(void**)&m_pDirectInput,0);
 
 	//Create Keyboard
 	m_pDirectInput->CreateDevice(GUID_SysKeyboard,&m_pKeyboard,0);
 	m_pKeyboard->SetDataFormat(&c_dfDIKeyboard);
-	m_pKeyboard->SetCooperativeLevel(m_mgr->GetWindowHandle(),DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+	m_pKeyboard->SetCooperativeLevel(m_mgr.GetWindowHandle(),DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 	m_pKeyboard->Acquire();
 
 	//Create Mouse 
 	m_pDirectInput->CreateDevice(GUID_SysMouse,&m_pMouse,0);
 	m_pMouse->SetDataFormat(&c_dfDIMouse2);
-	m_pMouse->SetCooperativeLevel(m_mgr->GetWindowHandle(),DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+	m_pMouse->SetCooperativeLevel(m_mgr.GetWindowHandle(),DISCL_EXCLUSIVE | DISCL_FOREGROUND);
 	m_pMouse->Acquire();
 }
 
@@ -102,5 +102,5 @@ int DirectInput::MouseZ()
 
 void DirectInput::About()
 {
-	MessageBox(m_mgr->GetWindowHandle(),"DirectInput DLL\nProgrammed By Bryce Mehring","About",MB_OK);
+	MessageBox(m_mgr.GetWindowHandle(),"DirectInput DLL\nProgrammed By Bryce Mehring","About",MB_OK);
 }

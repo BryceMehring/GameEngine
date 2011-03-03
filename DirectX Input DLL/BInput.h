@@ -12,7 +12,7 @@
 #include <dinput.h>
 
 
-class DirectInput : public IInputPlugin
+class DirectInput : public IKMInput
 {
 public:
 
@@ -34,11 +34,11 @@ public:
 private:
 
 	
-	DirectInput(PluginManager* mgr);
+	DirectInput(PluginManager& mgr);
 	virtual ~DirectInput();
 
 	// Plug-in Manager
-	PluginManager* m_mgr;
+	PluginManager& m_mgr;
 
 	// Interface
 	IDirectInput8* m_pDirectInput;
@@ -52,7 +52,7 @@ private:
 	DIMOUSESTATE2 m_MouseState;
 	D3DXVECTOR3 m_Pos; 
 
-	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager*);
+	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager&);
 };
 
 #endif
