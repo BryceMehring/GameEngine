@@ -36,12 +36,8 @@ protected:
 
 	bool m_bPaused;
 
-	float m_fDT;
-	float m_fStartCount;
-	float m_fSecsPerCount;
-
 	// ====== constructor/destructor ======
-	~IBaseEngine();
+	virtual ~IBaseEngine();
 
 	// ====== helper functions ======
 	/*bool Begin();
@@ -53,6 +49,8 @@ protected:
 	*/
 
 	bool Update();
+
+	void RedirectIOToConsole();
 	
 
 private:

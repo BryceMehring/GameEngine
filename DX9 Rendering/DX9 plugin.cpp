@@ -1,4 +1,9 @@
+
 #include "DX9 plugin.h"
+
+#pragma comment(lib,"d3d9.lib")
+#pragma comment(lib,"d3dx9.lib")
+#pragma comment(lib,"Plugin Manager.lib")
 
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 {
@@ -7,22 +12,43 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 
 DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref)
 {
-	ZeroMemory(&m_D3DParameters,sizeof(D3DPRESENT_PARAMETERS));
+	m_p3Device = NULL;
+	m_pDirect3D = NULL;
+	m_pFont = NULL;
 
+	m_fDT = 0;
+	m_fStartCount = 0;
+	m_fSecsPerCount = 0;
+
+	// initialize timer 
+	__int64 cntsPerSec = 0;
+	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
+	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
+
+	ZeroMemory(&m_D3DParameters,sizeof(D3DPRESENT_PARAMETERS));
 	m_ClearBuffers = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
 
-	InitializeDirectX();
+	DX9Render::InitializeDirectX();
 
 	// post-Initialize
-	//D3DXFONT_DESC desc;
-	//ZeroMemory(&desc,sizeof(desc));
-	//D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
+	D3DXFONT_DESC desc;
+	ZeroMemory(&desc,sizeof(desc));
+	D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
 }
 DX9Render::~DX9Render()
 {
 	m_pFont->Release();
 	m_p3Device->Release();
 	m_pDirect3D->Release();
+}
+
+void DX9Render::About()
+{
+
+}
+
+void DX9Render::GetName(std::string& name)
+{
 
 }
 
@@ -71,7 +97,8 @@ void DX9Render::InitializeDirectX()
 
 void DX9Render::DrawString(char* str)
 {
-
+	RECT r = {0,0,40,40};
+	m_pFont->DrawText(0,str,-1,&r,DT_NOCLIP,0xffffffff);
 }
 
 /*void BEngine::CloneMesh(ID3DXMesh* pMesh, ID3DXMesh** ppClonedMesh , DWORD options)
@@ -149,10 +176,10 @@ void BEngine::RenderOptions()
 
 	pFont->DrawText(0,mode.str().c_str(),-1,&rec,DT_WORDBREAK,D3DCOLOR_XRGB(255,255,255));
 
-
-bool BEngine::Begin()
+	*/
+void DX9Render::Begin()
 {
-	if( !IsDeviceLost() )
+	//if( !IsDeviceLost() )
 	{
 		m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
 		m_p3Device->BeginScene();
@@ -161,39 +188,26 @@ bool BEngine::Begin()
 		QueryPerformanceCounter((LARGE_INTEGER*)&prevTimeStamp);
 
 		m_fStartCount = prevTimeStamp;
-
-		return true;
 	}
-	return false;
 }
 
-bool BEngine::End()
+void DX9Render::End()
 {
 	__int64 currTimeStamp = 0;
 	QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
 	m_fDT = (currTimeStamp - m_fStartCount)*m_fSecsPerCount;
 
 	m_p3Device->EndScene();
-		
-	return true;
 }
 
-void BEngine::DrawText(char* p)
-{
-	RECT r = {0,0,40,40};
-	m_pFont->DrawText(0,p,-1,&r,DT_NOCLIP,0xffffffff);
-}
-
-void BEngine::Present()
+void DX9Render::Present()
 {
 	// Before we present the screen to the screen, we must stop rendering to the back buffer
-	End();
-
 	m_p3Device->Present(0,0,0,0);
 }
 
 // 
-void BEngine::EnumerateDisplayAdaptors()
+/*void BEngine::EnumerateDisplayAdaptors()
 {
 	D3DDISPLAYMODE mode;
 	for(int i = 0; i < m_pDirect3D->GetAdapterCount(); ++i)

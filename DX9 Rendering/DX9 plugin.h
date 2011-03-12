@@ -1,13 +1,13 @@
+// Programmed By Bryce Mehring
+
 #ifndef _DX9_PLUGIN_
 #define _DX9_PLUGIN_
 #pragma once
 
 #define PLUGIN_EXPORTS
-#include "Interfaces.h"
 #include "PluginManager.h"
-#include <d3d9.h>
 #include <d3dx9.h>
-
+#include <d3d9.h>
 
 /*enum EEffect
 {
@@ -53,24 +53,24 @@ class DX9Render : public IRenderingPlugin
 public:
 
 	// returns the name of the plug-in
-	virtual void GetName(std::string& name) {}
+	virtual void GetName(std::string& name);
 
 	// displays a info box about the plug-in
-	virtual void About() {}
+	virtual void About();
 
 	// mesh functions
-	virtual int LoadMesh(char* pFile) { return 0; }
-	virtual void DrawMesh(int id, int x, int y, int z) {}
+	//virtual int LoadMesh(char* pFile);
+	//virtual void DrawMesh(int id, int x, int y, int z);
 
 	//shaders
-	virtual int LoadShader(char* pFile) { return 0; }
+	//virtual int LoadShader(char* pFile);
 
-	virtual void Begin(){}
-	virtual void End() {}
-	virtual void Present() {}
+	virtual void Begin();
+	virtual void End();
+	virtual void Present();
 	virtual void DrawString(char* str);
 
-private:
+protected:
 
 	DX9Render(PluginManager& ref);
 	virtual ~DX9Render();
@@ -92,6 +92,10 @@ private:
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
 	ID3DXFont* m_pFont;
+
+	float m_fDT;
+	float m_fStartCount;
+	float m_fSecsPerCount;
 
 	DWORD m_ClearBuffers;
 

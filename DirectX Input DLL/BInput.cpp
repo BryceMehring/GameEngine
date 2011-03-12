@@ -1,12 +1,9 @@
 
 #include "BInput.h"
 
-
-#pragma comment(lib,"d3d9.lib")
-#pragma comment(lib,"d3dx9.lib")
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
-
+#pragma comment(lib,"Plugin Manager.lib")
 
 // Input plug-in implementation
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
@@ -30,7 +27,7 @@ DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr)
 	//Create Mouse 
 	m_pDirectInput->CreateDevice(GUID_SysMouse,&m_pMouse,0);
 	m_pMouse->SetDataFormat(&c_dfDIMouse2);
-	m_pMouse->SetCooperativeLevel(m_mgr.GetWindowHandle(),DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+	m_pMouse->SetCooperativeLevel(m_mgr.GetWindowHandle(),DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 	m_pMouse->Acquire();
 }
 

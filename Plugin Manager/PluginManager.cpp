@@ -4,8 +4,9 @@
 // Read chapter 16, use the dynamic object mapper with the DLL files.
 #include "PluginManager.h"
 
-IMPL_SINGLETON(PluginManager);
+#pragma comment(lib,"Game Engine.lib")
 
+IMPL_SINGLETON(PluginManager);
 
 PluginManager::PluginManager() : m_pEngine(g_pEngine)
 {

@@ -1,13 +1,14 @@
+// Programmed By Bryce Mehring
 
-#pragma once
+
 #ifndef _DINPUT_
 #define _DINPUT_
+#pragma once
 
 // This is the DirectX Input Plug-in class
 // All that's needed is too implement the functions provided in the abstract interface
 #define PLUGIN_EXPORTS
 #include "PluginManager.h"
-#include <d3dx9.h>
 
 #include <dinput.h>
 
@@ -28,8 +29,6 @@ public:
 	virtual int MouseX();
 	virtual int MouseY();
 	virtual int MouseZ();
-
-	
 
 private:
 

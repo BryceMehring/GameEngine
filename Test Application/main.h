@@ -3,6 +3,7 @@
 #pragma once
 #include "BEngine.h"
 #include "PluginManager.h"
+#include <iostream>
 
 class InputTestApp : public IBaseEngine
 {
@@ -10,13 +11,22 @@ public:
 
 	InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBaseEngine(hInstance,winCaption)
 	{
-		PluginManager& pluginManager = PluginManager::Instance();
-		m_pInput  = static_cast<IKMInput*>(pluginManager.LoadDLL("DirectX Input DLL.dll"));
+		mouseYCoord = 0;
+		mouseXCoord = 0;
+
 		ZeroMemory(buffer,32);
 	}
 
 	virtual int Run()
 	{
+		Load();
+
+		RedirectIOToConsole();
+
+		char Buffer[256];
+		std::cin.getline(Buffer,256,'}');
+		system("cls");
+
 		while(Update())
 		{
 			m_pInput->Poll();
@@ -28,8 +38,10 @@ public:
 				wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",mouseXCoord,mouseYCoord);
 			}
 
-			//m_pRendering->DrawText(buffer);
-			//m_pRendering->Present();
+			m_pRendering->Begin();
+			m_pRendering->DrawString(buffer);
+			m_pRendering->End();
+			m_pRendering->Present();
 		}
 
 		return 0;
@@ -44,6 +56,13 @@ protected:
 	int mouseXCoord;
 	char buffer[64];
 
-	~InputTestApp() {}
+	void Load()
+	{
+		PluginManager& pluginManager = PluginManager::Instance();
+		m_pInput  = static_cast<IKMInput*>(pluginManager.LoadDLL("DirectX Input DLL.dll"));
+		m_pRendering = static_cast<IRenderingPlugin*>(pluginManager.LoadDLL("DX9 Rendering.dll"));
+	}
+
+	virtual ~InputTestApp() {}
 
 };

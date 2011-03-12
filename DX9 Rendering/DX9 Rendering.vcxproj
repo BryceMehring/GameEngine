@@ -44,7 +44,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Bryce\Documents\Visual Studio 2010\Projects\Game Engine\Plugin Manager\Debug;C:\Users\Bryce\Documents\Visual Studio 2010\Projects\Game Engine\Game Engine\Debug;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -65,11 +65,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX9 plugin.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Plugin Manager\Plugin Manager.vcxproj">
-      <Project>{a7f61dc5-5a8a-46ff-83d3-1740ec8c5035}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
