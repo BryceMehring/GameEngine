@@ -25,6 +25,7 @@ public:
 
 	DECLARE_SINGLETON(PluginManager);
 
+	// more functions would go here as needed to work with the dlls...
 	HINSTANCE GetHINSTANCE() const;
 	HWND GetWindowHandle() const;
 
@@ -38,7 +39,7 @@ private:
 	PluginManager();
 	virtual ~PluginManager();
 
-	BEngine& m_engine;
+	IBaseEngine* m_pEngine;
 	std::vector<PluginInfo> m_plugins;
 	
 };

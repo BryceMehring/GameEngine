@@ -2,23 +2,22 @@
 
 #include "BEngine.h"
 #include "VertexStream.h"
+#include "Singleton.h"
 
-IMPL_SINGLETON(BEngine);
+IBaseEngine* g_pEngine = NULL;
 
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	BEngine* pEngine = BEngine::GetInstance();
-
 	// Don't start processing messages until the application has been created.
-	if(pEngine)
+	if(g_pEngine)
 	{
-		pEngine->MsgProc(msg, wParam, lParam);
+		g_pEngine->MsgProc(msg, wParam, lParam);
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
+IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption)
 {
 	// Default values
 	m_hInstance    = hInstance;
@@ -57,44 +56,24 @@ BEngine::BEngine(HINSTANCE hInstance,const string& winCaption)
 
 }
 
-BEngine::~BEngine()
+IBaseEngine::~IBaseEngine()
 {
 	
 }
 
-BEngine* BEngine::GetInstance()
-{
-	BEngine* pInstance = NULL;
-
-	if(s_pInstance)
-	{
-		pInstance = s_pInstance;
-	}
-
-	return pInstance;
-}
-
-void BEngine::Initialize(HINSTANCE hInstance,const string& winCaption)
-{
-	if(s_pInstance == NULL)
-	{
-		s_pInstance = new BEngine(hInstance,winCaption);
-	}
-}
-
-HINSTANCE BEngine::GetHINSTANCE() const
+HINSTANCE IBaseEngine::GetHINSTANCE() const
 {
 	return m_hInstance;
 }
 
-HWND BEngine::GetWindowHandle() const 
+HWND IBaseEngine::GetWindowHandle() const 
 { 
 	return m_hWindowHandle;
 }
 
 
 
-bool BEngine::Update()
+bool IBaseEngine::Update()
 {
 	static MSG msg;
 	static float dt = 0.01f;
@@ -120,11 +99,6 @@ bool BEngine::Update()
 			Sleep(20);
 			Update();
 		}
-		else
-		{
-			// clear the screen, get ready to render
-			Begin();
-		}
 	}
 
 	return true;
@@ -132,7 +106,7 @@ bool BEngine::Update()
 
 
 
-void BEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
+void IBaseEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 {
 	WNDCLASS wc;
 	wc.style         = CS_HREDRAW | CS_VREDRAW;
@@ -163,11 +137,10 @@ void BEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 }
 
 
-void BEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
+void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
 	switch( msg )
 	{
-
 		case WM_MOVE:
 		{
 			//RECT R;

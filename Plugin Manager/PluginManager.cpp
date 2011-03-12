@@ -7,8 +7,9 @@
 IMPL_SINGLETON(PluginManager);
 
 
-PluginManager::PluginManager() : m_engine(*(BEngine::GetInstance()))
+PluginManager::PluginManager() : m_pEngine(g_pEngine)
 {
+	m_pEngine->AddRef();
 	m_plugins.reserve(10);
 }
 
@@ -19,16 +20,17 @@ PluginManager::~PluginManager()
 		delete iter->pPlugin;
 		FreeLibrary(iter->mod);
 	}
+	m_pEngine->Release();
 }
 
 HINSTANCE PluginManager::GetHINSTANCE() const
 {
-	return m_engine.GetHINSTANCE();
+	return m_pEngine->GetHINSTANCE();
 }
 
 HWND PluginManager::GetWindowHandle() const
 {
-	return m_engine.GetWindowHandle();
+	return m_pEngine->GetWindowHandle();
 }
 
 IPlugin* PluginManager::LoadDLL(char* pDLL)
