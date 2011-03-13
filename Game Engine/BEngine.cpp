@@ -27,6 +27,7 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption)
 	// Default values
 	m_hInstance    = hInstance;
 	m_bPaused      = false;
+	m_fDT = m_fStartCount = m_fSecsPerCount = 0.0f;
 
 	// Initialize
 	try
@@ -39,7 +40,10 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption)
 		exit(0);
 	}
 
-	
+	// initialize timer 
+	__int64 cntsPerSec = 0;
+	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
+	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
 
 	// streams
 	/*m_p3Device->AddRef();
@@ -70,7 +74,20 @@ HWND IBaseEngine::GetWindowHandle() const
 	return m_hWindowHandle;
 }
 
+void IBaseEngine::StartCounter()
+{
+	__int64 prevTimeStamp = 0;
+	QueryPerformanceCounter((LARGE_INTEGER*)&prevTimeStamp);
 
+	m_fStartCount = prevTimeStamp;
+}
+
+void IBaseEngine::EndCounter()
+{
+	__int64 currTimeStamp = 0;
+	QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
+	m_fDT = (currTimeStamp - m_fStartCount)*m_fSecsPerCount;
+}
 
 bool IBaseEngine::Update()
 {
@@ -122,11 +139,13 @@ void IBaseEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaptio
 	if( !RegisterClass(&wc) ) { throw std::string("RegisterClass Failed"); }
 
 	// Default to a window with a client area rectangle of 800x600.
-
-	RECT R = {0, 0, 800, 600};
-	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
+	m_rect.left = 0;
+	m_rect.top = 0;
+	m_rect.right = 800;
+	m_rect.bottom = 600;
+	AdjustWindowRect(&m_rect, WS_OVERLAPPEDWINDOW, false);
 	m_hWindowHandle = CreateWindow("D3DWndClassName", winCaption.c_str(), 
-		WS_OVERLAPPEDWINDOW , 100, 100, R.right, R.bottom, 
+		WS_OVERLAPPEDWINDOW , 100, 100, m_rect.right, m_rect.bottom, 
 		0, 0, hInstance, 0); 
 
 	if( !m_hWindowHandle ) { throw std::string("RegisterClass Failed"); }
@@ -140,12 +159,9 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
 	switch( msg )
 	{
-		case WM_MOVE:
+		case WM_EXITSIZEMOVE:
 		{
-			//RECT R;
-
-			/*(GetWindowRect(g_pD3dApp->GetWindowHandle(),&R);
-			SetCursorPos(R.right / 2 + R.left / 2,R.bottom / 2 + R.top / 2);*/
+			//GetWindowRect(m_hWindowHandle,&m_rect);
 
 			break;
 		}
@@ -182,66 +198,71 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 	}
 }
 
+void IBaseEngine::LuaConsole(bool bOpen)
+{
+
+}
+
 void IBaseEngine::RedirectIOToConsole()
 {
 
-		int hConHandle;
+	int hConHandle;
 
-		long lStdHandle;
+	long lStdHandle;
 
-		CONSOLE_SCREEN_BUFFER_INFO coninfo;
+	CONSOLE_SCREEN_BUFFER_INFO coninfo;
 
-		FILE *fp;
+	FILE *fp;
 
-		// allocate a console for this app
+	// allocate a console for this app
 
-		AllocConsole();
+	AllocConsole();
 
-		// set the screen buffer to be big enough to let us scroll text
-		GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&coninfo);
-		coninfo.dwSize.Y = MAX_CONSOLE_LINES;
+	// set the screen buffer to be big enough to let us scroll text
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&coninfo);
+	coninfo.dwSize.Y = MAX_CONSOLE_LINES;
 
-		SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),coninfo.dwSize);
+	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),coninfo.dwSize);
 
-		// redirect unbuffered STDOUT to the console
-		lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+	// redirect unbuffered STDOUT to the console
+	lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
 
-		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 
-		fp = _fdopen( hConHandle, "w" );
+	fp = _fdopen( hConHandle, "w" );
 
-		*stdout = *fp;
+	*stdout = *fp;
 
-		setvbuf( stdout, NULL, _IONBF, 0 );
+	setvbuf( stdout, NULL, _IONBF, 0 );
 
-		// redirect unbuffered STDIN to the console
+	// redirect unbuffered STDIN to the console
 
-		lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+	lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
 
-		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 
-		fp = _fdopen( hConHandle, "r" );
+	fp = _fdopen( hConHandle, "r" );
 
-		*stdin = *fp;
+	*stdin = *fp;
 
-		setvbuf( stdin, NULL, _IONBF, 0 );
+	setvbuf( stdin, NULL, _IONBF, 0 );
 
-		// redirect unbuffered STDERR to the console
+	// redirect unbuffered STDERR to the console
 
-		lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+	lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
 
-		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 
-		fp = _fdopen( hConHandle, "w" );
+	fp = _fdopen( hConHandle, "w" );
 
-		*stderr = *fp;
+	*stderr = *fp;
 
-		setvbuf( stderr, NULL, _IONBF, 0 );
+	setvbuf( stderr, NULL, _IONBF, 0 );
 
-		// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
+	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
 
-		// point to console as well
+	// point to console as well
 
-		ios::sync_with_stdio();
+	ios::sync_with_stdio();
 
-	}
+}

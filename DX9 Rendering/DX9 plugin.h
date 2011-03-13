@@ -68,8 +68,8 @@ public:
 	virtual void Begin();
 	virtual void End();
 	virtual void Present();
-	virtual void DrawString(char* str);
-	virtual void DrawSprite();
+	virtual void DrawString(const char* str, const POINT& point, DWORD color);
+	//virtual void DrawSprite();
 
 protected:
 
@@ -94,10 +94,6 @@ protected:
 	IDirect3D9* m_pDirect3D;
 	ID3DXFont* m_pFont;
 	ID3DXSprite* m_pSprite;
-
-	float m_fDT;
-	float m_fStartCount;
-	float m_fSecsPerCount;
 
 	DWORD m_ClearBuffers;
 

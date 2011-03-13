@@ -34,12 +34,19 @@ protected:
 	HWND m_hWindowHandle;
 	HINSTANCE m_hInstance;
 
+	float m_fDT;
+	float m_fStartCount;
+	float m_fSecsPerCount;
+
+	RECT m_rect;
+
 	bool m_bPaused;
 
 	// ====== constructor/destructor ======
 	virtual ~IBaseEngine();
 
 	// ====== helper functions ======
+
 	/*bool Begin();
 	bool End();
 	void Present
@@ -48,9 +55,14 @@ protected:
 	void OnResetDevice();
 	*/
 
+	void StartCounter();
+	void EndCounter();
+
 	bool Update();
 
 	void RedirectIOToConsole();
+
+	void LuaConsole(bool bOpen);
 
 private:
 

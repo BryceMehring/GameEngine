@@ -23,6 +23,7 @@ public:
 	// DirectX's version of poll 
 	virtual void Poll();
 
+	virtual void MousePos(POINT&);
 	virtual bool KeyDown(char Key);
 	virtual bool MouseClick(int Button);
 
@@ -49,7 +50,7 @@ private:
 	// Mouse
 	IDirectInputDevice8* m_pMouse;
 	DIMOUSESTATE2 m_MouseState;
-	D3DXVECTOR3 m_Pos; 
+	POINT m_MousePos;
 
 	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager&);
 };

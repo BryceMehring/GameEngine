@@ -29,6 +29,8 @@ DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr)
 	m_pMouse->SetDataFormat(&c_dfDIMouse2);
 	m_pMouse->SetCooperativeLevel(m_mgr.GetWindowHandle(),DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 	m_pMouse->Acquire();
+
+	m_MousePos.x = m_MousePos.y = 0;
 }
 
 
@@ -70,6 +72,19 @@ void DirectInput::Poll()
 		ZeroMemory(&m_MouseState,sizeof(m_MouseState));
 		m_pMouse->Acquire();
 	}
+
+	RECT rect;
+	GetWindowRect(m_mgr.GetWindowHandle(),&rect);
+
+	GetCursorPos(&m_MousePos);
+
+	m_MousePos.x -= rect.left;
+	m_MousePos.y -= rect.top;
+}
+
+void DirectInput::MousePos(POINT& pos)
+{
+	pos = m_MousePos;
 }
 
 bool DirectInput::KeyDown(char Key)

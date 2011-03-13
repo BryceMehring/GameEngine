@@ -16,15 +16,6 @@ DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref)
 	m_pDirect3D = NULL;
 	m_pFont = NULL;
 
-	m_fDT = 0;
-	m_fStartCount = 0;
-	m_fSecsPerCount = 0;
-
-	// initialize timer 
-	__int64 cntsPerSec = 0;
-	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
-	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
-
 	ZeroMemory(&m_D3DParameters,sizeof(D3DPRESENT_PARAMETERS));
 	m_ClearBuffers = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
 
@@ -95,15 +86,15 @@ void DX9Render::InitializeDirectX()
 		&m_p3Device);      // return created device
 }
 
-void DX9Render::DrawString(char* str)
+void DX9Render::DrawString(const char* str, const POINT& point, DWORD color)
 {
-	RECT r = {0,0,40,40};
-	m_pFont->DrawText(0,str,-1,&r,DT_NOCLIP,0xffffffff);
+	RECT r = {point.x,point.y,point.x+20,point.y+20};
+	m_pFont->DrawText(0,str,-1,&r,DT_NOCLIP,color);
 }
-void DX9Render::DrawSprite()
+/*void DX9Render::DrawSprite()
 {
 	m_pSprite->Begin(0);
-}
+}*/
 
 /*void BEngine::CloneMesh(ID3DXMesh* pMesh, ID3DXMesh** ppClonedMesh , DWORD options)
 {
@@ -187,20 +178,11 @@ void DX9Render::Begin()
 	{
 		m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
 		m_p3Device->BeginScene();
-
-		__int64 prevTimeStamp = 0;
-		QueryPerformanceCounter((LARGE_INTEGER*)&prevTimeStamp);
-
-		m_fStartCount = prevTimeStamp;
 	}
 }
 
 void DX9Render::End()
 {
-	__int64 currTimeStamp = 0;
-	QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
-	m_fDT = (currTimeStamp - m_fStartCount)*m_fSecsPerCount;
-
 	m_p3Device->EndScene();
 }
 
