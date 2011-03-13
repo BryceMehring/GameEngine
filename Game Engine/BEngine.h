@@ -51,7 +51,6 @@ protected:
 	bool Update();
 
 	void RedirectIOToConsole();
-	
 
 private:
 

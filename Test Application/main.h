@@ -35,7 +35,9 @@ public:
 
 			if(m_pInput->MouseClick(0))
 			{
-				wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",mouseXCoord,mouseYCoord);
+				POINT p;
+				GetCursorPos (&p);
+				wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",p.x,p.y);
 			}
 
 			m_pRendering->Begin();

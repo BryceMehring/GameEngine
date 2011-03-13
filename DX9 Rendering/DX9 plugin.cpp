@@ -100,6 +100,10 @@ void DX9Render::DrawString(char* str)
 	RECT r = {0,0,40,40};
 	m_pFont->DrawText(0,str,-1,&r,DT_NOCLIP,0xffffffff);
 }
+void DX9Render::DrawSprite()
+{
+	m_pSprite->Begin(0);
+}
 
 /*void BEngine::CloneMesh(ID3DXMesh* pMesh, ID3DXMesh** ppClonedMesh , DWORD options)
 {

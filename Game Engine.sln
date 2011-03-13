@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test Application", "Test Ap
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX9 Rendering", "DX9 Rendering\DX9 Rendering.vcxproj", "{E6819AFA-F62D-475D-B362-97F44ED44035}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "User Interface", "User Interface\User Interface.vcxproj", "{6076769E-5B55-47EF-B320-36FBD770C195}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -41,6 +43,10 @@ Global
 		{E6819AFA-F62D-475D-B362-97F44ED44035}.Debug|Win32.Build.0 = Debug|Win32
 		{E6819AFA-F62D-475D-B362-97F44ED44035}.Release|Win32.ActiveCfg = Release|Win32
 		{E6819AFA-F62D-475D-B362-97F44ED44035}.Release|Win32.Build.0 = Release|Win32
+		{6076769E-5B55-47EF-B320-36FBD770C195}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6076769E-5B55-47EF-B320-36FBD770C195}.Debug|Win32.Build.0 = Debug|Win32
+		{6076769E-5B55-47EF-B320-36FBD770C195}.Release|Win32.ActiveCfg = Release|Win32
+		{6076769E-5B55-47EF-B320-36FBD770C195}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

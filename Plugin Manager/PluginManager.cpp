@@ -34,6 +34,11 @@ HWND PluginManager::GetWindowHandle() const
 	return m_pEngine->GetWindowHandle();
 }
 
+IPlugin* PluginManager::GetPlugin(unsigned int index)
+{
+	return (index >= 0) ? m_plugins[index].pPlugin : NULL;
+}
+
 IPlugin* PluginManager::LoadDLL(char* pDLL)
 {
 	PluginInfo dll;
