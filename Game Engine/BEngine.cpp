@@ -6,10 +6,22 @@
 
 #include <io.h>
 #include <fcntl.h>
+#include <lua.h>
+#include <iostream>
 
 #define MAX_CONSOLE_LINES 500
 
 IBaseEngine* g_pEngine = NULL;
+
+DWORD WINAPI LuaConsoleInput(void* parameter)
+{
+	static char buffer[256];
+
+	cin.clear();
+	std::cin.getline(buffer,256,';');
+
+	return 0;
+}
 
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -44,6 +56,14 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption)
 	__int64 cntsPerSec = 0;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
 	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
+
+	RedirectIOToConsole();
+
+	m_hConsole = GetConsoleWindow();
+	ShowWindow( m_hConsole, SW_HIDE );
+
+	// Create Thread
+	m_luaConsole = CreateThread(NULL,NULL,LuaConsoleInput,NULL,CREATE_SUSPENDED,NULL);
 
 	// streams
 	/*m_p3Device->AddRef();
@@ -200,8 +220,18 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 
 void IBaseEngine::LuaConsole(bool bOpen)
 {
-
+	if(bOpen)
+	{
+		ResumeThread(m_luaConsole);
+		ShowWindow( m_hConsole, SW_SHOW );
+	}
+	else
+	{
+		ShowWindow( m_hConsole, SW_HIDE );
+		SuspendThread(m_luaConsole);
+	}
 }
+
 
 void IBaseEngine::RedirectIOToConsole()
 {

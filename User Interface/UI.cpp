@@ -2,8 +2,6 @@
 
 IMPL_SINGLETON(UIManager);
 
-const float CHECK_BOX_TIMER = 0.3f;
-
 // static variable definitions
 IKMInput* CheckBox::s_pInput = 0;
 IRenderingPlugin* CheckBox::s_pRenderer = 0;
@@ -16,25 +14,34 @@ CheckBox::CheckBox(const CheckBoxData& data) : m_data(data)
 
 void CheckBox::Update(float dt)
 {
-	this->m_data.m_time -= dt;
+	static bool bNoClick = false;
 
-	if(s_pInput->MouseClick(0))
+	if(bNoClick)
 	{
-		if(m_data.m_time < 0)
+		if(s_pInput->MouseClick(0) == false)
 		{
-			//m_data.m_time = 0;
-			POINT mousePos;
-			s_pInput->MousePos(mousePos);
+			bNoClick = false;
+		}
+	}
 
-			if((mousePos.x >= m_data.m_pos[0].x) && (mousePos.x <= m_data.m_pos[1].x))
+	if(s_pInput->MouseClick(0) && !bNoClick)
+	{
+		//m_data.m_time = 0;
+		POINT mousePos;
+		s_pInput->MousePos(mousePos);
+
+		// check if the box was clicked
+		if((mousePos.x >= m_data.m_pos[0].x) && (mousePos.x <= m_data.m_pos[1].x))
+		{
+			if((mousePos.y >= m_data.m_pos[0].y) && (mousePos.y <= m_data.m_pos[1].y))
 			{
-				if((mousePos.y >= m_data.m_pos[0].y) && (mousePos.y <= m_data.m_pos[1].y))
-				{
-					m_data.m_checked = !m_data.m_checked;
-					m_data.m_time = CHECK_BOX_TIMER;
+				m_data.m_checked = !m_data.m_checked;
 
-					(g_pEngine->*m_data.m_Callback)(m_data.m_checked);
-				}
+				// do not come back in here until the user is not clicking
+				bNoClick = true;
+				
+				// Call callback function
+				//(g_pEngine->*m_data.m_Callback)(m_data.m_checked);
 			}
 		}
 	}
@@ -47,14 +54,19 @@ bool CheckBox::IsChecked() const
 
 void CheckBox::Draw() const
 {
-	if(m_data.m_checked)
+	DWORD color;
+
+	switch(m_data.m_checked)
 	{
-		s_pRenderer->DrawString(m_data.m_str.c_str(),m_data.m_pos[0],D3DCOLOR_XRGB(0,255,0));
+	case true:
+		color = D3DCOLOR_XRGB(0,255,0);
+		break;
+	case false:
+		color = D3DCOLOR_XRGB(255,255,255);
+		break;
 	}
-	else
-	{
-		s_pRenderer->DrawString(m_data.m_str.c_str(),m_data.m_pos[0],D3DCOLOR_XRGB(255,255,255));
-	}
+
+	s_pRenderer->DrawString(m_data.m_str.c_str(),m_data.m_pos[0],color);
 
 	// need to implement DrawString to draw at a pos on the screen
 	//s_pRenderer->DrawString(m_data.m_str.c_str());

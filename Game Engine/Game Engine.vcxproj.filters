@@ -1,40 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{fd772f83-888b-425b-9864-0c4e5d428f7b}</UniqueIdentifier>
-      <Extensions>cpp;h</Extensions>
+    <Filter Include="Lua">
+      <UniqueIdentifier>{62370b19-dcc9-4856-a50b-5d7031d80060}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Plugin Manager">
+      <UniqueIdentifier>{68309a82-812c-49a4-9e10-c10004de0047}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="User Interface">
+      <UniqueIdentifier>{4256542b-eb53-495a-a743-a06fdf7f0905}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
       <UniqueIdentifier>{13a448d8-8ba7-48fb-ae29-66a9078c5725}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{023931b9-2f26-429e-83ea-763e42e6d275}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="LuaMachine.cpp">
+      <Filter>Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaScript.cpp">
+      <Filter>Lua</Filter>
+    </ClCompile>
     <ClCompile Include="BEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VertexStream.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VertexStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mtrl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StdAfx.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Lighting.fx">
-      <Filter>Shaders</Filter>
-    </None>
+    <ClInclude Include="LuaThis.h">
+      <Filter>Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaScript.h">
+      <Filter>Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaMachine.h">
+      <Filter>Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaRestoreStack.h">
+      <Filter>Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="BEngine.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

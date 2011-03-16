@@ -55,16 +55,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BEngine.cpp" />
-    <ClCompile Include="VertexStream.cpp" />
+    <ClCompile Include="LuaMachine.cpp" />
+    <ClCompile Include="LuaScript.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BEngine.h" />
-    <ClInclude Include="Mtrl.h" />
+    <ClInclude Include="LuaMachine.h" />
+    <ClInclude Include="LuaRestoreStack.h" />
+    <ClInclude Include="LuaScript.h" />
+    <ClInclude Include="LuaThis.h" />
     <ClInclude Include="StdAfx.h" />
-    <ClInclude Include="VertexStream.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Lighting.fx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

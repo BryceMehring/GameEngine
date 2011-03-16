@@ -31,9 +31,15 @@ public:
 protected:
 
 	// ====== data members ======
+	
+	// win32 window
 	HWND m_hWindowHandle;
 	HINSTANCE m_hInstance;
 
+	// console window
+	HANDLE m_luaConsole; // console thread
+	HWND m_hConsole; // console window
+	
 	float m_fDT;
 	float m_fStartCount;
 	float m_fSecsPerCount;

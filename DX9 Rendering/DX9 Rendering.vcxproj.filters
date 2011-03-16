@@ -14,10 +14,22 @@
     <ClInclude Include="DX9 plugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Game Engine\VertexStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Game Engine\Mtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX9 plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Game Engine\VertexStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Game Engine\Lighting.fx" />
   </ItemGroup>
 </Project>

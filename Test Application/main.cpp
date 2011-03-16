@@ -14,16 +14,9 @@ int InputTestApp::Run()
 {
 	Load();
 
-	/*RedirectIOToConsole();
-
-	char Buffer[256];
-	std::cin.getline(Buffer,256,'}');
-	system("cls");*/
-
+	// Fill out the CheckBoxData structure
 	CheckBoxData checkBox1;
 	checkBox1.m_checked = false;
-	checkBox1.m_checked = true;
-	checkBox1.m_time = 0;
 	checkBox1.m_Callback = &InputTestApp::LuaConsole;
 		
 	checkBox1.m_pos[0].x = 200;

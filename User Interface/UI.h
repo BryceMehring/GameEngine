@@ -5,8 +5,7 @@
 
 #include "PluginManager.h"
 #include "Singleton.h"
-
-extern const float CHECK_BOX_TIMER;
+#include "LuaScript.h"
 
 /*
 
@@ -23,7 +22,6 @@ struct CheckBoxData
 {
 	bool m_checked;
 	POINT m_pos[2];
-	float m_time;
 	std::string m_str;
 	FUNCT m_Callback;
 };
@@ -56,7 +54,7 @@ private:
 };
 
 // Single UI manager
-class UIManager
+class UIManager : public LuaScript
 {
 public:
 
@@ -65,6 +63,26 @@ public:
 	// to manipulate the UI
 
 	DECLARE_SINGLETON(UIManager);
+
+	// When the script calls a class method, this is called
+	virtual int ScriptCalling (LuaMachine& vm, int iFunctionNumber)
+	{
+		lua_State* pState = (lua_State*)vm;
+
+		switch(iFunctionNumber - this->m_ib)
+		{
+		case 1:
+			AddCheckBox();
+			break;
+		}
+
+	}
+   
+	// When the script function has returns
+	virtual void HandleReturns (LuaMachine& vm, const char *strFunc)
+	{
+
+	}
 
 	unsigned int AddCheckBox(const CheckBoxData& data);
 

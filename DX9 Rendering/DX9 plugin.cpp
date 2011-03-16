@@ -69,7 +69,7 @@ void DX9Render::InitializeDirectX()
 	m_D3DParameters.AutoDepthStencilFormat     = D3DFMT_D24S8;
 	m_D3DParameters.Flags                      = 0;
 	m_D3DParameters.FullScreen_RefreshRateInHz = 0;
-	m_D3DParameters.PresentationInterval       = D3DPRESENT_INTERVAL_IMMEDIATE;//D3DPRESENT_INTERVAL_IMMEDIATE, D3DPRESENT_INTERVAL_DEFAULT
+	m_D3DParameters.PresentationInterval       = D3DPRESENT_INTERVAL_DEFAULT;//D3DPRESENT_INTERVAL_IMMEDIATE, D3DPRESENT_INTERVAL_DEFAULT
 
 	HRESULT hPass = m_pDirect3D->CheckDeviceType(D3DADAPTER_DEFAULT,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,D3DFMT_X8R8G8B8,false);
 

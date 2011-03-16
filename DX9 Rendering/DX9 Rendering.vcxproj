@@ -61,10 +61,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Game Engine\Mtrl.h" />
+    <ClInclude Include="..\Game Engine\VertexStream.h" />
     <ClInclude Include="DX9 plugin.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Game Engine\VertexStream.cpp" />
     <ClCompile Include="DX9 plugin.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Game Engine\Lighting.fx">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
