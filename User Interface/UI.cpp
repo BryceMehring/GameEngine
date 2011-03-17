@@ -1,7 +1,5 @@
 #include "UI.h"
 
-IMPL_SINGLETON(UIManager);
-
 // static variable definitions
 IKMInput* CheckBox::s_pInput = 0;
 IRenderingPlugin* CheckBox::s_pRenderer = 0;
@@ -73,7 +71,7 @@ void CheckBox::Draw() const
 }
 
 // UIManager
-UIManager::UIManager()
+UIManager::UIManager(LuaMachine& vm) : LuaScript(vm)
 {
 	PluginManager& plugManager = PluginManager::Instance();
 	CheckBox::s_pInput = (IKMInput*)plugManager.GetPlugin(0);
@@ -81,10 +79,11 @@ UIManager::UIManager()
 }
 UIManager::~UIManager() {}
 
-unsigned int UIManager::AddCheckBox(const CheckBoxData& data)
+unsigned int UIManager::AddCheckBox(LuaMachine& vm)
 {
-	m_checkBoxes.push_back(data);
-	return m_checkBoxes.size() - 1;
+	//m_checkBoxes.push_back(data);
+	//return m_checkBoxes.size() - 1;
+	return 0;
 }
 
 bool UIManager::IsChecked(unsigned int index) const

@@ -7,15 +7,20 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 }
 InputTestApp::~InputTestApp()
 {
-	UIManager::Delete();
+	
 }
 
 int InputTestApp::Run()
 {
 	Load();
 
+	LuaMachine vm;
+	UIManager* pUI = new UIManager(vm);
+
+	pUI->CompileFile("CheckBoxScript");
+
 	// Fill out the CheckBoxData structure
-	CheckBoxData checkBox1;
+	/*CheckBoxData checkBox1;
 	checkBox1.m_checked = false;
 	checkBox1.m_Callback = &InputTestApp::LuaConsole;
 		
@@ -25,21 +30,18 @@ int InputTestApp::Run()
 	checkBox1.m_pos[1].x = 300;
 	checkBox1.m_pos[1].y = 300;
 
-	checkBox1.m_str = "Open Lua Console";
-
-	UIManager& ui = UIManager::Instance();
-	ui.AddCheckBox(checkBox1);
+	checkBox1.m_str = "Open Lua Console";*/
 
 	while(Update())
 	{
 		StartCounter();
 		m_pInput->Poll();
 
-		ui.Update(this->m_fDT);
-
+		pUI->Update(this->m_fDT);
+	
 		m_pRendering->Begin();
 			
-		ui.Render();
+		pUI->Render();
 		/*if(m_pInput->MouseClick(0))
 		{
 			POINT p;

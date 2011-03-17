@@ -26,6 +26,12 @@ struct CheckBoxData
 	FUNCT m_Callback;
 };
 
+static int NewCheckBoxData(lua_State *L)
+{
+	CheckBoxData* pData = (CheckBoxData*)lua_newuserdata(L,sizeof(CheckBoxData));
+	return 1;
+}
+
 // forward class declaration needed for friend access.
 class UIManager;
 
@@ -62,19 +68,18 @@ public:
 	// support more items in the future. Lua scripting should be added 
 	// to manipulate the UI
 
-	DECLARE_SINGLETON(UIManager);
+	UIManager(LuaMachine& vm);
+	~UIManager();
+	
+	void InitalizeScript(LuaMachine& vm)
+	{
+		m_iMethodBase = RegisterFunction ("AddCheckBox");
+	}
 
 	// When the script calls a class method, this is called
 	virtual int ScriptCalling (LuaMachine& vm, int iFunctionNumber)
 	{
-		lua_State* pState = (lua_State*)vm;
-
-		switch(iFunctionNumber - this->m_ib)
-		{
-		case 1:
-			AddCheckBox();
-			break;
-		}
+		return 0;
 
 	}
    
@@ -84,7 +89,7 @@ public:
 
 	}
 
-	unsigned int AddCheckBox(const CheckBoxData& data);
+	unsigned int AddCheckBox(LuaMachine& vm);
 
 	bool IsChecked(unsigned int index) const;
 
@@ -93,8 +98,7 @@ public:
 
 private:
 
-	UIManager();
-	~UIManager();
+	int m_iMethodBase;
 
 	std::vector<CheckBox> m_checkBoxes;
 

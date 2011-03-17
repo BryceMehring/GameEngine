@@ -42,5 +42,8 @@
     <ClInclude Include="BEngine.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="LuaConsole.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

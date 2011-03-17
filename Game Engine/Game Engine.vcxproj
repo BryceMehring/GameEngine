@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BEngine.h" />
+    <ClInclude Include="LuaConsole.h" />
     <ClInclude Include="LuaMachine.h" />
     <ClInclude Include="LuaRestoreStack.h" />
     <ClInclude Include="LuaScript.h" />
