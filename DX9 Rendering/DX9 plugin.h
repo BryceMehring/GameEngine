@@ -6,8 +6,6 @@
 
 #define PLUGIN_EXPORTS
 #include "PluginManager.h"
-#include <d3dx9.h>
-#include <d3d9.h>
 
 /*enum EEffect
 {

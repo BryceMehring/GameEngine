@@ -1,5 +1,27 @@
 
 #include "main.h"
+#include "AngelScript.h"
+#include "scriptstdstring.h"
+#include "scriptbuilder.h"
+#include <assert.h>
+
+#pragma comment(lib,"AngelScript.lib")
+
+void print(const string& str)
+{
+	printf(str.c_str());
+}
+
+// Implement a simple message callback function
+void MessageCallback(const asSMessageInfo *msg, void *param)
+{
+  const char *type = "ERR ";
+  if( msg->type == asMSGTYPE_WARNING ) 
+    type = "WARN";
+  else if( msg->type == asMSGTYPE_INFORMATION ) 
+    type = "INFO";
+  printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
+}
 
 InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBaseEngine(hInstance,winCaption)
 {
@@ -13,11 +35,29 @@ InputTestApp::~InputTestApp()
 int InputTestApp::Run()
 {
 	Load();
+	int r;
 
-	LuaMachine vm;
-	UIManager* pUI = new UIManager(vm);
+	asIScriptEngine *engine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
+	RegisterStdString(engine);
 
-	pUI->CompileFile("CheckBoxScript");
+	r = engine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); 
+	r = engine->RegisterGlobalFunction("void print(const string& in)", asFUNCTION(print), asCALL_CDECL);
+
+	CScriptBuilder builder;
+	r = builder.StartNewModule(engine,"TestModule"); 
+	r = builder.AddSectionFromFile("Test.as"); 
+	r = builder.BuildModule();
+
+	asIScriptModule* pMod = engine->GetModule("TestModule");
+	int id = pMod->GetFunctionIdByDecl("void main()");
+
+	// Create our context, prepare it, and then execute
+	asIScriptContext *ctx = engine->CreateContext();
+	r = ctx->Prepare(id);
+	r = ctx->Execute();
+
+	ctx->Release();
+	engine->Release();
 
 	// Fill out the CheckBoxData structure
 	/*CheckBoxData checkBox1;
@@ -35,14 +75,14 @@ int InputTestApp::Run()
 	while(Update())
 	{
 		StartCounter();
-		m_pInput->Poll();
+		/*m_pInput->Poll();
 
 		pUI->Update(this->m_fDT);
 	
 		m_pRendering->Begin();
 			
 		pUI->Render();
-		/*if(m_pInput->MouseClick(0))
+		if(m_pInput->MouseClick(0))
 		{
 			POINT p;
 			m_pInput->MousePos(p);

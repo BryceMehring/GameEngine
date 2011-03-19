@@ -1,9 +1,10 @@
 
+#include "stdafx.h"
 #include "DX9 plugin.h"
 
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
-#pragma comment(lib,"Plugin Manager.lib")
+#pragma comment(lib,"Game Engine.lib")
 
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 {

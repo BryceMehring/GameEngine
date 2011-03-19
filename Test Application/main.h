@@ -6,7 +6,7 @@
 #include "UI.h"
 #include <iostream>
 
-#pragma comment(lib,"User Interface.lib")
+#pragma comment(lib,"Game Engine.lib")
 
 class InputTestApp : public IBaseEngine
 {

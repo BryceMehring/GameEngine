@@ -1,9 +1,9 @@
-
 #include "BInput.h"
+#include "BEngine.h"
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
-#pragma comment(lib,"Plugin Manager.lib")
+#pragma comment(lib,"Game Engine.lib")
 
 // Input plug-in implementation
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)

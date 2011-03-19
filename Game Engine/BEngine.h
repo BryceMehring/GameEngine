@@ -1,11 +1,10 @@
 
 #pragma once
-#include "StdAfx.h"
 
 #include "Interfaces.h"
+#include <Windows.h>
 
 using namespace std;
-using namespace stdext;
 
 
 // ************************

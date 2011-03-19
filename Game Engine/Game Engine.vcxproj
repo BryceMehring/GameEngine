@@ -55,17 +55,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BEngine.cpp" />
-    <ClCompile Include="LuaMachine.cpp" />
-    <ClCompile Include="LuaScript.cpp" />
+    <ClCompile Include="PluginManager.cpp" />
+    <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BEngine.h" />
-    <ClInclude Include="LuaConsole.h" />
-    <ClInclude Include="LuaMachine.h" />
-    <ClInclude Include="LuaRestoreStack.h" />
-    <ClInclude Include="LuaScript.h" />
-    <ClInclude Include="LuaThis.h" />
+    <ClInclude Include="PluginManager.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="UI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

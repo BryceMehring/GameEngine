@@ -4,11 +4,6 @@
 #include "VertexStream.h"
 #include "Singleton.h"
 
-#include <io.h>
-#include <fcntl.h>
-#include <lua.h>
-#include <iostream>
-
 #define MAX_CONSOLE_LINES 500
 
 IBaseEngine* g_pEngine = NULL;
@@ -59,14 +54,14 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption)
 
 	RedirectIOToConsole();
 
-	m_hConsole = GetConsoleWindow();
+	/*m_hConsole = GetConsoleWindow();
 	ShowWindow( m_hConsole, SW_HIDE );
 
 	// Create Thread
 	m_luaConsole = CreateThread(NULL,NULL,LuaConsoleInput,NULL,CREATE_SUSPENDED,NULL);
 
 	// streams
-	/*m_p3Device->AddRef();
+	m_p3Device->AddRef();
 	InitializeVertexStreams(m_p3Device);*/ // might not need to be a global function
 
 	// Create pool to share parameters
@@ -220,7 +215,7 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 
 void IBaseEngine::LuaConsole(bool bOpen)
 {
-	if(bOpen)
+	/*if(bOpen)
 	{
 		ResumeThread(m_luaConsole);
 		ShowWindow( m_hConsole, SW_SHOW );
@@ -229,7 +224,7 @@ void IBaseEngine::LuaConsole(bool bOpen)
 	{
 		ShowWindow( m_hConsole, SW_HIDE );
 		SuspendThread(m_luaConsole);
-	}
+	}*/
 }
 
 

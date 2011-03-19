@@ -5,18 +5,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game Engine", "Game Engine\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectX Input DLL", "DirectX Input DLL\DirectX Input DLL.vcxproj", "{3852E544-DBED-4930-847F-989DDBED5DC7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Plugin Manager", "Plugin Manager\Plugin Manager.vcxproj", "{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test Application", "Test Application\Test Application.vcxproj", "{C4A62CD5-27F0-4490-B864-CC6498A1EB2D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3852E544-DBED-4930-847F-989DDBED5DC7} = {3852E544-DBED-4930-847F-989DDBED5DC7}
-		{6076769E-5B55-47EF-B320-36FBD770C195} = {6076769E-5B55-47EF-B320-36FBD770C195}
 		{E6819AFA-F62D-475D-B362-97F44ED44035} = {E6819AFA-F62D-475D-B362-97F44ED44035}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX9 Rendering", "DX9 Rendering\DX9 Rendering.vcxproj", "{E6819AFA-F62D-475D-B362-97F44ED44035}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "User Interface", "User Interface\User Interface.vcxproj", "{6076769E-5B55-47EF-B320-36FBD770C195}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
@@ -36,10 +31,6 @@ Global
 		{3852E544-DBED-4930-847F-989DDBED5DC7}.Debug|Win32.Build.0 = Debug|Win32
 		{3852E544-DBED-4930-847F-989DDBED5DC7}.Release|Win32.ActiveCfg = Release|Win32
 		{3852E544-DBED-4930-847F-989DDBED5DC7}.Release|Win32.Build.0 = Release|Win32
-		{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}.Debug|Win32.ActiveCfg = Debug|Win32
-		{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}.Debug|Win32.Build.0 = Debug|Win32
-		{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}.Release|Win32.ActiveCfg = Release|Win32
-		{A7F61DC5-5A8A-46FF-83D3-1740EC8C5035}.Release|Win32.Build.0 = Release|Win32
 		{C4A62CD5-27F0-4490-B864-CC6498A1EB2D}.Debug|Win32.ActiveCfg = Debug|Win32
 		{C4A62CD5-27F0-4490-B864-CC6498A1EB2D}.Debug|Win32.Build.0 = Debug|Win32
 		{C4A62CD5-27F0-4490-B864-CC6498A1EB2D}.Release|Win32.ActiveCfg = Release|Win32
@@ -48,10 +39,6 @@ Global
 		{E6819AFA-F62D-475D-B362-97F44ED44035}.Debug|Win32.Build.0 = Debug|Win32
 		{E6819AFA-F62D-475D-B362-97F44ED44035}.Release|Win32.ActiveCfg = Release|Win32
 		{E6819AFA-F62D-475D-B362-97F44ED44035}.Release|Win32.Build.0 = Release|Win32
-		{6076769E-5B55-47EF-B320-36FBD770C195}.Debug|Win32.ActiveCfg = Debug|Win32
-		{6076769E-5B55-47EF-B320-36FBD770C195}.Debug|Win32.Build.0 = Debug|Win32
-		{6076769E-5B55-47EF-B320-36FBD770C195}.Release|Win32.ActiveCfg = Release|Win32
-		{6076769E-5B55-47EF-B320-36FBD770C195}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

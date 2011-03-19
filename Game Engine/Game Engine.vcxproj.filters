@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Lua">
-      <UniqueIdentifier>{62370b19-dcc9-4856-a50b-5d7031d80060}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Plugin Manager">
       <UniqueIdentifier>{68309a82-812c-49a4-9e10-c10004de0047}</UniqueIdentifier>
     </Filter>
@@ -15,35 +12,26 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LuaMachine.cpp">
-      <Filter>Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="LuaScript.cpp">
-      <Filter>Lua</Filter>
-    </ClCompile>
     <ClCompile Include="BEngine.cpp">
       <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginManager.cpp">
+      <Filter>Plugin Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="UI.cpp">
+      <Filter>User Interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h" />
-    <ClInclude Include="LuaThis.h">
-      <Filter>Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="LuaScript.h">
-      <Filter>Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="LuaMachine.h">
-      <Filter>Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="LuaRestoreStack.h">
-      <Filter>Lua</Filter>
-    </ClInclude>
     <ClInclude Include="BEngine.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="LuaConsole.h">
-      <Filter>Engine</Filter>
+    <ClInclude Include="PluginManager.h">
+      <Filter>Plugin Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="UI.h">
+      <Filter>User Interface</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
