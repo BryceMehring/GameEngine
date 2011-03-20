@@ -3,8 +3,6 @@
 #include "StdAfx.h"
 #include "UI.h"
 
-IMPL_SINGLETON(UIManager);
-
 // static variable definitions
 IKMInput* CheckBox::s_pInput = 0;
 IRenderingPlugin* CheckBox::s_pRenderer = 0;
@@ -42,9 +40,10 @@ void CheckBox::Update(float dt)
 
 				// do not come back in here until the user is not clicking
 				bNoClick = true;
-				
+
 				// Call callback function
-				(g_pEngine->*m_data.m_Callback)(m_data.m_checked);
+				IBaseEngine* pEngine = IBaseEngine::Instance();
+				(pEngine->*m_data.m_Callback)(m_data.m_checked);
 			}
 		}
 	}
@@ -78,9 +77,9 @@ void CheckBox::Draw() const
 // UIManager
 UIManager::UIManager()
 {
-	PluginManager& plugManager = PluginManager::Instance();
-	CheckBox::s_pInput = (IKMInput*)plugManager.GetPlugin(0);
-	CheckBox::s_pRenderer = (IRenderingPlugin*)plugManager.GetPlugin(1);
+	PluginManager* pPlugManager = PluginManager::Instance();
+	CheckBox::s_pInput = (IKMInput*)pPlugManager->GetPlugin(0);
+	CheckBox::s_pRenderer = (IRenderingPlugin*)pPlugManager->GetPlugin(1);
 }
 UIManager::~UIManager() {}
 

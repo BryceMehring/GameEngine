@@ -10,6 +10,9 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{13a448d8-8ba7-48fb-ae29-66a9078c5725}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AngelScript">
+      <UniqueIdentifier>{fe32e262-ab10-46bc-bcb3-6fcc7e5a4880}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BEngine.cpp">
@@ -20,6 +23,9 @@
     </ClCompile>
     <ClCompile Include="UI.cpp">
       <Filter>User Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="asVM.cpp">
+      <Filter>AngelScript</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +38,9 @@
     </ClInclude>
     <ClInclude Include="UI.h">
       <Filter>User Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="asVM.h">
+      <Filter>AngelScript</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

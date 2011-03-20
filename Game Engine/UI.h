@@ -53,7 +53,7 @@ private:
 };
 
 // Single UI manager
-class UIManager
+class UIManager : public Singleton<UIManager>
 {
 public:
 
@@ -61,7 +61,7 @@ public:
 	// support more items in the future. Lua scripting should be added 
 	// to manipulate the UI
 
-	DECLARE_SINGLETON(UIManager);
+	friend class Singleton<UIManager>;
 
 	unsigned int AddCheckBox(const CheckBoxData& data);
 

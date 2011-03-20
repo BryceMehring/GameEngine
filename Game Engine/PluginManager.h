@@ -12,7 +12,7 @@ struct PluginInfo
 	HMODULE mod;
 };
 
-class PluginManager
+class PluginManager : public Singleton<PluginManager>
 {
 public:
 
@@ -20,8 +20,6 @@ public:
 	   This class manages all of the dll plugins. It will load and unload them when needed.
 	   This class is also a singleton because it needs global access.
 	*/
-
-	DECLARE_SINGLETON(PluginManager);
 
 	// more functions would go here as needed to work with the dlls...
 	HINSTANCE GetHINSTANCE() const;
@@ -39,5 +37,7 @@ private:
 
 	IBaseEngine* m_pEngine;
 	std::vector<PluginInfo> m_plugins;
+
+	friend class Singleton<PluginManager>;
 	
 };

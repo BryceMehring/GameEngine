@@ -7,11 +7,8 @@
 
 #pragma comment(lib,"Game Engine.lib")
 
-IMPL_SINGLETON(PluginManager);
-
-PluginManager::PluginManager() : m_pEngine(g_pEngine)
+PluginManager::PluginManager() : m_pEngine(IBaseEngine::Instance())
 {
-	m_pEngine->AddRef();
 	m_plugins.reserve(10);
 }
 
@@ -22,7 +19,7 @@ PluginManager::~PluginManager()
 		delete iter->pPlugin;
 		FreeLibrary(iter->mod);
 	}
-	m_pEngine->Release();
+	m_pEngine = NULL;
 }
 
 HINSTANCE PluginManager::GetHINSTANCE() const

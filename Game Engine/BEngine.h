@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Interfaces.h"
+#include "Singleton.h"
 #include <Windows.h>
 
 using namespace std;
@@ -13,12 +14,24 @@ using namespace std;
 // Then this class would load the dll's dynamically and be the leader of the game without knowing its implementation details.
 // ***********************
 
-class IBaseEngine : public RefCounting
+class IBaseEngine
 {
 public:
 
-	// Initializes Windows
-	IBaseEngine(HINSTANCE hInstance,const string& winCaption);
+	static IBaseEngine* Instance();
+
+	template< class T >
+	static void Initialize(HINSTANCE hInstance,const string& winCaption)
+	{
+		// If there is no instance
+		if(s_pInstance == NULL)
+		{
+			// create an instance
+			new T(hInstance,winCaption);
+		}
+	}
+
+	static void Delete();
 
 	void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
 
@@ -30,6 +43,8 @@ public:
 protected:
 
 	// ====== data members ======
+
+	static IBaseEngine* s_pInstance;
 	
 	// win32 window
 	HWND m_hWindowHandle;
@@ -44,6 +59,7 @@ protected:
 	bool m_bPaused;
 
 	// ====== constructor/destructor ======
+	IBaseEngine(HINSTANCE hInstance,const string& winCaption);
 	virtual ~IBaseEngine();
 
 	// ====== helper functions ======
@@ -63,15 +79,15 @@ protected:
 
 	void RedirectIOToConsole();
 
-	void LuaConsole(bool bOpen);
+	// Initialize AngelScript
+	void InitializeAngelScript();
+	void ScriptingConsole(bool bOpen);
 
 private:
 
 	void InitializeWindows(HINSTANCE hInstance, const string& winCaption);
 
 };
-
-extern IBaseEngine* g_pEngine;
 
 
 

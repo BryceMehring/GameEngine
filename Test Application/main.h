@@ -12,8 +12,6 @@ class InputTestApp : public IBaseEngine
 {
 public:
 
-	InputTestApp(HINSTANCE hInstance,const string& winCaption);
-
 	virtual int Run();
 
 protected:
@@ -23,8 +21,12 @@ protected:
 
 	char buffer[64];
 
-	void Load();
+	void LoadDLLS();
 
+	// constructor/destructor
+	InputTestApp(HINSTANCE hInstance,const string& winCaption);
 	virtual ~InputTestApp();
+
+	friend class IBaseEngine;
 
 };

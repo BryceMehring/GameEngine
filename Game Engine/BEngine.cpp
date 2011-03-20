@@ -6,7 +6,7 @@
 
 #define MAX_CONSOLE_LINES 500
 
-IBaseEngine* g_pEngine = NULL;
+IBaseEngine* IBaseEngine::s_pInstance = NULL;
 
 DWORD WINAPI LuaConsoleInput(void* parameter)
 {
@@ -20,26 +20,30 @@ DWORD WINAPI LuaConsoleInput(void* parameter)
 
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	IBaseEngine* pEngine = IBaseEngine::Instance();
+	
 	// Don't start processing messages until the application has been created.
-	if(g_pEngine)
+	if(pEngine)
 	{
-		g_pEngine->MsgProc(msg, wParam, lParam);
+		pEngine->MsgProc(msg, wParam, lParam);
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption)
+IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInstance(hInstance)
 {
+	s_pInstance = this;
+
 	// Default values
-	m_hInstance    = hInstance;
-	m_bPaused      = false;
+	m_hWindowHandle = NULL;
 	m_fDT = m_fStartCount = m_fSecsPerCount = 0.0f;
+	m_bPaused      = false;
 
 	// Initialize
 	try
 	{
-		InitializeWindows(m_hInstance,winCaption);
+		InitializeWindows(hInstance,winCaption);
 	}
 	catch(string error)
 	{
@@ -77,6 +81,17 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption)
 IBaseEngine::~IBaseEngine()
 {
 	
+}
+
+IBaseEngine* IBaseEngine::Instance()
+{
+	return s_pInstance;
+}
+
+void IBaseEngine::Delete()
+{
+	delete s_pInstance;
+	s_pInstance = NULL;
 }
 
 HINSTANCE IBaseEngine::GetHINSTANCE() const
@@ -213,7 +228,12 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 	}
 }
 
-void IBaseEngine::LuaConsole(bool bOpen)
+void IBaseEngine::InitializeAngelScript()
+{
+
+}
+
+void IBaseEngine::ScriptingConsole(bool bOpen)
 {
 	/*if(bOpen)
 	{

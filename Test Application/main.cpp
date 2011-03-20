@@ -7,41 +7,26 @@
 
 #pragma comment(lib,"AngelScript.lib")
 
-void print(const string& str)
-{
-	printf(str.c_str());
-}
 
-// Implement a simple message callback function
-void MessageCallback(const asSMessageInfo *msg, void *param)
+void print(int data)
 {
-  const char *type = "ERR ";
-  if( msg->type == asMSGTYPE_WARNING ) 
-    type = "WARN";
-  else if( msg->type == asMSGTYPE_INFORMATION ) 
-    type = "INFO";
-  printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
+	cout<<data<<endl;
 }
 
 InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBaseEngine(hInstance,winCaption)
 {
+	m_pInput = NULL;
+	m_pRendering = NULL;
 	ZeroMemory(buffer,32);
-}
-InputTestApp::~InputTestApp()
-{
-	
-}
 
-int InputTestApp::Run()
-{
-	Load();
+	LoadDLLS();
+
+	/*Load();
 	int r;
 
-	asIScriptEngine *engine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
-	RegisterStdString(engine);
+	asIScriptEngine *engine = 
 
-	r = engine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL); 
-	r = engine->RegisterGlobalFunction("void print(const string& in)", asFUNCTION(print), asCALL_CDECL);
+	r = engine->RegisterGlobalFunction("int Test(int)", asFUNCTION(print), asCALL_CDECL);
 
 	CScriptBuilder builder;
 	r = builder.StartNewModule(engine,"TestModule"); 
@@ -71,11 +56,19 @@ int InputTestApp::Run()
 	checkBox1.m_pos[1].y = 300;
 
 	checkBox1.m_str = "Open Lua Console";*/
+}
+InputTestApp::~InputTestApp()
+{
+	
+}
 
+int InputTestApp::Run()
+{
+	UIManager* pUI = UIManager::Instance();
 	while(Update())
 	{
 		StartCounter();
-		/*m_pInput->Poll();
+		m_pInput->Poll();
 
 		pUI->Update(this->m_fDT);
 	
@@ -87,8 +80,8 @@ int InputTestApp::Run()
 			POINT p;
 			m_pInput->MousePos(p);
 			wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",p.x,p.y);
-			m_pRendering->DrawString(buffer);
-		}*/
+			m_pRendering->DrawString(buffer,p,0xffffffff);
+		}
 
 		m_pRendering->End();
 		m_pRendering->Present();
@@ -98,11 +91,11 @@ int InputTestApp::Run()
 	return 0;
 }
 
-void InputTestApp::Load()
+void InputTestApp::LoadDLLS()
 {
-	PluginManager& pluginManager = PluginManager::Instance();
-	m_pInput  = static_cast<IKMInput*>(pluginManager.LoadDLL("DirectX Input DLL.dll"));
-	m_pRendering = static_cast<IRenderingPlugin*>(pluginManager.LoadDLL("DX9 Rendering.dll"));
+	PluginManager* pPluginManager = PluginManager::Instance();
+	m_pInput  = static_cast<IKMInput*>(pPluginManager->LoadDLL("DirectX Input DLL.dll"));
+	m_pRendering = static_cast<IRenderingPlugin*>(pPluginManager->LoadDLL("DX9 Rendering.dll"));
 }
 
 
@@ -114,12 +107,13 @@ void InputTestApp::Load()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	// I want to put all of this Initialization into a dll
-	g_pEngine = new InputTestApp(hInstance,"Lua Console");
+	IBaseEngine::Initialize<InputTestApp>(hInstance,"AngelScript Console");
+	IBaseEngine* pEngine = InputTestApp::Instance();
 
-	int returnCode = g_pEngine->Run();
+	int returnCode = pEngine->Run();
 
 	PluginManager::Delete();
-	g_pEngine->Release();
+	IBaseEngine::Delete();
 
 	return returnCode;
 }
