@@ -3,6 +3,7 @@
 #include "BEngine.h"
 #include "VertexStream.h"
 #include "Singleton.h"
+#include "asVM.h"
 
 #define MAX_CONSOLE_LINES 500
 
@@ -57,6 +58,8 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInst
 	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
 
 	RedirectIOToConsole();
+
+	asVM* pVM = asVM::Instance();
 
 	/*m_hConsole = GetConsoleWindow();
 	ShowWindow( m_hConsole, SW_HIDE );

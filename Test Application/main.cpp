@@ -3,15 +3,9 @@
 #include "AngelScript.h"
 #include "scriptstdstring.h"
 #include "scriptbuilder.h"
+#include "asVM.h"
 #include <assert.h>
 
-#pragma comment(lib,"AngelScript.lib")
-
-
-void print(int data)
-{
-	cout<<data<<endl;
-}
 
 InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBaseEngine(hInstance,winCaption)
 {
@@ -20,6 +14,11 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 	ZeroMemory(buffer,32);
 
 	LoadDLLS();
+
+	asVM* pVM = asVM::Instance();
+	pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
+	pVM->ExecuteScript(0);
+
 
 	/*Load();
 	int r;
@@ -59,7 +58,7 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 }
 InputTestApp::~InputTestApp()
 {
-	
+	asVM::Delete();
 }
 
 int InputTestApp::Run()
@@ -103,7 +102,6 @@ void InputTestApp::LoadDLLS()
 // instance into a dll, it appears null. I need to check this out more...
 
 // the current fix gets rid of using a singleton and uses Reference Counting.
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	// I want to put all of this Initialization into a dll

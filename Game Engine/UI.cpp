@@ -2,6 +2,7 @@
 
 #include "StdAfx.h"
 #include "UI.h"
+#include "asVM.h"
 
 // static variable definitions
 IKMInput* CheckBox::s_pInput = 0;
@@ -113,4 +114,16 @@ void UIManager::Render() const
 	{
 		m_checkBoxes[i].Draw();
 	}
+}
+
+void UIManager::RegisterWithScript()
+{
+	// Register Script with UI 
+	asVM* pVM = asVM::Instance();
+	asIScriptEngine* pEngine = (asIScriptEngine*)pVM;
+
+	// only register the type, no factory functions because this class is a singleton
+	pEngine->RegisterObjectType("UIManager",sizeof(UIManager),asOBJ_REF);
+	pEngine->RegisterObjectMethod("object", "UIManager@ UIManagerInstance()", asMETHODPR(UIManager,UIManager::Instance,(void),UIManager*), asCALL_THISCALL);
+	pEngine->RegisterObjectMethod("mytype","unsigned int AddCheckBox(const CheckBoxData& in)",asMETHOD(UIManager,AddCheckBox),asCALL_THISCALL );
 }

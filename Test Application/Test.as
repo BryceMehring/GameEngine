@@ -1,4 +1,4 @@
-class Int
+/*class Int
 {
 
 	Int(int a)
@@ -25,16 +25,37 @@ int Test(int data)
 	}
 
 	return iReturn;
+}*/
+
+class TestObject
+{
+	TestObject(int a, int b)
+	{
+		m_total = a * b;
+	}
+
+	int GetTotal() { return m_total; }
+
+	int m_total;
+	
 }
+
+
 
 void main()
 {
-	Int myInt1(10);
+	//Int myInt1(10);
 
 	//myInt1.Display();
+	for(int i = 0; i < 5000; ++i)
+	{
+		TestObject a1(i,i+1);
+		Print(a1.GetTotal());
 
-	Print(Test(10));
+	}
+
 
 	//print(i++);
 }
+
   

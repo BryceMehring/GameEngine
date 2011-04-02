@@ -75,6 +75,8 @@ private:
 	UIManager();
 	~UIManager();
 
+	void RegisterWithScript();
+
 	std::vector<CheckBox> m_checkBoxes;
 
 };

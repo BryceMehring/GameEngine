@@ -11,21 +11,35 @@
 #pragma once
 
 #include <angelscript.h>
+#include <map>
+#include <vector>
 #include "scriptbuilder.h"
 #include "singleton.h"
 
+// Internal structure for holding contents
+struct Script;
+
+// There is only one instance of this class because there needs to be only
+// one asIScriptEngine* instance.
 class asVM : public Singleton<asVM>
 {
 public:
 
-	void ExecuteScript(const char* name);
+	//
+	void ExecuteScript(unsigned int id);
 
-	void BuildScriptFromFile(const char* file, const char* name);
-	void BuildScriptFromMemory();
+	void RegisterScript(const char* file);
+
+	unsigned int BuildScriptFromFile(const char* file);
+	unsigned int BuildScriptFromMemory();
+
+	// access to the asIScriptEngine
+	asIScriptEngine* GetScriptEngine() const;
 
 private:
 
 	asIScriptEngine* m_pEngine;
+	std::vector<Script> m_scripts;
 	CScriptBuilder m_builder;
 
 	asVM();
@@ -35,4 +49,4 @@ private:
 
 };
 
-#endif
+#endif // _ASMANAGER_
