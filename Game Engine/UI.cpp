@@ -123,7 +123,7 @@ void UIManager::RegisterWithScript()
 	asIScriptEngine* pEngine = (asIScriptEngine*)pVM;
 
 	// only register the type, no factory functions because this class is a singleton
-	pEngine->RegisterObjectType("UIManager",sizeof(UIManager),asOBJ_REF);
-	pEngine->RegisterObjectMethod("object", "UIManager@ UIManagerInstance()", asMETHODPR(UIManager,UIManager::Instance,(void),UIManager*), asCALL_THISCALL);
-	pEngine->RegisterObjectMethod("mytype","unsigned int AddCheckBox(const CheckBoxData& in)",asMETHOD(UIManager,AddCheckBox),asCALL_THISCALL );
+	//pEngine->RegisterObjectType("UIManager",sizeof(UIManager),asOBJ_REF);
+	//pEngine->RegisterObjectMethod("object", "UIManager@ UIManagerInstance()", asMETHODPR(UIManager,UIManager::Instance,(void),UIManager*), asCALL_THISCALL);
+	//pEngine->RegisterObjectMethod("mytype","unsigned int AddCheckBox(const CheckBoxData& in)",asMETHOD(UIManager,AddCheckBox),asCALL_THISCALL );
 }

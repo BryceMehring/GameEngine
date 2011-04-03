@@ -49,6 +49,10 @@ protected:
 	// win32 window
 	HWND m_hWindowHandle;
 	HINSTANCE m_hInstance;
+
+	// Scripting Console
+	HWND m_hConsole;
+	HANDLE m_ConsoleThread;
 	
 	float m_fDT;
 	float m_fStartCount;
@@ -86,6 +90,7 @@ protected:
 private:
 
 	void InitializeWindows(HINSTANCE hInstance, const string& winCaption);
+	void ConfigureScriptingConsole();
 
 };
 

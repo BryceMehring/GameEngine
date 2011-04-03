@@ -30,8 +30,10 @@ public:
 
 	void RegisterScript(const char* file);
 
-	unsigned int BuildScriptFromFile(const char* file);
-	unsigned int BuildScriptFromMemory();
+	unsigned int BuildScriptFromFile(const char*);
+	unsigned int BuildScriptFromMemory(const char*);
+
+	//unsigned int 
 
 	// access to the asIScriptEngine
 	asIScriptEngine* GetScriptEngine() const;
@@ -44,6 +46,9 @@ private:
 
 	asVM();
 	~asVM();
+
+	// helper functions
+	unsigned int AddScript();
 	
 	friend class Singleton<asVM>;
 

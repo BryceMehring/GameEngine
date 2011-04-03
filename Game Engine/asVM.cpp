@@ -53,6 +53,11 @@ asVM::asVM()
 }
 asVM::~asVM()
 {
+	for(int i = 0; i < m_scripts.size(); ++i)
+	{
+		m_scripts[i].pCtx->Release();
+	}
+
 	m_pEngine->Release();
 }
 
@@ -124,10 +129,27 @@ unsigned int asVM::BuildScriptFromFile(const char* file)
 	  return -1;
 	}
 
+	return AddScript();
+
+
+}
+unsigned int asVM::BuildScriptFromMemory(const char* buffer)
+{
+	m_builder.StartNewModule(m_pEngine,"TestModule");
+	m_builder.AddSectionFromMemory(buffer);
+	m_builder.BuildModule();
+
+	return AddScript();
+}
+
+unsigned int asVM::AddScript()
+{
+	// temp structure to fill out and add to the vector of scripts
 	Script script;
 
 	asIScriptModule* pMod = m_pEngine->GetModule("TestModule");
 
+	// fill structure
 	script.id = pMod->GetFunctionIdByDecl("void main()");
 	script.pCtx = m_pEngine->CreateContext();
 

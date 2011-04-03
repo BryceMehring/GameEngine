@@ -15,9 +15,9 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 
 	LoadDLLS();
 
-	asVM* pVM = asVM::Instance();
-	pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
-	pVM->ExecuteScript(0);
+	//asVM* pVM = asVM::Instance();
+	//pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
+	//pVM->ExecuteScript(0);
 
 
 	/*Load();
@@ -68,6 +68,11 @@ int InputTestApp::Run()
 	{
 		StartCounter();
 		m_pInput->Poll();
+
+		if(m_pInput->KeyDown(0x1C)) // Enter
+		{
+			ScriptingConsole(true);
+		}
 
 		pUI->Update(this->m_fDT);
 	
