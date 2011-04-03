@@ -56,12 +56,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="asConsole.cpp" />
     <ClCompile Include="asVM.cpp" />
     <ClCompile Include="BEngine.cpp" />
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="asConsole.h" />
     <ClInclude Include="asVM.h" />
     <ClInclude Include="BEngine.h" />
     <ClInclude Include="PluginManager.h" />

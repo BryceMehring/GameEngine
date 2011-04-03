@@ -16,6 +16,10 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 	LoadDLLS();
 
 	//asVM* pVM = asVM::Instance();
+
+	//pVM->RegisterScript("Config.txt");
+
+	//asVM* pVM = asVM::Instance();
 	//pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
 	//pVM->ExecuteScript(0);
 
@@ -71,7 +75,7 @@ int InputTestApp::Run()
 
 		if(m_pInput->KeyDown(0x1C)) // Enter
 		{
-			ScriptingConsole(true);
+			//ScriptingConsole(true);
 		}
 
 		pUI->Update(this->m_fDT);

@@ -27,6 +27,9 @@
     <ClCompile Include="asVM.cpp">
       <Filter>AngelScript</Filter>
     </ClCompile>
+    <ClCompile Include="asConsole.cpp">
+      <Filter>AngelScript</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h" />
@@ -40,6 +43,9 @@
       <Filter>User Interface</Filter>
     </ClInclude>
     <ClInclude Include="asVM.h">
+      <Filter>AngelScript</Filter>
+    </ClInclude>
+    <ClInclude Include="asConsole.h">
       <Filter>AngelScript</Filter>
     </ClInclude>
   </ItemGroup>

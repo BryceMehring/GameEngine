@@ -9,8 +9,16 @@ using namespace std;
 
 #pragma comment(lib,"AngelScript.lib")
 
-struct Script
+class Script
 {
+public:
+
+	Script() : id(0), pCtx(NULL) {}
+	//~Script() { pCtx->Release(); }
+
+	// copy constructor
+	//Script(const Script& s) { pCtx->AddRef(); }
+
 	int id;
 	asIScriptContext* pCtx;
 };
@@ -33,6 +41,7 @@ void MessageCallback(const asSMessageInfo *msg, void *param)
 	system("pause");
 }
 
+
 void print(int data)
 {
 	cout<<data<<endl;
@@ -48,17 +57,22 @@ asVM::asVM()
 
 	r = m_pEngine->SetMessageCallback(asFUNCTION(MessageCallback),0,asCALL_CDECL); assert( r >= 0 );
 
-	r = m_pEngine->RegisterGlobalFunction("void Print(int)",asFUNCTIONPR(print, (int), void), asCALL_CDECL); assert( r >= 0 );
+	r = m_pEngine->RegisterGlobalFunction("void Print(int)",asFUNCTION(0), asCALL_GENERIC); assert( r >= 0 );
+	//r = m_pEngine->RegisterGlobalFunction("void Print(int)",asFUNCTIONPR(print, (int), void), asCALL_CDECL); assert( r >= 0 );
 
 }
 asVM::~asVM()
 {
-	for(int i = 0; i < m_scripts.size(); ++i)
-	{
-		m_scripts[i].pCtx->Release();
-	}
-
 	m_pEngine->Release();
+}
+
+void asVM::RemoveScript(unsigned int id)
+{
+	// Release Context
+	m_scripts[id].pCtx->Release();
+
+	// Remove from vector
+	m_scripts.erase(m_scripts.begin() + id);
 }
 
 asIScriptEngine* asVM::GetScriptEngine() const
@@ -73,27 +87,10 @@ void asVM::ExecuteScript(unsigned int i)
 	assert(i < m_scripts.size());
 
 	asIScriptContext* ptx = m_scripts[i].pCtx;
-	r = ptx->Prepare(m_scripts[i].id);
-	assert( r >= 0 );
+
+	r = ptx->Prepare(m_scripts[i].id); assert( r >= 0 );
 	r = ptx->Execute(); assert( r >= 0 );
-
 	r = ptx->Unprepare(); assert( r >= 0 );
-}
-
-void asVM::RegisterScript(const char* file)
-{
-	fstream inStream;
-	inStream.open(file,ios::in);
-
-	inStream.peek();
-
-	if(inStream)
-	{
-		int length = 0;
-		asETokenClass token = m_pEngine->ParseToken(file,0,&length);
-
-		inStream.close();
-	}
 }
 
 unsigned int asVM::BuildScriptFromFile(const char* file)
@@ -140,6 +137,23 @@ unsigned int asVM::BuildScriptFromMemory(const char* buffer)
 	m_builder.BuildModule();
 
 	return AddScript();
+}
+
+asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& pos)
+{
+	int len;
+	asETokenClass t = m_pEngine->ParseToken(&text[pos], text.length() - pos, &len);
+	while( (t == asTC_WHITESPACE || t == asTC_COMMENT) && pos < text.length() )
+	{
+		pos += len;
+		t = m_pEngine->ParseToken(&text[pos], text.length() - pos, &len);
+	}
+
+	token.assign(&text[pos], len);
+
+	pos += len;
+
+	return t;
 }
 
 unsigned int asVM::AddScript()

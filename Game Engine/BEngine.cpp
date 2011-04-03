@@ -4,37 +4,11 @@
 #include "VertexStream.h"
 #include "Singleton.h"
 #include "asVM.h"
+#include "asConsole.h"
 
 #define MAX_CONSOLE_LINES 500
 
 IBaseEngine* IBaseEngine::s_pInstance = NULL;
-
-DWORD WINAPI ConsoleInput(void* parameter)
-{
-	// buffer that we will interpret
-	
-
-	cin.clear();
-	system("cls");
-
-	asVM* pVM = asVM::Instance();
-
-	for(;;)
-	{
-		char buffer[1024];
-
-		cout<<"Scripting Console. "<<endl<<"Enter Script: "<<endl;
-		std::cin.getline(buffer,256,'!');
-
-		cout<<"Output: "<<endl;
-
-		unsigned int id = pVM->BuildScriptFromMemory(buffer);
-		pVM->ExecuteScript(id);
-
-	}
-
-	return 0;
-}
 
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -75,9 +49,10 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInst
 	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
 
 	RedirectIOToConsole();
-	ConfigureScriptingConsole();
 
-	ScriptingConsole(false);
+	asConsole* pConsole = asConsole::Instance();
+	pConsole->Open();
+
 }
 
 IBaseEngine::~IBaseEngine()
@@ -230,26 +205,6 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 	}
 }
 
-void IBaseEngine::InitializeAngelScript()
-{
-
-}
-
-void IBaseEngine::ScriptingConsole(bool bOpen)
-{
-	if(bOpen)
-	{
-		ResumeThread(m_ConsoleThread);
-		ShowWindow( m_hConsole, SW_SHOW );
-	}
-	else
-	{
-		ShowWindow( m_hConsole, SW_HIDE );
-		SuspendThread(m_ConsoleThread);
-	}
-}
-
-
 void IBaseEngine::RedirectIOToConsole()
 {
 
@@ -311,29 +266,5 @@ void IBaseEngine::RedirectIOToConsole()
 	// point to console as well
 
 	ios::sync_with_stdio();
-
-}
-
-void IBaseEngine::ConfigureScriptingConsole()
-{
-	//asVM* pVM = asVM::Instance();
-
-	m_hConsole = GetConsoleWindow();
-	ShowWindow( m_hConsole, SW_HIDE );
-
-	// Create Thread
-	m_ConsoleThread = CreateThread(NULL,NULL,ConsoleInput,NULL,CREATE_SUSPENDED,NULL);
-
-	// streams
-	//m_p3Device->AddRef();
-	//InitializeVertexStreams(m_p3Device); // might not need to be a global function
-
-	// Create pool to share parameters
-	//D3DXCreateEffectPool(&m_pEffectPool);
-
-	// Camera initialize 
-	/*BCamera& cam = BCamera::Instance();
-	cam.BuildProjectMatrix(m_D3DParameters.BackBufferHeight,m_D3DParameters.BackBufferHeight);
-	cam.BuildViewMatrix(D3DXVECTOR3(3,3,3));*/
 
 }
