@@ -50,8 +50,8 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInst
 
 	RedirectIOToConsole();
 
-	asConsole* pConsole = asConsole::Instance();
-	pConsole->Open();
+	//asConsole* pConsole = asConsole::Instance();
+	//pConsole->Open();
 
 }
 
@@ -177,14 +177,14 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 		// We pause the game when the main window is deactivated and 
 		// un pause it when it becomes active.
 		case WM_ACTIVATE:
-			if( LOWORD(wParam) == WA_INACTIVE )
+			/*if( LOWORD(wParam) == WA_INACTIVE )
 			{
 				m_bPaused = true;
 			}
 			else
 			{
 				m_bPaused = false;
-			}
+			}*/
 			break;
 
 		// WM_CLOSE is sent when the user presses the 'X' button in the

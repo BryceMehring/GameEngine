@@ -16,16 +16,23 @@ public:
 
 protected:
 
+	// constructor/destructor
+	InputTestApp(HINSTANCE hInstance,const string& winCaption);
+	virtual ~InputTestApp();
+
+	// ===== data members =====
+
 	IKMInput* m_pInput;
 	IRenderingPlugin* m_pRendering;
 
 	char buffer[64];
 
+	// ===== helper functions =====
+
 	void LoadDLLS();
 
-	// constructor/destructor
-	InputTestApp(HINSTANCE hInstance,const string& winCaption);
-	virtual ~InputTestApp();
+
+	// ===== friends =====
 
 	friend class IBaseEngine;
 

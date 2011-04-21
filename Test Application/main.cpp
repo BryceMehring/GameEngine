@@ -1,3 +1,4 @@
+#define DEBUG
 
 #include "main.h"
 #include "AngelScript.h"
@@ -5,6 +6,27 @@
 #include "scriptbuilder.h"
 #include "asVM.h"
 #include <assert.h>
+
+// And then, as we go up in recursion, we display the rest of the numbers
+template< int n >
+struct LoopClass
+{
+	static void Loop()
+	{
+		LoopClass<n-1>::Loop();
+		cout<<n<<" ";
+	}
+};
+
+// This Loop gets called first
+template<>
+struct LoopClass<1>
+{
+	static void Loop()
+	{
+		cout<<"1 ";
+	}
+};
 
 
 InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBaseEngine(hInstance,winCaption)
@@ -16,12 +38,14 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 	LoadDLLS();
 
 	//asVM* pVM = asVM::Instance();
+	//pVM->Test();
 
 	//pVM->RegisterScript("Config.txt");
 
-	//asVM* pVM = asVM::Instance();
-	//pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
-	//pVM->ExecuteScript(0);
+	asVM* pVM = asVM::Instance();
+	unsigned int id = pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
+	pVM->ExecuteScript(id);
+	pVM->ExecuteScript(id);
 
 
 	/*Load();
@@ -64,6 +88,11 @@ InputTestApp::~InputTestApp()
 {
 	asVM::Delete();
 }
+
+/*void InputTestApp::Open(bool b)
+{
+
+}*/
 
 int InputTestApp::Run()
 {
@@ -113,6 +142,7 @@ void InputTestApp::LoadDLLS()
 // the current fix gets rid of using a singleton and uses Reference Counting.
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+
 	// I want to put all of this Initialization into a dll
 	IBaseEngine::Initialize<InputTestApp>(hInstance,"AngelScript Console");
 	IBaseEngine* pEngine = InputTestApp::Instance();

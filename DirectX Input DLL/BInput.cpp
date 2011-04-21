@@ -73,6 +73,7 @@ void DirectInput::Poll()
 		m_pMouse->Acquire();
 	}
 
+	// mouse coords relative to the window
 	RECT rect;
 	GetWindowRect(m_mgr.GetWindowHandle(),&rect);
 

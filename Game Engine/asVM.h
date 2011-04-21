@@ -15,6 +15,22 @@
 #include "scriptbuilder.h"
 #include "singleton.h"
 
+#ifndef DBAS
+#define DBAS(f) \
+{ \
+	int r = f; \
+	assert( r >= 0 ); \
+}
+#endif
+
+class IScripted
+{
+public:
+
+	virtual void RegisterScript() = 0;
+
+};
+
 // Internal structure for holding contents
 struct Script;
 
@@ -29,18 +45,25 @@ public:
 	// Registers objects with the script. The application then must
 	// Provide these functions for the script to work. I need to look into
 	// this more...
-	void RegisterScript(const char* file);
+	//void RegisterScript(const char* file);
+
+	//void AddFunction(std::string& str);
 
 	// Returned int is the id to the script
 	// Build script and then add to vector
-	unsigned int BuildScriptFromFile(const char*);
-	unsigned int BuildScriptFromMemory(const char*);
+	unsigned int BuildScriptFromFile(const char* str);
 
 	// Release script, then remove from vector
 	void RemoveScript(unsigned int id);
 
+	// returns a token from the input string from the script engine
+	asETokenClass GetToken(std::string& token, const std::string& text, unsigned int& pos);
+	
 	// access to the asIScriptEngine
 	asIScriptEngine* GetScriptEngine() const;
+
+	// debugging
+	void Test();
 
 private:
 
@@ -58,10 +81,11 @@ private:
 	// the destructor releases all script contexts and then releases the engine
 	~asVM();
 
-	// helper functions
-	unsigned int AddScript();
-	asETokenClass GetToken(std::string& token, const std::string& text, unsigned int& pos);
+	// ===== helper functions =====
+
+	void RegisterFunctions();
 	
+	// friends
 	friend class Singleton<asVM>;
 
 };

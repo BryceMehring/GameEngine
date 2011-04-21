@@ -8,6 +8,7 @@
 using namespace std;
 
 #pragma comment(lib,"AngelScript.lib")
+#pragma comment(lib,"AngelScriptAddons.lib")
 
 class Script
 {
@@ -41,29 +42,51 @@ void MessageCallback(const asSMessageInfo *msg, void *param)
 	system("pause");
 }
 
-
-void print(int data)
+// The global functions that the script calls
+void print(const string& d)
 {
-	cout<<data<<endl;
+	cout<<d;
+}
+void print(int d)
+{
+	cout<<d;
+}
+void print(double d)
+{
+	cout<<d;
 }
 
 
 asVM::asVM()
 {
-	int r;
-
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
+
 	RegisterStdString(m_pEngine);
-
-	r = m_pEngine->SetMessageCallback(asFUNCTION(MessageCallback),0,asCALL_CDECL); assert( r >= 0 );
-
-	r = m_pEngine->RegisterGlobalFunction("void Print(int)",asFUNCTION(0), asCALL_GENERIC); assert( r >= 0 );
-	//r = m_pEngine->RegisterGlobalFunction("void Print(int)",asFUNCTIONPR(print, (int), void), asCALL_CDECL); assert( r >= 0 );
+	RegisterFunctions();
 
 }
 asVM::~asVM()
 {
 	m_pEngine->Release();
+}
+
+unsigned int asVM::BuildScriptFromFile(const char* str)
+{
+	DBAS(m_builder.AddSectionFromFile(str));
+	DBAS(m_builder.BuildModule());
+
+	asIScriptModule* pMod = m_pEngine->GetModule("Application");
+
+	// fill structure
+	Script s;
+	s.id = pMod->GetFunctionIdByDecl("void main()");
+	s.pCtx = m_pEngine->CreateContext();
+
+	// add script
+	m_scripts.push_back(s);
+
+	// return index
+	return (m_scripts.size() - 1);
 }
 
 void asVM::RemoveScript(unsigned int id)
@@ -77,67 +100,21 @@ void asVM::RemoveScript(unsigned int id)
 
 asIScriptEngine* asVM::GetScriptEngine() const
 {
-	return this->m_pEngine;
+	m_pEngine->AddRef();
+	return m_pEngine;
 }
 
 void asVM::ExecuteScript(unsigned int i)
 {
-	int r;
-
 	assert(i < m_scripts.size());
 
 	asIScriptContext* ptx = m_scripts[i].pCtx;
 
-	r = ptx->Prepare(m_scripts[i].id); assert( r >= 0 );
-	r = ptx->Execute(); assert( r >= 0 );
-	r = ptx->Unprepare(); assert( r >= 0 );
+	DBAS(ptx->Prepare(m_scripts[i].id));
+	DBAS(ptx->Execute());
+	DBAS(ptx->Unprepare());
 }
 
-unsigned int asVM::BuildScriptFromFile(const char* file)
-{
-	int r;
-
-	r = m_builder.StartNewModule(m_pEngine,"TestModule");
-	if( r < 0 ) 
-	{
-	  // If the code fails here it is usually because there
-	  // is no more memory to allocate the module
-	  printf("Unrecoverable error while starting a new module.\n");
-	  system("pause");
-	  return -1;
-	}
-	r = m_builder.AddSectionFromFile(file);
-	if( r < 0 )
-	{
-	  // The builder wasn't able to load the file. Maybe the file
-	  // has been removed, or the wrong name was given, or some
-	  // preprocessing commands are incorrectly written.
-	  printf("Please correct the errors in the script and try again.\n");
-	  system("pause");
-	  return -1;
-	}
-	r = m_builder.BuildModule(); 
-	if( r < 0 )
-	{
-	  // An error occurred. Instruct the script writer to fix the 
-	  // compilation errors that were listed in the output stream.
-	  printf("Please correct the errors in the script and try again.\n");
-	  system("pause");
-	  return -1;
-	}
-
-	return AddScript();
-
-
-}
-unsigned int asVM::BuildScriptFromMemory(const char* buffer)
-{
-	m_builder.StartNewModule(m_pEngine,"TestModule");
-	m_builder.AddSectionFromMemory(buffer);
-	m_builder.BuildModule();
-
-	return AddScript();
-}
 
 asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& pos)
 {
@@ -156,18 +133,41 @@ asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& po
 	return t;
 }
 
-unsigned int asVM::AddScript()
+/*void asVM::AddFunction(string& arg)
 {
-	// temp structure to fill out and add to the vector of scripts
-	Script script;
+	asIScriptModule* mod = m_pEngine->GetModule("console", asGM_CREATE_IF_NOT_EXISTS);
 
-	asIScriptModule* pMod = m_pEngine->GetModule("TestModule");
+	asIScriptFunction* func = 0;
+	int r = mod->CompileFunction("addfunc", arg.c_str(), 0, asCOMP_ADD_TO_MODULE, &func);
+	if( r < 0 )
+	{
+		// TODO: Add better description of error (invalid declaration, name conflict, etc)
+		cout << "Failed to add function. " << endl;
+	}
+	else
+	{
+		cout <<"Function added. " << endl;
+	}
 
-	// fill structure
-	script.id = pMod->GetFunctionIdByDecl("void main()");
-	script.pCtx = m_pEngine->CreateContext();
+	// We must release the function object
+	if( func )
+	{
+		func->Release();
+	}
+}*/
 
-	m_scripts.push_back(script);
+void asVM::RegisterFunctions()
+{
+	DBAS(m_pEngine->SetMessageCallback(asFUNCTION(MessageCallback),0,asCALL_CDECL));
+	//DBAS(m_pEngine->RegisterGlobalFunction("void print(int)",asFUNCTIONPR(print,(int),void), asCALL_CDECL));
+	DBAS(m_pEngine->RegisterGlobalFunction("void print(const string& in)",asFUNCTIONPR(print,(const string&),void),asCALL_CDECL));
+	//DBAS(m_pEngine->RegisterGlobalFunction("void print(double)",asFUNCTIONPR(print,(double),void),asCALL_CDECL));
+	//DBAS(m_pEngine->RegisterObjectType("ui",0,asOBJ_REF));
+	DBAS(m_builder.StartNewModule(m_pEngine,"Application"));
+}
 
-	return (m_scripts.size() - 1);
+void asVM::Test()
+{
+	
+
 }

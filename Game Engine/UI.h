@@ -26,7 +26,7 @@ struct CheckBoxData
 };
 
 // forward class declaration needed for friend access.
-class UIManager;
+//class UIManager;
 
 class CheckBox
 {
@@ -53,7 +53,7 @@ private:
 };
 
 // Single UI manager
-class UIManager : public Singleton<UIManager>
+class UIManager : public Singleton<UIManager>, public IScripted
 {
 public:
 
@@ -70,12 +70,13 @@ public:
 	void Update(float dt);
 	void Render() const;
 
+	// virtual functions from IScripted
+	virtual void RegisterScript();
+
 private:
 
 	UIManager();
 	~UIManager();
-
-	void RegisterWithScript();
 
 	std::vector<CheckBox> m_checkBoxes;
 

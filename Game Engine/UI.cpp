@@ -116,14 +116,16 @@ void UIManager::Render() const
 	}
 }
 
-void UIManager::RegisterWithScript()
+void UIManager::RegisterScript()
 {
 	// Register Script with UI 
 	asVM* pVM = asVM::Instance();
-	asIScriptEngine* pEngine = (asIScriptEngine*)pVM;
+	asIScriptEngine* pEngine = pVM->GetScriptEngine();
 
 	// only register the type, no factory functions because this class is a singleton
 	//pEngine->RegisterObjectType("UIManager",sizeof(UIManager),asOBJ_REF);
 	//pEngine->RegisterObjectMethod("object", "UIManager@ UIManagerInstance()", asMETHODPR(UIManager,UIManager::Instance,(void),UIManager*), asCALL_THISCALL);
 	//pEngine->RegisterObjectMethod("mytype","unsigned int AddCheckBox(const CheckBoxData& in)",asMETHOD(UIManager,AddCheckBox),asCALL_THISCALL );
+
+	pEngine->Release();
 }

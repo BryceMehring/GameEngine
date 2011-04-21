@@ -45,8 +45,14 @@ asConsole::asConsole() : m_bOpen(false)
 
 	// Create Thread
 	m_ConsoleThread = CreateThread(NULL,NULL,ConsoleThread,NULL,CREATE_SUSPENDED,NULL);
+
+	asVM* pVM = asVM::Instance();
+//	m_iScript = pVM->CreateNewScript();
 }
-asConsole::~asConsole() {}
+asConsole::~asConsole()
+{
+	CloseHandle(m_ConsoleThread);
+}
 
 void asConsole::Open()
 {
@@ -68,14 +74,21 @@ DWORD asConsole::Run()
 {
 	ConsoleInfo();
 
+	// Loop until the user quits
 	for(;;)
 	{
-		string input;
+		string input , cmd, arg;
 		input.resize(256);
-		string cmd, arg;
+
+		// Loop while the user uses '\' at the end of each line
+		// This means that they have more code to add.
+		
+		//  \ ===== Get Input ===== /
 
 		cout << "> ";
 		cin.getline(&input[0], 256);
+
+		//  / ===== Get Input ===== \
 
 		// Trim unused characters
 		input.resize(strlen(input.c_str()));
@@ -92,49 +105,28 @@ DWORD asConsole::Run()
 			arg = "";
 		}
 
-		// needs to append the string
-		if(arg[arg.size() - 1] != '\\')
+		//if( cmd == "exec" )
 		{
-			
-			//ExecString(engine, arg);
-			if( cmd == "help" )
-			{
-				PrintHelp();
-			}
-			else if( cmd == "listfuncs" )
-			{
-				ListFunctions();
-			}
-			else if( cmd == "listvars" )
-			{
-				ListVariables(); 
-			}
-			else if( cmd == "quit" )
-			{
-				break;
-			}
-			else if(cmd == "cls")
-			{
-				system("cls");
-				ConsoleInfo();
-			}
-			else
-			{
-				cout << "Unknown command." << endl;
-			}
+			//IsFunction(input);
 		}
-		else if( cmd == "exec")
+		//else
 		{
-			// Interpret the command
-			system("pause");
-			
+			InterpretLine(input);
+			ExecuteScript();
 		}
+		/*else if( cmd == "listfuncs" ) { ListFunctions(); }
+		else if( cmd == "listvars" ) { ListVariables();  }
+		else if(cmd == "cls") { CLS(); }
+		else if( cmd == "quit" ) { break; }
+		else if( cmd == "exec" ) { ExecuteScript(); }
+		else { cout<<"Unknown Command"<<endl; }*/
+
 	}
 
 	return 0;
 }
 
-void asConsole::ListVariables()
+void asConsole::ListVariables() const
 {
 	asUINT n;
 
@@ -170,7 +162,7 @@ void asConsole::ListVariables()
 
 }
 
-void asConsole::ListFunctions()
+void asConsole::ListFunctions() const
 {
 	asUINT n;
 
@@ -203,7 +195,7 @@ void asConsole::ListFunctions()
 	}
 }
 
-void asConsole::PrintHelp()
+void asConsole::PrintHelp() const
 {
 	cout << " exec [script]  - executes script statement" << endl;
 	cout << " help           - this command" << endl;
@@ -213,9 +205,58 @@ void asConsole::PrintHelp()
 	cout << " quit           - end application" << endl;
 }
 
-void asConsole::ConsoleInfo()
+void asConsole::ConsoleInfo() const
 {
 	// Print some useful information
 	cout << "AngelScript console: " << asGetLibraryVersion() << endl;
-	cout << "Type 'help' for more information." << endl << endl;
+	cout << "Type 'config' for more information." << endl << endl;
+}
+
+void asConsole::CLS() const
+{
+	system("cls");
+	ConsoleInfo();
+}
+
+void asConsole::InterpretLine(string& str)
+{
+	asVM* pVM = asVM::Instance();
+	//pVM->AddSelectionToScript(str.c_str(),asBuildType::memory);
+
+}
+
+/*bool asConsole::IsFunction(string& str)
+{
+	asVM* pVM = asVM::Instance();
+
+	string strToken;
+	unsigned int pos = 0;
+	asETokenClass asToken = pVM->GetToken(strToken,str,pos);
+
+	bool bSuccess = false;
+
+	if(asToken == asETokenClass::asTC_KEYWORD)
+	{
+		asToken = pVM->GetToken(strToken,str,pos);
+
+		unsigned int iFindPos = str.find("=");
+
+		if(iFindPos == string::npos)
+		{
+			iFindPos = str.find("()");
+
+			if(iFindPos != string::npos)
+			{
+				bSuccess = true;
+			}
+		}
+	}
+
+	return bSuccess;
+}*/
+void asConsole::ExecuteScript()
+{
+	asVM* pVM = asVM::Instance();
+	pVM->ExecuteScript(m_iScript);
+	//pVM->RemoveScript(id);
 }
