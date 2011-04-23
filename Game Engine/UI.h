@@ -5,6 +5,7 @@
 
 #include "PluginManager.h"
 #include "Singleton.h"
+#include "asVM.h"
 
 /*
 
@@ -63,7 +64,15 @@ public:
 
 	friend class Singleton<UIManager>;
 
+	// function that manage the different levels of ui
+	void AddLevel();
+	void Forward();
+	void Back();
+	void SetLevel(unsigned int l);
+	unsigned int GetCurrentLevel();
+
 	unsigned int AddCheckBox(const CheckBoxData& data);
+	void RemoveCheckBox(unsigned int index);
 
 	bool IsChecked(unsigned int index) const;
 
@@ -78,7 +87,10 @@ private:
 	UIManager();
 	~UIManager();
 
-	std::vector<CheckBox> m_checkBoxes;
+	typedef std::vector<std::vector<CheckBox>> value_type;
+
+	value_type::iterator m_iter;
+	value_type m_checkBoxes;
 
 };
 

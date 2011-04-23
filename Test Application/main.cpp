@@ -42,9 +42,10 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 
 	//pVM->RegisterScript("Config.txt");
 
+	UIManager::Instance();
+
 	asVM* pVM = asVM::Instance();
 	unsigned int id = pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
-	pVM->ExecuteScript(id);
 	pVM->ExecuteScript(id);
 
 

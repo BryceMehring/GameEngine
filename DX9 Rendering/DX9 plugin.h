@@ -51,7 +51,7 @@ class DX9Render : public IRenderingPlugin
 public:
 
 	// returns the name of the plug-in
-	virtual void GetName(std::string& name);
+	virtual DLLType GetType();
 
 	// displays a info box about the plug-in
 	virtual void About();

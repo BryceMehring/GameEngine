@@ -47,9 +47,9 @@ DirectInput::~DirectInput()
 	m_pMouse->Release();
 }
 
-void DirectInput::GetName(std::string& name)
+DLLType DirectInput::GetType()
 {
-	name = "DirectInput";
+	return DLLType::Input;
 }
 
 void DirectInput::Poll()

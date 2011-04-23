@@ -2,7 +2,7 @@
 
 #include "StdAfx.h"
 #include "UI.h"
-#include "asVM.h"
+
 
 // static variable definitions
 IKMInput* CheckBox::s_pInput = 0;
@@ -79,15 +79,22 @@ void CheckBox::Draw() const
 UIManager::UIManager()
 {
 	PluginManager* pPlugManager = PluginManager::Instance();
-	CheckBox::s_pInput = (IKMInput*)pPlugManager->GetPlugin(0);
-	CheckBox::s_pRenderer = (IRenderingPlugin*)pPlugManager->GetPlugin(1);
+	CheckBox::s_pInput = (IKMInput*)pPlugManager->GetPlugin(DLLType::Input);
+	CheckBox::s_pRenderer = (IRenderingPlugin*)pPlugManager->GetPlugin(DLLType::Rendering);
 }
 UIManager::~UIManager() {}
 
 unsigned int UIManager::AddCheckBox(const CheckBoxData& data)
 {
-	m_checkBoxes.push_back(data);
-	return m_checkBoxes.size() - 1;
+	m_iter->push_back(data);
+	return m_iter->size() - 1;
+}
+void UIManager::RemoveCheckBox(unsigned int index)
+{
+	if(index < m_iter->size())
+	{
+		m_iter->erase(m_iter->begin() + index);
+	}
 }
 
 bool UIManager::IsChecked(unsigned int index) const
@@ -96,7 +103,7 @@ bool UIManager::IsChecked(unsigned int index) const
 
 	if(index < m_checkBoxes.size())
 	{
-		bChecked = m_checkBoxes[index].IsChecked();
+		bChecked = (*m_iter)[index].IsChecked();
 	}
 
 	return bChecked;
@@ -105,14 +112,14 @@ void UIManager::Update(float dt)
 {
 	for(unsigned int i = 0; i < m_checkBoxes.size(); ++i)
 	{
-		m_checkBoxes[i].Update(dt);
+		(*m_iter)[i].Update(dt);
 	}
 }
 void UIManager::Render() const
 {
 	for(unsigned int i = 0; i < m_checkBoxes.size(); ++i)
 	{
-		m_checkBoxes[i].Draw();
+		(*m_iter)[i].Draw();
 	}
 }
 
@@ -122,6 +129,13 @@ void UIManager::RegisterScript()
 	asVM* pVM = asVM::Instance();
 	asIScriptEngine* pEngine = pVM->GetScriptEngine();
 
+	// Todo: need to read the as documentation on how to register the UIManager.
+
+	DBAS(pEngine->RegisterObjectType("UIManager",0,asOBJ_REF));
+	DBAS(pEngine->RegisterObjectMethod("UIManager", "void IsChecked(uint)", asMETHOD(UIManager,IsChecked), asCALL_THISCALL));
+	
+	//pEngine->RegisterGlobalFunction("UIManager 
+	
 	// only register the type, no factory functions because this class is a singleton
 	//pEngine->RegisterObjectType("UIManager",sizeof(UIManager),asOBJ_REF);
 	//pEngine->RegisterObjectMethod("object", "UIManager@ UIManagerInstance()", asMETHODPR(UIManager,UIManager::Instance,(void),UIManager*), asCALL_THISCALL);

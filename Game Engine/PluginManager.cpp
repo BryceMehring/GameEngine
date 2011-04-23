@@ -9,19 +9,20 @@
 
 PluginManager::PluginManager() : m_pEngine(IBaseEngine::Instance())
 {
-	m_plugins.reserve(10);
 }
 
+// ===== Destructor =====
 PluginManager::~PluginManager()
 {
-	for(std::vector<PluginInfo>::iterator iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
+	for(plugin_type::iterator iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
 	{
-		delete iter->pPlugin;
-		FreeLibrary(iter->mod);
+		delete iter->second.pPlugin;
+		FreeLibrary(iter->second.mod);
 	}
 	m_pEngine = NULL;
 }
 
+//  ===== interface with dlls =====
 HINSTANCE PluginManager::GetHINSTANCE() const
 {
 	return m_pEngine->GetHINSTANCE();
@@ -32,12 +33,20 @@ HWND PluginManager::GetWindowHandle() const
 	return m_pEngine->GetWindowHandle();
 }
 
-IPlugin* PluginManager::GetPlugin(unsigned int index)
+IPlugin* PluginManager::GetPlugin(DLLType type) const
 {
-	return (index >= 0) ? m_plugins[index].pPlugin : NULL;
+	IPlugin* pPlugin = NULL;
+	plugin_type::const_iterator iter = m_plugins.find(type);
+
+	if(iter != m_plugins.end())
+	{
+		pPlugin = iter->second.pPlugin;
+	}
+
+	return pPlugin;
 }
 
-IPlugin* PluginManager::LoadDLL(char* pDLL)
+IPlugin* PluginManager::LoadDLL(const char* pDLL)
 {
 	PluginInfo dll;
 	dll.mod = LoadLibrary(pDLL);
@@ -50,7 +59,9 @@ IPlugin* PluginManager::LoadDLL(char* pDLL)
 	CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress(dll.mod,"CreatePlugin");
 	dll.pPlugin = pFunct(*this);
 
-	m_plugins.push_back(dll);
+	DLLType type = dll.pPlugin->GetType();
+
+	m_plugins.insert(make_pair(type,dll));
 
 	return dll.pPlugin;
 }

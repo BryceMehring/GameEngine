@@ -39,9 +39,9 @@ void DX9Render::About()
 
 }
 
-void DX9Render::GetName(std::string& name)
+DLLType DX9Render::GetType()
 {
-
+	return DLLType::Rendering;
 }
 
 void DX9Render::InitializeDirectX()

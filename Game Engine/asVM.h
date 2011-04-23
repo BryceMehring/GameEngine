@@ -12,6 +12,7 @@
 
 #include <angelscript.h>
 #include <vector>
+#include <assert.h>
 #include "scriptbuilder.h"
 #include "singleton.h"
 

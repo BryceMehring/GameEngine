@@ -17,7 +17,7 @@ class DirectInput : public IKMInput
 {
 public:
 
-	virtual void GetName(std::string& name);
+	virtual DLLType GetType();
 	virtual void About();
 
 	// DirectX's version of poll 
