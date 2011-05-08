@@ -2,14 +2,11 @@
 
 void main()
 {
-	print("\nHello World\n\n");
+	print("Hello");
 
-	if(IsChecked(0))
-	{
-		print("It is checked  ;P\n");
-	}
-	//print(1+1);
-	//print(3.14);
+	uint id = as.BuildScriptFromFile("C:\\Users\\Bryce\\Desktop\\TestScript.as");
+	as.ExecuteScript(id);
+	//print("\nHello World\n\n");
 }
 
   

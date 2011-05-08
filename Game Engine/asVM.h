@@ -52,7 +52,7 @@ public:
 
 	// Returned int is the id to the script
 	// Build script and then add to vector
-	unsigned int BuildScriptFromFile(const char* str);
+	unsigned int BuildScriptFromFile(const std::string& str);
 
 	// Release script, then remove from vector
 	void RemoveScript(unsigned int id);
@@ -62,9 +62,6 @@ public:
 	
 	// access to the asIScriptEngine
 	asIScriptEngine* GetScriptEngine() const;
-
-	// debugging
-	void Test();
 
 private:
 

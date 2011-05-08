@@ -70,9 +70,9 @@ asVM::~asVM()
 	m_pEngine->Release();
 }
 
-unsigned int asVM::BuildScriptFromFile(const char* str)
+unsigned int asVM::BuildScriptFromFile(const string& str)
 {
-	DBAS(m_builder.AddSectionFromFile(str));
+	DBAS(m_builder.AddSectionFromFile(str.c_str()));
 	DBAS(m_builder.BuildModule());
 
 	asIScriptModule* pMod = m_pEngine->GetModule("Application");
@@ -109,8 +109,9 @@ void asVM::ExecuteScript(unsigned int i)
 	assert(i < m_scripts.size());
 
 	asIScriptContext* ptx = m_scripts[i].pCtx;
-
+	
 	DBAS(ptx->Prepare(m_scripts[i].id));
+	
 	DBAS(ptx->Execute());
 	DBAS(ptx->Unprepare());
 }
@@ -160,14 +161,15 @@ void asVM::RegisterFunctions()
 {
 	DBAS(m_pEngine->SetMessageCallback(asFUNCTION(MessageCallback),0,asCALL_CDECL));
 	//DBAS(m_pEngine->RegisterGlobalFunction("void print(int)",asFUNCTIONPR(print,(int),void), asCALL_CDECL));
+	
 	DBAS(m_pEngine->RegisterGlobalFunction("void print(const string& in)",asFUNCTIONPR(print,(const string&),void),asCALL_CDECL));
+	
+	DBAS(m_pEngine->RegisterObjectType("asVM",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(m_pEngine->RegisterObjectMethod("asVM","uint BuildScriptFromFile(const string& in)",asMETHOD(asVM,BuildScriptFromFile),asCALL_THISCALL));
+	DBAS(m_pEngine->RegisterObjectMethod("asVM","void ExecuteScript(uint)",asMETHOD(asVM,ExecuteScript),asCALL_THISCALL));
+	DBAS(m_pEngine->RegisterGlobalProperty("asVM as",this));
+
 	//DBAS(m_pEngine->RegisterGlobalFunction("void print(double)",asFUNCTIONPR(print,(double),void),asCALL_CDECL));
 	//DBAS(m_pEngine->RegisterObjectType("ui",0,asOBJ_REF));
 	DBAS(m_builder.StartNewModule(m_pEngine,"Application"));
-}
-
-void asVM::Test()
-{
-	
-
 }

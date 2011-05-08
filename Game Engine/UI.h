@@ -65,11 +65,12 @@ public:
 	friend class Singleton<UIManager>;
 
 	// function that manage the different levels of ui
+	// I could add this to another class, that manages the different levels
 	void AddLevel();
 	void Forward();
 	void Back();
 	void SetLevel(unsigned int l);
-	unsigned int GetCurrentLevel();
+	unsigned int GetCurrentLevel() const;
 
 	unsigned int AddCheckBox(const CheckBoxData& data);
 	void RemoveCheckBox(unsigned int index);

@@ -42,7 +42,8 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 
 	//pVM->RegisterScript("Config.txt");
 
-	UIManager::Instance();
+	UIManager* pUI = UIManager::Instance();
+	pUI->RegisterScript();
 
 	asVM* pVM = asVM::Instance();
 	unsigned int id = pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
@@ -108,11 +109,11 @@ int InputTestApp::Run()
 			//ScriptingConsole(true);
 		}
 
-		pUI->Update(this->m_fDT);
+		//pUI->Update(this->m_fDT);
 	
 		m_pRendering->Begin();
 			
-		pUI->Render();
+		//pUI->Render();
 		if(m_pInput->MouseClick(0))
 		{
 			POINT p;

@@ -8,6 +8,11 @@
 IKMInput* CheckBox::s_pInput = 0;
 IRenderingPlugin* CheckBox::s_pRenderer = 0;
 
+static UIManager* GetUIManager()
+{
+	return UIManager::Instance();
+}
+
 // CheckBox
 
 CheckBox::CheckBox(const CheckBoxData& data) : m_data(data)
@@ -81,8 +86,33 @@ UIManager::UIManager()
 	PluginManager* pPlugManager = PluginManager::Instance();
 	CheckBox::s_pInput = (IKMInput*)pPlugManager->GetPlugin(DLLType::Input);
 	CheckBox::s_pRenderer = (IRenderingPlugin*)pPlugManager->GetPlugin(DLLType::Rendering);
+
+	m_checkBoxes.resize(1);
+	m_iter = m_checkBoxes.begin();
 }
 UIManager::~UIManager() {}
+
+void UIManager::AddLevel()
+{
+	m_checkBoxes.push_back(std::vector<CheckBox>());
+}
+void UIManager::Forward()
+{
+	m_iter++;
+}
+void UIManager::Back()
+{
+	m_iter--;
+}
+void UIManager::SetLevel(unsigned int l)
+{
+	m_iter = m_checkBoxes.begin() + l;
+}
+unsigned int UIManager::GetCurrentLevel() const
+{
+	return 0;
+}
+
 
 unsigned int UIManager::AddCheckBox(const CheckBoxData& data)
 {
@@ -131,8 +161,11 @@ void UIManager::RegisterScript()
 
 	// Todo: need to read the as documentation on how to register the UIManager.
 
-	DBAS(pEngine->RegisterObjectType("UIManager",0,asOBJ_REF));
-	DBAS(pEngine->RegisterObjectMethod("UIManager", "void IsChecked(uint)", asMETHOD(UIManager,IsChecked), asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectType("UIManager",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(pEngine->RegisterObjectMethod("UIManager","void AddLevel()",asMETHOD(UIManager, AddLevel),asCALL_THISCALL));
+	DBAS(pEngine->RegisterGlobalProperty("UIManager ui",this));
+	
+	//DBAS(pEngine->RegisterObjectMethod("UIManager", "void IsChecked(uint)", asMETHOD(UIManager,IsChecked), asCALL_THISCALL));
 	
 	//pEngine->RegisterGlobalFunction("UIManager 
 	
