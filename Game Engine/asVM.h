@@ -16,6 +16,8 @@
 #include "scriptbuilder.h"
 #include "singleton.h"
 
+// todo: need to add everything into its own namespace.
+
 #ifndef DBAS
 #define DBAS(f) \
 { \
@@ -23,6 +25,32 @@
 	assert( r >= 0 ); \
 }
 #endif
+
+
+// ===== registering helpers ======
+
+// todo: should I combine all of these helpers into one class?
+
+template< class T >
+void Construct(void* pMem)
+{
+	new(pMem) T();
+}
+
+template< class T >
+void Destroy(void* pMem)
+{
+	((T*)pMem)->~T();
+}
+
+// ================
+
+
+
+
+
+
+// ======================
 
 class IScripted
 {

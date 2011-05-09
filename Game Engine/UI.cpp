@@ -8,11 +8,6 @@
 IKMInput* CheckBox::s_pInput = 0;
 IRenderingPlugin* CheckBox::s_pRenderer = 0;
 
-static UIManager* GetUIManager()
-{
-	return UIManager::Instance();
-}
-
 // CheckBox
 
 CheckBox::CheckBox(const CheckBoxData& data) : m_data(data)
@@ -38,9 +33,10 @@ void CheckBox::Update(float dt)
 		s_pInput->MousePos(mousePos);
 
 		// check if the box was clicked
-		if((mousePos.x >= m_data.m_pos[0].x) && (mousePos.x <= m_data.m_pos[1].x))
+		// todo: need to fix the bounds
+		//if((mousePos.x >= m_data.m_Rect.[0].x) && (mousePos.x <= m_data.m_pos[1].x))
 		{
-			if((mousePos.y >= m_data.m_pos[0].y) && (mousePos.y <= m_data.m_pos[1].y))
+			//if((mousePos.y >= m_data.m_pos[0].y) && (mousePos.y <= m_data.m_pos[1].y))
 			{
 				m_data.m_checked = !m_data.m_checked;
 
@@ -74,7 +70,9 @@ void CheckBox::Draw() const
 		break;
 	}
 
-	s_pRenderer->DrawString(m_data.m_str.c_str(),m_data.m_pos[0],color);
+	POINT P = {m_data.m_Rect.left,m_data.m_Rect.top};
+
+	s_pRenderer->DrawString(m_data.m_str.c_str(),P,color);
 
 	// need to implement DrawString to draw at a pos on the screen
 	//s_pRenderer->DrawString(m_data.m_str.c_str());
@@ -161,18 +159,25 @@ void UIManager::RegisterScript()
 
 	// Todo: need to read the as documentation on how to register the UIManager.
 
+	// Register CheckBoxData
+	DBAS(pEngine->RegisterObjectType("CheckBoxData",sizeof(CheckBoxData),asOBJ_VALUE));
+	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_CONSTRUCT,"void CheckBoxData()", asFUNCTION(Construct<CheckBoxData>),asCALL_CDECL_OBJLAST));
+	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_DESTRUCT,"void CheckBoxData()", asFUNCTION(Destroy<CheckBoxData>),asCALL_CDECL_OBJLAST));
+
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","bool m_checked",offsetof(CheckBoxData,m_checked)));
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","RECT m_Rect",offsetof(CheckBoxData,m_Rect)));
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","string m_str",offsetof(CheckBoxData,m_str)));
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","string m_str",offsetof(CheckBoxData,m_str)));
+
+	// todo: need to look into this
+	pEngine->RegisterFuncdef()
+
+	// Register  UIManager
 	DBAS(pEngine->RegisterObjectType("UIManager",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(pEngine->RegisterObjectMethod("UIManager","void AddLevel()",asMETHOD(UIManager, AddLevel),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("UIManager","uint AddCheckBox(const CheckBoxData& in)",asMETHOD(UIManager,AddCheckBox),asCALL_THISCALL));
 	DBAS(pEngine->RegisterGlobalProperty("UIManager ui",this));
 	
-	//DBAS(pEngine->RegisterObjectMethod("UIManager", "void IsChecked(uint)", asMETHOD(UIManager,IsChecked), asCALL_THISCALL));
-	
-	//pEngine->RegisterGlobalFunction("UIManager 
-	
-	// only register the type, no factory functions because this class is a singleton
-	//pEngine->RegisterObjectType("UIManager",sizeof(UIManager),asOBJ_REF);
-	//pEngine->RegisterObjectMethod("object", "UIManager@ UIManagerInstance()", asMETHODPR(UIManager,UIManager::Instance,(void),UIManager*), asCALL_THISCALL);
-	//pEngine->RegisterObjectMethod("mytype","unsigned int AddCheckBox(const CheckBoxData& in)",asMETHOD(UIManager,AddCheckBox),asCALL_THISCALL );
 
 	pEngine->Release();
 }

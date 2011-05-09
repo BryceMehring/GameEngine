@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <fstream>
 #include <iostream>
+#include <Windows.h>
 
 using namespace std;
 
@@ -160,16 +161,27 @@ asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& po
 void asVM::RegisterFunctions()
 {
 	DBAS(m_pEngine->SetMessageCallback(asFUNCTION(MessageCallback),0,asCALL_CDECL));
-	//DBAS(m_pEngine->RegisterGlobalFunction("void print(int)",asFUNCTIONPR(print,(int),void), asCALL_CDECL));
-	
+
+	// Print Function
 	DBAS(m_pEngine->RegisterGlobalFunction("void print(const string& in)",asFUNCTIONPR(print,(const string&),void),asCALL_CDECL));
 	
+	// asVM
 	DBAS(m_pEngine->RegisterObjectType("asVM",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(m_pEngine->RegisterObjectMethod("asVM","uint BuildScriptFromFile(const string& in)",asMETHOD(asVM,BuildScriptFromFile),asCALL_THISCALL));
 	DBAS(m_pEngine->RegisterObjectMethod("asVM","void ExecuteScript(uint)",asMETHOD(asVM,ExecuteScript),asCALL_THISCALL));
 	DBAS(m_pEngine->RegisterGlobalProperty("asVM as",this));
 
-	//DBAS(m_pEngine->RegisterGlobalFunction("void print(double)",asFUNCTIONPR(print,(double),void),asCALL_CDECL));
-	//DBAS(m_pEngine->RegisterObjectType("ui",0,asOBJ_REF));
+	// POINT
+	DBAS(m_pEngine->RegisterObjectType("POINT",sizeof(POINT),asOBJ_VALUE | asOBJ_POD));
+	DBAS(m_pEngine->RegisterObjectProperty("POINT","int x",offsetof(POINT,x)));
+	DBAS(m_pEngine->RegisterObjectProperty("POINT","int y",offsetof(POINT,y)));
+
+	// RECT
+	DBAS(m_pEngine->RegisterObjectType("RECT",sizeof(RECT),asOBJ_VALUE | asOBJ_POD));
+	DBAS(m_pEngine->RegisterObjectProperty("RECT","int left",offsetof(RECT,left)));
+	DBAS(m_pEngine->RegisterObjectProperty("RECT","int top",offsetof(RECT,top)));
+	DBAS(m_pEngine->RegisterObjectProperty("RECT","int right",offsetof(RECT,right)));
+	DBAS(m_pEngine->RegisterObjectProperty("RECT","int bottom",offsetof(RECT,bottom)));
+
 	DBAS(m_builder.StartNewModule(m_pEngine,"Application"));
 }

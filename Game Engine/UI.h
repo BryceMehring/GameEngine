@@ -16,14 +16,16 @@ How should I go about doing this? Should I keep a pointer to the Rendering and I
 */
 
 typedef void (IBaseEngine::*FUNCT)(bool);
+typedef void (*UI_CALLBACK)(bool);
 
 // This is the data structure for a CheckBox
 struct CheckBoxData
 {
 	bool m_checked;
-	POINT m_pos[2];
+	RECT m_Rect;
 	std::string m_str;
 	FUNCT m_Callback;
+	UI_CALLBACK m_CallbackTest;
 };
 
 // forward class declaration needed for friend access.
