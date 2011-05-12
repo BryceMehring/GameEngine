@@ -66,9 +66,13 @@
     <ClInclude Include="asConsole.h" />
     <ClInclude Include="asVM.h" />
     <ClInclude Include="BEngine.h" />
+    <ClInclude Include="D:\C++\Include\Singleton.h" />
     <ClInclude Include="PluginManager.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="UI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

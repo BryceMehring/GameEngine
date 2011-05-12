@@ -1,23 +1,31 @@
 
-funcdef void CALLBACK(bool);
-
 void Function(bool b)
 {
 	// do something interesting!
 }
 
+void Nothing()
+{
+	print("Hello");
+}
+
+void CheckBoxResponce()
+{
+
+}
+
 void main()
 {
-	CALLBACK@ funct = @Function;
-
 	CheckBoxData myCheckData;
-	myCheckData.m_checked = true;
-	myCheckData.m_str = "Hello\n";
-	myCheckData.m_Rect.left = 0;
+	myCheckData.checked = true;
+	myCheckData.name = "Hello\n";
+	myCheckData.rect.left = 0;
 
 	ui.AddCheckBox(myCheckData);
 
-	print(myCheckData.m_str);
+	TakeFuncion(@Nothing);
+
+	print(myCheckData.name);
 
 	uint id = as.BuildScriptFromFile("C:\\Users\\Bryce\\Desktop\\TestScript.as");
 	as.ExecuteScript(id);

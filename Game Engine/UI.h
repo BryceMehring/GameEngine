@@ -24,13 +24,13 @@ struct CheckBoxData
 	bool m_checked;
 	RECT m_Rect;
 	std::string m_str;
+
+	int funcId; // Script function
 	FUNCT m_Callback;
-	UI_CALLBACK m_CallbackTest;
 };
 
-// forward class declaration needed for friend access.
-//class UIManager;
 
+// Encapsulates a CheckBox
 class CheckBox
 {
 public:

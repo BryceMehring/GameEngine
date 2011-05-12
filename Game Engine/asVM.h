@@ -18,13 +18,16 @@
 
 // todo: need to add everything into its own namespace.
 
-#ifndef DBAS
+namespace AngelScript
+{
+
+#ifndef DBAS // debug AngelScript
 #define DBAS(f) \
 { \
 	int r = f; \
 	assert( r >= 0 ); \
 }
-#endif
+#endif // DBAS
 
 
 // ===== registering helpers ======
@@ -52,24 +55,26 @@ void Destroy(void* pMem)
 
 // ======================
 
+
+// Todo: answer these questions:
+// Why do we need this class? What does it mean when singletons inherit from the class?
 class IScripted
 {
 public:
 
+	virtual ~IScripted() {}
 	virtual void RegisterScript() = 0;
 
 };
 
-// Internal structure for holding contents
+// Internal structure in asVM for holding contents
 struct Script;
 
 // There is only one instance of this class because there needs to be only
 // one asIScriptEngine* instance.
-class asVM : public Singleton<asVM>
+class asVM : public Singleton<asVM>, public IScripted
 {
 public:
-
-	void ExecuteScript(unsigned int id);
 
 	// Registers objects with the script. The application then must
 	// Provide these functions for the script to work. I need to look into
@@ -81,6 +86,8 @@ public:
 	// Returned int is the id to the script
 	// Build script and then add to vector
 	unsigned int BuildScriptFromFile(const std::string& str);
+
+	void ExecuteScript(unsigned int id);
 
 	// Release script, then remove from vector
 	void RemoveScript(unsigned int id);
@@ -115,5 +122,7 @@ private:
 	friend class Singleton<asVM>;
 
 };
+
+}; // AngelScript namespace
 
 #endif // _ASMANAGER_

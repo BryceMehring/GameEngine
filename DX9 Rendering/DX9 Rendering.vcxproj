@@ -75,6 +75,7 @@
     <None Include="..\Game Engine\Lighting.fx">
       <FileType>Document</FileType>
     </None>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

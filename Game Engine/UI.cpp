@@ -151,26 +151,37 @@ void UIManager::Render() const
 	}
 }
 
+void TakeFunction(asIScriptFunction *func)
+{
+	if( func ) 
+	{
+		// Do something with the function
+
+		func->GetId();
+
+		// Release it when done
+		func->Release();
+	}
+}
+
 void UIManager::RegisterScript()
 {
 	// Register Script with UI 
 	asVM* pVM = asVM::Instance();
 	asIScriptEngine* pEngine = pVM->GetScriptEngine();
 
-	// Todo: need to read the as documentation on how to register the UIManager.
+	// todo: need to look into this
+	pEngine->RegisterFuncdef("void AppCallback()");
+	pEngine->RegisterGlobalFunction("void TakeFuncion(AppCallback @)", asFUNCTION(TakeFunction), asCALL_CDECL);
 
 	// Register CheckBoxData
 	DBAS(pEngine->RegisterObjectType("CheckBoxData",sizeof(CheckBoxData),asOBJ_VALUE));
 	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_CONSTRUCT,"void CheckBoxData()", asFUNCTION(Construct<CheckBoxData>),asCALL_CDECL_OBJLAST));
 	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_DESTRUCT,"void CheckBoxData()", asFUNCTION(Destroy<CheckBoxData>),asCALL_CDECL_OBJLAST));
 
-	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","bool m_checked",offsetof(CheckBoxData,m_checked)));
-	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","RECT m_Rect",offsetof(CheckBoxData,m_Rect)));
-	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","string m_str",offsetof(CheckBoxData,m_str)));
-	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","string m_str",offsetof(CheckBoxData,m_str)));
-
-	// todo: need to look into this
-	pEngine->RegisterFuncdef()
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","bool checked",offsetof(CheckBoxData,m_checked)));
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","RECT rect",offsetof(CheckBoxData,m_Rect)));
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","string name",offsetof(CheckBoxData,m_str)));
 
 	// Register  UIManager
 	DBAS(pEngine->RegisterObjectType("UIManager",0,asOBJ_REF | asOBJ_NOHANDLE));
@@ -178,6 +189,5 @@ void UIManager::RegisterScript()
 	DBAS(pEngine->RegisterObjectMethod("UIManager","uint AddCheckBox(const CheckBoxData& in)",asMETHOD(UIManager,AddCheckBox),asCALL_THISCALL));
 	DBAS(pEngine->RegisterGlobalProperty("UIManager ui",this));
 	
-
 	pEngine->Release();
 }

@@ -1,9 +1,12 @@
 // Programmed by Bryce Mehring 
 // 1/12/2011
 
+#ifndef _PLUGIN_MANAGER_
+#define _PLUGIN_MANAGER_
 #pragma once
 #include "BEngine.h"
 #include "Singleton.h"
+#include "asVM.h"
 #include <vector>
 #include <map>
 
@@ -13,7 +16,7 @@ struct PluginInfo
 	HMODULE mod;
 };
 
-class PluginManager : public Singleton<PluginManager>
+class PluginManager : public Singleton<PluginManager>, public IScripted
 {
 public:
 
@@ -48,3 +51,5 @@ private:
 	friend class Singleton<PluginManager>;
 	
 };
+
+#endif // _PLUGIN_MANAGER_
