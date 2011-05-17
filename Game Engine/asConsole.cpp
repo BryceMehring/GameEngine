@@ -6,13 +6,16 @@
 
 using namespace std;
 
-DWORD WINAPI ConsoleThread(void* parameter)
+namespace AngelScript
+{
+
+/*DWORD WINAPI ConsoleThread(void* parameter)
 {
 
 	asConsole* pConsole = asConsole::Instance();
 	return pConsole->Run();
 
-	/*// buffer that we will interpret
+	// buffer that we will interpret
 
 	cin.clear();
 	system("cls");
@@ -35,7 +38,7 @@ DWORD WINAPI ConsoleThread(void* parameter)
 		unsigned int id = pVM->BuildScriptFromMemory(buffer);
 		pVM->ExecuteScript(id);
 
-	}*/
+	}
 }
 
 asConsole::asConsole() : m_bOpen(false)
@@ -119,7 +122,7 @@ DWORD asConsole::Run()
 		else if(cmd == "cls") { CLS(); }
 		else if( cmd == "quit" ) { break; }
 		else if( cmd == "exec" ) { ExecuteScript(); }
-		else { cout<<"Unknown Command"<<endl; }*/
+		else { cout<<"Unknown Command"<<endl; }
 
 	}
 
@@ -253,10 +256,12 @@ void asConsole::InterpretLine(string& str)
 	}
 
 	return bSuccess;
-}*/
+}
 void asConsole::ExecuteScript()
 {
 	asVM* pVM = asVM::Instance();
 	pVM->ExecuteScript(m_iScript);
 	//pVM->RemoveScript(id);
-}
+}*/
+
+};

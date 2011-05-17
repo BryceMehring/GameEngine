@@ -6,7 +6,7 @@ void Function(bool b)
 
 void Nothing()
 {
-	print("Hello");
+	print("The Function");
 }
 
 void CheckBoxResponce()
@@ -14,22 +14,28 @@ void CheckBoxResponce()
 
 }
 
-void main()
+void main(uint scriptId)
 {
+
 	CheckBoxData myCheckData;
-	myCheckData.checked = true;
-	myCheckData.name = "Hello\n";
-	myCheckData.rect.left = 0;
+	myCheckData.checked = false;
+	myCheckData.name = "Call AngelScript Function \n";
+	
+	myCheckData.rect.left = 8;
+	myCheckData.rect.top = 30;
+	myCheckData.rect.right = 150;
+	myCheckData.rect.bottom = 80;
+
+	myCheckData.func = GetId(@Nothing);
+	myCheckData.scriptIndex = scriptId;
 
 	ui.AddCheckBox(myCheckData);
 
-	TakeFuncion(@Nothing);
-
 	print(myCheckData.name);
 
-	uint id = as.BuildScriptFromFile("C:\\Users\\Bryce\\Desktop\\TestScript.as");
+	/*uint id = as.BuildScriptFromFile("C:\\Users\\Bryce\\Desktop\\TestScript.as");
 	as.ExecuteScript(id);
-	//print("\nHello World\n\n");
+	//print("\nHello World\n\n");*/
 }
 
   

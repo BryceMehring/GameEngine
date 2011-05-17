@@ -4,8 +4,11 @@
 // Read chapter 16, use the dynamic object mapper with the DLL files.
 #include "StdAfx.h"
 #include "PluginManager.h"
+#include "asVM.h"
 
 #pragma comment(lib,"Game Engine.lib")
+
+using namespace AngelScript;
 
 PluginManager::PluginManager() : m_pEngine(IBaseEngine::Instance())
 {
@@ -64,4 +67,13 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 	m_plugins.insert(make_pair(type,dll));
 
 	return dll.pPlugin;
+}
+
+void PluginManager::RegisterScript()
+{
+	asVM* pVM = asVM::Instance();
+	asIScriptEngine* pEngine = pVM->GetScriptEngine();
+
+	DBAS(pEngine->RegisterObjectType("PluginManager",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(pEngine->RegisterGlobalProperty("PluginManager pm",this));
 }

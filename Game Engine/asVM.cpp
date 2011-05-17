@@ -11,6 +11,25 @@ using namespace std;
 #pragma comment(lib,"AngelScript.lib")
 #pragma comment(lib,"AngelScriptAddons.lib")
 
+namespace AngelScript
+{
+
+int GetId(asIScriptFunction *func)
+{
+	int id = -1;
+
+	if( func ) 
+	{
+		// Do something with the function
+		id = func->GetId();
+
+		// Release it when done
+		func->Release();
+	}
+
+	return id;
+}
+
 class Script
 {
 public:
@@ -40,7 +59,6 @@ void MessageCallback(const asSMessageInfo *msg, void *param)
 	}
 
 	printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
-	system("pause");
 }
 
 // The global functions that the script calls
@@ -63,7 +81,7 @@ asVM::asVM()
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
 
 	RegisterStdString(m_pEngine);
-	RegisterFunctions();
+	RegisterScript();
 
 }
 asVM::~asVM()
@@ -80,7 +98,7 @@ unsigned int asVM::BuildScriptFromFile(const string& str)
 
 	// fill structure
 	Script s;
-	s.id = pMod->GetFunctionIdByDecl("void main()");
+	s.id = pMod->GetFunctionIdByDecl("void main(uint)");
 	s.pCtx = m_pEngine->CreateContext();
 
 	// add script
@@ -105,16 +123,57 @@ asIScriptEngine* asVM::GetScriptEngine() const
 	return m_pEngine;
 }
 
-void asVM::ExecuteScript(unsigned int i)
+class TestScript
 {
-	assert(i < m_scripts.size());
+public:
 
-	asIScriptContext* ptx = m_scripts[i].pCtx;
+	TestScript(asIScriptContext* ctx) : m_pCtx(ctx)
+	{
+
+	}
+
+private:
+
+	asIScriptContext* m_pCtx;
+
+};
+
+
+void asVM::ExecuteScript(unsigned int scriptId)
+{
+	assert(scriptId < m_scripts.size());
+
+	asIScriptContext* ptx = m_scripts[scriptId].pCtx;
 	
-	DBAS(ptx->Prepare(m_scripts[i].id));
+	DBAS(ptx->Prepare(m_scripts[scriptId].id));
+
+	DBAS(ptx->SetArgDWord(0,scriptId));
 	
 	DBAS(ptx->Execute());
 	DBAS(ptx->Unprepare());
+}
+void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId)
+{
+	assert(scriptId < m_scripts.size());
+
+	asIScriptContext* pCtx = m_scripts[scriptId].pCtx;
+	
+	DBAS(pCtx->Prepare(funcId));
+	DBAS(pCtx->Execute());
+	pCtx->set
+	DBAS(pCtx->Unprepare());
+}
+
+void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, bool param)
+{
+	assert(scriptId < m_scripts.size());
+
+	asIScriptContext* pCtx = m_scripts[scriptId].pCtx;
+	
+	DBAS(pCtx->Prepare(funcId));
+	pCtx->SetArgByte(0,param);
+	DBAS(pCtx->Execute());
+	DBAS(pCtx->Unprepare());
 }
 
 
@@ -158,13 +217,17 @@ asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& po
 	}
 }*/
 
-void asVM::RegisterFunctions()
+void asVM::RegisterScript()
 {
 	DBAS(m_pEngine->SetMessageCallback(asFUNCTION(MessageCallback),0,asCALL_CDECL));
 
-	// Print Function
+	// Print Functions
 	DBAS(m_pEngine->RegisterGlobalFunction("void print(const string& in)",asFUNCTIONPR(print,(const string&),void),asCALL_CDECL));
-	
+
+	// todo: need to look into this
+	DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));
+	DBAS(m_pEngine->RegisterGlobalFunction("int GetId(AppCallback @)", asFUNCTION(GetId), asCALL_CDECL));
+
 	// asVM
 	DBAS(m_pEngine->RegisterObjectType("asVM",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(m_pEngine->RegisterObjectMethod("asVM","uint BuildScriptFromFile(const string& in)",asMETHOD(asVM,BuildScriptFromFile),asCALL_THISCALL));
@@ -185,3 +248,5 @@ void asVM::RegisterFunctions()
 
 	DBAS(m_builder.StartNewModule(m_pEngine,"Application"));
 }
+
+}; // AngelScript

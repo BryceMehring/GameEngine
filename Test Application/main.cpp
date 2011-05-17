@@ -7,6 +7,8 @@
 #include "asVM.h"
 #include <assert.h>
 
+using namespace AngelScript;
+
 // And then, as we go up in recursion, we display the rest of the numbers
 template< int n >
 struct LoopClass
@@ -45,7 +47,7 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 	UIManager* pUI = UIManager::Instance();
 	pUI->RegisterScript();
 
-	asVM* pVM = asVM::Instance();
+	AngelScript::asVM* pVM = AngelScript::asVM::Instance();
 	unsigned int id = pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
 	pVM->ExecuteScript(id);
 
@@ -104,14 +106,16 @@ int InputTestApp::Run()
 		StartCounter();
 		m_pInput->Poll();
 
-		if(m_pInput->KeyDown(0x1C)) // Enter
+		/*if(m_pInput->KeyDown(0x1C)) // Enter
 		{
 			//ScriptingConsole(true);
-		}
+		}*/
 
-		//pUI->Update(this->m_fDT);
+		pUI->Update(this->m_fDT);
 	
 		m_pRendering->Begin();
+
+		pUI->Render();
 			
 		//pUI->Render();
 		if(m_pInput->MouseClick(0))

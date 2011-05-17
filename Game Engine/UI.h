@@ -25,9 +25,10 @@ struct CheckBoxData
 	RECT m_Rect;
 	std::string m_str;
 
-	int funcId; // Script function
-	FUNCT m_Callback;
-};
+	// used for calling a script function
+	int m_funcId;
+	unsigned int m_ScriptIndex;
+}; 
 
 
 // Encapsulates a CheckBox
@@ -56,13 +57,12 @@ private:
 };
 
 // Single UI manager
-class UIManager : public Singleton<UIManager>, public IScripted
+class UIManager : public Singleton<UIManager>, public AngelScript::IScripted
 {
 public:
 
 	// It manages all different types of items on the UI. It should
-	// support more items in the future. Lua scripting should be added 
-	// to manipulate the UI
+	// support more items in the future.
 
 	friend class Singleton<UIManager>;
 

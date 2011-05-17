@@ -46,10 +46,9 @@ void Destroy(void* pMem)
 	((T*)pMem)->~T();
 }
 
+int GetId(asIScriptFunction *func);
+
 // ================
-
-
-
 
 
 
@@ -69,6 +68,7 @@ public:
 
 // Internal structure in asVM for holding contents
 struct Script;
+class TestScript;
 
 // There is only one instance of this class because there needs to be only
 // one asIScriptEngine* instance.
@@ -87,7 +87,10 @@ public:
 	// Build script and then add to vector
 	unsigned int BuildScriptFromFile(const std::string& str);
 
-	void ExecuteScript(unsigned int id);
+	void ExecuteScript(unsigned int scriptId);
+	void ExecuteScriptFunction(unsigned int scriptId, int funcId);
+	void ExecuteScriptFunction(unsigned int scriptId, int funcId, char param);
+	void ExecuteScriptFunction(unsigned int scriptId, int funcId, double param); 
 
 	// Release script, then remove from vector
 	void RemoveScript(unsigned int id);
@@ -115,11 +118,11 @@ private:
 	~asVM();
 
 	// ===== helper functions =====
-
-	void RegisterFunctions();
+	void RegisterScript();
 	
 	// friends
 	friend class Singleton<asVM>;
+	friend class TestScript;
 
 };
 

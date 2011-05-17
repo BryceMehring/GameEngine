@@ -3,6 +3,8 @@
 #include "StdAfx.h"
 #include "UI.h"
 
+using namespace AngelScript;
+
 
 // static variable definitions
 IKMInput* CheckBox::s_pInput = 0;
@@ -34,9 +36,9 @@ void CheckBox::Update(float dt)
 
 		// check if the box was clicked
 		// todo: need to fix the bounds
-		//if((mousePos.x >= m_data.m_Rect.[0].x) && (mousePos.x <= m_data.m_pos[1].x))
+		if((mousePos.x >= m_data.m_Rect.left) && (mousePos.x <= m_data.m_Rect.right))
 		{
-			//if((mousePos.y >= m_data.m_pos[0].y) && (mousePos.y <= m_data.m_pos[1].y))
+			if((mousePos.y >= m_data.m_Rect.top) && (mousePos.y <= m_data.m_Rect.bottom))
 			{
 				m_data.m_checked = !m_data.m_checked;
 
@@ -44,8 +46,9 @@ void CheckBox::Update(float dt)
 				bNoClick = true;
 
 				// Call callback function
-				IBaseEngine* pEngine = IBaseEngine::Instance();
-				(pEngine->*m_data.m_Callback)(m_data.m_checked);
+				asVM* pVM = asVM::Instance();
+				pVM->ExecuteScriptFunction(m_data.m_ScriptIndex,m_data.m_funcId);
+			//	(pEngine->*m_data.m_Callback)(m_data.m_checked);
 			}
 		}
 	}
@@ -151,28 +154,11 @@ void UIManager::Render() const
 	}
 }
 
-void TakeFunction(asIScriptFunction *func)
-{
-	if( func ) 
-	{
-		// Do something with the function
-
-		func->GetId();
-
-		// Release it when done
-		func->Release();
-	}
-}
-
 void UIManager::RegisterScript()
 {
 	// Register Script with UI 
 	asVM* pVM = asVM::Instance();
 	asIScriptEngine* pEngine = pVM->GetScriptEngine();
-
-	// todo: need to look into this
-	pEngine->RegisterFuncdef("void AppCallback()");
-	pEngine->RegisterGlobalFunction("void TakeFuncion(AppCallback @)", asFUNCTION(TakeFunction), asCALL_CDECL);
 
 	// Register CheckBoxData
 	DBAS(pEngine->RegisterObjectType("CheckBoxData",sizeof(CheckBoxData),asOBJ_VALUE));
@@ -182,7 +168,10 @@ void UIManager::RegisterScript()
 	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","bool checked",offsetof(CheckBoxData,m_checked)));
 	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","RECT rect",offsetof(CheckBoxData,m_Rect)));
 	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","string name",offsetof(CheckBoxData,m_str)));
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","int func",offsetof(CheckBoxData,m_funcId)));
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","uint scriptIndex",offsetof(CheckBoxData,m_ScriptIndex)));
 
+	
 	// Register  UIManager
 	DBAS(pEngine->RegisterObjectType("UIManager",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(pEngine->RegisterObjectMethod("UIManager","void AddLevel()",asMETHOD(UIManager, AddLevel),asCALL_THISCALL));
