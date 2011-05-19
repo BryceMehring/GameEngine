@@ -10,7 +10,7 @@
 
 using namespace AngelScript;
 
-PluginManager::PluginManager() : m_pEngine(IBaseEngine::Instance())
+PluginManager::PluginManager() : m_pEngine(g_pEngine)
 {
 }
 

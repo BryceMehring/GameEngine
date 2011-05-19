@@ -12,16 +12,20 @@ class InputTestApp : public IBaseEngine
 {
 public:
 
-	virtual int Run();
-
-protected:
-
 	// constructor/destructor
 	InputTestApp(HINSTANCE hInstance,const string& winCaption);
 	virtual ~InputTestApp();
 
+	virtual int Run();
+
+protected:
+
 	// ===== data members =====
 
+	// ui
+	UI* m_pUI;
+
+	// plugins
 	IKMInput* m_pInput;
 	IRenderingPlugin* m_pRendering;
 
@@ -30,10 +34,5 @@ protected:
 	// ===== helper functions =====
 
 	void LoadDLLS();
-
-
-	// ===== friends =====
-
-	friend class IBaseEngine;
 
 };

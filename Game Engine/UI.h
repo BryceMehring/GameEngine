@@ -51,20 +51,21 @@ private:
 	CheckBoxData m_data;
 
 	// Plugin Interfaces, these are set in the UIManager.
+	// todo: these should not be static
 	static IKMInput* s_pInput;
 	static IRenderingPlugin* s_pRenderer;
 
 };
 
-// Single UI manager
-class UIManager : public Singleton<UIManager>, public AngelScript::IScripted
+class UI : public AngelScript::IScripted
 {
 public:
 
 	// It manages all different types of items on the UI. It should
 	// support more items in the future.
 
-	friend class Singleton<UIManager>;
+	UI();
+	virtual ~UI();
 
 	// function that manage the different levels of ui
 	// I could add this to another class, that manages the different levels
@@ -87,9 +88,7 @@ public:
 
 private:
 
-	UIManager();
-	~UIManager();
-
+	// todo: need to change CheckBox into an abstract interface?
 	typedef std::vector<std::vector<CheckBox>> value_type;
 
 	value_type::iterator m_iter;

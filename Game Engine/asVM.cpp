@@ -160,11 +160,10 @@ void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId)
 	
 	DBAS(pCtx->Prepare(funcId));
 	DBAS(pCtx->Execute());
-	pCtx->set
 	DBAS(pCtx->Unprepare());
 }
 
-void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, bool param)
+/*void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, bool param)
 {
 	assert(scriptId < m_scripts.size());
 
@@ -174,7 +173,7 @@ void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, bool param)
 	pCtx->SetArgByte(0,param);
 	DBAS(pCtx->Execute());
 	DBAS(pCtx->Unprepare());
-}
+}*/
 
 
 asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& pos)
@@ -246,6 +245,7 @@ void asVM::RegisterScript()
 	DBAS(m_pEngine->RegisterObjectProperty("RECT","int right",offsetof(RECT,right)));
 	DBAS(m_pEngine->RegisterObjectProperty("RECT","int bottom",offsetof(RECT,bottom)));
 
+	// todo: move this out of this function. It is not needed here
 	DBAS(m_builder.StartNewModule(m_pEngine,"Application"));
 }
 

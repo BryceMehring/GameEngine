@@ -101,6 +101,8 @@ public:
 	// access to the asIScriptEngine
 	asIScriptEngine* GetScriptEngine() const;
 
+	virtual void RegisterScript();
+
 private:
 
 	asIScriptEngine* m_pEngine;
@@ -115,11 +117,12 @@ private:
 	asVM();
 
 	// the destructor releases all script contexts and then releases the engine
-	~asVM();
+	virtual ~asVM();
 
 	// ===== helper functions =====
-	void RegisterScript();
 	
+	///...
+
 	// friends
 	friend class Singleton<asVM>;
 	friend class TestScript;

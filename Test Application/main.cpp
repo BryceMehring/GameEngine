@@ -44,9 +44,11 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 
 	//pVM->RegisterScript("Config.txt");
 
-	UIManager* pUI = UIManager::Instance();
-	pUI->RegisterScript();
+	// UI
+	m_pUI = new UI();
+	m_pUI->RegisterScript();
 
+	// AS
 	AngelScript::asVM* pVM = AngelScript::asVM::Instance();
 	unsigned int id = pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
 	pVM->ExecuteScript(id);
@@ -148,15 +150,14 @@ void InputTestApp::LoadDLLS()
 // the current fix gets rid of using a singleton and uses Reference Counting.
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+	g_pEngine = new InputTestApp(hInstance,"AngelScript");
 
-	// I want to put all of this Initialization into a dll
-	IBaseEngine::Initialize<InputTestApp>(hInstance,"AngelScript Console");
-	IBaseEngine* pEngine = InputTestApp::Instance();
-
-	int returnCode = pEngine->Run();
+	int returnCode = g_pEngine->Run();
 
 	PluginManager::Delete();
-	IBaseEngine::Delete();
+
+	delete g_pEngine;
+	g_pEngine = NULL;
 
 	return returnCode;
 }

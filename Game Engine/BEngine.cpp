@@ -8,16 +8,14 @@
 
 #define MAX_CONSOLE_LINES 500
 
-IBaseEngine* IBaseEngine::s_pInstance = NULL;
+IBaseEngine* g_pEngine = NULL;
 
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	IBaseEngine* pEngine = IBaseEngine::Instance();
-	
 	// Don't start processing messages until the application has been created.
-	if(pEngine)
+	if(g_pEngine)
 	{
-		pEngine->MsgProc(msg, wParam, lParam);
+		g_pEngine->MsgProc(msg, wParam, lParam);
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -25,8 +23,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInstance(hInstance)
 {
-	s_pInstance = this;
-
 	// Default values
 	m_hWindowHandle = NULL;
 	m_fDT = m_fStartCount = m_fSecsPerCount = 0.0f;
@@ -58,22 +54,6 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInst
 IBaseEngine::~IBaseEngine()
 {
 	
-}
-
-IBaseEngine* IBaseEngine::Instance()
-{
-	return s_pInstance;
-}
-
-void IBaseEngine::Delete()
-{
-	delete s_pInstance;
-	s_pInstance = NULL;
-}
-
-HINSTANCE IBaseEngine::GetHINSTANCE() const
-{
-	return m_hInstance;
 }
 
 HWND IBaseEngine::GetWindowHandle() const 
@@ -127,8 +107,6 @@ bool IBaseEngine::Update()
 	return true;
 }
 
-
-
 void IBaseEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 {
 	WNDCLASS wc;
@@ -160,7 +138,6 @@ void IBaseEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaptio
 	ShowWindow(m_hWindowHandle, SW_SHOW);
 	UpdateWindow(m_hWindowHandle);
 }
-
 
 void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {

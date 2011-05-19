@@ -4,10 +4,10 @@
 #ifndef _PLUGIN_MANAGER_
 #define _PLUGIN_MANAGER_
 #pragma once
+
 #include "BEngine.h"
 #include "Singleton.h"
 #include "asVM.h"
-#include <vector>
 #include <map>
 
 struct PluginInfo
