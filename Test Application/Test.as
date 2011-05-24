@@ -16,7 +16,6 @@ void CheckBoxResponce()
 
 void main(uint scriptId)
 {
-
 	CheckBoxData myCheckData;
 	myCheckData.checked = false;
 	myCheckData.name = "Call AngelScript Function \n";
@@ -29,7 +28,9 @@ void main(uint scriptId)
 	myCheckData.func = GetId(@Nothing);
 	myCheckData.scriptIndex = scriptId;
 
-	ui.AddCheckBox(myCheckData);
+	CheckBox@ myCheckBox=CheckBox(myCheckData);
+
+	//ui.AddCheckBox(myCheckData);
 
 	print(myCheckData.name);
 

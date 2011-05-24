@@ -33,6 +33,9 @@ struct LoopClass<1>
 
 InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBaseEngine(hInstance,winCaption)
 {
+	// todo: need to fix this logic
+	g_pEngine = this;
+
 	m_pInput = NULL;
 	m_pRendering = NULL;
 	ZeroMemory(buffer,32);
@@ -102,7 +105,6 @@ InputTestApp::~InputTestApp()
 
 int InputTestApp::Run()
 {
-	UIManager* pUI = UIManager::Instance();
 	while(Update())
 	{
 		StartCounter();
@@ -113,11 +115,11 @@ int InputTestApp::Run()
 			//ScriptingConsole(true);
 		}*/
 
-		pUI->Update(this->m_fDT);
+		m_pUI->Update(this->m_fDT);
 	
 		m_pRendering->Begin();
 
-		pUI->Render();
+		m_pUI->Render();
 			
 		//pUI->Render();
 		if(m_pInput->MouseClick(0))
@@ -151,9 +153,9 @@ void InputTestApp::LoadDLLS()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	g_pEngine = new InputTestApp(hInstance,"AngelScript");
-
 	int returnCode = g_pEngine->Run();
 
+	// todo: this should be moved elsewhere
 	PluginManager::Delete();
 
 	delete g_pEngine;

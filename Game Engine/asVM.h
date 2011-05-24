@@ -34,6 +34,22 @@ namespace AngelScript
 
 // todo: should I combine all of these helpers into one class?
 
+template< class A, class B >
+B* refCast(A* a)
+{
+    // If the handle already is a null handle, then just return the null handle
+    if( a == NULL ) return 0;
+
+    // Now try to dynamically cast the pointer to the wanted type
+    B* b = dynamic_cast<B*>(a);
+    if( b != NULL )
+    {
+        // Since the cast was made, we need to increase the ref counter for the returned handle
+        b->AddRef();
+    }
+    return b;
+}
+
 template< class T >
 void Construct(void* pMem)
 {
@@ -68,7 +84,6 @@ public:
 
 // Internal structure in asVM for holding contents
 struct Script;
-class TestScript;
 
 // There is only one instance of this class because there needs to be only
 // one asIScriptEngine* instance.
@@ -88,9 +103,9 @@ public:
 	unsigned int BuildScriptFromFile(const std::string& str);
 
 	void ExecuteScript(unsigned int scriptId);
+
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId);
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId, char param);
-	void ExecuteScriptFunction(unsigned int scriptId, int funcId, double param); 
 
 	// Release script, then remove from vector
 	void RemoveScript(unsigned int id);
@@ -125,7 +140,6 @@ private:
 
 	// friends
 	friend class Singleton<asVM>;
-	friend class TestScript;
 
 };
 

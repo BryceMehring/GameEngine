@@ -52,7 +52,6 @@ void DX9Render::InitializeDirectX()
 	if( !m_pDirect3D ) { throw std::string("Direct3DCreate9 Failed"); }
 
 	//EnumerateDisplayAdaptors();
-
 	HWND windowHandle = m_mgr.GetWindowHandle();
 
 	// Fill out the D3DPRESENT_PARAMETERS structure.
@@ -175,6 +174,7 @@ void BEngine::RenderOptions()
 	*/
 void DX9Render::Begin()
 {
+	// todo: need to implement the function again
 	//if( !IsDeviceLost() )
 	{
 		m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);

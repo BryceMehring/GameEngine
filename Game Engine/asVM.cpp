@@ -123,22 +123,6 @@ asIScriptEngine* asVM::GetScriptEngine() const
 	return m_pEngine;
 }
 
-class TestScript
-{
-public:
-
-	TestScript(asIScriptContext* ctx) : m_pCtx(ctx)
-	{
-
-	}
-
-private:
-
-	asIScriptContext* m_pCtx;
-
-};
-
-
 void asVM::ExecuteScript(unsigned int scriptId)
 {
 	assert(scriptId < m_scripts.size());
@@ -163,17 +147,19 @@ void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId)
 	DBAS(pCtx->Unprepare());
 }
 
-/*void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, bool param)
+void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, char param)
 {
 	assert(scriptId < m_scripts.size());
 
 	asIScriptContext* pCtx = m_scripts[scriptId].pCtx;
 	
 	DBAS(pCtx->Prepare(funcId));
+	
 	pCtx->SetArgByte(0,param);
+	
 	DBAS(pCtx->Execute());
 	DBAS(pCtx->Unprepare());
-}*/
+}
 
 
 asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& pos)

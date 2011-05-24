@@ -16,7 +16,15 @@ public:
 	InputTestApp(HINSTANCE hInstance,const string& winCaption);
 	virtual ~InputTestApp();
 
+	// from IBaseEngine
+	
+	// todo: need to implement these functions
+	virtual void OnLostDevice() {}
+	virtual void OnResetDevice() {}
+
 	virtual int Run();
+
+	virtual void LoadDLLS();
 
 protected:
 
@@ -33,6 +41,6 @@ protected:
 
 	// ===== helper functions =====
 
-	void LoadDLLS();
+	
 
 };

@@ -69,11 +69,11 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 	return dll.pPlugin;
 }
 
-void PluginManager::RegisterScript()
+/*void PluginManager::RegisterScript()
 {
 	asVM* pVM = asVM::Instance();
 	asIScriptEngine* pEngine = pVM->GetScriptEngine();
 
 	DBAS(pEngine->RegisterObjectType("PluginManager",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(pEngine->RegisterGlobalProperty("PluginManager pm",this));
-}
+}*/

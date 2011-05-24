@@ -56,11 +56,6 @@ IBaseEngine::~IBaseEngine()
 	
 }
 
-HWND IBaseEngine::GetWindowHandle() const 
-{ 
-	return m_hWindowHandle;
-}
-
 void IBaseEngine::StartCounter()
 {
 	__int64 prevTimeStamp = 0;
@@ -154,14 +149,16 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 		// We pause the game when the main window is deactivated and 
 		// un pause it when it becomes active.
 		case WM_ACTIVATE:
-			/*if( LOWORD(wParam) == WA_INACTIVE )
+			if( LOWORD(wParam) == WA_INACTIVE )
 			{
+				OnLostDevice();
 				m_bPaused = true;
 			}
 			else
 			{
+				OnResetDevice();
 				m_bPaused = false;
-			}*/
+			}
 			break;
 
 		// WM_CLOSE is sent when the user presses the 'X' button in the

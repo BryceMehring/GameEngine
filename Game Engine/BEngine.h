@@ -27,10 +27,15 @@ public:
 
 	void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
 
-	HINSTANCE GetHINSTANCE() const;
-	HWND GetWindowHandle() const;
+	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
+	HWND GetWindowHandle() const { return m_hWindowHandle; }
 
-	virtual void RegisterScript();
+	// todo: need to implement these functions
+	virtual void RegisterScript() {}
+	virtual void LoadDLLS() {}
+
+	virtual void OnLostDevice() = 0;
+	virtual void OnResetDevice() = 0;
 	virtual int Run() = 0;
 
 protected:

@@ -16,7 +16,7 @@ struct PluginInfo
 	HMODULE mod;
 };
 
-class PluginManager : public Singleton<PluginManager>, public AngelScript::IScripted
+class PluginManager : public Singleton<PluginManager>//, public AngelScript::IScripted
 {
 public:
 
@@ -36,7 +36,7 @@ public:
 	IPlugin* LoadDLL(const char* pFile);
 	//void LoadAllPlugins(char* pDictionary);
 
-	virtual void RegisterScript();
+	//virtual void RegisterScript();
 
 
 private:

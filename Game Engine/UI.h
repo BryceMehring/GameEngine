@@ -30,28 +30,45 @@ struct CheckBoxData
 	unsigned int m_ScriptIndex;
 }; 
 
+// element
+
+// todo: need to register this interface with AngelScript
+class IUIElement : public RefCounting
+{
+protected:
+
+	virtual ~IUIElement() {}
+
+public:
+
+	virtual bool IsChecked() const = 0;
+	virtual void Update(float dt) = 0;
+	virtual void Draw() = 0;
+
+};
+
 
 // Encapsulates a CheckBox
-class CheckBox
+class CheckBox : public IUIElement
 {
 public:
 
 	// a CheckBox manages drawing it along with checking if the mouse collides with the check box
 
-	friend class UIManager;
+	friend class UI;
 
 	CheckBox(const CheckBoxData&);
 
-	bool IsChecked() const;
-	void Update(float dt);
-	void Draw() const;
+	virtual bool IsChecked() const;
+	virtual void Update(float dt);
+	virtual void Draw();
 
 private:
 
 	CheckBoxData m_data;
 
 	// Plugin Interfaces, these are set in the UIManager.
-	// todo: these should not be static
+	// todo: these should not be static?
 	static IKMInput* s_pInput;
 	static IRenderingPlugin* s_pRenderer;
 
@@ -75,10 +92,10 @@ public:
 	void SetLevel(unsigned int l);
 	unsigned int GetCurrentLevel() const;
 
-	unsigned int AddCheckBox(const CheckBoxData& data);
-	void RemoveCheckBox(unsigned int index);
+	unsigned int AddElement(IUIElement* pElement);
+	void RemoveElement(unsigned int i);
 
-	bool IsChecked(unsigned int index) const;
+//	bool IsChecked(unsigned int i) const;
 
 	void Update(float dt);
 	void Render() const;
@@ -89,10 +106,10 @@ public:
 private:
 
 	// todo: need to change CheckBox into an abstract interface?
-	typedef std::vector<std::vector<CheckBox>> value_type;
+	typedef std::vector<std::vector<IUIElement*>> value_type;
 
-	value_type::iterator m_iter;
-	value_type m_checkBoxes;
+	value_type::iterator m_currentLevel;
+	value_type m_levels;
 
 };
 
