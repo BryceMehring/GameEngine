@@ -28,7 +28,9 @@ void main(uint scriptId)
 	myCheckData.func = GetId(@Nothing);
 	myCheckData.scriptIndex = scriptId;
 
-	CheckBox@ myCheckBox=CheckBox(myCheckData);
+	ui.AddElement("CheckBox",myCheckData);
+
+	//CheckBox@ myCheckBox=CheckBox(myCheckData);
 
 	//ui.AddCheckBox(myCheckData);
 

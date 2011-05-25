@@ -57,6 +57,12 @@ void Construct(void* pMem)
 }
 
 template< class T >
+void CopyConstruct(const T& other, T* pThis)
+{
+	new(pThis) T(other);
+}
+
+template< class T >
 void Destroy(void* pMem)
 {
 	((T*)pMem)->~T();

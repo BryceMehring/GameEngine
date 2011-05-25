@@ -67,6 +67,7 @@
     <ClInclude Include="asVM.h" />
     <ClInclude Include="BEngine.h" />
     <ClInclude Include="D:\C++\Include\Singleton.h" />
+    <ClInclude Include="Factory.h" />
     <ClInclude Include="PluginManager.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="UI.h" />

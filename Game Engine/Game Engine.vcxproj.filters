@@ -49,6 +49,7 @@
       <Filter>AngelScript</Filter>
     </ClInclude>
     <ClInclude Include="D:\C++\Include\Singleton.h" />
+    <ClInclude Include="Factory.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

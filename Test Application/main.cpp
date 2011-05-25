@@ -5,6 +5,7 @@
 #include "scriptstdstring.h"
 #include "scriptbuilder.h"
 #include "asVM.h"
+#include "Factory.h"
 #include <assert.h>
 
 using namespace AngelScript;
@@ -33,6 +34,8 @@ struct LoopClass<1>
 
 InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBaseEngine(hInstance,winCaption)
 {
+	// todo: I need to move initialization into smaller helper functions
+
 	// todo: need to fix this logic
 	g_pEngine = this;
 
@@ -46,6 +49,12 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 	//pVM->Test();
 
 	//pVM->RegisterScript("Config.txt");
+
+	// registering 
+
+	Factory<IUIElement>* pUIInstance = Factory<IUIElement>::Instance();
+	pUIInstance->Register("CheckBox",new Creator<CheckBox,IUIElement>);
+	//pUIInstance->Register("CheckBox",new Creator<CheckBox,IUIElement>());
 
 	// UI
 	m_pUI = new UI();

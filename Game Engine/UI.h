@@ -21,6 +21,12 @@ typedef void (*UI_CALLBACK)(bool);
 // This is the data structure for a CheckBox
 struct CheckBoxData
 {
+	CheckBoxData() {}
+	CheckBoxData(const CheckBoxData& other)
+	{
+		system("pause");
+	}
+
 	bool m_checked;
 	RECT m_Rect;
 	std::string m_str;
@@ -32,7 +38,7 @@ struct CheckBoxData
 
 // element
 
-// todo: need to register this interface with AngelScript
+// todo: does IUIElement have to inherit from RefCounting?
 class IUIElement : public RefCounting
 {
 protected:
@@ -57,6 +63,7 @@ public:
 
 	friend class UI;
 
+	CheckBox(void* param);
 	CheckBox(const CheckBoxData&);
 
 	virtual bool IsChecked() const;
@@ -92,6 +99,10 @@ public:
 	void SetLevel(unsigned int l);
 	unsigned int GetCurrentLevel() const;
 
+	// todo: the script function should not pass a pointer to the interface. The script should pass a string, and that string will get mapped to a IUIElement.
+
+	// the string 'c' is the key for the factory
+	unsigned int AddElement(const string& c, void* pObj);
 	unsigned int AddElement(IUIElement* pElement);
 	void RemoveElement(unsigned int i);
 

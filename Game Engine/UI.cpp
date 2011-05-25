@@ -2,6 +2,7 @@
 
 #include "StdAfx.h"
 #include "UI.h"
+#include "Factory.h"
 
 using namespace AngelScript;
 
@@ -15,7 +16,10 @@ IRenderingPlugin* CheckBox::s_pRenderer = 0;
 IUIElement* CheckBoxFactory(const CheckBoxData& data);
 
 // CheckBox
-
+CheckBox::CheckBox(void* param)
+{
+	// todo: cast and copy the data.
+}
 CheckBox::CheckBox(const CheckBoxData& data) : m_data(data)
 {
 }
@@ -120,7 +124,17 @@ unsigned int UI::GetCurrentLevel() const
 	return 0;
 }
 
+unsigned int UI::AddElement(const string& c, void* pObj)
+{
+	CheckBoxData* pData = (CheckBoxData*)pObj;
+	CheckBoxData data;
+	//asIObjectType* pType = pObj->GetObjectType();
 
+	Factory<IUIElement>* pUIInstance = Factory<IUIElement>::Instance();
+	IUIElement* pElement = pUIInstance->Create(c,(void*)&data);
+
+	return AddElement(pElement);
+}
 unsigned int UI::AddElement(IUIElement* pElement)
 {
 	m_currentLevel->push_back(pElement);
@@ -164,13 +178,17 @@ void UI::Render() const
 
 void UI::RegisterScript()
 {
+	// todo: this function should only be called once?
+
 	// Register Script with UI 
 	asVM* pVM = asVM::Instance();
 	asIScriptEngine* pEngine = pVM->GetScriptEngine();
 
 	// Register CheckBoxData
-	DBAS(pEngine->RegisterObjectType("CheckBoxData",sizeof(CheckBoxData),asOBJ_VALUE));
+	// Register the object operator overloads
+	DBAS(pEngine->RegisterObjectType("CheckBoxData",sizeof(CheckBoxData),asOBJ_VALUE | asOBJ_APP_CLASS_COPY_CONSTRUCTOR ));
 	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_CONSTRUCT,"void CheckBoxData()", asFUNCTION(Construct<CheckBoxData>),asCALL_CDECL_OBJLAST));
+	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_CONSTRUCT,"void CheckBoxData(const CheckBoxData& in)",asFUNCTION(CopyConstruct<CheckBoxData>),asCALL_CDECL_OBJLAST));
 	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_DESTRUCT,"void CheckBoxData()", asFUNCTION(Destroy<CheckBoxData>),asCALL_CDECL_OBJLAST));
 
 	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","bool checked",offsetof(CheckBoxData,m_checked)));
@@ -183,7 +201,7 @@ void UI::RegisterScript()
 	
 	// Register  UI
 	// todo: if this class is not a singleton, I cannot register a global property, this.
-	DBAS(pEngine->RegisterObjectType("IUIElement",0,asOBJ_REF));
+	/*DBAS(pEngine->RegisterObjectType("IUIElement",0,asOBJ_REF));
 	DBAS(pEngine->RegisterObjectType("CheckBox",0,asOBJ_REF));
 
 	// Behaviors
@@ -200,12 +218,13 @@ void UI::RegisterScript()
 
 	DBAS(pEngine->RegisterObjectMethod("IUIElement", "bool IsChecked()", asMETHOD(IUIElement, IsChecked), asCALL_THISCALL));
 	DBAS(pEngine->RegisterObjectMethod("IUIElement", "void Update(float)",asMETHOD(IUIElement,Update),asCALL_THISCALL));
-	DBAS(pEngine->RegisterObjectMethod("IUIElement", "void Draw()",asMETHOD(IUIElement,Draw),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("IUIElement", "void Draw()",asMETHOD(IUIElement,Draw),asCALL_THISCALL));*/
 	
-	//DBAS(pEngine->RegisterObjectType("UI",0,asOBJ_REF | asOBJ_NOHANDLE));
-	//DBAS(pEngine->RegisterObjectMethod("UI","void AddLevel()",asMETHOD(UI, AddLevel),asCALL_THISCALL));
-	//DBAS(pEngine->RegisterObjectMethod("UI","uint AddElement(const CheckBoxData& in)",asMETHOD(UI,AddElement),asCALL_THISCALL));	
-	
+	DBAS(pEngine->RegisterObjectType("UI",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(pEngine->RegisterObjectMethod("UI","void AddLevel()",asMETHOD(UI, AddLevel),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("UI","uint AddElement(const string& in, ?&in)",asMETHODPR(UI,AddElement,(const string&, void*),unsigned int),asCALL_THISCALL));	
+	DBAS(pEngine->RegisterGlobalProperty("UI ui",this));
+
 	pEngine->Release();
 }
 
