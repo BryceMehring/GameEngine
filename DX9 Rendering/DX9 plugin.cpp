@@ -1,5 +1,5 @@
 
-#include "stdafx.h"
+
 #include "DX9 plugin.h"
 
 #pragma comment(lib,"d3d9.lib")
@@ -41,7 +41,7 @@ void DX9Render::About()
 
 DLLType DX9Render::GetType()
 {
-	return DLLType::Rendering;
+	return Rendering;
 }
 
 void DX9Render::InitializeDirectX()

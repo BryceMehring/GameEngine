@@ -1,10 +1,8 @@
-#include "StdAfx.h"
 
 #include "BEngine.h"
-#include "VertexStream.h"
-#include "Singleton.h"
-#include "asVM.h"
-#include "asConsole.h"
+
+#include <io.h>
+#include <fcntl.h>
 
 #define MAX_CONSOLE_LINES 500
 

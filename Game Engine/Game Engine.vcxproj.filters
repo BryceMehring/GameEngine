@@ -32,7 +32,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StdAfx.h" />
     <ClInclude Include="BEngine.h">
       <Filter>Engine</Filter>
     </ClInclude>
@@ -48,8 +47,9 @@
     <ClInclude Include="asConsole.h">
       <Filter>AngelScript</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++\Include\Singleton.h" />
     <ClInclude Include="Factory.h" />
+    <ClInclude Include="Interfaces.h" />
+    <ClInclude Include="Singleton.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

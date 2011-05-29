@@ -3,9 +3,8 @@
 #define _UI_
 #pragma once
 
-#include "PluginManager.h"
-#include "Singleton.h"
-#include "asVM.h"
+#include "BEngine.h"
+#include "Interfaces.h"
 
 /*
 

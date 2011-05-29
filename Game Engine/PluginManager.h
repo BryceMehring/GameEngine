@@ -6,9 +6,8 @@
 #pragma once
 
 #include "BEngine.h"
+#include "Interfaces.h"
 #include "Singleton.h"
-#include "asVM.h"
-#include <map>
 
 struct PluginInfo
 {

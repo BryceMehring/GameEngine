@@ -1,7 +1,8 @@
 // Programmed by Bryce Mehring
 
-#include "StdAfx.h"
+#include <d3dx9.h>
 #include "UI.h"
+#include "PluginManager.h"
 #include "Factory.h"
 
 using namespace AngelScript;

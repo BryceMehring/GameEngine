@@ -19,6 +19,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -41,6 +42,7 @@
       <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -66,10 +68,10 @@
     <ClInclude Include="asConsole.h" />
     <ClInclude Include="asVM.h" />
     <ClInclude Include="BEngine.h" />
-    <ClInclude Include="D:\C++\Include\Singleton.h" />
     <ClInclude Include="Factory.h" />
+    <ClInclude Include="Interfaces.h" />
     <ClInclude Include="PluginManager.h" />
-    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="Singleton.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>

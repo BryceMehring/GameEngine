@@ -1,10 +1,11 @@
 // Programmed by Bryce Mehring
+
+using namespace std;
+
 #include "asVM.h"
-#include <scriptstdstring.h>
-#include <assert.h>
-#include <fstream>
+
 #include <iostream>
-#include <Windows.h>
+
 
 using namespace std;
 

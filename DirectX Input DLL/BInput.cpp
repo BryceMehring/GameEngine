@@ -49,7 +49,7 @@ DirectInput::~DirectInput()
 
 DLLType DirectInput::GetType()
 {
-	return DLLType::Input;
+	return Input;
 }
 
 void DirectInput::Poll()

@@ -1,10 +1,10 @@
 
+#ifndef _BENGINE_
+#define _BENGINE_
 #pragma once
 
-#include "Interfaces.h"
-#include "Singleton.h"
-#include "asVM.h"
 #include <Windows.h>
+#include "asVM.h"
 
 using namespace std;
 
@@ -76,6 +76,8 @@ private:
 };
 
 extern IBaseEngine* g_pEngine;
+
+#endif //_BENGINE_
 
 
 

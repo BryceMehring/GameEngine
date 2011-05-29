@@ -11,10 +11,13 @@
 #pragma once
 
 #include <angelscript.h>
+#include "Singleton.h"
+#include "ScriptBuilder.h"
+#include "scriptstdstring.h"
+#include <string>
 #include <vector>
 #include <assert.h>
-#include "scriptbuilder.h"
-#include "singleton.h"
+#include <Windows.h>
 
 // todo: need to add everything into its own namespace.
 
