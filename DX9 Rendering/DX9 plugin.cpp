@@ -25,6 +25,10 @@ DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref)
 	// post-Initialize
 	D3DXFONT_DESC desc;
 	ZeroMemory(&desc,sizeof(desc));
+
+	//desc.Width = 10;
+	//desc.Height = 20;
+
 	D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
 }
 DX9Render::~DX9Render()
@@ -86,10 +90,13 @@ void DX9Render::InitializeDirectX()
 		&m_p3Device);      // return created device
 }
 
-void DX9Render::DrawString(const char* str, const POINT& point, DWORD color)
+void DX9Render::GetStringRec(const char* str, RECT& out)
 {
-	RECT r = {point.x,point.y,point.x+20,point.y+20};
-	m_pFont->DrawText(0,str,-1,&r,DT_NOCLIP,color);
+	m_pFont->DrawText(0,str,-1,&out,DT_CALCRECT,0);
+}
+void DX9Render::DrawString(const char* str, RECT& R, DWORD color)
+{ 
+	m_pFont->DrawText(0,str,-1,&R,DT_CENTER,color);
 }
 /*void DX9Render::DrawSprite()
 {

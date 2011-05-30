@@ -62,7 +62,7 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 
 	// AS
 	AngelScript::asVM* pVM = AngelScript::asVM::Instance();
-	unsigned int id = pVM->BuildScriptFromFile("C:\\users\\Bryce\\documents\\visual Studio 2010\\projects\\game engine\\test application\\Test.as");
+	unsigned int id = pVM->BuildScriptFromFile("Test.as");
 	pVM->ExecuteScript(id);
 
 
@@ -131,12 +131,15 @@ int InputTestApp::Run()
 		m_pUI->Render();
 			
 		//pUI->Render();
-		if(m_pInput->MouseClick(0))
+		//if(m_pInput->MouseClick(0))
 		{
 			POINT p;
 			m_pInput->MousePos(p);
+
+			RECT R = {0,0,0,0};
+
 			wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",p.x,p.y);
-			m_pRendering->DrawString(buffer,p,0xffffffff);
+			m_pRendering->DrawString(buffer,R,0xffffffff);
 		}
 
 		m_pRendering->End();
@@ -154,6 +157,28 @@ void InputTestApp::LoadDLLS()
 	m_pRendering = static_cast<IRenderingPlugin*>(pPluginManager->LoadDLL("DX9 Rendering.dll"));
 }
 
+// Returns an empty string if dialog is canceled
+string openfilename(char *filter = "All Files (*.*)\0*.*\0", HWND owner = NULL) {
+  OPENFILENAME ofn;
+  char fileName[MAX_PATH] = "";
+  ZeroMemory(&ofn, sizeof(ofn));
+ 
+  ofn.lStructSize = sizeof(OPENFILENAME);
+  ofn.hwndOwner = owner;
+  ofn.lpstrFilter = filter;
+  ofn.lpstrFile = fileName;
+  ofn.nMaxFile = MAX_PATH;
+  ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+  ofn.lpstrDefExt = "";
+ 
+  string fileNameStr;
+ 
+  if ( GetOpenFileName(&ofn) )
+    fileNameStr = fileName;
+ 
+  return fileNameStr;
+}
+
 
 // The DLL files do not like the singletons. This is why when we pass a singleton
 // instance into a dll, it appears null. I need to check this out more...
@@ -162,6 +187,10 @@ void InputTestApp::LoadDLLS()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	g_pEngine = new InputTestApp(hInstance,"AngelScript");
+
+	cout << openfilename().c_str();
+	cin.ignore();
+
 	int returnCode = g_pEngine->Run();
 
 	// todo: this should be moved elsewhere

@@ -69,9 +69,12 @@ public:
 	virtual void Begin();
 	virtual void End();
 	virtual void Present();
-	virtual void DrawString(const char* str, const POINT& point, DWORD color);
-	//virtual void DrawSprite();
 
+	// fonts
+	virtual void GetStringRec(const char* str, RECT& out);
+	virtual void DrawString(const char* str, RECT& R, DWORD color);
+	//virtual void DrawSprite();
+	 
 protected:
 
 	DX9Render(PluginManager& ref);
@@ -94,6 +97,8 @@ protected:
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
 	ID3DXFont* m_pFont;
+
+	//fonts
 	ID3DXSprite* m_pSprite;
 
 	DWORD m_ClearBuffers;

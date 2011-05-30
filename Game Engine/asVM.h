@@ -71,7 +71,7 @@ void Destroy(void* pMem)
 	((T*)pMem)->~T();
 }
 
-int GetId(asIScriptFunction *func);
+int GetId(asIScriptFunction *func); 
 
 // ================
 

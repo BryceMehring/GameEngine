@@ -211,7 +211,7 @@ void asVM::RegisterScript()
 	DBAS(m_pEngine->RegisterGlobalFunction("void print(const string& in)",asFUNCTIONPR(print,(const string&),void),asCALL_CDECL));
 
 	// todo: need to look into this
-	DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));
+	DBAS(m_pEngine->RegisterFuncdef("void AppCallback(bool)"));
 	DBAS(m_pEngine->RegisterGlobalFunction("int GetId(AppCallback @)", asFUNCTION(GetId), asCALL_CDECL));
 
 	// asVM

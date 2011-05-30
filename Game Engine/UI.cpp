@@ -7,22 +7,33 @@
 
 using namespace AngelScript;
 
+// global functions
+CheckBoxData* CheckBoxDataFactory()
+{
+	return new CheckBoxData();
+}
 
 // static variable definitions
 IKMInput* CheckBox::s_pInput = 0;
 IRenderingPlugin* CheckBox::s_pRenderer = 0;
 
-
-// function prototypes
-IUIElement* CheckBoxFactory(const CheckBoxData& data);
-
-// CheckBox
-CheckBox::CheckBox(void* param)
+// CheckBox 
+CheckBox::CheckBox(void* pParam) : m_pData((CheckBoxData*)pParam)
 {
-	// todo: cast and copy the data.
+	s_pRenderer->GetStringRec(m_pData->m_str.c_str(),m_pData->m_Rect);
+
+	m_pData->m_Rect.left += m_pData->m_pos.x;
+	m_pData->m_Rect.right += m_pData->m_pos.x;
+	m_pData->m_Rect.bottom += m_pData->m_pos.y;
+	m_pData->m_Rect.top += m_pData->m_pos.y;
 }
-CheckBox::CheckBox(const CheckBoxData& data) : m_data(data)
+CheckBox::CheckBox(CheckBoxData* pData) : m_pData(pData)
 {
+	m_pData->AddRef();
+}
+CheckBox::~CheckBox()
+{
+	m_pData->Release();
 }
 
 void CheckBox::Update(float dt)
@@ -39,25 +50,24 @@ void CheckBox::Update(float dt)
 
 	if(s_pInput->MouseClick(0) && !bNoClick)
 	{
-		//m_data.m_time = 0;
+		//m_pData->m_time = 0;
 		POINT mousePos;
 		s_pInput->MousePos(mousePos);
 
 		// check if the box was clicked
 		// todo: need to fix the bounds
-		if((mousePos.x >= m_data.m_Rect.left) && (mousePos.x <= m_data.m_Rect.right))
+		if((mousePos.x >= m_pData->m_Rect.left) && (mousePos.x <= m_pData->m_Rect.right))
 		{
-			if((mousePos.y >= m_data.m_Rect.top) && (mousePos.y <= m_data.m_Rect.bottom))
+			if((mousePos.y >= m_pData->m_Rect.top) && (mousePos.y <= m_pData->m_Rect.bottom))
 			{
-				m_data.m_checked = !m_data.m_checked;
+				m_pData->m_checked = !m_pData->m_checked;
 
 				// do not come back in here until the user is not clicking
 				bNoClick = true;
 
-				// Call callback function
+				// Call script function
 				asVM* pVM = asVM::Instance();
-				pVM->ExecuteScriptFunction(m_data.m_ScriptIndex,m_data.m_funcId,m_data.m_checked);
-			//	(pEngine->*m_data.m_Callback)(m_data.m_checked);
+				pVM->ExecuteScriptFunction(m_pData->m_ScriptIndex,m_pData->m_funcId,m_pData->m_checked);
 			}
 		}
 	}
@@ -65,29 +75,24 @@ void CheckBox::Update(float dt)
 
 bool CheckBox::IsChecked() const
 {
-	return m_data.m_checked;
+	return m_pData->m_checked;
 }
 
 void CheckBox::Draw()
 {
 	DWORD color;
 
-	switch(m_data.m_checked)
+	if(m_pData->m_checked)
 	{
-	case true:
 		color = D3DCOLOR_XRGB(0,255,0);
-		break;
-	case false:
+	}
+	else
+	{
 		color = D3DCOLOR_XRGB(255,255,255);
-		break;
 	}
 
-	POINT P = {m_data.m_Rect.left,m_data.m_Rect.top};
-
-	s_pRenderer->DrawString(m_data.m_str.c_str(),P,color);
-
+	s_pRenderer->DrawString(m_pData->m_str.c_str(),m_pData->m_Rect,color);
 	// need to implement DrawString to draw at a pos on the screen
-	//s_pRenderer->DrawString(m_data.m_str.c_str());
 }
 
 // UI
@@ -100,7 +105,16 @@ UI::UI()
 	m_levels.resize(1);
 	m_currentLevel = m_levels.begin();
 }
-UI::~UI() {}
+UI::~UI()
+{
+	for(value_type::iterator iter = m_levels.begin(); iter != m_levels.end(); ++iter)
+	{
+		for(sub_type::iterator subIter = iter->begin(); subIter != iter->end(); ++subIter)
+		{
+			(*subIter)->Release();
+		}
+	}
+}
 
 void UI::AddLevel()
 {
@@ -125,16 +139,28 @@ unsigned int UI::GetCurrentLevel() const
 	return 0;
 }
 
-unsigned int UI::AddElement(const string& c, void* pObj)
+unsigned int UI::AddElement(const string& c, void* pObj, int typeId)
 {
-	CheckBoxData* pData = (CheckBoxData*)pObj;
-	CheckBoxData data;
-	//asIObjectType* pType = pObj->GetObjectType();
+	unsigned int iReturn = -1;
 
-	Factory<IUIElement>* pUIInstance = Factory<IUIElement>::Instance();
-	IUIElement* pElement = pUIInstance->Create(c,(void*)&data);
+	if(typeId & asTYPEID_OBJHANDLE)
+	{
+		// todo: need to figure out what this means
+		// because *(void**)pObj != pObj
+		void* pData =  *(void**)pObj;
 
-	return AddElement(pElement);
+		// AddRef to pData
+		asIScriptEngine* pEngine = asVM::Instance()->GetScriptEngine();
+		pEngine->AddRefScriptObject(pData, typeId);
+
+		// create object based on the c string and pass pData to the constructor
+		Factory<IUIElement>* pUIInstance = Factory<IUIElement>::Instance();
+		IUIElement* pElement = pUIInstance->Create(c,pData);
+
+		iReturn = AddElement(pElement);
+	}
+
+	return iReturn;
 }
 unsigned int UI::AddElement(IUIElement* pElement)
 {
@@ -186,51 +212,26 @@ void UI::RegisterScript()
 	asIScriptEngine* pEngine = pVM->GetScriptEngine();
 
 	// Register CheckBoxData
-	// Register the object operator overloads
-	DBAS(pEngine->RegisterObjectType("CheckBoxData",sizeof(CheckBoxData),asOBJ_VALUE | asOBJ_APP_CLASS_COPY_CONSTRUCTOR ));
-	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_CONSTRUCT,"void CheckBoxData()", asFUNCTION(Construct<CheckBoxData>),asCALL_CDECL_OBJLAST));
-	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_CONSTRUCT,"void CheckBoxData(const CheckBoxData& in)",asFUNCTION(CopyConstruct<CheckBoxData>),asCALL_CDECL_OBJLAST));
-	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_DESTRUCT,"void CheckBoxData()", asFUNCTION(Destroy<CheckBoxData>),asCALL_CDECL_OBJLAST));
+	DBAS(pEngine->RegisterObjectType("CheckBoxData",0,asOBJ_REF));
 
+	// Register CheckBoxData Behavior
+	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_FACTORY,"CheckBoxData@ f()",
+		asFUNCTION(CheckBoxDataFactory),asCALL_CDECL));
+	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_ADDREF,"void f()",
+		asMETHOD(CheckBoxData,AddRef),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectBehaviour("CheckBoxData",asBEHAVE_RELEASE,"void f()",
+		asMETHOD(CheckBoxData,Release),asCALL_THISCALL));
+	
 	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","bool checked",offsetof(CheckBoxData,m_checked)));
-	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","RECT rect",offsetof(CheckBoxData,m_Rect)));
+	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","POINT pos",offsetof(CheckBoxData,m_pos)));
 	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","string name",offsetof(CheckBoxData,m_str)));
 	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","int func",offsetof(CheckBoxData,m_funcId)));
 	DBAS(pEngine->RegisterObjectProperty("CheckBoxData","uint scriptIndex",offsetof(CheckBoxData,m_ScriptIndex)));
-
-	// major todo: I really do not need to register IUIElement and CheckBox with as. I can just register C++ functions that add elements to the ui.
-	
-	// Register  UI
-	// todo: if this class is not a singleton, I cannot register a global property, this.
-	/*DBAS(pEngine->RegisterObjectType("IUIElement",0,asOBJ_REF));
-	DBAS(pEngine->RegisterObjectType("CheckBox",0,asOBJ_REF));
-
-	// Behaviors
-
-	DBAS(pEngine->RegisterObjectBehaviour("IUIElement", asBEHAVE_REF_CAST, "CheckBox@ f()", asFUNCTION((refCast<IUIElement,CheckBox>)), asCALL_CDECL_OBJLAST));
-	DBAS(pEngine->RegisterObjectBehaviour("CheckBox", asBEHAVE_IMPLICIT_REF_CAST, "IUIElement@ f()", asFUNCTION((refCast<CheckBox,IUIElement>)), asCALL_CDECL_OBJLAST));
-
-	DBAS(pEngine->RegisterObjectBehaviour("CheckBox",asBEHAVE_FACTORY,"CheckBox@ f(const CheckBox& in)",asFUNCTION(CheckBoxFactory),asCALL_CDECL));
-	DBAS(pEngine->RegisterObjectBehaviour("CheckBox",asBEHAVE_ADDREF,"void f()",asMETHOD(CheckBox,AddRef),asCALL_THISCALL));
-	DBAS(pEngine->RegisterObjectBehaviour("CheckBox",asBEHAVE_RELEASE,"void f()",asMETHOD(CheckBox,Release),asCALL_THISCALL));
-
-	DBAS(pEngine->RegisterObjectBehaviour("IUIElement",asBEHAVE_ADDREF,"void f()",asMETHOD(IUIElement,AddRef),asCALL_THISCALL));
-	DBAS(pEngine->RegisterObjectBehaviour("IUIElement",asBEHAVE_RELEASE,"void f()",asMETHOD(IUIElement,Release),asCALL_THISCALL));
-
-	DBAS(pEngine->RegisterObjectMethod("IUIElement", "bool IsChecked()", asMETHOD(IUIElement, IsChecked), asCALL_THISCALL));
-	DBAS(pEngine->RegisterObjectMethod("IUIElement", "void Update(float)",asMETHOD(IUIElement,Update),asCALL_THISCALL));
-	DBAS(pEngine->RegisterObjectMethod("IUIElement", "void Draw()",asMETHOD(IUIElement,Draw),asCALL_THISCALL));*/
 	
 	DBAS(pEngine->RegisterObjectType("UI",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(pEngine->RegisterObjectMethod("UI","void AddLevel()",asMETHOD(UI, AddLevel),asCALL_THISCALL));
-	DBAS(pEngine->RegisterObjectMethod("UI","uint AddElement(const string& in, ?&in)",asMETHODPR(UI,AddElement,(const string&, void*),unsigned int),asCALL_THISCALL));	
+	DBAS(pEngine->RegisterObjectMethod("UI","uint AddElement(const string& in, ?&in)",asMETHODPR(UI,AddElement,(const string&, void*, int),unsigned int), asCALL_THISCALL));	
 	DBAS(pEngine->RegisterGlobalProperty("UI ui",this));
 
 	pEngine->Release();
-}
-
-// function definitions
-IUIElement* CheckBoxFactory(const CheckBoxData& data)
-{
-	return new CheckBox(data);
 }

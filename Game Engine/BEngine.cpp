@@ -123,7 +123,7 @@ void IBaseEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaptio
 	m_rect.bottom = 600;
 	AdjustWindowRect(&m_rect, WS_OVERLAPPEDWINDOW, false);
 	m_hWindowHandle = CreateWindow("D3DWndClassName", winCaption.c_str(), 
-		WS_OVERLAPPEDWINDOW , 100, 100, m_rect.right, m_rect.bottom, 
+		(WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX) , 100, 100, m_rect.right, m_rect.bottom, 
 		0, 0, hInstance, 0); 
 
 	if( !m_hWindowHandle ) { throw std::string("RegisterClass Failed"); }
@@ -136,6 +136,9 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
 	switch( msg )
 	{
+		case WM_SIZING:
+		
+		break;
 		case WM_EXITSIZEMOVE:
 		{
 			//GetWindowRect(m_hWindowHandle,&m_rect);

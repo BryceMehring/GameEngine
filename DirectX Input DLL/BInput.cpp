@@ -79,8 +79,9 @@ void DirectInput::Poll()
 
 	GetCursorPos(&m_MousePos);
 
+	// todo: need to change this for full screen vs. windows
 	m_MousePos.x -= rect.left;
-	m_MousePos.y -= rect.top;
+	m_MousePos.y -= rect.top + 30;
 }
 
 void DirectInput::MousePos(POINT& pos)

@@ -1,44 +1,47 @@
 
-void Function(bool b)
+// Response
+void CheckResponse(bool checked)
 {
-	// do something interesting!
+	if(checked)
+	{
+		print("Checked\n");
+	}
+	else
+	{
+		print("Not Checked\n");
+	}
 }
-
-void Nothing()
-{
-	print("The Function");
-}
-
 void CheckBoxResponce()
 {
 
 }
 
+// todo: I should make scriptId a global property
 void main(uint scriptId)
 {
-	CheckBoxData myCheckData;
+	CheckBoxData@ myCheckData = CheckBoxData();
 	myCheckData.checked = false;
-	myCheckData.name = "Call AngelScript Function \n";
+	myCheckData.name = "Console \n";
 	
-	myCheckData.rect.left = 8;
-	myCheckData.rect.top = 30;
-	myCheckData.rect.right = 150;
-	myCheckData.rect.bottom = 80;
+	myCheckData.pos.x = 0;
+	myCheckData.pos.y = 50;
 
-	myCheckData.func = GetId(@Nothing);
+	myCheckData.func = GetId(@CheckResponse);
 	myCheckData.scriptIndex = scriptId;
 
-	ui.AddElement("CheckBox",myCheckData);
+	uint id = ui.AddElement("CheckBox",@myCheckData);
 
-	//CheckBox@ myCheckBox=CheckBox(myCheckData);
+	CheckBoxData@ myCheckData2 = CheckBoxData();
+	myCheckData2.checked = false;
+	myCheckData2.name = "Start Game \n";
+	
+	myCheckData2.pos.x = 200;
+	myCheckData2.pos.y = 30;
 
-	//ui.AddCheckBox(myCheckData);
+	myCheckData2.func = GetId(@CheckResponse);
+	myCheckData2.scriptIndex = scriptId;
 
-	print(myCheckData.name);
-
-	/*uint id = as.BuildScriptFromFile("C:\\Users\\Bryce\\Desktop\\TestScript.as");
-	as.ExecuteScript(id);
-	//print("\nHello World\n\n");*/
+	id = ui.AddElement("CheckBox",@myCheckData2);
 }
 
   

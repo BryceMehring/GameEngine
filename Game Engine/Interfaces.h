@@ -148,8 +148,10 @@ public:
 	virtual void End() = 0;
 	virtual void Present() = 0;
 	//virtual void DrawSprite();
-	virtual void DrawString(const char* str, const POINT& point, DWORD color) = 0;
-	
+
+	// Fonts
+	virtual void GetStringRec(const char* str, RECT& out) = 0;
+	virtual void DrawString(const char* str, RECT& R, DWORD color) = 0;
 	
 	///add more functions...
 protected:

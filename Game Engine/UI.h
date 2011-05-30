@@ -17,22 +17,40 @@ How should I go about doing this? Should I keep a pointer to the Rendering and I
 typedef void (IBaseEngine::*FUNCT)(bool);
 typedef void (*UI_CALLBACK)(bool);
 
+// forward class declarations
+class CheckBox;
+class UI;
+
 // This is the data structure for a CheckBox
-struct CheckBoxData
+// todo: move this to the cpp file and only have a forward class declaration 
+// in the header file
+struct CheckBoxData : public RefCounting
 {
-	CheckBoxData() {}
-	CheckBoxData(const CheckBoxData& other)
+public:
+
+	CheckBoxData()
 	{
-		system("pause");
+		memset((void*)&m_pos,0,sizeof(POINT));
+		memset((void*)&m_Rect,0,sizeof(RECT));
 	}
 
+protected:
+
+	friend class CheckBox;
+	friend class UI;
+
 	bool m_checked;
+
+	POINT m_pos;
 	RECT m_Rect;
+
 	std::string m_str;
 
 	// used for calling a script function
 	int m_funcId;
 	unsigned int m_ScriptIndex;
+
+	virtual ~CheckBoxData() {}
 }; 
 
 // element
@@ -40,16 +58,14 @@ struct CheckBoxData
 // todo: does IUIElement have to inherit from RefCounting?
 class IUIElement : public RefCounting
 {
-protected:
-
-	virtual ~IUIElement() {}
-
 public:
 
 	virtual bool IsChecked() const = 0;
 	virtual void Update(float dt) = 0;
 	virtual void Draw() = 0;
 
+protected:
+	virtual ~IUIElement() {}
 };
 
 
@@ -62,8 +78,9 @@ public:
 
 	friend class UI;
 
-	CheckBox(void* param);
-	CheckBox(const CheckBoxData&);
+	CheckBox(void*);
+	CheckBox(CheckBoxData*);
+	~CheckBox();
 
 	virtual bool IsChecked() const;
 	virtual void Update(float dt);
@@ -71,7 +88,7 @@ public:
 
 private:
 
-	CheckBoxData m_data;
+	CheckBoxData* m_pData;
 
 	// Plugin Interfaces, these are set in the UIManager.
 	// todo: these should not be static?
@@ -100,8 +117,29 @@ public:
 
 	// todo: the script function should not pass a pointer to the interface. The script should pass a string, and that string will get mapped to a IUIElement.
 
-	// the string 'c' is the key for the factory
-	unsigned int AddElement(const string& c, void* pObj);
+	/* =================== AddElement =============================
+	
+	This Method is called by AngelScript.
+	This Method Adds an element to the UI
+
+		Parameters:
+			"const string& c" - the string 'c' is the key for the factory
+			 "void* pData"    - the data that gets passed off to the objects constructor
+			 "typeId  "       - typeId is auto added by AngelScript
+	 
+	 Return Codes:
+
+			Pass: if the returned uint is not -1. It is the index for the newly
+			added UI element.
+
+			Fail:
+			-1 - pData is not a handle
+	 
+
+	 ======================= AddElement =========================
+	*/
+	unsigned int AddElement(const string& c, void* pData, int typeId);
+
 	unsigned int AddElement(IUIElement* pElement);
 	void RemoveElement(unsigned int i);
 
@@ -117,6 +155,7 @@ private:
 
 	// todo: need to change CheckBox into an abstract interface?
 	typedef std::vector<std::vector<IUIElement*>> value_type;
+	typedef std::vector<IUIElement*> sub_type;
 
 	value_type::iterator m_currentLevel;
 	value_type m_levels;
