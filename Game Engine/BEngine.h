@@ -27,11 +27,13 @@ public:
 
 	void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
 
+	string OpenFileName();
+
 	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
 	HWND GetWindowHandle() const { return m_hWindowHandle; }
 
 	// todo: need to implement these functions
-	virtual void RegisterScript() {}
+	virtual void RegisterScript();
 	virtual void LoadDLLS() {}
 
 	virtual void OnLostDevice() = 0;

@@ -6,15 +6,33 @@ using namespace std;
 
 #include <iostream>
 
-
-using namespace std;
-
 #pragma comment(lib,"AngelScript.lib")
 #pragma comment(lib,"AngelScriptAddons.lib")
 
 namespace AngelScript
 {
 
+using namespace std;
+
+struct Script
+{
+	Script() : id(0), pCtx(NULL) {}
+
+	int id; // void main() id
+	asIScriptContext* pCtx;
+};
+
+// ===== Global functions that are registered with AngelScript =====
+void print(const string& d)
+{
+	cout<<d;
+}
+void print(int d)
+{
+	cout<<d;
+}
+
+// Returns the Script Function Id
 int GetId(asIScriptFunction *func)
 {
 	int id = -1;
@@ -30,20 +48,6 @@ int GetId(asIScriptFunction *func)
 
 	return id;
 }
-
-class Script
-{
-public:
-
-	Script() : id(0), pCtx(NULL) {}
-	//~Script() { pCtx->Release(); }
-
-	// copy constructor
-	//Script(const Script& s) { pCtx->AddRef(); }
-
-	int id;
-	asIScriptContext* pCtx;
-};
 
 // Implement a simple message callback function
 void MessageCallback(const asSMessageInfo *msg, void *param)
@@ -62,28 +66,15 @@ void MessageCallback(const asSMessageInfo *msg, void *param)
 	printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
 }
 
-// The global functions that the script calls
-void print(const string& d)
-{
-	cout<<d;
-}
-void print(int d)
-{
-	cout<<d;
-}
-void print(double d)
-{
-	cout<<d;
-}
 
-
-asVM::asVM()
+asVM::asVM() : m_iExeScript(0)
 {
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
 
 	RegisterStdString(m_pEngine);
 	RegisterScript();
 
+	DBAS(m_builder.StartNewModule(m_pEngine,"Application"));
 }
 asVM::~asVM()
 {
@@ -92,21 +83,48 @@ asVM::~asVM()
 
 unsigned int asVM::BuildScriptFromFile(const string& str)
 {
-	DBAS(m_builder.AddSectionFromFile(str.c_str()));
-	DBAS(m_builder.BuildModule());
+	
+	unsigned int index;
 
-	asIScriptModule* pMod = m_pEngine->GetModule("Application");
+	// todo: When a file is selected in the window, its full path is included in the string
+	// I could remove everything to the left of the last '\' to improve performance in 
+	// searching the m_scriptIndex data structure.
+	//str.find_last_of();
 
-	// fill structure
-	Script s;
-	s.id = pMod->GetFunctionIdByDecl("void main(uint)");
-	s.pCtx = m_pEngine->CreateContext();
+	// we first see if the script is already loaded in memory
+	ScriptIndexType::iterator iter = m_scriptIndex.find(str);
 
-	// add script
-	m_scripts.push_back(s);
+	if(iter != m_scriptIndex.end())
+	{
+		index = iter->second;
+	}
+	else
+	{
+		int R = m_builder.AddSectionFromFile(str.c_str());
 
-	// return index
-	return (m_scripts.size() - 1);
+		if(R >= 0)
+		{
+			// todo: when the file cannot compile, the program should not crash.
+			// remove some of the DBAS.
+		}
+
+		DBAS(m_builder.BuildModule());
+
+		asIScriptModule* pMod = m_pEngine->GetModule("Application");
+
+		// fill structure
+		Script s;
+		s.id = pMod->GetFunctionIdByDecl("void main()");
+		s.pCtx = m_pEngine->CreateContext();
+
+		// add script
+		m_scripts.push_back(s);
+
+		index = (m_scripts.size() - 1);
+		m_scriptIndex.insert(make_pair(str,index));
+	}
+
+	return index;
 }
 
 void asVM::RemoveScript(unsigned int id)
@@ -128,11 +146,11 @@ void asVM::ExecuteScript(unsigned int scriptId)
 {
 	assert(scriptId < m_scripts.size());
 
+	m_iExeScript = scriptId;
+
 	asIScriptContext* ptx = m_scripts[scriptId].pCtx;
 	
 	DBAS(ptx->Prepare(m_scripts[scriptId].id));
-
-	DBAS(ptx->SetArgDWord(0,scriptId));
 	
 	DBAS(ptx->Execute());
 	DBAS(ptx->Unprepare());
@@ -180,38 +198,20 @@ asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& po
 	return t;
 }
 
-/*void asVM::AddFunction(string& arg)
-{
-	asIScriptModule* mod = m_pEngine->GetModule("console", asGM_CREATE_IF_NOT_EXISTS);
-
-	asIScriptFunction* func = 0;
-	int r = mod->CompileFunction("addfunc", arg.c_str(), 0, asCOMP_ADD_TO_MODULE, &func);
-	if( r < 0 )
-	{
-		// TODO: Add better description of error (invalid declaration, name conflict, etc)
-		cout << "Failed to add function. " << endl;
-	}
-	else
-	{
-		cout <<"Function added. " << endl;
-	}
-
-	// We must release the function object
-	if( func )
-	{
-		func->Release();
-	}
-}*/
-
 void asVM::RegisterScript()
 {
 	DBAS(m_pEngine->SetMessageCallback(asFUNCTION(MessageCallback),0,asCALL_CDECL));
-
-	// Print Functions
-	DBAS(m_pEngine->RegisterGlobalFunction("void print(const string& in)",asFUNCTIONPR(print,(const string&),void),asCALL_CDECL));
-
-	// todo: need to look into this
+	
+	// Funcdefs
 	DBAS(m_pEngine->RegisterFuncdef("void AppCallback(bool)"));
+	//DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));
+
+	// Global Properties
+	DBAS(m_pEngine->RegisterGlobalProperty("const uint scriptId",&m_iExeScript));
+
+	// Global Functions
+	DBAS(m_pEngine->RegisterGlobalFunction("void print(const string& in)",asFUNCTIONPR(print,(const string&),void),asCALL_CDECL));
+	DBAS(m_pEngine->RegisterGlobalFunction("void print(int)",asFUNCTIONPR(print,(int),void),asCALL_CDECL));
 	DBAS(m_pEngine->RegisterGlobalFunction("int GetId(AppCallback @)", asFUNCTION(GetId), asCALL_CDECL));
 
 	// asVM
@@ -231,9 +231,6 @@ void asVM::RegisterScript()
 	DBAS(m_pEngine->RegisterObjectProperty("RECT","int top",offsetof(RECT,top)));
 	DBAS(m_pEngine->RegisterObjectProperty("RECT","int right",offsetof(RECT,right)));
 	DBAS(m_pEngine->RegisterObjectProperty("RECT","int bottom",offsetof(RECT,bottom)));
-
-	// todo: move this out of this function. It is not needed here
-	DBAS(m_builder.StartNewModule(m_pEngine,"Application"));
 }
 
 }; // AngelScript

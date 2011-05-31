@@ -64,6 +64,7 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 	AngelScript::asVM* pVM = AngelScript::asVM::Instance();
 	unsigned int id = pVM->BuildScriptFromFile("Test.as");
 	pVM->ExecuteScript(id);
+	//pVM->
 
 
 	/*Load();
@@ -157,28 +158,6 @@ void InputTestApp::LoadDLLS()
 	m_pRendering = static_cast<IRenderingPlugin*>(pPluginManager->LoadDLL("DX9 Rendering.dll"));
 }
 
-// Returns an empty string if dialog is canceled
-string openfilename(char *filter = "All Files (*.*)\0*.*\0", HWND owner = NULL) {
-  OPENFILENAME ofn;
-  char fileName[MAX_PATH] = "";
-  ZeroMemory(&ofn, sizeof(ofn));
- 
-  ofn.lStructSize = sizeof(OPENFILENAME);
-  ofn.hwndOwner = owner;
-  ofn.lpstrFilter = filter;
-  ofn.lpstrFile = fileName;
-  ofn.nMaxFile = MAX_PATH;
-  ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-  ofn.lpstrDefExt = "";
- 
-  string fileNameStr;
- 
-  if ( GetOpenFileName(&ofn) )
-    fileNameStr = fileName;
- 
-  return fileNameStr;
-}
-
 
 // The DLL files do not like the singletons. This is why when we pass a singleton
 // instance into a dll, it appears null. I need to check this out more...
@@ -187,9 +166,6 @@ string openfilename(char *filter = "All Files (*.*)\0*.*\0", HWND owner = NULL) 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	g_pEngine = new InputTestApp(hInstance,"AngelScript");
-
-	cout << openfilename().c_str();
-	cin.ignore();
 
 	int returnCode = g_pEngine->Run();
 

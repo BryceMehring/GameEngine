@@ -14,9 +14,6 @@ How should I go about doing this? Should I keep a pointer to the Rendering and I
 
 */
 
-typedef void (IBaseEngine::*FUNCT)(bool);
-typedef void (*UI_CALLBACK)(bool);
-
 // forward class declarations
 class CheckBox;
 class UI;

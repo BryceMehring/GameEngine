@@ -11,27 +11,30 @@ void CheckResponse(bool checked)
 		print("Not Checked\n");
 	}
 }
-void CheckBoxResponce()
-{
 
+void OpenFile(bool b)
+{
+	string fileName = engine.OpenFileName();
+	uint i = as.BuildScriptFromFile(fileName);
+	as.ExecuteScript(i);
 }
 
-// todo: I should make scriptId a global property
-void main(uint scriptId)
+
+void main()
 {
 	CheckBoxData@ myCheckData = CheckBoxData();
 	myCheckData.checked = false;
-	myCheckData.name = "Console \n";
+	myCheckData.name = "Open Script";
 	
-	myCheckData.pos.x = 0;
-	myCheckData.pos.y = 50;
+	myCheckData.pos.x = 100;
+	myCheckData.pos.y = 100;
 
-	myCheckData.func = GetId(@CheckResponse);
+	myCheckData.func = GetId(@OpenFile);
 	myCheckData.scriptIndex = scriptId;
 
 	uint id = ui.AddElement("CheckBox",@myCheckData);
 
-	CheckBoxData@ myCheckData2 = CheckBoxData();
+	/*CheckBoxData@ myCheckData2 = CheckBoxData();
 	myCheckData2.checked = false;
 	myCheckData2.name = "Start Game \n";
 	
@@ -41,7 +44,7 @@ void main(uint scriptId)
 	myCheckData2.func = GetId(@CheckResponse);
 	myCheckData2.scriptIndex = scriptId;
 
-	id = ui.AddElement("CheckBox",@myCheckData2);
+	id = ui.AddElement("CheckBox",@myCheckData2);*/
 }
 
   

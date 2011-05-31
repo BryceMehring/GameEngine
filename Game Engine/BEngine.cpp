@@ -1,8 +1,10 @@
 
 #include "BEngine.h"
-
+#include "asVM.h"
 #include <io.h>
 #include <fcntl.h>
+
+using namespace AngelScript;
 
 #define MAX_CONSOLE_LINES 500
 
@@ -37,16 +39,13 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInst
 		exit(0);
 	}
 
-	// initialize timer 
+	// initialize timer. todo: I could put this code into its own method
 	__int64 cntsPerSec = 0;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
 	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
 
 	RedirectIOToConsole();
-
-	//asConsole* pConsole = asConsole::Instance();
-	//pConsole->Open();
-
+	RegisterScript();
 }
 
 IBaseEngine::~IBaseEngine()
@@ -180,6 +179,29 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 	}
 }
 
+string IBaseEngine::OpenFileName()
+{
+	OPENFILENAME ofn = {0};
+	char fileName[MAX_PATH] = "";
+ 
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = m_hWindowHandle;
+	ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
+	ofn.lpstrFile = fileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.lpstrDefExt = "";
+ 
+	string fileNameStr;
+ 
+	if ( GetOpenFileName(&ofn) )
+	{
+		fileNameStr = fileName;
+	}
+ 
+	return fileNameStr;
+}
+
 void IBaseEngine::RedirectIOToConsole()
 {
 
@@ -242,4 +264,14 @@ void IBaseEngine::RedirectIOToConsole()
 
 	ios::sync_with_stdio();
 
+}
+
+void IBaseEngine::RegisterScript()
+{
+	asVM* pVM = asVM::Instance();
+	asIScriptEngine* pEngine = pVM->GetScriptEngine();
+
+	DBAS(pEngine->RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(pEngine->RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(IBaseEngine,OpenFileName),asCALL_THISCALL));
+	DBAS(pEngine->RegisterGlobalProperty("IEngine engine",this));
 }

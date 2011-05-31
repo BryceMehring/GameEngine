@@ -16,6 +16,7 @@
 #include "scriptstdstring.h"
 #include <string>
 #include <vector>
+#include <map>
 #include <assert.h>
 #include <Windows.h>
 
@@ -71,8 +72,6 @@ void Destroy(void* pMem)
 	((T*)pMem)->~T();
 }
 
-int GetId(asIScriptFunction *func); 
-
 // ================
 
 
@@ -88,6 +87,7 @@ public:
 
 	virtual ~IScripted() {}
 	virtual void RegisterScript() = 0;
+	// todo: maybe add a deregister method?
 
 };
 
@@ -100,17 +100,15 @@ class asVM : public Singleton<asVM>, public IScripted
 {
 public:
 
-	// Registers objects with the script. The application then must
-	// Provide these functions for the script to work. I need to look into
-	// this more...
-	//void RegisterScript(const char* file);
-
-	//void AddFunction(std::string& str);
-
 	// Returned int is the id to the script
 	// Build script and then add to vector
 	unsigned int BuildScriptFromFile(const std::string& str);
 
+	/* m_iExeScript is assigned the value of scriptId. Then the script is:
+		1. Prepared ( push data on stack)
+		2. Executed
+		3. Unprepared (destroy stack)
+	*/
 	void ExecuteScript(unsigned int scriptId);
 
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId);
@@ -130,14 +128,25 @@ public:
 private:
 
 	asIScriptEngine* m_pEngine;
+
+	typedef std::map<std::string,unsigned int> ScriptIndexType;
+
+	// m_iExeScript is the script that is currently being executed. This variable is
+	// being shared with AngelScript. But the script cannot modify this variable.
+	unsigned int m_iExeScript;
+
+	// m_scriptIndex maps the filename of the script to the m_scripts index.
+	std::map<std::string,unsigned int> m_scriptIndex;
+
 	std::vector<Script> m_scripts;
+
 	CScriptBuilder m_builder;
 
 	// constructor/destructor
 
 	// in the constructor, the engine is created and is registered with the std::string type
 	// the message callback function is also registered along with a global print function
-	// for ints
+	// for strings
 	asVM();
 
 	// the destructor releases all script contexts and then releases the engine
