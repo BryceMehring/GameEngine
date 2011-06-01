@@ -33,10 +33,6 @@ protected:
 	// ui
 	UI* m_pUI;
 
-	// plugins
-	IKMInput* m_pInput;
-	IRenderingPlugin* m_pRendering;
-
 	char buffer[64];
 
 	// ===== helper functions =====

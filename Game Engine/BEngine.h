@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <queue>
 #include "asVM.h"
 
 using namespace std;
@@ -17,8 +18,52 @@ using namespace std;
 
 // this class should not be a singleton, I should create another class that manages 
 // game engines
+// todo: add RefCounting? I should name this class something else. 
+//  Need to subclass these methods
+// into more interfaces
 
-class IBaseEngine : public AngelScript::IScripted
+class IBEngine 
+{
+public:
+
+	virtual ~IBEngine() {}
+
+	virtual string OpenFileName() = 0;
+	virtual void OnLostDevice() = 0;
+	virtual void OnResetDevice() = 0;
+
+	virtual void Update(float dt) = 0;
+	virtual void DrawScene() = 0;
+	virtual int Run() = 0;
+
+	// todo: add more methods?
+	
+};
+
+class IBEngineWin : public IBEngine
+{
+public:
+
+
+
+};
+
+class BEngineScriped : public IBEngine, public IScripted
+{
+public:
+
+	BEngineScriped();
+	virtual ~BEngineScriped();
+
+protected:
+
+	asVM* m_pVM;
+
+};
+
+ 
+
+class IBaseEngine : public IScripted//, public RefCounting
 {
 public:
 
@@ -43,6 +88,15 @@ public:
 protected:
 
 	// ====== data members ======
+
+	asVM* m_pVM;
+
+	PluginManager* m_pPM;
+
+	IRenderingPlugin* m_pRenderer;
+	// std::priority_queue<...>; look at ui.cpp
+
+	IInputPlugin* m_pInput;
 	
 	// win32 window
 	HWND m_hWindowHandle;
@@ -57,14 +111,6 @@ protected:
 	bool m_bPaused;
 
 	// ====== helper functions ======
-
-	/*bool Begin();
-	bool End();
-	void Present
-	bool IsDeviceLost();
-	void OnLostDevice();
-	void OnResetDevice();
-	*/
 
 	void StartCounter();
 	void EndCounter();

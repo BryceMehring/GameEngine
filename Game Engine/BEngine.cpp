@@ -268,10 +268,12 @@ void IBaseEngine::RedirectIOToConsole()
 
 void IBaseEngine::RegisterScript()
 {
-	asVM* pVM = asVM::Instance();
-	asIScriptEngine* pEngine = pVM->GetScriptEngine();
+	asVM& vm = asVM::Instance();
+	asIScriptEngine& engine = vm.GetScriptEngine();
 
-	DBAS(pEngine->RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(pEngine->RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(IBaseEngine,OpenFileName),asCALL_THISCALL));
-	DBAS(pEngine->RegisterGlobalProperty("IEngine engine",this));
+	DBAS(engine.RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(engine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(IBaseEngine,OpenFileName),asCALL_THISCALL));
+	DBAS(engine.RegisterGlobalProperty("IEngine engine",this));
+
+	engine.Release();
 }

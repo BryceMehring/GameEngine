@@ -31,6 +31,8 @@ public:
 	virtual int MouseY();
 	virtual int MouseZ();
 
+	virtual void RegisterScript();
+
 private:
 
 	

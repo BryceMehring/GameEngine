@@ -14,14 +14,6 @@ namespace AngelScript
 
 using namespace std;
 
-struct Script
-{
-	Script() : id(0), pCtx(NULL) {}
-
-	int id; // void main() id
-	asIScriptContext* pCtx;
-};
-
 // ===== Global functions that are registered with AngelScript =====
 void print(const string& d)
 {
@@ -70,6 +62,7 @@ void MessageCallback(const asSMessageInfo *msg, void *param)
 asVM::asVM() : m_iExeScript(0)
 {
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
+	m_pContext = m_pEngine->CreateContext();
 
 	RegisterStdString(m_pEngine);
 	RegisterScript();
@@ -78,6 +71,7 @@ asVM::asVM() : m_iExeScript(0)
 }
 asVM::~asVM()
 {
+	m_pContext->Release();
 	m_pEngine->Release();
 }
 
@@ -111,14 +105,10 @@ unsigned int asVM::BuildScriptFromFile(const string& str)
 		DBAS(m_builder.BuildModule());
 
 		asIScriptModule* pMod = m_pEngine->GetModule("Application");
-
-		// fill structure
-		Script s;
-		s.id = pMod->GetFunctionIdByDecl("void main()");
-		s.pCtx = m_pEngine->CreateContext();
+		int mainId = pMod->GetFunctionIdByDecl("void main()");
 
 		// add script
-		m_scripts.push_back(s);
+		m_scripts.push_back(mainId);
 
 		index = (m_scripts.size() - 1);
 		m_scriptIndex.insert(make_pair(str,index));
@@ -129,17 +119,15 @@ unsigned int asVM::BuildScriptFromFile(const string& str)
 
 void asVM::RemoveScript(unsigned int id)
 {
-	// Release Context
-	m_scripts[id].pCtx->Release();
 
-	// Remove from vector
+	// Remove from vector. not the most efficient data structure for this task. 
 	m_scripts.erase(m_scripts.begin() + id);
 }
 
-asIScriptEngine* asVM::GetScriptEngine() const
+asIScriptEngine& asVM::GetScriptEngine() const
 {
 	m_pEngine->AddRef();
-	return m_pEngine;
+	return *m_pEngine;
 }
 
 void asVM::ExecuteScript(unsigned int scriptId)
@@ -147,37 +135,31 @@ void asVM::ExecuteScript(unsigned int scriptId)
 	assert(scriptId < m_scripts.size());
 
 	m_iExeScript = scriptId;
-
-	asIScriptContext* ptx = m_scripts[scriptId].pCtx;
 	
-	DBAS(ptx->Prepare(m_scripts[scriptId].id));
+	DBAS(m_pContext->Prepare(m_scripts[scriptId]));
 	
-	DBAS(ptx->Execute());
-	DBAS(ptx->Unprepare());
+	DBAS(m_pContext->Execute());
+	DBAS(m_pContext->Unprepare());
 }
 void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId)
 {
 	assert(scriptId < m_scripts.size());
-
-	asIScriptContext* pCtx = m_scripts[scriptId].pCtx;
 	
-	DBAS(pCtx->Prepare(funcId));
-	DBAS(pCtx->Execute());
-	DBAS(pCtx->Unprepare());
+	DBAS(m_pContext->Prepare(funcId));
+	DBAS(m_pContext->Execute());
+	DBAS(m_pContext->Unprepare());
 }
 
 void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, char param)
 {
 	assert(scriptId < m_scripts.size());
-
-	asIScriptContext* pCtx = m_scripts[scriptId].pCtx;
 	
-	DBAS(pCtx->Prepare(funcId));
+	DBAS(m_pContext->Prepare(funcId));
 	
-	pCtx->SetArgByte(0,param);
+	m_pContext->SetArgByte(0,param);
 	
-	DBAS(pCtx->Execute());
-	DBAS(pCtx->Unprepare());
+	DBAS(m_pContext->Execute());
+	DBAS(m_pContext->Unprepare());
 }
 
 

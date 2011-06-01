@@ -5,7 +5,7 @@
 #define _ASCONSOLE_
 #pragma once
 
-#include <Windows.h>
+/*#include <Windows.h>
 #include <string>
 #include "Singleton.h"
 
@@ -51,4 +51,4 @@ private:
 	friend DWORD WINAPI ConsoleThread(void*);
 };
 
-#endif
+#endif*/

@@ -52,8 +52,8 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 
 	// registering 
 
-	Factory<IUIElement>* pUIInstance = Factory<IUIElement>::Instance();
-	pUIInstance->Register("CheckBox",new Creator<CheckBox,IUIElement>);
+	Factory<IUIElement>& uiFactory = Factory<IUIElement>::Instance();
+	uiFactory.Register("CheckBox",new Creator<CheckBox,IUIElement>);
 	//pUIInstance->Register("CheckBox",new Creator<CheckBox,IUIElement>());
 
 	// UI
@@ -61,9 +61,9 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 	m_pUI->RegisterScript();
 
 	// AS
-	AngelScript::asVM* pVM = AngelScript::asVM::Instance();
-	unsigned int id = pVM->BuildScriptFromFile("Test.as");
-	pVM->ExecuteScript(id);
+	AngelScript::asVM& vm = AngelScript::asVM::Instance();
+	unsigned int id = vm.BuildScriptFromFile("Test.as");
+	vm.ExecuteScript(id);
 	//pVM->
 
 
@@ -105,13 +105,7 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 }
 InputTestApp::~InputTestApp()
 {
-	asVM::Delete();
 }
-
-/*void InputTestApp::Open(bool b)
-{
-
-}*/
 
 int InputTestApp::Run()
 {
@@ -120,12 +114,9 @@ int InputTestApp::Run()
 		StartCounter();
 		m_pInput->Poll();
 
-		/*if(m_pInput->KeyDown(0x1C)) // Enter
-		{
-			//ScriptingConsole(true);
-		}*/
+		m_pUI->Update(m_fDT);
 
-		m_pUI->Update(this->m_fDT);
+		// do game update here
 	
 		m_pRendering->Begin();
 
@@ -153,9 +144,9 @@ int InputTestApp::Run()
 
 void InputTestApp::LoadDLLS()
 {
-	PluginManager* pPluginManager = PluginManager::Instance();
-	m_pInput  = static_cast<IKMInput*>(pPluginManager->LoadDLL("DirectX Input DLL.dll"));
-	m_pRendering = static_cast<IRenderingPlugin*>(pPluginManager->LoadDLL("DX9 Rendering.dll"));
+	PluginManager& pluginManager = PluginManager::Instance();
+	m_pInput  = static_cast<IKMInput*>(pluginManager.LoadDLL("DirectX Input DLL.dll"));
+	m_pRendering = static_cast<IRenderingPlugin*>(pluginManager.LoadDLL("DX9 Rendering.dll"));
 }
 
 
@@ -168,9 +159,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	g_pEngine = new InputTestApp(hInstance,"AngelScript");
 
 	int returnCode = g_pEngine->Run();
-
-	// todo: this should be moved elsewhere
-	PluginManager::Delete();
 
 	delete g_pEngine;
 	g_pEngine = NULL;

@@ -15,7 +15,7 @@ struct PluginInfo
 	HMODULE mod;
 };
 
-class PluginManager : public Singleton<PluginManager>//, public AngelScript::IScripted
+class PluginManager : public IScripted
 {
 public:
 
@@ -23,6 +23,9 @@ public:
 	   This class manages all of the dll plugins. It will load and unload them when needed.
 	   This class is also a singleton because it needs global access.
 	*/
+
+	PluginManager();
+	virtual ~PluginManager();
 
 	// more functions would go here as needed to work with the dlls...
 	//  ===== interface with dlls =====
@@ -35,22 +38,15 @@ public:
 	IPlugin* LoadDLL(const char* pFile);
 	//void LoadAllPlugins(char* pDictionary);
 
-	//virtual void RegisterScript();
-
+	// todo: need to implement this
+	virtual void RegisterScript() {}
 
 private:
-
-	// constructor/destructor
-	PluginManager();
-	virtual ~PluginManager();
 
 	IBaseEngine* m_pEngine;
 
 	typedef std::map<DLLType,PluginInfo> plugin_type;
-	plugin_type m_plugins;
-
-	friend class Singleton<PluginManager>;
-	
+	plugin_type m_plugins;	
 };
 
 #endif // _PLUGIN_MANAGER_

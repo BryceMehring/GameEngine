@@ -1,9 +1,13 @@
+
 #include "BInput.h"
 #include "BEngine.h"
+#include "Singleton.h"
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"Game Engine.lib")
+
+using namespace AngelScript;
 
 // Input plug-in implementation
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
@@ -31,6 +35,8 @@ DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr)
 	m_pMouse->Acquire();
 
 	m_MousePos.x = m_MousePos.y = 0;
+
+	RegisterScript();
 }
 
 
@@ -117,4 +123,22 @@ int DirectInput::MouseZ()
 void DirectInput::About()
 {
 	MessageBox(m_mgr.GetWindowHandle(),"DirectInput DLL\nProgrammed By Bryce Mehring","About",MB_OK);
+}
+
+void DirectInput::RegisterScript()
+{	
+	asVM& vm = asVM::Instance();
+	asIScriptEngine& engine = vm.GetScriptEngine();
+
+	DBAS(engine.RegisterObjectType("DirectInput",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(engine.RegisterObjectMethod("DirectInput","bool MouseClick(int)",asMETHOD(DirectInput,MouseClick),asCALL_THISCALL));
+	//DBAS(pEngine->RegisterObjectMethod("DirectInput","bool KeyDown(char)",asMETHOD(DirectInput,KeyDown),asCALL_THISCALL));
+	
+	DBAS(engine.RegisterObjectMethod("DirectInput","void MousePos(POINT& out)",asMETHOD(DirectInput,MousePos),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("DirectInput","int MouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("DirectInput","int MouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("DirectInput","int MouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
+	DBAS(engine.RegisterGlobalProperty("DirectInput input",this));
+
+	engine.Release();
 }

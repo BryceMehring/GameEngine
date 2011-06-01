@@ -1,5 +1,5 @@
 // Programmed by Bryce Mehring
-// 1/16/2011  to 3/10/2011
+// 1/16/2011  to 5/31/2011
 
 /*
 	These interfaces are the base of the game engine. All of the different sections of the
@@ -20,6 +20,18 @@
 #define PLUGINDECL __declspec(dllimport)
 #endif
 
+
+// Todo: answer these questions:
+// Why do we need this class? What does it mean when singletons inherit from the class?
+class IScripted
+{
+public:
+
+	virtual ~IScripted() {}
+	virtual void RegisterScript() = 0;
+	// todo: maybe add a deregister method?
+
+};
 
 class RefCounting
 {

@@ -1,5 +1,5 @@
 
-// Programmed By Bryce Mehring
+/*// Programmed By Bryce Mehring
 #include "asConsole.h"
 #include "asVM.h"
 #include <iostream>
@@ -9,7 +9,7 @@ using namespace std;
 namespace AngelScript
 {
 
-/*DWORD WINAPI ConsoleThread(void* parameter)
+DWORD WINAPI ConsoleThread(void* parameter)
 {
 
 	asConsole* pConsole = asConsole::Instance();
@@ -262,6 +262,6 @@ void asConsole::ExecuteScript()
 	asVM* pVM = asVM::Instance();
 	pVM->ExecuteScript(m_iScript);
 	//pVM->RemoveScript(id);
-}*/
+}
 
-};
+};*/

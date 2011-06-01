@@ -53,6 +53,8 @@ protected:
 // element
 
 // todo: does IUIElement have to inherit from RefCounting?
+// not all ui elements can be checked, or drawn. Need to subclass these methods
+// into more interfaces
 class IUIElement : public RefCounting
 {
 public:
@@ -86,15 +88,12 @@ public:
 private:
 
 	CheckBoxData* m_pData;
-
-	// Plugin Interfaces, these are set in the UIManager.
-	// todo: these should not be static?
-	static IKMInput* s_pInput;
-	static IRenderingPlugin* s_pRenderer;
+	UI* m_pUI; // a pointer to the ui that the CheckBox is attached to
+	// todo: is this needed?
 
 };
 
-class UI : public AngelScript::IScripted
+class UI : public IScripted
 {
 public:
 

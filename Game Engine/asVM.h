@@ -20,6 +20,8 @@
 #include <assert.h>
 #include <Windows.h>
 
+#include "Interfaces.h"
+
 // todo: need to add everything into its own namespace.
 
 namespace AngelScript
@@ -74,31 +76,17 @@ void Destroy(void* pMem)
 
 // ================
 
-
-
-// ======================
-
-
-// Todo: answer these questions:
-// Why do we need this class? What does it mean when singletons inherit from the class?
-class IScripted
+class asVM : public IScripted
 {
 public:
 
-	virtual ~IScripted() {}
-	virtual void RegisterScript() = 0;
-	// todo: maybe add a deregister method?
+	// in the constructor, the engine is created and is registered with the std::string type
+	// the message callback function is also registered along with a global print function
+	// for strings
+	asVM();
 
-};
-
-// Internal structure in asVM for holding contents
-struct Script;
-
-// There is only one instance of this class because there needs to be only
-// one asIScriptEngine* instance.
-class asVM : public Singleton<asVM>, public IScripted
-{
-public:
+	// the destructor releases all script contexts and then releases the engine
+	virtual ~asVM();
 
 	// Returned int is the id to the script
 	// Build script and then add to vector
@@ -114,50 +102,37 @@ public:
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId);
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId, char param);
 
-	// Release script, then remove from vector
 	void RemoveScript(unsigned int id);
 
 	// returns a token from the input string from the script engine
 	asETokenClass GetToken(std::string& token, const std::string& text, unsigned int& pos);
 	
 	// access to the asIScriptEngine
-	asIScriptEngine* GetScriptEngine() const;
+	asIScriptEngine& GetScriptEngine() const;
 
 	virtual void RegisterScript();
 
 private:
 
 	asIScriptEngine* m_pEngine;
-
-	typedef std::map<std::string,unsigned int> ScriptIndexType;
+	asIScriptContext* m_pContext;
 
 	// m_iExeScript is the script that is currently being executed. This variable is
 	// being shared with AngelScript. But the script cannot modify this variable.
 	unsigned int m_iExeScript;
 
-	// m_scriptIndex maps the filename of the script to the m_scripts index.
-	std::map<std::string,unsigned int> m_scriptIndex;
+	typedef std::map<std::string,unsigned int> ScriptIndexType;
 
-	std::vector<Script> m_scripts;
+	// m_scriptIndex maps the filename of the script to the m_scripts index.
+	ScriptIndexType m_scriptIndex;
+
+	// each element in the vector is the main function in script
+	std::vector<int> m_scripts;
 
 	CScriptBuilder m_builder;
 
-	// constructor/destructor
-
-	// in the constructor, the engine is created and is registered with the std::string type
-	// the message callback function is also registered along with a global print function
-	// for strings
-	asVM();
-
-	// the destructor releases all script contexts and then releases the engine
-	virtual ~asVM();
 
 	// ===== helper functions =====
-	
-	///...
-
-	// friends
-	friend class Singleton<asVM>;
 
 };
 

@@ -16,36 +16,18 @@
 #define _SINGLETON_
 #pragma once
 
-#ifndef NULL
-#define NULL 0
-#endif
-
 template< class T >
 class Singleton
 {
 public:
-	inline static T* Instance()
+	
+	// todo: I need to make this thread safe.
+	static T& Instance()
 	{
-		if(s_pInstance == NULL) 
-		{ 
-			s_pInstance = new T();
-		}
-		return s_pInstance;
+		static T instance;
+		return instance;
 	}
-
-	static void Delete()
-	{
-		delete s_pInstance;
-		s_pInstance = NULL;
-	}
-
-private:
-
-	static T* s_pInstance;
 
 };
-
-template< class T >
-T* Singleton<T>::s_pInstance = NULL;
 
 #endif // _SINGLETON_
