@@ -40,7 +40,7 @@ public:
 
 	friend class Singleton<Factory<T>>;
 
-	T* Create(const string& type, void* param = NULL);
+	T* Create(const std::string& type, void* param = NULL);
 	void Register(const std::string& type, ICreator<T>* pCreator);
 
 private:
@@ -48,12 +48,12 @@ private:
 	Factory() {}
 	~Factory() {}
 
-	std::map<string,ICreator<T>*> m_CreatorMap;
+	std::map<std::string,ICreator<T>*> m_CreatorMap;
 
 };
 
 template< class T >
-T* Factory<T>::Create(const string& type, void* param)
+T* Factory<T>::Create(const std::string& type, void* param)
 {
 	std::map<std::string,ICreator<T>*>::iterator iter = m_CreatorMap.find(type);
 

@@ -8,6 +8,7 @@
 
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <vector>
 #include "PluginManager.h"
 
 /*enum EEffect
@@ -45,6 +46,12 @@ struct Mesh
 	vector<Mtrl> mrtl;
 };*/
 
+struct DisplayMode
+{
+	D3DDISPLAYMODE mode;
+	std::string str;
+};
+
 // todo: implement a deferred renderer
 //http://www.ogre3d.org/tikiwiki/Deferred+Shading
 //http://www.catalinzima.com/tutorials/deferred-rendering-in-xna/
@@ -74,6 +81,9 @@ public:
 	virtual void GetStringRec(const char* str, RECT& out);
 	virtual void DrawString(const char* str, RECT& R, DWORD color);
 	//virtual void DrawSprite();
+
+	// options
+	virtual unsigned int EnumerateDisplayAdaptors();
 	 
 protected:
 
@@ -86,7 +96,7 @@ protected:
 	hash_map<UINT,Effect> m_Effects;
 	hash_map<UINT,IDirect3DTexture9*> m_Textures;
 
-	vector<D3DDISPLAYMODE> m_mode;*/
+	*/
 
 	/*
 	Enter something here!!!///////
@@ -98,6 +108,8 @@ protected:
 	IDirect3D9* m_pDirect3D;
 	ID3DXFont* m_pFont;
 
+	std::vector<DisplayMode> m_mode;
+
 	//fonts
 	ID3DXSprite* m_pSprite;
 
@@ -107,7 +119,7 @@ protected:
 
 
 	// ===== Helper Funcrions =====
-
+	void RegisterScript();
 	void InitializeDirectX();
 
 	//void InitalizeVertexFormat(); //???

@@ -13,7 +13,7 @@ class InputTestApp : public IBaseEngine
 public:
 
 	// constructor/destructor
-	InputTestApp(HINSTANCE hInstance,const string& winCaption);
+	InputTestApp(HINSTANCE hInstance,const std::string& winCaption);
 	virtual ~InputTestApp();
 
 	// from IBaseEngine
@@ -23,8 +23,6 @@ public:
 	virtual void OnResetDevice() {}
 
 	virtual int Run();
-
-	virtual void LoadDLLS();
 
 protected:
 

@@ -7,6 +7,7 @@
 #include <list>
 
 using namespace AngelScript;
+using namespace std;
 
 // global functions
 CheckBoxData* CheckBoxDataFactory()
@@ -23,9 +24,10 @@ CheckBox::CheckBox(void* pParam) : m_pData((CheckBoxData*)pParam)
 	// to make this work I would need a render abstract interface
 
 	// engine.AddObjectToRenderQueue(this);
+	IRenderingPlugin& renderer = g_pEngine->GetRenderer();
+	renderer.GetStringRec(m_pData->m_str.c_str(),m_pData->m_Rect);
 
-	s_pRenderer->GetStringRec(m_pData->m_str.c_str(),m_pData->m_Rect);
-
+	// todo: this is bad coding need to fix this below
 	m_pData->m_Rect.left += m_pData->m_pos.x;
 	m_pData->m_Rect.right += m_pData->m_pos.x;
 	m_pData->m_Rect.bottom += m_pData->m_pos.y;
@@ -43,20 +45,21 @@ CheckBox::~CheckBox()
 void CheckBox::Update(float dt)
 {
 	static bool bNoClick = false;
+	IKMInput& input = g_pEngine->GetInput();
 
 	if(bNoClick)
 	{
-		if(s_pInput->MouseClick(0) == false)
+		if(input.MouseClick(0) == false)
 		{
 			bNoClick = false;
 		}
 	}
 
-	if(s_pInput->MouseClick(0) && !bNoClick)
+	if(input.MouseClick(0) && !bNoClick)
 	{
 		//m_pData->m_time = 0;
 		POINT mousePos;
-		s_pInput->MousePos(mousePos);
+		input.MousePos(mousePos);
 
 		// check if the box was clicked
 		// todo: need to fix the bounds
@@ -70,7 +73,7 @@ void CheckBox::Update(float dt)
 				bNoClick = true;
 
 				// Call script function
-				asVM& vm = asVM::Instance();
+				asVM& vm = g_pEngine->GetScriptVM();
 				vm.ExecuteScriptFunction(m_pData->m_ScriptIndex,m_pData->m_funcId,m_pData->m_checked);
 			}
 		}
@@ -82,7 +85,7 @@ bool CheckBox::IsChecked() const
 	return m_pData->m_checked;
 }
 
-void CheckBox::Draw()
+void CheckBox::Render()
 {
 	DWORD color;
 
@@ -95,17 +98,13 @@ void CheckBox::Draw()
 		color = D3DCOLOR_XRGB(255,255,255);
 	}
 
-	s_pRenderer->DrawString(m_pData->m_str.c_str(),m_pData->m_Rect,color);
-	// need to implement DrawString to draw at a pos on the screen
+	IRenderingPlugin& renderer = g_pEngine->GetRenderer();
+	renderer.DrawString(m_pData->m_str.c_str(),m_pData->m_Rect,color);
 }
 
 // UI
 UI::UI()
 {
-	PluginManager& pluginManager = PluginManager::Instance();
-	CheckBox::s_pInput = (IKMInput*)pluginManager.GetPlugin(Input);
-	CheckBox::s_pRenderer = (IRenderingPlugin*)pluginManager.GetPlugin(Rendering);
-
 	m_levels.resize(1);
 	m_currentLevel = m_levels.begin();
 }
@@ -154,7 +153,7 @@ unsigned int UI::AddElement(const string& c, void* pObj, int typeId)
 		void* pData =  *(void**)pObj;
 
 		// AddRef to pData
-		asIScriptEngine& scriptEngine = asVM::Instance().GetScriptEngine();
+		asIScriptEngine& scriptEngine = g_pEngine->GetScriptVM().GetScriptEngine();
 		scriptEngine.AddRefScriptObject(pData, typeId);
 
 		scriptEngine.Release();
@@ -205,7 +204,13 @@ void UI::Render() const
 {
 	for(unsigned int i = 0; i < m_currentLevel->size(); ++i)
 	{
-		m_currentLevel->at(i)->Draw();
+		IRender* pUIElement = dynamic_cast<IRender*>(m_currentLevel->at(i));
+
+		if(pUIElement)
+		{
+			pUIElement->Render();
+			//g_pEngine->AddObjectToRenderList(pUIElement);
+		}
 	}
 }
 
@@ -213,10 +218,8 @@ void UI::RegisterScript()
 {
 	// todo: this function should only be called once?
 
-	
-
 	// Register Script with UI 
-	asVM& vm = asVM::Instance();
+	asVM& vm = g_pEngine->GetScriptVM();
 	asIScriptEngine& engine = vm.GetScriptEngine();
 
 	// Register CheckBoxData

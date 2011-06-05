@@ -1,10 +1,12 @@
 
 #include "BEngine.h"
 #include "asVM.h"
+#include "PluginManager.h"
 #include <io.h>
 #include <fcntl.h>
 
 using namespace AngelScript;
+using namespace std;
 
 #define MAX_CONSOLE_LINES 500
 
@@ -23,10 +25,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInstance(hInstance)
 {
+	
+	
+
 	// Default values
+	m_pVM = NULL;
+	m_pPM = NULL;
+	m_pRenderer = NULL;
+	m_pInput = NULL;
 	m_hWindowHandle = NULL;
 	m_fDT = m_fStartCount = m_fSecsPerCount = 0.0f;
 	m_bPaused      = false;
+
 
 	// Initialize
 	try
@@ -39,6 +49,9 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInst
 		exit(0);
 	}
 
+	// todo: need to fix this logic
+	g_pEngine = this;
+
 	// initialize timer. todo: I could put this code into its own method
 	__int64 cntsPerSec = 0;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
@@ -46,11 +59,12 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInst
 
 	RedirectIOToConsole();
 	RegisterScript();
+	InitializePlugins();
 }
 
 IBaseEngine::~IBaseEngine()
 {
-	
+	// todo need to release data members
 }
 
 void IBaseEngine::StartCounter()
@@ -179,7 +193,7 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 	}
 }
 
-string IBaseEngine::OpenFileName()
+string IBaseEngine::OpenFileName() const
 {
 	OPENFILENAME ofn = {0};
 	char fileName[MAX_PATH] = "";
@@ -265,15 +279,56 @@ void IBaseEngine::RedirectIOToConsole()
 	ios::sync_with_stdio();
 
 }
+void IBaseEngine::InitializePlugins()
+{
+	if(m_pPM == NULL)
+	{
+		m_pPM = new PluginManager();
+	}
 
+	// todo: to to write code to load all dll files in a folder, or even have the user
+	// pick through OpenFileName().
+	m_pRenderer = static_cast<IRenderingPlugin*>(m_pPM->LoadDLL("DX9 Rendering.dll"));
+	m_pInput = static_cast<IKMInput*>(m_pPM->LoadDLL("DirectX Input DLL.dll"));
+}
+
+asVM& IBaseEngine::GetScriptVM() const
+{
+	return *m_pVM;
+}
+IKMInput& IBaseEngine::GetInput() const
+{
+	return *m_pInput;
+}
+IRenderingPlugin& IBaseEngine::GetRenderer() const
+{
+	return *m_pRenderer;
+}
+
+void IBaseEngine::AddObjectToRenderList(IRender* pObject)
+{
+	if(pObject)
+	{
+		m_toRender.push_back(pObject);
+	}
+}
+void IBaseEngine::Quit()
+{
+	PostQuitMessage(0);
+}
 void IBaseEngine::RegisterScript()
 {
-	asVM& vm = asVM::Instance();
-	asIScriptEngine& engine = vm.GetScriptEngine();
+	if(m_pVM == NULL)
+	{
+		m_pVM = new asVM();
+	}
 
-	DBAS(engine.RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(engine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(IBaseEngine,OpenFileName),asCALL_THISCALL));
-	DBAS(engine.RegisterGlobalProperty("IEngine engine",this));
+	asIScriptEngine& scriptEngine = GetScriptVM().GetScriptEngine();
 
-	engine.Release();
+	DBAS(scriptEngine.RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void Quit()",asMETHOD(IBaseEngine,Quit),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(IBaseEngine,OpenFileName),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterGlobalProperty("IEngine engine",this));
+
+	scriptEngine.Release();
 }

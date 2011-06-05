@@ -18,6 +18,24 @@ How should I go about doing this? Should I keep a pointer to the Rendering and I
 class CheckBox;
 class UI;
 
+// element
+
+// todo: does IUIElement have to inherit from RefCounting?
+// not all ui elements can be checked, or drawn. Need to subclass these methods
+// into more interfaces
+class IUIElement : public RefCounting
+{
+public:
+
+	virtual bool IsChecked() const = 0;
+	virtual void Update(float dt) = 0;
+
+	// todo: this interface is really weak... need to change it
+
+protected:
+	virtual ~IUIElement() {}
+};
+
 // This is the data structure for a CheckBox
 // todo: move this to the cpp file and only have a forward class declaration 
 // in the header file
@@ -50,26 +68,9 @@ protected:
 	virtual ~CheckBoxData() {}
 }; 
 
-// element
-
-// todo: does IUIElement have to inherit from RefCounting?
-// not all ui elements can be checked, or drawn. Need to subclass these methods
-// into more interfaces
-class IUIElement : public RefCounting
-{
-public:
-
-	virtual bool IsChecked() const = 0;
-	virtual void Update(float dt) = 0;
-	virtual void Draw() = 0;
-
-protected:
-	virtual ~IUIElement() {}
-};
-
 
 // Encapsulates a CheckBox
-class CheckBox : public IUIElement
+class CheckBox : public IUIElement, public IRender
 {
 public:
 
@@ -81,9 +82,13 @@ public:
 	CheckBox(CheckBoxData*);
 	~CheckBox();
 
+	// IUIElement
 	virtual bool IsChecked() const;
 	virtual void Update(float dt);
-	virtual void Draw();
+	
+	// IRender
+	virtual IRenderType GetRenderType() { return IRenderType::Text; }
+	virtual void Render();
 
 private:
 
@@ -134,9 +139,10 @@ public:
 
 	 ======================= AddElement =========================
 	*/
-	unsigned int AddElement(const string& c, void* pData, int typeId);
-
+	unsigned int AddElement(const std::string& c, void* pData, int typeId);
 	unsigned int AddElement(IUIElement* pElement);
+	
+	void RemoveElement(IUIElement* pElement);
 	void RemoveElement(unsigned int i);
 
 //	bool IsChecked(unsigned int i) const;

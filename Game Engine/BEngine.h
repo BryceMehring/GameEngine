@@ -4,10 +4,8 @@
 #pragma once
 
 #include <Windows.h>
-#include <queue>
+#include <list>
 #include "asVM.h"
-
-using namespace std;
 
 
 // ************************
@@ -16,13 +14,7 @@ using namespace std;
 // Then this class would load the dll's dynamically and be the leader of the game without knowing its implementation details.
 // ***********************
 
-// this class should not be a singleton, I should create another class that manages 
-// game engines
-// todo: add RefCounting? I should name this class something else. 
-//  Need to subclass these methods
-// into more interfaces
-
-class IBEngine 
+/*class IBEngine 
 {
 public:
 
@@ -59,27 +51,37 @@ protected:
 
 	asVM* m_pVM;
 
-};
+};*/
 
  
+// this class should not be a singleton, I should create another class that manages 
+// game engines
+// todo: add RefCounting? I should name this class something else. 
+//  Need to subclass these methods
+// into more interfaces
 
 class IBaseEngine : public IScripted//, public RefCounting
 {
 public:
 
-	IBaseEngine(HINSTANCE hInstance,const string& winCaption);
+	IBaseEngine(HINSTANCE hInstance,const std::string& winCaption);
 	virtual ~IBaseEngine();
 
 	void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
 
-	string OpenFileName();
-
 	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
 	HWND GetWindowHandle() const { return m_hWindowHandle; }
 
+	// Interface Access
+	AngelScript::asVM& GetScriptVM() const;
+	IKMInput& GetInput() const;
+	IRenderingPlugin& GetRenderer() const;
+
+	// Rendering
+	void AddObjectToRenderList(IRender*);
+
 	// todo: need to implement these functions
 	virtual void RegisterScript();
-	virtual void LoadDLLS() {}
 
 	virtual void OnLostDevice() = 0;
 	virtual void OnResetDevice() = 0;
@@ -89,14 +91,14 @@ protected:
 
 	// ====== data members ======
 
-	asVM* m_pVM;
+	AngelScript::asVM* m_pVM;
 
 	PluginManager* m_pPM;
-
 	IRenderingPlugin* m_pRenderer;
-	// std::priority_queue<...>; look at ui.cpp
 
-	IInputPlugin* m_pInput;
+	std::list<IRender*> m_toRender;
+
+	IKMInput* m_pInput;
 	
 	// win32 window
 	HWND m_hWindowHandle;
@@ -119,8 +121,13 @@ protected:
 
 private:
 
+	std::string OpenFileName() const;
+
+	void Quit();
+
 	void RedirectIOToConsole();
-	void InitializeWindows(HINSTANCE hInstance, const string& winCaption);
+	void InitializePlugins();
+	void InitializeWindows(HINSTANCE hInstance, const std::string& winCaption);
 };
 
 extern IBaseEngine* g_pEngine;

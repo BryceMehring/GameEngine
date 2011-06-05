@@ -9,10 +9,25 @@ using namespace std;
 #pragma comment(lib,"AngelScript.lib")
 #pragma comment(lib,"AngelScriptAddons.lib")
 
+using namespace std;
+
 namespace AngelScript
 {
 
-using namespace std;
+DWORD WINAPI ScriptThread(void* p)
+{
+	asVM* pVM = (asVM*)p;
+	return 0;
+}
+
+struct Script
+{
+	Script() : id(0), pCtx(NULL) {}
+
+	int id; // void main() id
+	asIScriptContext* pCtx;
+	HANDLE thread;
+};
 
 // ===== Global functions that are registered with AngelScript =====
 void print(const string& d)
@@ -62,7 +77,6 @@ void MessageCallback(const asSMessageInfo *msg, void *param)
 asVM::asVM() : m_iExeScript(0)
 {
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
-	m_pContext = m_pEngine->CreateContext();
 
 	RegisterStdString(m_pEngine);
 	RegisterScript();
@@ -71,7 +85,7 @@ asVM::asVM() : m_iExeScript(0)
 }
 asVM::~asVM()
 {
-	m_pContext->Release();
+	// todo: need to release the 
 	m_pEngine->Release();
 }
 
@@ -94,13 +108,13 @@ unsigned int asVM::BuildScriptFromFile(const string& str)
 	}
 	else
 	{
-		int R = m_builder.AddSectionFromFile(str.c_str());
+		DBAS(m_builder.AddSectionFromFile(str.c_str()));
 
-		if(R >= 0)
+		/*if(R >= 0)
 		{
 			// todo: when the file cannot compile, the program should not crash.
 			// remove some of the DBAS.
-		}
+		}*/
 
 		DBAS(m_builder.BuildModule());
 
@@ -108,7 +122,12 @@ unsigned int asVM::BuildScriptFromFile(const string& str)
 		int mainId = pMod->GetFunctionIdByDecl("void main()");
 
 		// add script
-		m_scripts.push_back(mainId);
+		Script s;
+		s.id = mainId;
+		s.pCtx = m_pEngine->CreateContext();
+		s.thread = CreateThread(NULL,NULL,ScriptThread,this,CREATE_SUSPENDED,NULL);
+
+		m_scripts.push_back(s);
 
 		index = (m_scripts.size() - 1);
 		m_scriptIndex.insert(make_pair(str,index));
@@ -119,9 +138,13 @@ unsigned int asVM::BuildScriptFromFile(const string& str)
 
 void asVM::RemoveScript(unsigned int id)
 {
-
 	// Remove from vector. not the most efficient data structure for this task. 
-	m_scripts.erase(m_scripts.begin() + id);
+
+	vector<Script>::iterator iter = m_scripts.begin() + id;
+	
+	iter->pCtx->Release();
+	
+	m_scripts.erase(iter);
 }
 
 asIScriptEngine& asVM::GetScriptEngine() const
@@ -134,32 +157,41 @@ void asVM::ExecuteScript(unsigned int scriptId)
 {
 	assert(scriptId < m_scripts.size());
 
+	Script s = m_scripts[scriptId];
 	m_iExeScript = scriptId;
+
+	//ResumeThread(s.thread);
+
+	DBAS(s.pCtx->Prepare(s.id));
 	
-	DBAS(m_pContext->Prepare(m_scripts[scriptId]));
-	
-	DBAS(m_pContext->Execute());
-	DBAS(m_pContext->Unprepare());
+	DBAS(s.pCtx->Execute());
+	DBAS(s.pCtx->Unprepare());
 }
 void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId)
 {
 	assert(scriptId < m_scripts.size());
+
+	Script s = m_scripts[scriptId];
+	m_iExeScript = scriptId;
 	
-	DBAS(m_pContext->Prepare(funcId));
-	DBAS(m_pContext->Execute());
-	DBAS(m_pContext->Unprepare());
+	DBAS(s.pCtx->Prepare(funcId));
+	DBAS(s.pCtx->Execute());
+	DBAS(s.pCtx->Unprepare());
 }
 
 void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, char param)
 {
 	assert(scriptId < m_scripts.size());
+
+	Script s = m_scripts[scriptId];
+	m_iExeScript = scriptId;
 	
-	DBAS(m_pContext->Prepare(funcId));
+	DBAS(s.pCtx->Prepare(funcId));
 	
-	m_pContext->SetArgByte(0,param);
+	DBAS(s.pCtx->SetArgByte(0,param));
 	
-	DBAS(m_pContext->Execute());
-	DBAS(m_pContext->Unprepare());
+	DBAS(s.pCtx->Execute());
+	DBAS(s.pCtx->Unprepare());
 }
 
 

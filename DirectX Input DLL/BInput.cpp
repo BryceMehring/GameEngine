@@ -104,7 +104,6 @@ bool DirectInput::MouseClick(int iButton)
 {
 	return ((m_MouseState.rgbButtons[iButton] & 0x80) != 0);
 }
-
 int DirectInput::MouseX()
 {
 	return m_MouseState.lX;
@@ -127,10 +126,11 @@ void DirectInput::About()
 
 void DirectInput::RegisterScript()
 {	
-	asVM& vm = asVM::Instance();
+	asVM& vm = m_mgr.GetScriptVM();
 	asIScriptEngine& engine = vm.GetScriptEngine();
 
 	DBAS(engine.RegisterObjectType("DirectInput",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(engine.RegisterObjectMethod("DirectInput","void Poll()",asMETHOD(DirectInput,Poll),asCALL_THISCALL));
 	DBAS(engine.RegisterObjectMethod("DirectInput","bool MouseClick(int)",asMETHOD(DirectInput,MouseClick),asCALL_THISCALL));
 	//DBAS(pEngine->RegisterObjectMethod("DirectInput","bool KeyDown(char)",asMETHOD(DirectInput,KeyDown),asCALL_THISCALL));
 	

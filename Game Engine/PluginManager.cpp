@@ -6,6 +6,7 @@
 #include "PluginManager.h"
 
 using namespace AngelScript;
+using namespace std;
 
 PluginManager::PluginManager() : m_pEngine(g_pEngine)
 {
@@ -31,6 +32,10 @@ HINSTANCE PluginManager::GetHINSTANCE() const
 HWND PluginManager::GetWindowHandle() const
 {
 	return m_pEngine->GetWindowHandle();
+}
+asVM& PluginManager::GetScriptVM() const
+{
+	return m_pEngine->GetScriptVM();
 }
 
 IPlugin* PluginManager::GetPlugin(DLLType type) const

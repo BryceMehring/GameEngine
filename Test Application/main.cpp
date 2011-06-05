@@ -9,9 +9,10 @@
 #include <assert.h>
 
 using namespace AngelScript;
+using namespace std;
 
 // And then, as we go up in recursion, we display the rest of the numbers
-template< int n >
+/*template< int n >
 struct LoopClass
 {
 	static void Loop()
@@ -29,26 +30,14 @@ struct LoopClass<1>
 	{
 		cout<<"1 ";
 	}
-};
+};*/
 
 
 InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBaseEngine(hInstance,winCaption)
 {
-	// todo: I need to move initialization into smaller helper functions
+	// todo: I need to move initialization into smaller helper function
 
-	// todo: need to fix this logic
-	g_pEngine = this;
-
-	m_pInput = NULL;
-	m_pRendering = NULL;
-	ZeroMemory(buffer,32);
-
-	LoadDLLS();
-
-	//asVM* pVM = asVM::Instance();
-	//pVM->Test();
-
-	//pVM->RegisterScript("Config.txt");
+	ZeroMemory(buffer,sizeof(buffer));
 
 	// registering 
 
@@ -61,9 +50,8 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 	m_pUI->RegisterScript();
 
 	// AS
-	AngelScript::asVM& vm = AngelScript::asVM::Instance();
-	unsigned int id = vm.BuildScriptFromFile("Test.as");
-	vm.ExecuteScript(id);
+	unsigned int id = m_pVM->BuildScriptFromFile("Test.as");
+	m_pVM->ExecuteScript(id);
 	//pVM->
 
 
@@ -118,7 +106,7 @@ int InputTestApp::Run()
 
 		// do game update here
 	
-		m_pRendering->Begin();
+		m_pRenderer->Begin();
 
 		m_pUI->Render();
 			
@@ -131,22 +119,15 @@ int InputTestApp::Run()
 			RECT R = {0,0,0,0};
 
 			wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",p.x,p.y);
-			m_pRendering->DrawString(buffer,R,0xffffffff);
+			m_pRenderer->DrawString(buffer,R,0xffffffff);
 		}
 
-		m_pRendering->End();
-		m_pRendering->Present();
+		m_pRenderer->End();
+		m_pRenderer->Present();
 		EndCounter();
 	}
 
 	return 0;
-}
-
-void InputTestApp::LoadDLLS()
-{
-	PluginManager& pluginManager = PluginManager::Instance();
-	m_pInput  = static_cast<IKMInput*>(pluginManager.LoadDLL("DirectX Input DLL.dll"));
-	m_pRendering = static_cast<IRenderingPlugin*>(pluginManager.LoadDLL("DX9 Rendering.dll"));
 }
 
 

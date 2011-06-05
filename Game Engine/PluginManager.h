@@ -31,6 +31,7 @@ public:
 	//  ===== interface with dlls =====
 	HINSTANCE GetHINSTANCE() const;
 	HWND GetWindowHandle() const;
+	AngelScript::asVM& GetScriptVM() const;
 
 	// returns the plugin if found, else, it returns null
 	IPlugin* GetPlugin(DLLType type) const;

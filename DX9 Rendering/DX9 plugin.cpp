@@ -1,10 +1,13 @@
 
 
 #include "DX9 plugin.h"
+#include <sstream>
 
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
 #pragma comment(lib,"Game Engine.lib")
+
+using namespace std;
 
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 {
@@ -47,7 +50,6 @@ DLLType DX9Render::GetType()
 {
 	return Rendering;
 }
-
 void DX9Render::InitializeDirectX()
 {
 	// Step 1: Create the IDirect3D9 object.
@@ -200,23 +202,43 @@ void DX9Render::Present()
 	m_p3Device->Present(0,0,0,0);
 }
 
-// 
-/*void BEngine::EnumerateDisplayAdaptors()
+unsigned int DX9Render::EnumerateDisplayAdaptors()
 {
-	D3DDISPLAYMODE mode;
+	m_mode.clear();
+
+	DisplayMode mode;
 	for(int i = 0; i < m_pDirect3D->GetAdapterCount(); ++i)
 	{
 		UINT n = m_pDirect3D->GetAdapterModeCount(i,D3DFMT_X8R8G8B8);
 
 		for(int j = 0; j < n; ++j)
 		{
-			m_pDirect3D->EnumAdapterModes(i,D3DFMT_X8R8G8B8,j,&mode);
+			m_pDirect3D->EnumAdapterModes(i,D3DFMT_X8R8G8B8,j,&mode.mode);
+
+			ostringstream oss;
+
+			oss << mode.mode.Width << " " << mode.mode.Height << " "
+			    << mode.mode.RefreshRate << endl;
+
+			mode.str = oss.str();
+
 			m_mode.push_back(mode);
 		}
 	}
+
+	return (m_mode.size() - 1);
 }
 
-bool BEngine::LoadEffect(UINT iID,const char* pFile)
+void DX9Render::RegisterScript()
+{
+	asIScriptEngine& scriptEngine = m_mgr.GetScriptVM().GetScriptEngine();
+
+	DBAS(scriptEngine.RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
+	//DBAS(scriptEngine.RegisterObjectMethod("DX9Render","void EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors));
+	DBAS(scriptEngine.RegisterGlobalProperty("DX9Render renderer",this));
+}
+
+/*bool BEngine::LoadEffect(UINT iID,const char* pFile)
 {
 	// 1. Check to see if the effect is already loaded
 	if(m_Effects.find(iID) == m_Effects.end())

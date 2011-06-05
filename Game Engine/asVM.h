@@ -76,6 +76,9 @@ void Destroy(void* pMem)
 
 // ================
 
+// Internal structure in asVM for holding contents
+struct Script;
+
 class asVM : public IScripted
 {
 public:
@@ -115,7 +118,6 @@ public:
 private:
 
 	asIScriptEngine* m_pEngine;
-	asIScriptContext* m_pContext;
 
 	// m_iExeScript is the script that is currently being executed. This variable is
 	// being shared with AngelScript. But the script cannot modify this variable.
@@ -127,7 +129,7 @@ private:
 	ScriptIndexType m_scriptIndex;
 
 	// each element in the vector is the main function in script
-	std::vector<int> m_scripts;
+	std::vector<Script> m_scripts;
 
 	CScriptBuilder m_builder;
 

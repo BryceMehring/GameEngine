@@ -133,6 +133,25 @@ public:
 
 };*/
 
+class IRender
+{
+public:
+
+	enum IRenderType
+	{
+		Text,
+		Picture,
+		Mesh,
+		// add more here
+	};
+
+	virtual ~IRender() {}
+
+	virtual IRenderType GetRenderType() = 0;
+	virtual void Render() = 0;
+
+};
+
 // ===== graphics plugins =====
 
 /*
@@ -145,6 +164,8 @@ public:
 
 	
 */
+
+// todo: need to rename IRenderingPlugin
 class IRenderingPlugin : public IPlugin
 {
 public:
@@ -164,6 +185,13 @@ public:
 	// Fonts
 	virtual void GetStringRec(const char* str, RECT& out) = 0;
 	virtual void DrawString(const char* str, RECT& R, DWORD color) = 0;
+
+	// config
+	virtual unsigned int EnumerateDisplayAdaptors() = 0;
+
+	// todo: need to implement these functions 
+	//virtual void SetDisplayMode(unsigned int i) = 0;
+	//virtual std::string GetDisplayModeStr(unsigned int i) = 0;
 	
 	///add more functions...
 protected:
