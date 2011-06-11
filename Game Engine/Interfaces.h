@@ -11,8 +11,6 @@
 #define _PLUGIN_INTERFACES_
 #pragma once
 
-#include <Windows.h>
-
 // Macros
 #ifdef PLUGIN_EXPORTS
 #define PLUGINDECL __declspec(dllexport)
@@ -23,6 +21,7 @@
 
 // Todo: answer these questions:
 // Why do we need this class? What does it mean when singletons inherit from the class?
+// Answer: Singletons cannot really use polymorphism, I got rid of most singletons
 class IScripted
 {
 public:
@@ -182,16 +181,19 @@ public:
 	virtual void Present() = 0;
 	//virtual void DrawSprite();
 
+	virtual void Reset() = 0;
+	//virtual void OnLostDevice() = 0;
+	//virtual void OnResetDevice() = 0;
+
 	// Fonts
 	virtual void GetStringRec(const char* str, RECT& out) = 0;
-	virtual void DrawString(const char* str, RECT& R, DWORD color) = 0;
+	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true) = 0;
+	//virtual void DrawString(const char* str, const POINT& P, DWORD color) = 0; // todo: need to implement
 
 	// config
 	virtual unsigned int EnumerateDisplayAdaptors() = 0;
-
-	// todo: need to implement these functions 
-	//virtual void SetDisplayMode(unsigned int i) = 0;
-	//virtual std::string GetDisplayModeStr(unsigned int i) = 0;
+	virtual void SetDisplayMode(unsigned int i) = 0;
+	virtual const std::string& GetDisplayModeStr(unsigned int i) const = 0;
 	
 	///add more functions...
 protected:

@@ -6,9 +6,6 @@
 
 #define PLUGIN_EXPORTS
 
-#include <d3d9.h>
-#include <d3dx9.h>
-#include <vector>
 #include "PluginManager.h"
 
 /*enum EEffect
@@ -77,13 +74,19 @@ public:
 	virtual void End();
 	virtual void Present();
 
+	virtual void Reset();
+	//virtual void OnLostDevice();
+	//virtual void OnResetDevice();
+
 	// fonts
 	virtual void GetStringRec(const char* str, RECT& out);
-	virtual void DrawString(const char* str, RECT& R, DWORD color);
+	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true);
 	//virtual void DrawSprite();
 
 	// options
 	virtual unsigned int EnumerateDisplayAdaptors();
+	virtual void SetDisplayMode(unsigned int i);
+	virtual const std::string& GetDisplayModeStr(unsigned int i) const;
 	 
 protected:
 

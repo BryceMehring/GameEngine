@@ -1,49 +1,23 @@
 // Programmed by Bryce Mehring
 
-#include <d3dx9.h>
+#include "StdAfx.h"
 #include "UI.h"
 #include "PluginManager.h"
 #include "Factory.h"
-#include <list>
 
 using namespace AngelScript;
 using namespace std;
 
-// global functions
-CheckBoxData* CheckBoxDataFactory()
+ClickableElement::ClickableElement(RECT* R) : m_pClickRect(R) {}
+ClickableElement::~ClickableElement()
 {
-	return new CheckBoxData();
+	m_pClickRect = NULL;
 }
 
-// CheckBox 
-CheckBox::CheckBox(void* pParam) : m_pData((CheckBoxData*)pParam)
+void ClickableElement::Update(float dt)
 {
-	//todo: I could add this object to another class, so that is class gets rendered 
-	// But what about input?
+	// todo: need to clean up the logic
 
-	// to make this work I would need a render abstract interface
-
-	// engine.AddObjectToRenderQueue(this);
-	IRenderingPlugin& renderer = g_pEngine->GetRenderer();
-	renderer.GetStringRec(m_pData->m_str.c_str(),m_pData->m_Rect);
-
-	// todo: this is bad coding need to fix this below
-	m_pData->m_Rect.left += m_pData->m_pos.x;
-	m_pData->m_Rect.right += m_pData->m_pos.x;
-	m_pData->m_Rect.bottom += m_pData->m_pos.y;
-	m_pData->m_Rect.top += m_pData->m_pos.y;
-}
-CheckBox::CheckBox(CheckBoxData* pData) : m_pData(pData)
-{
-	m_pData->AddRef();
-}
-CheckBox::~CheckBox()
-{
-	m_pData->Release();
-}
-
-void CheckBox::Update(float dt)
-{
 	static bool bNoClick = false;
 	IKMInput& input = g_pEngine->GetInput();
 
@@ -62,34 +36,75 @@ void CheckBox::Update(float dt)
 		input.MousePos(mousePos);
 
 		// check if the box was clicked
-		// todo: need to fix the bounds
-		if((mousePos.x >= m_pData->m_Rect.left) && (mousePos.x <= m_pData->m_Rect.right))
+		if((mousePos.x >= m_pClickRect->left) && (mousePos.x <= m_pClickRect->right))
 		{
-			if((mousePos.y >= m_pData->m_Rect.top) && (mousePos.y <= m_pData->m_Rect.bottom))
+			if((mousePos.y >= m_pClickRect->top) && (mousePos.y <= m_pClickRect->bottom))
 			{
-				m_pData->m_checked = !m_pData->m_checked;
-
 				// do not come back in here until the user is not clicking
 				bNoClick = true;
 
 				// Call script function
-				asVM& vm = g_pEngine->GetScriptVM();
-				vm.ExecuteScriptFunction(m_pData->m_ScriptIndex,m_pData->m_funcId,m_pData->m_checked);
+				ClickResponse();
 			}
 		}
 	}
 }
 
+
+// CheckBox
+
+// global functions
+CheckBoxData* CheckBoxDataFactory()
+{
+	return new CheckBoxData();
+}
+ 
+CheckBox::CheckBox(void* pParam) : ClickableElement(&((CheckBoxData*)pParam)->rect), m_pData((CheckBoxData*)pParam)
+{
+	//todo: I could add this object to another class, so that is class gets rendered 
+	// But what about input?
+
+	// to make this work I would need a render abstract interface
+
+	// engine.AddObjectToRenderQueue(this);
+
+	IRenderingPlugin& renderer = g_pEngine->GetRenderer();
+	renderer.GetStringRec(m_pData->str.c_str(),m_pData->rect);
+
+	// todo: this is bad coding need to fix this below
+	m_pData->rect.left = m_pData->pos.x;
+	m_pData->rect.top = m_pData->pos.y;
+
+	m_pData->rect.right += m_pData->pos.x;
+	m_pData->rect.bottom += m_pData->pos.y;
+	
+}
+CheckBox::CheckBox(CheckBoxData* pData) : ClickableElement(&pData->rect), m_pData(pData)
+{
+	
+}
+CheckBox::~CheckBox()
+{
+	m_pData->Release();
+}
+
 bool CheckBox::IsChecked() const
 {
-	return m_pData->m_checked;
+	return m_pData->checked;
+}
+void CheckBox::ClickResponse()
+{
+	m_pData->checked = !m_pData->checked;
+
+	asVM& vm = g_pEngine->GetScriptVM();
+	vm.ExecuteScriptFunction(m_pData->func.iScriptIndex,m_pData->func.ifuncId,m_pData->checked);
 }
 
 void CheckBox::Render()
 {
 	DWORD color;
 
-	if(m_pData->m_checked)
+	if(m_pData->checked)
 	{
 		color = D3DCOLOR_XRGB(0,255,0);
 	}
@@ -99,7 +114,7 @@ void CheckBox::Render()
 	}
 
 	IRenderingPlugin& renderer = g_pEngine->GetRenderer();
-	renderer.DrawString(m_pData->m_str.c_str(),m_pData->m_Rect,color);
+	renderer.DrawString(m_pData->str.c_str(),m_pData->rect,color,false);
 }
 
 // UI
@@ -114,7 +129,7 @@ UI::~UI()
 	{
 		for(sub_type::iterator subIter = iter->begin(); subIter != iter->end(); ++subIter)
 		{
-			(*subIter)->Release();
+			delete (*subIter);
 		}
 	}
 }
@@ -177,7 +192,7 @@ void UI::RemoveElement(unsigned int i)
 	// todo: this is not the best structure for this task. switch data structures?
 	if(i < m_currentLevel->size())
 	{
-		m_currentLevel->at(i)->Release();
+		delete m_currentLevel->at(i);
 		m_currentLevel->erase(m_currentLevel->begin() + i);
 	}
 }
@@ -223,7 +238,7 @@ void UI::RegisterScript()
 	asIScriptEngine& engine = vm.GetScriptEngine();
 
 	// Register CheckBoxData
-	DBAS(engine.RegisterObjectType("CheckBoxData",0,asOBJ_REF));
+	DBAS(engine.RegisterObjectType("CheckBoxData",sizeof(CheckBoxData),asOBJ_REF));
 
 	// Register CheckBoxData Behavior
 	DBAS(engine.RegisterObjectBehaviour("CheckBoxData",asBEHAVE_FACTORY,"CheckBoxData@ f()",
@@ -233,12 +248,11 @@ void UI::RegisterScript()
 	DBAS(engine.RegisterObjectBehaviour("CheckBoxData",asBEHAVE_RELEASE,"void f()",
 		asMETHOD(CheckBoxData,Release),asCALL_THISCALL));
 	
-	DBAS(engine.RegisterObjectProperty("CheckBoxData","bool checked",offsetof(CheckBoxData,m_checked)));
-	DBAS(engine.RegisterObjectProperty("CheckBoxData","POINT pos",offsetof(CheckBoxData,m_pos)));
-	DBAS(engine.RegisterObjectProperty("CheckBoxData","string name",offsetof(CheckBoxData,m_str)));
-	DBAS(engine.RegisterObjectProperty("CheckBoxData","int func",offsetof(CheckBoxData,m_funcId)));
-	DBAS(engine.RegisterObjectProperty("CheckBoxData","uint scriptIndex",offsetof(CheckBoxData,m_ScriptIndex)));
-	
+	DBAS(engine.RegisterObjectProperty("CheckBoxData","bool checked",offsetof(CheckBoxData,checked)));
+	DBAS(engine.RegisterObjectProperty("CheckBoxData","POINT pos",offsetof(CheckBoxData,pos)));
+	DBAS(engine.RegisterObjectProperty("CheckBoxData","string name",offsetof(CheckBoxData,str)));
+	DBAS(engine.RegisterObjectProperty("CheckBoxData","ScriptFunction func",offsetof(CheckBoxData,func)));
+
 	DBAS(engine.RegisterObjectType("UI",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(engine.RegisterObjectMethod("UI","void AddLevel()",asMETHOD(UI, AddLevel),asCALL_THISCALL));
 	DBAS(engine.RegisterObjectMethod("UI","uint AddElement(const string& in, ?&in)",asMETHODPR(UI,AddElement,(const string&, void*, int),unsigned int), asCALL_THISCALL));	

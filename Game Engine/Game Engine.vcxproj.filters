@@ -13,6 +13,9 @@
     <Filter Include="AngelScript">
       <UniqueIdentifier>{fe32e262-ab10-46bc-bcb3-6fcc7e5a4880}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Thread">
+      <UniqueIdentifier>{ea99d940-f426-4f65-8399-344fd252d502}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BEngine.cpp">
@@ -29,6 +32,9 @@
     </ClCompile>
     <ClCompile Include="asConsole.cpp">
       <Filter>AngelScript</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread.cpp">
+      <Filter>Thread</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,8 +56,8 @@
     <ClInclude Include="Factory.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="Singleton.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram11.cd" />
+    <ClInclude Include="Thread.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

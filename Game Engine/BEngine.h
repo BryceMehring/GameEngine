@@ -3,9 +3,9 @@
 #define _BENGINE_
 #pragma once
 
-#include <Windows.h>
-#include <list>
+
 #include "asVM.h"
+#include "asConsole.h"
 
 
 // ************************
@@ -72,6 +72,8 @@ public:
 	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
 	HWND GetWindowHandle() const { return m_hWindowHandle; }
 
+	void ClearConsole();
+
 	// Interface Access
 	AngelScript::asVM& GetScriptVM() const;
 	IKMInput& GetInput() const;
@@ -83,8 +85,6 @@ public:
 	// todo: need to implement these functions
 	virtual void RegisterScript();
 
-	virtual void OnLostDevice() = 0;
-	virtual void OnResetDevice() = 0;
 	virtual int Run() = 0;
 
 protected:
@@ -92,6 +92,7 @@ protected:
 	// ====== data members ======
 
 	AngelScript::asVM* m_pVM;
+	asConsole* m_pConsole;
 
 	PluginManager* m_pPM;
 	IRenderingPlugin* m_pRenderer;
@@ -123,8 +124,9 @@ private:
 
 	std::string OpenFileName() const;
 
-	void Quit();
 
+	// Helper functions
+	void Quit();
 	void RedirectIOToConsole();
 	void InitializePlugins();
 	void InitializeWindows(HINSTANCE hInstance, const std::string& winCaption);

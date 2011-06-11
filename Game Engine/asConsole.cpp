@@ -1,134 +1,94 @@
+// Programmed By Bryce Mehring
 
-/*// Programmed By Bryce Mehring
+#include "StdAfx.h"
+
+#include "BEngine.h"
 #include "asConsole.h"
 #include "asVM.h"
-#include <iostream>
 
 using namespace std;
 
-namespace AngelScript
+asConsole::asConsole() : m_hConsole(GetConsoleWindow())
 {
-
-DWORD WINAPI ConsoleThread(void* parameter)
-{
-
-	asConsole* pConsole = asConsole::Instance();
-	return pConsole->Run();
-
-	// buffer that we will interpret
-
-	cin.clear();
-	system("cls");
-
-	// Print some useful information and start the input loop
-	cout << "Sample console using AngelScript " << asGetLibraryVersion() << " to perform scripted tasks." << endl;
-	cout << "Type 'help' for more information." << endl;
-
-	asVM* pVM = asVM::Instance();
-
-	for(;;)
-	{
-		char buffer[1024];
-
-		cout<<"Scripting Console. "<<endl<<"Enter Script: "<<endl;
-		std::cin.getline(buffer,256,'!');
-
-		cout<<"Output: "<<endl;
-
-		unsigned int id = pVM->BuildScriptFromMemory(buffer);
-		pVM->ExecuteScript(id);
-
-	}
-}
-
-asConsole::asConsole() : m_bOpen(false)
-{
-	m_hConsole = GetConsoleWindow();
-	ShowWindow( m_hConsole, SW_HIDE );
-
-	// Create Thread
-	m_ConsoleThread = CreateThread(NULL,NULL,ConsoleThread,NULL,CREATE_SUSPENDED,NULL);
-
-	asVM* pVM = asVM::Instance();
-//	m_iScript = pVM->CreateNewScript();
+	RegisterScript();
 }
 asConsole::~asConsole()
 {
-	CloseHandle(m_ConsoleThread);
+	
 }
 
 void asConsole::Open()
 {
-	m_bOpen = true;
 
-	ResumeThread(m_ConsoleThread);
+	Go();
 	ShowWindow( m_hConsole, SW_SHOW );
 }
 
 void asConsole::Close()
 {
-	m_bOpen = false;
+	Stop();
 
 	ShowWindow( m_hConsole, SW_HIDE );
-	SuspendThread(m_ConsoleThread);
 }
 
-DWORD asConsole::Run()
+void asConsole::CLS() const
 {
+	system("cls");
+}
+
+void asConsole::DoWork()
+{
+	CLS();
 	ConsoleInfo();
 
-	// Loop until the user quits
-	for(;;)
+	cin.clear();
+
+	while(!m_stoprequested)
 	{
-		string input , cmd, arg;
-		input.resize(256);
-
-		// Loop while the user uses '\' at the end of each line
-		// This means that they have more code to add.
-		
-		//  \ ===== Get Input ===== /
-
-		cout << "> ";
-		cin.getline(&input[0], 256);
-
-		//  / ===== Get Input ===== \
-
-		// Trim unused characters
-		input.resize(strlen(input.c_str()));
-
-		int pos;
-		if( (pos = input.find(" ")) != string::npos )
-		{
-			cmd = input.substr(0, pos);
-			arg = input.substr(pos+1);
-		}
-		else
-		{
-			cmd = input;
-			arg = "";
-		}
-
-		//if( cmd == "exec" )
-		{
-			//IsFunction(input);
-		}
-		//else
-		{
-			InterpretLine(input);
-			ExecuteScript();
-		}
-		/*else if( cmd == "listfuncs" ) { ListFunctions(); }
-		else if( cmd == "listvars" ) { ListVariables();  }
-		else if(cmd == "cls") { CLS(); }
-		else if( cmd == "quit" ) { break; }
-		else if( cmd == "exec" ) { ExecuteScript(); }
-		else { cout<<"Unknown Command"<<endl; }
-
+		Run();
 	}
-
-	return 0;
 }
 
+void asConsole::Run()
+{
+	string input;
+	input.resize(256);
+		
+	//  \ ===== Get Input ===== /
+
+	cout << endl << "> ";
+	cin.getline(&input[0], 256);
+
+	//  / ===== Get Input ===== \
+
+	// Trim unused characters
+	input.resize(strlen(input.c_str()));
+
+	// ExecuteScript
+	g_pEngine->GetScriptVM().ExecuteScript(input.c_str());
+}
+
+void asConsole::ConsoleInfo() const
+{
+	// Print some useful information
+	cout << "AngelScript console: " << asGetLibraryVersion() << endl;
+}
+
+void asConsole::RegisterScript()
+{
+	asIScriptEngine& scriptEngine = g_pEngine->GetScriptVM().GetScriptEngine();
+
+	DBAS(scriptEngine.RegisterObjectType("asConsole",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(scriptEngine.RegisterObjectMethod("asConsole","void Open()",asMETHOD(asConsole,Open),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("asConsole","void Close()",asMETHOD(asConsole,Close),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("asConsole","void cls() const",asMETHOD(asConsole,CLS),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterGlobalProperty("asConsole scriptConsole",this));
+	
+	scriptEngine.Release();
+}
+
+
+/*
 void asConsole::ListVariables() const
 {
 	asUINT n;
@@ -206,13 +166,6 @@ void asConsole::PrintHelp() const
 	cout << " listvars       - list variables" << endl;
 	cout << " cls            - clear screen" << endl;
 	cout << " quit           - end application" << endl;
-}
-
-void asConsole::ConsoleInfo() const
-{
-	// Print some useful information
-	cout << "AngelScript console: " << asGetLibraryVersion() << endl;
-	cout << "Type 'config' for more information." << endl << endl;
 }
 
 void asConsole::CLS() const

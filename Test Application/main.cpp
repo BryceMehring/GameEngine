@@ -1,12 +1,8 @@
-#define DEBUG
 
+#include "stdafx.h"
 #include "main.h"
-#include "AngelScript.h"
-#include "scriptstdstring.h"
-#include "scriptbuilder.h"
-#include "asVM.h"
 #include "Factory.h"
-#include <assert.h>
+
 
 using namespace AngelScript;
 using namespace std;
@@ -46,50 +42,13 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 	//pUIInstance->Register("CheckBox",new Creator<CheckBox,IUIElement>());
 
 	// UI
-	m_pUI = new UI();
+	m_pUI.reset(new UI());
 	m_pUI->RegisterScript();
 
 	// AS
 	unsigned int id = m_pVM->BuildScriptFromFile("Test.as");
 	m_pVM->ExecuteScript(id);
-	//pVM->
-
-
-	/*Load();
-	int r;
-
-	asIScriptEngine *engine = 
-
-	r = engine->RegisterGlobalFunction("int Test(int)", asFUNCTION(print), asCALL_CDECL);
-
-	CScriptBuilder builder;
-	r = builder.StartNewModule(engine,"TestModule"); 
-	r = builder.AddSectionFromFile("Test.as"); 
-	r = builder.BuildModule();
-
-	asIScriptModule* pMod = engine->GetModule("TestModule");
-	int id = pMod->GetFunctionIdByDecl("void main()");
-
-	// Create our context, prepare it, and then execute
-	asIScriptContext *ctx = engine->CreateContext();
-	r = ctx->Prepare(id);
-	r = ctx->Execute();
-
-	ctx->Release();
-	engine->Release();
-
-	// Fill out the CheckBoxData structure
-	/*CheckBoxData checkBox1;
-	checkBox1.m_checked = false;
-	checkBox1.m_Callback = &InputTestApp::LuaConsole;
-		
-	checkBox1.m_pos[0].x = 200;
-	checkBox1.m_pos[0].y = 200;
-
-	checkBox1.m_pos[1].x = 300;
-	checkBox1.m_pos[1].y = 300;
-
-	checkBox1.m_str = "Open Lua Console";*/
+	m_pVM->ExecuteScript("as.ListFunctions()");
 }
 InputTestApp::~InputTestApp()
 {
@@ -116,9 +75,10 @@ int InputTestApp::Run()
 			POINT p;
 			m_pInput->MousePos(p);
 
-			RECT R = {0,0,0,0};
-
-			wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",p.x,p.y);
+			RECT R = {250,50,0,0};
+			clock_t c = clock() / CLOCKS_PER_SEC ;
+			wsprintf(buffer,"Time: %d",c);
+			//wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",p.x,p.y);
 			m_pRenderer->DrawString(buffer,R,0xffffffff);
 		}
 

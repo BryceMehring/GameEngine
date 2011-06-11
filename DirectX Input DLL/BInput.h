@@ -8,10 +8,7 @@
 // This is the DirectX Input Plug-in class
 // All that's needed is too implement the functions provided in the abstract interface
 #define PLUGIN_EXPORTS
-#include <vector>
-#include <Windows.h>
 #include "PluginManager.h"
-#include <dinput.h>
 
 class DirectInput : public IKMInput
 {

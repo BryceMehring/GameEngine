@@ -7,9 +7,6 @@
 #define _FACTORY_
 #pragma once
 
-#include <assert.h>
-#include <map>
-#include <string>
 #include "Singleton.h"
 
 // abstract class
@@ -19,7 +16,7 @@ class ICreator
 public:
 
 	virtual ~ICreator() {}
-	virtual T* Create(void* param) const = 0; // This function is virtual because..
+	virtual T* Create(void* param) const = 0; // This function is pure virtual because..
 };
 
 // Creator class that allocates the interface to load a new instance of the class
@@ -44,9 +41,6 @@ public:
 	void Register(const std::string& type, ICreator<T>* pCreator);
 
 private:
-
-	Factory() {}
-	~Factory() {}
 
 	std::map<std::string,ICreator<T>*> m_CreatorMap;
 

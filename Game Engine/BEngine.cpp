@@ -1,9 +1,8 @@
 
+#include "StdAfx.h"
 #include "BEngine.h"
 #include "asVM.h"
 #include "PluginManager.h"
-#include <io.h>
-#include <fcntl.h>
 
 using namespace AngelScript;
 using namespace std;
@@ -25,9 +24,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInstance(hInstance)
 {
-	
-	
-
 	// Default values
 	m_pVM = NULL;
 	m_pPM = NULL;
@@ -60,11 +56,20 @@ IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInst
 	RedirectIOToConsole();
 	RegisterScript();
 	InitializePlugins();
+
+	m_pConsole = new asConsole();
 }
 
 IBaseEngine::~IBaseEngine()
 {
 	// todo need to release data members
+	delete m_pVM;
+	delete m_pPM;
+	delete m_pConsole;
+
+	m_pRenderer = NULL;
+	m_pInput = NULL;
+	m_pConsole = NULL;
 }
 
 void IBaseEngine::StartCounter()
@@ -72,7 +77,7 @@ void IBaseEngine::StartCounter()
 	__int64 prevTimeStamp = 0;
 	QueryPerformanceCounter((LARGE_INTEGER*)&prevTimeStamp);
 
-	m_fStartCount = prevTimeStamp;
+	m_fStartCount = (float)prevTimeStamp;
 }
 
 void IBaseEngine::EndCounter()
@@ -106,6 +111,8 @@ bool IBaseEngine::Update()
 		if( m_bPaused )
 		{
 			Sleep(20);
+
+			// todo: need to get rid of recursion
 			Update();
 		}
 	}
@@ -165,13 +172,11 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 		case WM_ACTIVATE:
 			if( LOWORD(wParam) == WA_INACTIVE )
 			{
-				OnLostDevice();
-				m_bPaused = true;
+				//m_bPaused = true;
 			}
 			else
 			{
-				OnResetDevice();
-				m_bPaused = false;
+				//m_bPaused = false;
 			}
 			break;
 
@@ -316,6 +321,12 @@ void IBaseEngine::Quit()
 {
 	PostQuitMessage(0);
 }
+
+void IBaseEngine::ClearConsole()
+{
+	system("cls");
+}
+
 void IBaseEngine::RegisterScript()
 {
 	if(m_pVM == NULL)
@@ -328,6 +339,7 @@ void IBaseEngine::RegisterScript()
 	DBAS(scriptEngine.RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void Quit()",asMETHOD(IBaseEngine,Quit),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(IBaseEngine,OpenFileName),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void ClearConsole()",asMETHOD(IBaseEngine,ClearConsole),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterGlobalProperty("IEngine engine",this));
 
 	scriptEngine.Release();

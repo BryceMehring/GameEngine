@@ -10,24 +10,12 @@
 #define _ASMANAGER_
 #pragma once
 
-#include <angelscript.h>
 #include "Singleton.h"
-#include "ScriptBuilder.h"
-#include "scriptstdstring.h"
-#include <string>
-#include <vector>
-#include <map>
-#include <assert.h>
-#include <Windows.h>
-
 #include "Interfaces.h"
 
-// todo: need to add everything into its own namespace.
-
-namespace AngelScript
-{
-
-#ifndef DBAS // debug AngelScript
+// debug AngelScript
+#ifdef _DEBUG
+#ifndef DBAS 
 #define DBAS(f) \
 { \
 	int r = f; \
@@ -35,6 +23,16 @@ namespace AngelScript
 }
 #endif // DBAS
 
+#else
+#ifndef DBAS 
+#define DBAS(f) ((void)0)
+#endif
+#endif
+
+// todo: Need to rename the namespace
+
+namespace AngelScript
+{
 
 // ===== registering helpers ======
 
@@ -76,6 +74,12 @@ void Destroy(void* pMem)
 
 // ================
 
+struct ScriptFunction
+{
+	int ifuncId;
+	unsigned int iScriptIndex; // should this be registered with as?
+};
+
 // Internal structure in asVM for holding contents
 struct Script;
 
@@ -93,7 +97,7 @@ public:
 
 	// Returned int is the id to the script
 	// Build script and then add to vector
-	unsigned int BuildScriptFromFile(const std::string& str);
+	unsigned int BuildScriptFromFile(const std::string& file);
 
 	/* m_iExeScript is assigned the value of scriptId. Then the script is:
 		1. Prepared ( push data on stack)
@@ -101,6 +105,7 @@ public:
 		3. Unprepared (destroy stack)
 	*/
 	void ExecuteScript(unsigned int scriptId);
+	void ExecuteScript(const char* script);
 
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId);
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId, char param);
@@ -117,6 +122,7 @@ public:
 
 private:
 
+	// interfaces 
 	asIScriptEngine* m_pEngine;
 
 	// m_iExeScript is the script that is currently being executed. This variable is
@@ -124,18 +130,23 @@ private:
 	unsigned int m_iExeScript;
 
 	typedef std::map<std::string,unsigned int> ScriptIndexType;
+	typedef std::vector<Script> ScriptElementType;
 
 	// m_scriptIndex maps the filename of the script to the m_scripts index.
 	ScriptIndexType m_scriptIndex;
 
 	// each element in the vector is the main function in script
-	std::vector<Script> m_scripts;
+	ScriptElementType m_scripts;
 
 	CScriptBuilder m_builder;
 
-
 	// ===== helper functions =====
-
+	void ListVariables();
+	void ListObjects();
+	void ListFunctions();
+	bool GoodScriptId(unsigned int id) const; // returns true if the id is valid
+	ScriptFunction GetFunc(asIScriptFunction* func) const;
+	
 };
 
 }; // AngelScript namespace

@@ -26,25 +26,12 @@ void main()
 	myCheckData.checked = false;
 	myCheckData.name = "Open Script";
 	
-	myCheckData.pos.x = 100;
-	myCheckData.pos.y = 100;
+	myCheckData.pos.x = 0;
+	myCheckData.pos.y = 0;
 
-	myCheckData.func = GetId(@OpenFile);
-	myCheckData.scriptIndex = scriptId;
+	myCheckData.func = as.GetFunc(@OpenFile);
 
 	uint id = ui.AddElement("CheckBox",@myCheckData);
-
-	/*CheckBoxData@ myCheckData2 = CheckBoxData();
-	myCheckData2.checked = false;
-	myCheckData2.name = "Start Game \n";
-	
-	myCheckData2.pos.x = 200;
-	myCheckData2.pos.y = 30;
-
-	myCheckData2.func = GetId(@CheckResponse);
-	myCheckData2.scriptIndex = scriptId;
-
-	id = ui.AddElement("CheckBox",@myCheckData2);*/
 }
 
   

@@ -5,50 +5,43 @@
 #define _ASCONSOLE_
 #pragma once
 
-/*#include <Windows.h>
-#include <string>
-#include "Singleton.h"
+#include "Thread.h"
 
-DWORD WINAPI ConsoleThread(void*);
-
-class asConsole : public Singleton<asConsole>
+class asConsole : public IScripted, Threaded
 {
 public:
-
-	void Open();
-	void Close();
-
-private:
 
 	asConsole();
 	~asConsole();
 
+	void Open();
+	void Close();
+
+	void CLS() const;
+
+private:
+
 	// ===== data members =====
 
-	bool m_bOpen;
-	unsigned int m_iScript;
+	//asVM* m_pVM;
 
 	// Scripting Console
 	HWND m_hConsole;
-	HANDLE m_ConsoleThread;
 
 	// ===== helper functions =====
 
-	DWORD Run();
+	// IScripted
+	virtual void RegisterScript();
+
+	// Threaded
+	virtual void DoWork();
+
+	void Run();
 
 	// function declarations
-	void ListVariables() const;
-	void ListFunctions() const;
 	void PrintHelp() const;
 	void ConsoleInfo() const;
-	void CLS() const;
-	void InterpretLine(std::string& str);
-	void AddVariable(std::string &arg);
-	void AddFunction(std::string &arg);
-	void ExecuteScript();
-
-	friend class Singleton<asConsole>;
-	friend DWORD WINAPI ConsoleThread(void*);
+	
 };
 
-#endif*/
+#endif

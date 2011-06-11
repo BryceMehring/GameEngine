@@ -4,7 +4,6 @@
 #include "BEngine.h"
 #include "PluginManager.h"
 #include "UI.h"
-#include <iostream>
 
 #pragma comment(lib,"Game Engine.lib")
 
@@ -16,12 +15,6 @@ public:
 	InputTestApp(HINSTANCE hInstance,const std::string& winCaption);
 	virtual ~InputTestApp();
 
-	// from IBaseEngine
-	
-	// todo: need to implement these functions
-	virtual void OnLostDevice() {}
-	virtual void OnResetDevice() {}
-
 	virtual int Run();
 
 protected:
@@ -29,7 +22,7 @@ protected:
 	// ===== data members =====
 
 	// ui
-	UI* m_pUI;
+	boost::scoped_ptr<UI> m_pUI;
 
 	char buffer[64];
 

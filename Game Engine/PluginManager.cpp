@@ -2,7 +2,7 @@
 // 1/20/2011
 
 // Read chapter 16, use the dynamic object mapper with the DLL files.
-
+#include "StdAfx.h"
 #include "PluginManager.h"
 
 using namespace AngelScript;

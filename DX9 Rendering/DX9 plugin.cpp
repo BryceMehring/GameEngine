@@ -1,7 +1,6 @@
 
-
+#include "stdafx.h"
 #include "DX9 plugin.h"
-#include <sstream>
 
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
@@ -16,6 +15,8 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 
 DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref)
 {
+	// todo: need to organize constructor
+
 	m_p3Device = NULL;
 	m_pDirect3D = NULL;
 	m_pFont = NULL;
@@ -33,6 +34,8 @@ DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref)
 	//desc.Height = 20;
 
 	D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
+
+	RegisterScript();
 }
 DX9Render::~DX9Render()
 {
@@ -92,12 +95,23 @@ void DX9Render::InitializeDirectX()
 		&m_p3Device);      // return created device
 }
 
+void DX9Render::Reset()
+{
+	m_pFont->OnLostDevice();
+	m_p3Device->Reset(&m_D3DParameters);
+	m_pFont->OnResetDevice();
+}
 void DX9Render::GetStringRec(const char* str, RECT& out)
 {
 	m_pFont->DrawText(0,str,-1,&out,DT_CALCRECT,0);
 }
-void DX9Render::DrawString(const char* str, RECT& R, DWORD color)
-{ 
+void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
+{
+	if(calcRect)
+	{
+		GetStringRec(str,R);
+	}
+
 	m_pFont->DrawText(0,str,-1,&R,DT_CENTER,color);
 }
 /*void DX9Render::DrawSprite()
@@ -228,13 +242,42 @@ unsigned int DX9Render::EnumerateDisplayAdaptors()
 
 	return (m_mode.size() - 1);
 }
+void DX9Render::SetDisplayMode(unsigned int i)
+{
+	unsigned int Width = m_mode[i].mode.Width;
+	unsigned int Height = m_mode[i].mode.Height;
+	HWND h = m_mgr.GetWindowHandle();
+
+	m_D3DParameters.BackBufferFormat = D3DFMT_X8R8G8B8;
+	m_D3DParameters.BackBufferWidth  = Width;
+	m_D3DParameters.BackBufferHeight = Height;
+	m_D3DParameters.FullScreen_RefreshRateInHz = m_mode[i].mode.RefreshRate;
+	m_D3DParameters.Windowed         = false;
+
+	// Change the window style to a more fullscreen friendly style.
+	SetWindowLongPtr(h, GWL_STYLE, WS_POPUP);
+
+	// If we call SetWindowLongPtr, MSDN states that we need to call
+	// SetWindowPos for the change to take effect.  In addition, we 
+	// need to call this function anyway to update the window dimensions.
+	SetWindowPos(h, HWND_TOP, 0, 0, Width, Height, SWP_NOZORDER | SWP_SHOWWINDOW);
+
+	Reset();
+}
+
+const string& DX9Render::GetDisplayModeStr(unsigned int i) const
+{
+	return m_mode[i].str;
+}
 
 void DX9Render::RegisterScript()
 {
 	asIScriptEngine& scriptEngine = m_mgr.GetScriptVM().GetScriptEngine();
 
 	DBAS(scriptEngine.RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
-	//DBAS(scriptEngine.RegisterObjectMethod("DX9Render","void EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors));
+	DBAS(scriptEngine.RegisterObjectMethod("DX9Render","uint EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("DX9Render","void SetDisplayMode(uint)",asMETHOD(DX9Render,SetDisplayMode),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("DX9Render","const string& GetDisplayModeStr(uint) const",asMETHOD(DX9Render,GetDisplayModeStr),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterGlobalProperty("DX9Render renderer",this));
 }
 
