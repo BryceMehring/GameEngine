@@ -20,8 +20,11 @@ public:
 	// DirectX's version of poll 
 	virtual void Poll();
 
+	// Keyboard
+	virtual bool KeyDown(unsigned char Key);
+
+	// Mouse
 	virtual void MousePos(POINT&);
-	virtual bool KeyDown(char Key);
 	virtual bool MouseClick(int Button);
 
 	virtual int MouseX();
@@ -32,7 +35,6 @@ public:
 
 private:
 
-	
 	DirectInput(PluginManager& mgr);
 	virtual ~DirectInput();
 

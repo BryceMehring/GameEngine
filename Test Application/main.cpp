@@ -2,7 +2,10 @@
 #include "stdafx.h"
 #include "main.h"
 #include "Factory.h"
+#include "EngineHelper.h"
+#include "UI.h"
 
+#pragma comment(lib,"Game Engine.lib")
 
 using namespace AngelScript;
 using namespace std;
@@ -35,24 +38,47 @@ InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBase
 
 	ZeroMemory(buffer,sizeof(buffer));
 
-	// registering 
-
-	Factory<IUIElement>& uiFactory = Factory<IUIElement>::Instance();
-	uiFactory.Register("CheckBox",new Creator<CheckBox,IUIElement>);
-	//pUIInstance->Register("CheckBox",new Creator<CheckBox,IUIElement>());
-
-	// UI
-	m_pUI.reset(new UI());
-	m_pUI->RegisterScript();
-
-	// AS
-	unsigned int id = m_pVM->BuildScriptFromFile("Test.as");
-	m_pVM->ExecuteScript(id);
-	m_pVM->ExecuteScript("as.ListFunctions()");
+	LoadAndExecScripts();
 }
 InputTestApp::~InputTestApp()
 {
 }
+
+/*void InputTestApp::MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam)
+{
+	// todo: is this the best location for this code?
+	// todo: I need to be able to turn this on and off
+	switch(msg)
+	{
+	case WM_CHAR:
+		{
+			if(wPraram == 8)
+			{
+				if(!m_str.empty())
+				{
+					m_str.resize(m_str.size() - 1);
+				}
+			}
+			else if(wPraram == 13)
+			{
+				m_str += "\n";
+				//m_vm->ExecuteScript(m_str.c_str());
+			//	m_str.clear();
+			}
+			else
+			{
+				m_str += char(wPraram);
+			}
+
+		}
+		
+		break;
+	}
+
+	m_pUI->AddChar(char(wPraram));
+
+	return IBaseEngine::MsgProc(msg,wPraram,lparam);
+}*/
 
 int InputTestApp::Run()
 {
@@ -81,7 +107,6 @@ int InputTestApp::Run()
 			//wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",p.x,p.y);
 			m_pRenderer->DrawString(buffer,R,0xffffffff);
 		}
-
 		m_pRenderer->End();
 		m_pRenderer->Present();
 		EndCounter();
@@ -90,6 +115,20 @@ int InputTestApp::Run()
 	return 0;
 }
 
+void InputTestApp::LoadAndExecScripts()
+{
+	// AS
+	vector<string> files;
+	EngineHelper::LoadAllFilesFromDictionary(files,"../Scripts/",".as");
+
+	for(unsigned int i = 0; i < files.size(); ++i)
+	{
+		unsigned int index = m_vm->BuildScriptFromFile(files[i]);
+		m_vm->ExecuteScript(index);
+	}
+}
+ 
+
 
 // The DLL files do not like the singletons. This is why when we pass a singleton
 // instance into a dll, it appears null. I need to check this out more...
@@ -97,14 +136,8 @@ int InputTestApp::Run()
 // the current fix gets rid of using a singleton and uses Reference Counting.
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	g_pEngine = new InputTestApp(hInstance,"AngelScript");
-
-	int returnCode = g_pEngine->Run();
-
-	delete g_pEngine;
-	g_pEngine = NULL;
-
-	return returnCode;
+	boost::scoped_ptr<IBaseEngine> pEngine(new InputTestApp(hInstance,"AngelScript"));
+	return pEngine->Run();
 }
 				
 																								  

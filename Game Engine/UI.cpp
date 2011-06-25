@@ -3,35 +3,47 @@
 #include "StdAfx.h"
 #include "UI.h"
 #include "PluginManager.h"
-#include "Factory.h"
+#include "UICreator.h"
+#include "EngineHelper.h"
 
 using namespace AngelScript;
 using namespace std;
 
-ClickableElement::ClickableElement(RECT* R) : m_pClickRect(R) {}
-ClickableElement::~ClickableElement()
+// global functions
+CheckBoxData* CheckBoxDataFactory()
 {
-	m_pClickRect = NULL;
+	return new CheckBoxData();
 }
 
+UIData* UIDataFactory()
+{
+	return new UIData();
+}
+
+IUIElement::IUIElement(UI* pUI) : m_pUI(pUI)
+{
+
+}
+
+IUIElement::GameEntityType IUIElement::GetEntityType() const
+{
+	return GameEntityType::UIType;
+}
+
+ClickableElement::ClickableElement(RECT* R, UI* pUI) : IUIElement(pUI), m_pClickRect(R), m_fClickTime(0) {}
+ClickableElement::~ClickableElement()
+{
+	m_pClickRect = nullptr;
+}
+
+
+// todo: maybe I could implement the fsm here. 
 void ClickableElement::Update(float dt)
 {
-	// todo: need to clean up the logic
+	IKMInput& input = m_pUI->GetEngine()->GetInput();
 
-	static bool bNoClick = false;
-	IKMInput& input = g_pEngine->GetInput();
-
-	if(bNoClick)
+	if(input.MouseClick(0))
 	{
-		if(input.MouseClick(0) == false)
-		{
-			bNoClick = false;
-		}
-	}
-
-	if(input.MouseClick(0) && !bNoClick)
-	{
-		//m_pData->m_time = 0;
 		POINT mousePos;
 		input.MousePos(mousePos);
 
@@ -40,48 +52,34 @@ void ClickableElement::Update(float dt)
 		{
 			if((mousePos.y >= m_pClickRect->top) && (mousePos.y <= m_pClickRect->bottom))
 			{
-				// do not come back in here until the user is not clicking
-				bNoClick = true;
+				if(m_fClickTime == 0.0f)
+				{
+					m_fClickTime += dt;
 
-				// Call script function
-				ClickResponse();
+					// Call script function
+					ClickResponse();
+				}
 			}
 		}
+	}
+	else
+	{
+		m_fClickTime = 0.0f;
 	}
 }
 
 
+TextBox::~TextBox()
+{
+	m_pData->Release();
+}
+
 // CheckBox
-
-// global functions
-CheckBoxData* CheckBoxDataFactory()
-{
-	return new CheckBoxData();
-}
  
-CheckBox::CheckBox(void* pParam) : ClickableElement(&((CheckBoxData*)pParam)->rect), m_pData((CheckBoxData*)pParam)
+CheckBox::CheckBox(CheckBoxData* pData, UI* pUI) : ClickableElement(&pData->rect,pUI), m_pData(pData)
 {
-	//todo: I could add this object to another class, so that is class gets rendered 
-	// But what about input?
-
-	// to make this work I would need a render abstract interface
-
-	// engine.AddObjectToRenderQueue(this);
-
-	IRenderingPlugin& renderer = g_pEngine->GetRenderer();
+	IRenderingPlugin& renderer = m_pUI->GetEngine()->GetRenderer();
 	renderer.GetStringRec(m_pData->str.c_str(),m_pData->rect);
-
-	// todo: this is bad coding need to fix this below
-	m_pData->rect.left = m_pData->pos.x;
-	m_pData->rect.top = m_pData->pos.y;
-
-	m_pData->rect.right += m_pData->pos.x;
-	m_pData->rect.bottom += m_pData->pos.y;
-	
-}
-CheckBox::CheckBox(CheckBoxData* pData) : ClickableElement(&pData->rect), m_pData(pData)
-{
-	
 }
 CheckBox::~CheckBox()
 {
@@ -96,7 +94,7 @@ void CheckBox::ClickResponse()
 {
 	m_pData->checked = !m_pData->checked;
 
-	asVM& vm = g_pEngine->GetScriptVM();
+	asVM& vm = m_pUI->GetEngine()->GetScriptVM();
 	vm.ExecuteScriptFunction(m_pData->func.iScriptIndex,m_pData->func.ifuncId,m_pData->checked);
 }
 
@@ -113,15 +111,18 @@ void CheckBox::Render()
 		color = D3DCOLOR_XRGB(255,255,255);
 	}
 
-	IRenderingPlugin& renderer = g_pEngine->GetRenderer();
+	IRenderingPlugin& renderer = m_pUI->GetEngine()->GetRenderer();
 	renderer.DrawString(m_pData->str.c_str(),m_pData->rect,color,false);
 }
 
 // UI
-UI::UI()
+UI::UI(IBaseEngine* pEngine) : m_pEngine(pEngine), m_pInFocus(nullptr)
 {
 	m_levels.resize(1);
 	m_currentLevel = m_levels.begin();
+
+	m_factory.RegisterType("CheckBox",new CheckBoxCreator());
+	m_factory.RegisterType("TextBox",new TextBoxCreator());
 }
 UI::~UI()
 {
@@ -132,6 +133,12 @@ UI::~UI()
 			delete (*subIter);
 		}
 	}
+}
+
+
+IBaseEngine* UI::GetEngine() 
+{
+	return m_pEngine;
 }
 
 void UI::AddLevel()
@@ -157,30 +164,21 @@ unsigned int UI::GetCurrentLevel() const
 	return 0;
 }
 
-unsigned int UI::AddElement(const string& c, void* pObj, int typeId)
+unsigned int UI::AddElement(const string& c, UIData* pObj)
 {
-	unsigned int iReturn = -1;
+	unsigned int index = -1;
 
-	if(typeId & asTYPEID_OBJHANDLE)
+	if(pObj)
 	{
-		// todo: need to figure out what this means
-		// because *(void**)pObj != pObj
-		void* pData =  *(void**)pObj;
-
-		// AddRef to pData
-		asIScriptEngine& scriptEngine = g_pEngine->GetScriptVM().GetScriptEngine();
-		scriptEngine.AddRefScriptObject(pData, typeId);
-
-		scriptEngine.Release();
+		UICreator::TupleType t(pObj,this);
 
 		// create object based on the c string and pass pData to the constructor
-		Factory<IUIElement>& uiInstance = Factory<IUIElement>::Instance();
-		IUIElement* pElement = uiInstance.Create(c,pData);
+		IUIElement* pElement = static_cast<IUIElement*>(m_factory.CreateEntity(c,t));
 
-		iReturn = AddElement(pElement);
+		index = AddElement(pElement); 
 	}
 
-	return iReturn;
+	return index;
 }
 unsigned int UI::AddElement(IUIElement* pElement)
 {
@@ -208,17 +206,34 @@ void UI::RemoveElement(unsigned int i)
 
 	return bChecked;
 }*/
+
+IUIElement* UI::GetFocus() const
+{
+	return m_pInFocus;
+}
+void UI::SetFocus(IUIElement* pElement)
+{
+	m_pInFocus = pElement;
+}
 void UI::Update(float dt)
 {
-	for(unsigned int i = 0; i < m_currentLevel->size(); ++i)
+	if(m_pInFocus == nullptr)
 	{
-		m_currentLevel->at(i)->Update(dt);
+		for(unsigned int i = 0; i < m_currentLevel->size(); ++i)
+		{
+			m_currentLevel->at(i)->Update(dt);
+		}
+	}
+	else
+	{
+		m_pInFocus->Update(dt);
 	}
 }
 void UI::Render() const
 {
 	for(unsigned int i = 0; i < m_currentLevel->size(); ++i)
 	{
+		// Check if the UI element can be rendered
 		IRender* pUIElement = dynamic_cast<IRender*>(m_currentLevel->at(i));
 
 		if(pUIElement)
@@ -229,16 +244,45 @@ void UI::Render() const
 	}
 }
 
+void UI::KeyDownCallback(char Key)
+{
+	if(m_pInFocus)
+	{
+		TextBox* pTextBox = dynamic_cast<TextBox*>(m_pInFocus);
+
+		if(pTextBox)
+		{
+			pTextBox->Update(Key);
+		}
+	}
+}
+
 void UI::RegisterScript()
 {
 	// todo: this function should only be called once?
 
 	// Register Script with UI 
-	asVM& vm = g_pEngine->GetScriptVM();
+	asVM& vm = m_pEngine->GetScriptVM();
 	asIScriptEngine& engine = vm.GetScriptEngine();
 
+	// Register References
+	DBAS(engine.RegisterObjectType("UIData",0,asOBJ_REF));
+	DBAS(engine.RegisterObjectType("CheckBoxData",0,asOBJ_REF));
+	DBAS(engine.RegisterObjectType("UI",0,asOBJ_REF | asOBJ_NOHANDLE));
+
+	// UIData Behavior
+	DBAS(engine.RegisterObjectBehaviour("UIData",asBEHAVE_FACTORY,"UIData@ f()",
+		asFUNCTION(UIDataFactory),asCALL_CDECL));
+	DBAS(engine.RegisterObjectBehaviour("UIData",asBEHAVE_ADDREF,"void f()",
+		asMETHOD(UIData,AddRef),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectBehaviour("UIData",asBEHAVE_RELEASE,"void f()",
+		asMETHOD(UIData,Release),asCALL_THISCALL));
+
+	DBAS(engine.RegisterObjectProperty("UIData","RECT rect",offsetof(CheckBoxData,rect)));
+	DBAS(engine.RegisterObjectProperty("UIData","string name",offsetof(CheckBoxData,str)));
+
+
 	// Register CheckBoxData
-	DBAS(engine.RegisterObjectType("CheckBoxData",sizeof(CheckBoxData),asOBJ_REF));
 
 	// Register CheckBoxData Behavior
 	DBAS(engine.RegisterObjectBehaviour("CheckBoxData",asBEHAVE_FACTORY,"CheckBoxData@ f()",
@@ -247,15 +291,19 @@ void UI::RegisterScript()
 		asMETHOD(CheckBoxData,AddRef),asCALL_THISCALL));
 	DBAS(engine.RegisterObjectBehaviour("CheckBoxData",asBEHAVE_RELEASE,"void f()",
 		asMETHOD(CheckBoxData,Release),asCALL_THISCALL));
-	
+
+	DBAS(engine.RegisterObjectBehaviour("CheckBoxData",asBEHAVE_IMPLICIT_REF_CAST,"UIData@ f()",
+		asFUNCTION((EngineHelper::refCast<CheckBoxData,UIData>)),asCALL_CDECL_OBJLAST));
+
 	DBAS(engine.RegisterObjectProperty("CheckBoxData","bool checked",offsetof(CheckBoxData,checked)));
-	DBAS(engine.RegisterObjectProperty("CheckBoxData","POINT pos",offsetof(CheckBoxData,pos)));
+	DBAS(engine.RegisterObjectProperty("CheckBoxData","RECT rect",offsetof(CheckBoxData,rect)));
 	DBAS(engine.RegisterObjectProperty("CheckBoxData","string name",offsetof(CheckBoxData,str)));
 	DBAS(engine.RegisterObjectProperty("CheckBoxData","ScriptFunction func",offsetof(CheckBoxData,func)));
-
-	DBAS(engine.RegisterObjectType("UI",0,asOBJ_REF | asOBJ_NOHANDLE));
+	
+	
+	// Register UI
 	DBAS(engine.RegisterObjectMethod("UI","void AddLevel()",asMETHOD(UI, AddLevel),asCALL_THISCALL));
-	DBAS(engine.RegisterObjectMethod("UI","uint AddElement(const string& in, ?&in)",asMETHODPR(UI,AddElement,(const string&, void*, int),unsigned int), asCALL_THISCALL));	
+	DBAS(engine.RegisterObjectMethod("UI","uint AddElement(const string& in, UIData@)",asMETHODPR(UI,AddElement,(const string&, UIData*),unsigned int), asCALL_THISCALL));	
 	DBAS(engine.RegisterGlobalProperty("UI ui",this));
 
 	engine.Release();

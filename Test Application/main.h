@@ -3,7 +3,7 @@
 #pragma once
 #include "BEngine.h"
 #include "PluginManager.h"
-#include "UI.h"
+
 
 #pragma comment(lib,"Game Engine.lib")
 
@@ -15,19 +15,18 @@ public:
 	InputTestApp(HINSTANCE hInstance,const std::string& winCaption);
 	virtual ~InputTestApp();
 
+	//virtual void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
+
 	virtual int Run();
 
 protected:
 
 	// ===== data members =====
 
-	// ui
-	boost::scoped_ptr<UI> m_pUI;
-
+	std::string m_str;
 	char buffer[64];
 
 	// ===== helper functions =====
-
-	
+	void LoadAndExecScripts();	
 
 };

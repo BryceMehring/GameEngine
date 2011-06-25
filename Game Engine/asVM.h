@@ -5,6 +5,9 @@
  There will only be a single instance of the asVM class. And it
  will be publicly accessible.
 
+ Documentation:
+ file:///C:/Users/Bryce/Documents/C++/angelscript%20sdk/docs/manual/index.html
+
 */
 #ifndef _ASMANAGER_
 #define _ASMANAGER_
@@ -34,45 +37,6 @@
 namespace AngelScript
 {
 
-// ===== registering helpers ======
-
-// todo: should I combine all of these helpers into one class?
-
-template< class A, class B >
-B* refCast(A* a)
-{
-    // If the handle already is a null handle, then just return the null handle
-    if( a == NULL ) return 0;
-
-    // Now try to dynamically cast the pointer to the wanted type
-    B* b = dynamic_cast<B*>(a);
-    if( b != NULL )
-    {
-        // Since the cast was made, we need to increase the ref counter for the returned handle
-        b->AddRef();
-    }
-    return b;
-}
-
-template< class T >
-void Construct(void* pMem)
-{
-	new(pMem) T();
-}
-
-template< class T >
-void CopyConstruct(const T& other, T* pThis)
-{
-	new(pThis) T(other);
-}
-
-template< class T >
-void Destroy(void* pMem)
-{
-	((T*)pMem)->~T();
-}
-
-// ================
 
 struct ScriptFunction
 {
@@ -105,7 +69,7 @@ public:
 		3. Unprepared (destroy stack)
 	*/
 	void ExecuteScript(unsigned int scriptId);
-	void ExecuteScript(const char* script);
+	void ExecuteScript(const char* script); // the script code is inserted within a function
 
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId);
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId, char param);

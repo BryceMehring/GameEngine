@@ -24,12 +24,12 @@ void main()
 {
 	CheckBoxData@ myCheckData = CheckBoxData();
 	myCheckData.checked = false;
+	myCheckData.func = as.GetFunc(@OpenFile);
+
 	myCheckData.name = "Open Script";
 	
-	myCheckData.pos.x = 0;
-	myCheckData.pos.y = 0;
-
-	myCheckData.func = as.GetFunc(@OpenFile);
+	myCheckData.rect.left = 0;
+	myCheckData.rect.top = 0;
 
 	uint id = ui.AddElement("CheckBox",@myCheckData);
 }

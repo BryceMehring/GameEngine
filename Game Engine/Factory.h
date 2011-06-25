@@ -1,7 +1,6 @@
 // Programmed by Bryce Mehring
 // todo: need to add a description of the usage ...
 
-// this factory implementation does not support passing arguments to the objects constructer. 
 
 #ifndef _FACTORY_
 #define _FACTORY_
@@ -10,7 +9,7 @@
 #include "Singleton.h"
 
 // abstract class
-template< class T >
+/*template< class T >
 class ICreator
 {
 public:
@@ -37,7 +36,7 @@ public:
 
 	friend class Singleton<Factory<T>>;
 
-	T* Create(const std::string& type, void* param = NULL);
+	T* Create(const std::string& type, void* param = nullptr);
 	void Register(const std::string& type, ICreator<T>* pCreator);
 
 private:
@@ -61,7 +60,7 @@ template< class T >
 void Factory<T>::Register(const std::string& type, ICreator<T>* pCreator)
 {
 	m_CreatorMap[type] = pCreator;
-}
+}*/
 
 #endif //_FACTORY_
 

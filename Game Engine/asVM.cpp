@@ -2,8 +2,7 @@
 
 #include "StdAfx.h"
 #include "asVM.h"
-
-using namespace std;
+#include "EngineHelper.h"
 
 #pragma comment(lib,"AngelScript.lib")
 #pragma comment(lib,"AngelScriptAddons.lib")
@@ -24,19 +23,13 @@ const WORD ORANGE = 6;
 const WORD YELLOW = 14;
 const WORD WHITE = 15;
 
-DWORD WINAPI ScriptThread(void* p)
-{
-	asVM* pVM = (asVM*)p;
-	return 0;
-}
 
 struct Script
 {
-	Script() : id(0), pCtx(NULL) {}
+	Script() : id(0), pCtx(nullptr) {}
 
 	int id; // void main() id
 	asIScriptContext* pCtx;
-	HANDLE thread;
 };
 
 // ===== Global functions that are registered with AngelScript =====
@@ -44,7 +37,6 @@ void cls()
 {
 	system("cls");
 }
-
 void print(const string& d)
 {
 	cout<<d;
@@ -55,11 +47,12 @@ void print(int d)
 }
 
 // Implement a simple message callback function. todo: need to move this into the asConsole class?
+// todo: need to move the text output to the logging class
 void MessageCallback(const asSMessageInfo *msg, void *param)
 {
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	const char *type = NULL;
+	const char *type = nullptr;
 
 	if(msg->type == asMSGTYPE_ERROR)
 	{
@@ -79,7 +72,7 @@ void MessageCallback(const asSMessageInfo *msg, void *param)
 
 	float c = clock() / (float)CLOCKS_PER_SEC;
 
-	printf("%f %s (%d, %d) : %s : %s\n",c, msg->section, msg->row, msg->col, type, msg->message);
+	printf("%5.3f(s) %s (%d, %d) : %s : %s\n",c, msg->section, msg->row, msg->col, type, msg->message);
 
 	SetConsoleTextAttribute(hCon,WHITE);
 }
@@ -108,6 +101,7 @@ unsigned int asVM::BuildScriptFromFile(const string& str)
 {
 
 	// todo: need to cache scripts if they are marked with "final"?
+	// todo: Need to implement Pre-compiled byte code
 	
 	unsigned int index;
 
@@ -146,7 +140,6 @@ unsigned int asVM::BuildScriptFromFile(const string& str)
 		Script s;
 		s.id = mainId;
 		s.pCtx = m_pEngine->CreateContext();
-		s.thread = CreateThread(NULL,NULL,ScriptThread,this,CREATE_SUSPENDED,NULL);
 
 		m_scripts.push_back(s);
 
@@ -274,8 +267,6 @@ void asVM::ListVariables()
 {
 	asUINT n;
 
-	// todo: need to add class methods
-
 	// List the application registered variables
 	cout << "Application variables:" << endl;
 	for( n = 0; n < (asUINT)m_pEngine->GetGlobalPropertyCount(); n++ )
@@ -284,10 +275,6 @@ void asVM::ListVariables()
 		int typeId;
 		bool isConst;
 
-
-		// ========== todo: this works, need to finish =====================
-		// =================================
-
 		m_pEngine->GetGlobalPropertyByIndex(n, &name, &typeId, &isConst);
 		string decl = isConst ? " const " : " ";
 		decl += m_pEngine->GetTypeDeclaration(typeId);
@@ -295,22 +282,11 @@ void asVM::ListVariables()
 		decl += name;
 		cout << decl << endl;
 	}
-
-	// List the user variables in the module
-	asIScriptModule *mod = m_pEngine->GetModule("Application");
-	if( mod )
-	{
-		cout << endl;
-		cout << "User variables:" << endl;
-		for( n = 0; n < (asUINT)mod->GetGlobalVarCount(); n++ )
-		{
-			cout << " " << mod->GetGlobalVarDeclaration(n) << endl;
-		}
-	}
 }
 
 void asVM::ListObjects()
 {
+	// todo: need to clean up this method
 	cout << "Registered Objects:" << endl;
 	
 	ostringstream objs;

@@ -1,15 +1,19 @@
 // Programmed by Bryce Mehring
-// 1/16/2011  to 5/31/2011
+// 1/16/2011  to ...
 
 /*
 	These interfaces are the base of the game engine. All of the different sections of the
 	game engine will be developed as a DLL which will inherit from the IPlugin class.
-*/
+
+	todo: need to rename this header file
+	*/
 
 // guards
 #ifndef _PLUGIN_INTERFACES_
 #define _PLUGIN_INTERFACES_
 #pragma once
+
+#include <boost/tuple/tuple.hpp>
 
 // Macros
 #ifdef PLUGIN_EXPORTS
@@ -104,33 +108,42 @@ protected:
 };
 
 
-/*class IPluinExplorter : public IPlugin
+
+// todo: this is the base of all objects
+class IGameEntity : public RefCounting
 {
 public:
 
-	virtual ~IPluinExplorter() {}
-	//virtual bool Export(Data* pData) = 0;
+	enum GameEntityType
+	{
+		UIType,
+	};
+
+	virtual void Update(float dt) = 0;
+	virtual GameEntityType GetEntityType() const = 0;
+	// todo: need to implement a distributed factory
+	// todo: I should register the factory instead of this class
+	// toto: add more here...
+
+protected:
+
+	virtual ~IGameEntity() {}
 
 };
 
-class IPluinImporter : public IPlugin
+class UI;
+
+
+// A UI Distributed Factory Creator
+template< class T >
+class DistributedCreator
 {
 public:
 
-	virtual ~IPluinImporter() {}
-	//virtual bool Import(Data* pData) = 0;
+	virtual ~DistributedCreator() {}
+	virtual IGameEntity* Create(const T&) const = 0; 
 
 };
-
-class IGamePlugin : public IPlugin
-{
-public:
-
-	virtual ~IGamePlugin() {}
-
-	//....
-
-};*/
 
 class IRender
 {
@@ -182,13 +195,27 @@ public:
 	//virtual void DrawSprite();
 
 	virtual void Reset() = 0;
-	//virtual void OnLostDevice() = 0;
-	//virtual void OnResetDevice() = 0;
+	virtual void OnLostDevice() = 0;
+	virtual void OnResetDevice() = 0;
+	virtual bool IsDeviceLost() = 0;
 
 	// Fonts
 	virtual void GetStringRec(const char* str, RECT& out) = 0;
 	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true) = 0;
 	//virtual void DrawString(const char* str, const POINT& P, DWORD color) = 0; // todo: need to implement
+
+	// todo: need to create an abstract form of vertex declarations
+
+	// Effects
+	virtual UINT CreateEffectFromFile(const char* file) = 0;
+	virtual UINT GetTechnique(UINT n, const char* name) = 0;
+	virtual void SetTechnique(UINT n) = 0;
+	virtual void SetValue(void* pData, UINT bytes) = 0;
+
+	// Meshes
+	virtual UINT CreateMeshFromFile(const char* file) = 0;
+	virtual UINT CreateTriGridMesh() = 0;
+
 
 	// config
 	virtual unsigned int EnumerateDisplayAdaptors() = 0;
@@ -219,7 +246,7 @@ class IKMInput : public IInputPlugin
 {
 public:
 
-	virtual bool KeyDown(char Key) = 0;
+	virtual bool KeyDown(unsigned char Key) = 0;
 	virtual bool MouseClick(int Button) = 0;
 
 	virtual void MousePos(POINT&) = 0;

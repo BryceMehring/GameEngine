@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <stdio.h>
+#include <cstdarg>
 
 // stl
 #include <list>
@@ -31,6 +32,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/once.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/filesystem.hpp>
 
 // AngelScript
 #include "angelscript.h"

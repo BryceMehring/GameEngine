@@ -3,75 +3,74 @@
 #include "BEngine.h"
 #include "asVM.h"
 #include "PluginManager.h"
+#include "UI.h"
 
 using namespace AngelScript;
 using namespace std;
 
 #define MAX_CONSOLE_LINES 500
 
-IBaseEngine* g_pEngine = NULL;
+// static variables
+IBaseEngine* IBaseEngine::s_pThis = nullptr;
 
-LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) :
+m_hInstance(hInstance), m_pRenderer(nullptr), m_pInput(nullptr), m_hWindowHandle(NULL),
+m_bPaused(false), m_fDT(0.0f), m_fStartCount(0.0f), m_fSecsPerCount(0.0f)
 {
-	// Don't start processing messages until the application has been created.
-	if(g_pEngine)
-	{
-		g_pEngine->MsgProc(msg, wParam, lParam);
-	}
-
-	return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
-IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) : m_hInstance(hInstance)
-{
-	// Default values
-	m_pVM = NULL;
-	m_pPM = NULL;
-	m_pRenderer = NULL;
-	m_pInput = NULL;
-	m_hWindowHandle = NULL;
-	m_fDT = m_fStartCount = m_fSecsPerCount = 0.0f;
-	m_bPaused      = false;
-
-
 	// Initialize
 	try
 	{
 		InitializeWindows(hInstance,winCaption);
+		RedirectIOToConsole();
+		InitializeTimer();
+		RegisterScript();
+		InitializeConsole();
+		InitializePlugins();
 	}
 	catch(string error)
 	{
 		MessageBox(0,error.c_str(),0,0);
 		exit(0);
 	}
+	catch(bad_alloc& ba)
+	{
+		string buffer = "bad_alloc caught: ";
+		buffer += ba.what();
+		MessageBox(0,buffer.c_str(),0,0);
+		exit(0);
+	}
+	catch(DWORD winError)
+	{
+		string buffer = "System Error: ";
+		buffer += winError;
+		MessageBox(0,buffer.c_str(),0,0);
+		exit(0);
+	}
 
-	// todo: need to fix this logic
-	g_pEngine = this;
+	// todo: is this the best location for this?
+	s_pThis = this;
 
-	// initialize timer. todo: I could put this code into its own method
-	__int64 cntsPerSec = 0;
-	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
-	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
+	// UI
+	m_pUI.reset(new UI(this));
+	m_pUI->RegisterScript();
 
-	RedirectIOToConsole();
-	RegisterScript();
-	InitializePlugins();
-
-	m_pConsole = new asConsole();
 }
-
 IBaseEngine::~IBaseEngine()
 {
-	// todo need to release data members
-	delete m_pVM;
-	delete m_pPM;
-	delete m_pConsole;
-
-	m_pRenderer = NULL;
-	m_pInput = NULL;
-	m_pConsole = NULL;
+	FreeConsole();
 }
-
+asVM& IBaseEngine::GetScriptVM() const
+{
+	return *m_vm;
+}
+IKMInput& IBaseEngine::GetInput() const
+{
+	return *m_pInput;
+}
+IRenderingPlugin& IBaseEngine::GetRenderer() const
+{
+	return *m_pRenderer;
+}
 void IBaseEngine::StartCounter()
 {
 	__int64 prevTimeStamp = 0;
@@ -79,7 +78,6 @@ void IBaseEngine::StartCounter()
 
 	m_fStartCount = (float)prevTimeStamp;
 }
-
 void IBaseEngine::EndCounter()
 {
 	__int64 currTimeStamp = 0;
@@ -92,34 +90,32 @@ bool IBaseEngine::Update()
 	static MSG msg;
 	static float dt = 0.01f;
 
-	if(msg.message == WM_QUIT)
+	do
 	{
-		return false;
-	}
-
-	// If there are Window messages then process them.
-	if(PeekMessage( &msg, 0, 0, 0, PM_REMOVE ))
-	{
-		TranslateMessage( &msg );
-		DispatchMessage( &msg );
-	}
-	// Otherwise, do animation/game stuff.
-	else
-	{
-		// If the application is paused then free some CPU cycles to other 
-		// applications and then continue on to the next frame.
-		if( m_bPaused )
+		if(msg.message == WM_QUIT)
 		{
-			Sleep(20);
-
-			// todo: need to get rid of recursion
-			Update();
+			return false;
 		}
-	}
+
+		// If there are Window messages then process them.
+		if(PeekMessage( &msg, 0, 0, 0, PM_REMOVE ))
+		{
+			TranslateMessage( &msg );
+			DispatchMessage( &msg );
+		}
+		// Otherwise, do animation/game stuff.
+		else
+		{
+			// todo: I could optimize this more
+			// If the application is paused then free some CPU cycles to other 
+			// applications and then continue on to the next frame.
+			if( m_bPaused == true) { Sleep(20); }
+		}
+
+	} while(m_bPaused);
 
 	return true;
 }
-
 void IBaseEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 {
 	WNDCLASS wc;
@@ -151,12 +147,13 @@ void IBaseEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaptio
 	ShowWindow(m_hWindowHandle, SW_SHOW);
 	UpdateWindow(m_hWindowHandle);
 }
-
 void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
 	switch( msg )
 	{
-		case WM_SIZING:
+		case WM_CHAR:
+
+			m_pUI->KeyDownCallback(char(wParam));
 		
 		break;
 		case WM_EXITSIZEMOVE:
@@ -198,6 +195,7 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 	}
 }
 
+// Thread Safe
 string IBaseEngine::OpenFileName() const
 {
 	OPENFILENAME ofn = {0};
@@ -220,6 +218,16 @@ string IBaseEngine::OpenFileName() const
  
 	return fileNameStr;
 }
+LRESULT CALLBACK IBaseEngine::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	// Don't start processing messages until the application has been created.
+	if(s_pThis)
+	{
+		s_pThis->MsgProc(msg, wParam, lParam);
+	}
+
+	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
 
 void IBaseEngine::RedirectIOToConsole()
 {
@@ -234,7 +242,12 @@ void IBaseEngine::RedirectIOToConsole()
 
 	// allocate a console for this app
 
-	AllocConsole();
+	bool success = AllocConsole();
+
+	if(success == false)
+	{
+		throw GetLastError();
+	}
 
 	// set the screen buffer to be big enough to let us scroll text
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&coninfo);
@@ -251,7 +264,7 @@ void IBaseEngine::RedirectIOToConsole()
 
 	*stdout = *fp;
 
-	setvbuf( stdout, NULL, _IONBF, 0 );
+	setvbuf( stdout, nullptr, _IONBF, 0 );
 
 	// redirect unbuffered STDIN to the console
 
@@ -263,7 +276,7 @@ void IBaseEngine::RedirectIOToConsole()
 
 	*stdin = *fp;
 
-	setvbuf( stdin, NULL, _IONBF, 0 );
+	setvbuf( stdin, nullptr, _IONBF, 0 );
 
 	// redirect unbuffered STDERR to the console
 
@@ -275,7 +288,7 @@ void IBaseEngine::RedirectIOToConsole()
 
 	*stderr = *fp;
 
-	setvbuf( stderr, NULL, _IONBF, 0 );
+	setvbuf( stderr, nullptr, _IONBF, 0 );
 
 	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
 
@@ -284,32 +297,12 @@ void IBaseEngine::RedirectIOToConsole()
 	ios::sync_with_stdio();
 
 }
-void IBaseEngine::InitializePlugins()
+void IBaseEngine::InitializeTimer()
 {
-	if(m_pPM == NULL)
-	{
-		m_pPM = new PluginManager();
-	}
-
-	// todo: to to write code to load all dll files in a folder, or even have the user
-	// pick through OpenFileName().
-	m_pRenderer = static_cast<IRenderingPlugin*>(m_pPM->LoadDLL("DX9 Rendering.dll"));
-	m_pInput = static_cast<IKMInput*>(m_pPM->LoadDLL("DirectX Input DLL.dll"));
+	__int64 cntsPerSec = 0;
+	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
+	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
 }
-
-asVM& IBaseEngine::GetScriptVM() const
-{
-	return *m_pVM;
-}
-IKMInput& IBaseEngine::GetInput() const
-{
-	return *m_pInput;
-}
-IRenderingPlugin& IBaseEngine::GetRenderer() const
-{
-	return *m_pRenderer;
-}
-
 void IBaseEngine::AddObjectToRenderList(IRender* pObject)
 {
 	if(pObject)
@@ -321,25 +314,34 @@ void IBaseEngine::Quit()
 {
 	PostQuitMessage(0);
 }
-
-void IBaseEngine::ClearConsole()
+void IBaseEngine::InitializePlugins()
 {
-	system("cls");
-}
+	m_pm.reset(new PluginManager(this));
 
+	// todo: to to write code to load all dll files in a folder, or even have the user
+	// pick through OpenFileName().
+
+	if(m_pm->LoadAllPlugins("../DLL/",".dll"))
+	{
+		m_pRenderer = static_cast<IRenderingPlugin*>(m_pm->GetPlugin(Rendering));
+		m_pInput = static_cast<IKMInput*>(m_pm->GetPlugin(Input));
+	}
+}
+void IBaseEngine::InitializeConsole()
+{
+	//todo: need to implement more
+	m_console.reset(new asConsole(this));
+}
 void IBaseEngine::RegisterScript()
 {
-	if(m_pVM == NULL)
-	{
-		m_pVM = new asVM();
-	}
+	m_vm.reset(new asVM());
 
 	asIScriptEngine& scriptEngine = GetScriptVM().GetScriptEngine();
 
+	// IEngine
 	DBAS(scriptEngine.RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void Quit()",asMETHOD(IBaseEngine,Quit),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(IBaseEngine,OpenFileName),asCALL_THISCALL));
-	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void ClearConsole()",asMETHOD(IBaseEngine,ClearConsole),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterGlobalProperty("IEngine engine",this));
 
 	scriptEngine.Release();

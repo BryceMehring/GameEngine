@@ -7,7 +7,6 @@
 
 #include "BEngine.h"
 #include "Interfaces.h"
-#include "Singleton.h"
 
 struct PluginInfo
 {
@@ -24,7 +23,7 @@ public:
 	   This class is also a singleton because it needs global access.
 	*/
 
-	PluginManager();
+	PluginManager(IBaseEngine* pEngine);
 	virtual ~PluginManager();
 
 	// more functions would go here as needed to work with the dlls...
@@ -37,9 +36,9 @@ public:
 	IPlugin* GetPlugin(DLLType type) const;
 
 	IPlugin* LoadDLL(const char* pFile);
-	//void LoadAllPlugins(char* pDictionary);
+	bool LoadAllPlugins(const std::string& path, const std::string& ext);
 
-	// todo: need to implement this
+	// todo: need to implement this?
 	virtual void RegisterScript() {}
 
 private:

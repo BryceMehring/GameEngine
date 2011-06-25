@@ -75,8 +75,9 @@ public:
 	virtual void Present();
 
 	virtual void Reset();
-	//virtual void OnLostDevice();
-	//virtual void OnResetDevice();
+	virtual void OnLostDevice();
+	virtual void OnResetDevice();
+	virtual bool IsDeviceLost();
 
 	// fonts
 	virtual void GetStringRec(const char* str, RECT& out);

@@ -5,13 +5,16 @@
 #define _ASCONSOLE_
 #pragma once
 
+
 #include "Thread.h"
+
+class IBaseEngine;
 
 class asConsole : public IScripted, Threaded
 {
 public:
 
-	asConsole();
+	asConsole(IBaseEngine* pEngine);
 	~asConsole();
 
 	void Open();
@@ -23,7 +26,7 @@ private:
 
 	// ===== data members =====
 
-	//asVM* m_pVM;
+	IBaseEngine* m_pEngine;
 
 	// Scripting Console
 	HWND m_hConsole;
@@ -40,7 +43,6 @@ private:
 
 	// function declarations
 	void PrintHelp() const;
-	void ConsoleInfo() const;
 	
 };
 

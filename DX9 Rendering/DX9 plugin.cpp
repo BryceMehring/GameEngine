@@ -17,9 +17,9 @@ DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref)
 {
 	// todo: need to organize constructor
 
-	m_p3Device = NULL;
-	m_pDirect3D = NULL;
-	m_pFont = NULL;
+	m_p3Device = nullptr;
+	m_pDirect3D = nullptr;
+	m_pFont = nullptr;
 
 	ZeroMemory(&m_D3DParameters,sizeof(D3DPRESENT_PARAMETERS));
 	m_ClearBuffers = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
@@ -97,14 +97,15 @@ void DX9Render::InitializeDirectX()
 
 void DX9Render::Reset()
 {
-	m_pFont->OnLostDevice();
+	OnLostDevice();
 	m_p3Device->Reset(&m_D3DParameters);
-	m_pFont->OnResetDevice();
+	OnResetDevice();
 }
 void DX9Render::GetStringRec(const char* str, RECT& out)
 {
 	m_pFont->DrawText(0,str,-1,&out,DT_CALCRECT,0);
 }
+
 void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 {
 	if(calcRect)
@@ -112,7 +113,8 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 		GetStringRec(str,R);
 	}
 
-	m_pFont->DrawText(0,str,-1,&R,DT_CENTER,color);
+	m_pFont->DrawText(0,str,-1,&R,DT_LEFT,color);
+
 }
 /*void DX9Render::DrawSprite()
 {
@@ -132,8 +134,8 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 	// Free memory
 	pMesh->Release();
 }
-
-bool BEngine::IsDeviceLost()
+*/
+bool DX9Render::IsDeviceLost()
 {
 	// Get the state of the graphics device.
 	HRESULT hr = m_p3Device->TestCooperativeLevel();
@@ -147,58 +149,35 @@ bool BEngine::IsDeviceLost()
 		return true;
 	}
 	// Driver error, exit.
-	else if( hr == D3DERR_DRIVERINTERNALERROR )
+	if( hr == D3DERR_DRIVERINTERNALERROR )
 	{
 		MessageBox(0, "Internal Driver Error...Exiting", 0, 0);
 		PostQuitMessage(0);
 		return true;
 	}
 	// The device is lost but we can reset and restore it.
-	else if( hr == D3DERR_DEVICENOTRESET )
+	if( hr == D3DERR_DEVICENOTRESET )
 	{
-		OnLostDevice();
-		m_p3Device->Reset(&m_D3DParameters);
-		OnResetDevice();
+		Reset();
 		return false;
 	}
-	else
-	{
-		return false;
-	}
+
+	return false;
 }
 
-void BEngine::OnLostDevice()
+void DX9Render::OnLostDevice()
 {
-	 m_pFont->OnLostDevice();
+	m_pFont->OnLostDevice();
 }
 
-void BEngine::OnResetDevice()
+void DX9Render::OnResetDevice()
 {
 	m_pFont->OnResetDevice();
 }
 
-void BEngine::RenderOptions()
-{
-	// Draw font, need to add this to a function
-	/*BFont& font = BFont::Instance();
-	ID3DXFont* pFont = font.GetFont("default");
-
-	RECT rec = {0,0,800,800};
-
-	ostringstream mode;
-
-	for(int i = 0; i < m_mode.size(); ++i)
-	{
-		mode << m_mode[i].Width << " x " << m_mode[i].Height << endl;
-	}
-
-	pFont->DrawText(0,mode.str().c_str(),-1,&rec,DT_WORDBREAK,D3DCOLOR_XRGB(255,255,255));
-
-	*/
 void DX9Render::Begin()
 {
-	// todo: need to implement the function again
-	//if( !IsDeviceLost() )
+	if( !IsDeviceLost() )
 	{
 		m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
 		m_p3Device->BeginScene();
@@ -244,9 +223,10 @@ unsigned int DX9Render::EnumerateDisplayAdaptors()
 }
 void DX9Render::SetDisplayMode(unsigned int i)
 {
+	HWND h = m_mgr.GetWindowHandle();
+
 	unsigned int Width = m_mode[i].mode.Width;
 	unsigned int Height = m_mode[i].mode.Height;
-	HWND h = m_mgr.GetWindowHandle();
 
 	m_D3DParameters.BackBufferFormat = D3DFMT_X8R8G8B8;
 	m_D3DParameters.BackBufferWidth  = Width;
@@ -254,14 +234,17 @@ void DX9Render::SetDisplayMode(unsigned int i)
 	m_D3DParameters.FullScreen_RefreshRateInHz = m_mode[i].mode.RefreshRate;
 	m_D3DParameters.Windowed         = false;
 
+	HWND h1 = SetActiveWindow(h);
+	HWND h2 = SetFocus(h);
+
 	// Change the window style to a more fullscreen friendly style.
-	SetWindowLongPtr(h, GWL_STYLE, WS_POPUP);
+	SetWindowLongPtr(h, GWL_STYLE, WS_POPUP | WS_MAXIMIZE);
 
 	// If we call SetWindowLongPtr, MSDN states that we need to call
 	// SetWindowPos for the change to take effect.  In addition, we 
 	// need to call this function anyway to update the window dimensions.
 	SetWindowPos(h, HWND_TOP, 0, 0, Width, Height, SWP_NOZORDER | SWP_SHOWWINDOW);
-
+	
 	Reset();
 }
 

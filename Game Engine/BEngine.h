@@ -67,12 +67,15 @@ public:
 	IBaseEngine(HINSTANCE hInstance,const std::string& winCaption);
 	virtual ~IBaseEngine();
 
-	void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
+	// todo: can these be private members?
+	static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
+
+	std::string OpenFileName() const; 
 
 	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
 	HWND GetWindowHandle() const { return m_hWindowHandle; }
-
-	void ClearConsole();
+	char GetKeyDown() const { return m_keyPressed; }
 
 	// Interface Access
 	AngelScript::asVM& GetScriptVM() const;
@@ -90,13 +93,14 @@ public:
 protected:
 
 	// ====== data members ======
+	// todo: ref counting?
+	boost::scoped_ptr<AngelScript::asVM> m_vm;
+	boost::scoped_ptr<UI> m_pUI;
+	boost::scoped_ptr<asConsole> m_console; // todo: should we get rid of this? Or should asConsole manage the console overlay to the win32 window?
+	boost::scoped_ptr<PluginManager> m_pm;
 
-	AngelScript::asVM* m_pVM;
-	asConsole* m_pConsole;
-
-	PluginManager* m_pPM;
+	// plugins
 	IRenderingPlugin* m_pRenderer;
-
 	std::list<IRender*> m_toRender;
 
 	IKMInput* m_pInput;
@@ -122,17 +126,21 @@ protected:
 
 private:
 
-	std::string OpenFileName() const;
-
+	// for win32 msg process
+	static IBaseEngine* s_pThis;
 
 	// Helper functions
+	
 	void Quit();
-	void RedirectIOToConsole();
+
+	// http://www.cplusplus.com/reference/iostream/ios/rdbuf/
+	void RedirectIOToConsole(); // todo: try to phase out using a console window. Display to the win32 window or dump to a file: logging, try to use clog
+	void InitializeTimer();
+
 	void InitializePlugins();
+	void InitializeConsole();
 	void InitializeWindows(HINSTANCE hInstance, const std::string& winCaption);
 };
-
-extern IBaseEngine* g_pEngine;
 
 #endif //_BENGINE_
 

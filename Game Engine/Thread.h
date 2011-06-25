@@ -16,7 +16,7 @@ public:
 protected:
 
 	volatile bool m_stoprequested;
-    boost::shared_ptr<boost::thread> m_thread;
+    boost::thread* m_pthread;
     boost::mutex m_mutex;
 
 	virtual void DoWork() = 0;

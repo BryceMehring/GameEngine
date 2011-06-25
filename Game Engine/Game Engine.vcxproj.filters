@@ -16,6 +16,15 @@
     <Filter Include="Thread">
       <UniqueIdentifier>{ea99d940-f426-4f65-8399-344fd252d502}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Directory">
+      <UniqueIdentifier>{1220eab2-4ef8-4b94-b9c7-ebb3d65a82e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Factory">
+      <UniqueIdentifier>{09405420-0e34-4b4a-97b2-8cb924516888}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphs">
+      <UniqueIdentifier>{40918577-25fb-4f29-8efb-815a464f7de5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BEngine.cpp">
@@ -36,6 +45,15 @@
     <ClCompile Include="Thread.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
+    <ClCompile Include="EngineHelper.cpp">
+      <Filter>Directory</Filter>
+    </ClCompile>
+    <ClCompile Include="DistributedFactory.cpp">
+      <Filter>Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="UICreator.cpp">
+      <Filter>User Interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BEngine.h">
@@ -53,11 +71,28 @@
     <ClInclude Include="asConsole.h">
       <Filter>AngelScript</Filter>
     </ClInclude>
-    <ClInclude Include="Factory.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="Thread.h">
       <Filter>Thread</Filter>
     </ClInclude>
+    <ClInclude Include="EngineHelper.h">
+      <Filter>Directory</Filter>
+    </ClInclude>
+    <ClInclude Include="Factory.h">
+      <Filter>Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="DistributedFactory.h">
+      <Filter>Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="UICreator.h">
+      <Filter>User Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Graph.h">
+      <Filter>Graphs</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram11.cd" />
   </ItemGroup>
 </Project>

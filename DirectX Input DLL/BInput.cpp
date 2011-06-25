@@ -97,7 +97,7 @@ void DirectInput::MousePos(POINT& pos)
 	pos = m_MousePos;
 }
 
-bool DirectInput::KeyDown(char Key)
+bool DirectInput::KeyDown(unsigned char Key)
 {
 	return ((m_KeyboardState[Key] & 0x80) != 0);
 }

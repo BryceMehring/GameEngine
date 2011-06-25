@@ -2,19 +2,31 @@
 #include "stdafx.h"
 #include "Thread.h"
 
-Threaded::Threaded() : m_stoprequested(false)
+using namespace std;
+
+Threaded::Threaded() : m_stoprequested(false), m_pthread(nullptr)
 {
 }
 
 void Threaded::Go()
 {
-	assert(!m_thread);
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Threaded::DoWork, this)));
+	//boost::
+
+	if(!m_pthread)
+	{
+		m_stoprequested = false;
+		m_pthread = (new boost::thread(boost::bind(&Threaded::DoWork, this)));
+	}
 }
 
 void Threaded::Stop()
 {
-	assert(m_thread);
-	m_stoprequested = true;
-	m_thread->join();
+	if(m_pthread)
+	{
+		m_stoprequested = true;
+		m_pthread->join();
+
+		delete m_pthread;
+		m_pthread = nullptr;
+	}
 }
