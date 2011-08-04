@@ -5,15 +5,15 @@
 #include "PluginManager.h"
 #include "UI.h"
 
-using namespace AngelScript;
 using namespace std;
 
 #define MAX_CONSOLE_LINES 500
 
-// static variables
-IBaseEngine* IBaseEngine::s_pThis = nullptr;
 
-IBaseEngine::IBaseEngine(HINSTANCE hInstance,const string& winCaption) :
+// static variables
+BEngine* BEngine::s_pThis = nullptr;
+
+BEngine::BEngine(HINSTANCE hInstance,const string& winCaption) :
 m_hInstance(hInstance), m_pRenderer(nullptr), m_pInput(nullptr), m_hWindowHandle(NULL),
 m_bPaused(false), m_fDT(0.0f), m_fStartCount(0.0f), m_fSecsPerCount(0.0f)
 {
@@ -21,12 +21,13 @@ m_bPaused(false), m_fDT(0.0f), m_fStartCount(0.0f), m_fSecsPerCount(0.0f)
 	try
 	{
 		InitializeWindows(hInstance,winCaption);
-		RedirectIOToConsole();
+		//RedirectIOToConsole();
 		InitializeTimer();
 		RegisterScript();
-		InitializeConsole();
+		InitializeUI();
 		InitializePlugins();
 	}
+	// catch any errors
 	catch(string error)
 	{
 		MessageBox(0,error.c_str(),0,0);
@@ -49,43 +50,38 @@ m_bPaused(false), m_fDT(0.0f), m_fStartCount(0.0f), m_fSecsPerCount(0.0f)
 
 	// todo: is this the best location for this?
 	s_pThis = this;
-
-	// UI
-	m_pUI.reset(new UI(this));
-	m_pUI->RegisterScript();
-
 }
-IBaseEngine::~IBaseEngine()
+BEngine::~BEngine()
 {
 	FreeConsole();
 }
-asVM& IBaseEngine::GetScriptVM() const
+void BEngine::GetStringRec(const char* str, RECT& out)
+{
+	m_pRenderer->GetStringRec(str,out);
+}
+asVM& BEngine::GetScriptVM() const
 {
 	return *m_vm;
 }
-IKMInput& IBaseEngine::GetInput() const
+IKMInput* BEngine::GetInput() const
 {
-	return *m_pInput;
+	return m_pInput;
 }
-IRenderingPlugin& IBaseEngine::GetRenderer() const
-{
-	return *m_pRenderer;
-}
-void IBaseEngine::StartCounter()
+void BEngine::StartCounter()
 {
 	__int64 prevTimeStamp = 0;
 	QueryPerformanceCounter((LARGE_INTEGER*)&prevTimeStamp);
 
 	m_fStartCount = (float)prevTimeStamp;
 }
-void IBaseEngine::EndCounter()
+void BEngine::EndCounter()
 {
 	__int64 currTimeStamp = 0;
 	QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
 	m_fDT = (currTimeStamp - m_fStartCount)*m_fSecsPerCount;
 }
 
-bool IBaseEngine::Update()
+bool BEngine::Update()
 {
 	static MSG msg;
 	static float dt = 0.01f;
@@ -116,7 +112,7 @@ bool IBaseEngine::Update()
 
 	return true;
 }
-void IBaseEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
+void BEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 {
 	WNDCLASS wc;
 	wc.style         = CS_HREDRAW | CS_VREDRAW;
@@ -147,15 +143,24 @@ void IBaseEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaptio
 	ShowWindow(m_hWindowHandle, SW_SHOW);
 	UpdateWindow(m_hWindowHandle);
 }
-void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
+void BEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
+	m_pInput->Poll(msg,wParam,lparam);
+
 	switch( msg )
 	{
-		case WM_CHAR:
-
-			m_pUI->KeyDownCallback(char(wParam));
+		/*case WM_CHAR:
+		{
+			//m_pUI->KeyDownCallback(char(wParam));
 		
-		break;
+			break;
+		}
+		case WM_KEYUP:
+		{
+			system("pause");
+
+			break;
+		}*/
 		case WM_EXITSIZEMOVE:
 		{
 			//GetWindowRect(m_hWindowHandle,&m_rect);
@@ -196,7 +201,7 @@ void IBaseEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 }
 
 // Thread Safe
-string IBaseEngine::OpenFileName() const
+string BEngine::OpenFileName() const
 {
 	OPENFILENAME ofn = {0};
 	char fileName[MAX_PATH] = "";
@@ -218,7 +223,7 @@ string IBaseEngine::OpenFileName() const
  
 	return fileNameStr;
 }
-LRESULT CALLBACK IBaseEngine::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK BEngine::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	// Don't start processing messages until the application has been created.
 	if(s_pThis)
@@ -229,7 +234,7 @@ LRESULT CALLBACK IBaseEngine::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-void IBaseEngine::RedirectIOToConsole()
+void BEngine::RedirectIOToConsole()
 {
 
 	int hConHandle;
@@ -297,24 +302,24 @@ void IBaseEngine::RedirectIOToConsole()
 	ios::sync_with_stdio();
 
 }
-void IBaseEngine::InitializeTimer()
+void BEngine::InitializeTimer()
 {
 	__int64 cntsPerSec = 0;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
 	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
 }
-void IBaseEngine::AddObjectToRenderList(IRender* pObject)
+void BEngine::AddObjectToRenderList(IRender* pObject)
 {
 	if(pObject)
 	{
 		m_toRender.push_back(pObject);
 	}
 }
-void IBaseEngine::Quit()
+void BEngine::Quit()
 {
 	PostQuitMessage(0);
 }
-void IBaseEngine::InitializePlugins()
+void BEngine::InitializePlugins()
 {
 	m_pm.reset(new PluginManager(this));
 
@@ -327,12 +332,31 @@ void IBaseEngine::InitializePlugins()
 		m_pInput = static_cast<IKMInput*>(m_pm->GetPlugin(Input));
 	}
 }
-void IBaseEngine::InitializeConsole()
+void BEngine::InitializeConsole()
 {
-	//todo: need to implement more
-	m_console.reset(new asConsole(this));
+	UIData* pData = new UIData();
+	pData->rect.left = pData->rect.top = 0;
+	pData->rect.right = 600;
+	pData->rect.bottom = 600;
+	pData->str = "Console: ";
+
+	m_console.reset(new asConsole(pData,m_pUI.get()));
 }
-void IBaseEngine::RegisterScript()
+void BEngine::InitializeUI()
+{
+	m_pUI.reset(new UI(this));
+
+	InitializeConsole();
+
+	UIGraph* pGraph = m_pUI->GetGraph();
+	UINode* pNode = pGraph->AddVertex();
+	pNode->AddElement(m_console.get());
+
+	m_pUI->SetCurrentNode(pNode);
+
+	pGraph->Release();
+}
+void BEngine::RegisterScript()
 {
 	m_vm.reset(new asVM());
 
@@ -340,8 +364,8 @@ void IBaseEngine::RegisterScript()
 
 	// IEngine
 	DBAS(scriptEngine.RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void Quit()",asMETHOD(IBaseEngine,Quit),asCALL_THISCALL));
-	DBAS(scriptEngine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(IBaseEngine,OpenFileName),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void Quit()",asMETHOD(BEngine,Quit),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(BEngine,OpenFileName),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterGlobalProperty("IEngine engine",this));
 
 	scriptEngine.Release();

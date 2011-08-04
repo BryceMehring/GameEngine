@@ -1,6 +1,6 @@
 
 // Response
-void CheckResponse(bool checked)
+/*void CheckResponse(bool checked)
 {
 	if(checked)
 	{
@@ -10,7 +10,7 @@ void CheckResponse(bool checked)
 	{
 		print("Not Checked\n");
 	}
-}
+}*/
 
 void OpenFile(bool b)
 {
@@ -28,10 +28,17 @@ void main()
 
 	myCheckData.name = "Open Script";
 	
-	myCheckData.rect.left = 0;
-	myCheckData.rect.top = 0;
+	myCheckData.rect.left = 150;
+	myCheckData.rect.top = 50;
+	myCheckData.checked = false;
 
-	uint id = ui.AddElement("CheckBox",@myCheckData);
+	UIGraph@ graph = ui.GetGraph();
+	UINode@ node = graph.AddVertex();
+	IUIElement@ element = ui.CreateElement("CheckBox",@myCheckData);
+
+	node.AddElement(element);
+
+	//ui.SetCurrentNode(node);
 }
 
   

@@ -18,10 +18,12 @@ public:
 	virtual void About();
 
 	// DirectX's version of poll 
-	virtual void Poll();
+	virtual void Poll(UINT msg, WPARAM wParam, LPARAM lparam);
 
 	// Keyboard
 	virtual bool KeyDown(unsigned char Key);
+	virtual bool IsKeyDown() const;
+	virtual char GetKeyDown() const;
 
 	// Mouse
 	virtual void MousePos(POINT&);
@@ -46,7 +48,10 @@ private:
 
 	// Keyboard
 	IDirectInputDevice8* m_pKeyboard;
-	char m_KeyboardState[256];
+	char m_KeyboardState[256]; 
+	char m_Key;
+
+	bool m_keyDown;
 
 	// Mouse
 	IDirectInputDevice8* m_pMouse;

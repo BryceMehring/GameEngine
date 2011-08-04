@@ -2,8 +2,6 @@
 
 /*
  This class will manage the Execution of all scripts
- There will only be a single instance of the asVM class. And it
- will be publicly accessible.
 
  Documentation:
  file:///C:/Users/Bryce/Documents/C++/angelscript%20sdk/docs/manual/index.html
@@ -13,8 +11,8 @@
 #define _ASMANAGER_
 #pragma once
 
-#include "Singleton.h"
 #include "Interfaces.h"
+#include "DxPolygon.h"
 
 // debug AngelScript
 #ifdef _DEBUG
@@ -33,10 +31,6 @@
 #endif
 
 // todo: Need to rename the namespace
-
-namespace AngelScript
-{
-
 
 struct ScriptFunction
 {
@@ -69,7 +63,7 @@ public:
 		3. Unprepared (destroy stack)
 	*/
 	void ExecuteScript(unsigned int scriptId);
-	void ExecuteScript(const char* script); // the script code is inserted within a function
+	void ExecuteScript(const std::string& script); // the script code is inserted within a function
 
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId);
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId, char param);
@@ -82,6 +76,9 @@ public:
 	// access to the asIScriptEngine
 	asIScriptEngine& GetScriptEngine() const;
 
+	// This is where all the text out goes
+	void SetTextBox(class TextBox* pTextBox);
+
 	virtual void RegisterScript();
 
 private:
@@ -93,14 +90,11 @@ private:
 	// being shared with AngelScript. But the script cannot modify this variable.
 	unsigned int m_iExeScript;
 
-	typedef std::map<std::string,unsigned int> ScriptIndexType;
-	typedef std::vector<Script> ScriptElementType;
-
-	// m_scriptIndex maps the filename of the script to the m_scripts index.
-	ScriptIndexType m_scriptIndex;
-
 	// each element in the vector is the main function in script
+	typedef std::vector<Script> ScriptElementType;
 	ScriptElementType m_scripts;
+
+	class TextBox* m_pTextBox;
 
 	CScriptBuilder m_builder;
 
@@ -112,7 +106,5 @@ private:
 	ScriptFunction GetFunc(asIScriptFunction* func) const;
 	
 };
-
-}; // AngelScript namespace
 
 #endif // _ASMANAGER_

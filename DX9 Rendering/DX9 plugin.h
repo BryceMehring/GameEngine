@@ -6,7 +6,10 @@
 
 #define PLUGIN_EXPORTS
 
+#include "Interfaces.h"
+#include "asVM.h"
 #include "PluginManager.h"
+#include <hash_map>
 
 /*enum EEffect
 {
@@ -49,10 +52,41 @@ struct DisplayMode
 	std::string str;
 };
 
+class DXFont
+{
+public:
+
+	DXFont()
+	{
+	}
+
+	void AddFont()
+	{
+	}
+
+
+private:
+	std::vector<ID3DXFont*> m_fonts;
+};
+
+enum InterfaceType
+{
+	Font,
+	Line,
+};
+
+struct DrawTextInfo
+{
+	std::string text;
+	RECT R;
+	DWORD color;
+};
+
 // todo: implement a deferred renderer
 //http://www.ogre3d.org/tikiwiki/Deferred+Shading
 //http://www.catalinzima.com/tutorials/deferred-rendering-in-xna/
 
+// I should subclass this class
 class DX9Render : public IRenderingPlugin
 {
 public:
@@ -82,7 +116,28 @@ public:
 	// fonts
 	virtual void GetStringRec(const char* str, RECT& out);
 	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true);
+	
+	// todo: need to implement
+	//template< class T >
+	//virtual void DrawString(T&, const D3DXMATRIX& transform);
+
 	//virtual void DrawSprite();
+
+	// lines
+	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color);
+	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform , D3DCOLOR color);
+
+	// effects
+	// todo: need to implement
+	virtual UINT CreateEffectFromFile(const char* file) { return 0; }
+	virtual UINT GetTechnique(UINT n, const char* name) { return 0; }
+	virtual void SetTechnique(UINT n) {}
+	virtual void SetValue(void* pData, UINT bytes) {}
+
+	// Meshes
+	// todo: need to implement
+	virtual UINT CreateMeshFromFile(const char* file) { return 0; }
+	virtual UINT CreateTriGridMesh() { return 0; }
 
 	// options
 	virtual unsigned int EnumerateDisplayAdaptors();
@@ -93,7 +148,6 @@ protected:
 
 	DX9Render(PluginManager& ref);
 	virtual ~DX9Render();
-
 	// ===== Data members =====
 
 	/*hash_map<UINT,Mesh> m_Meshes;
@@ -108,23 +162,36 @@ protected:
 
 	PluginManager& m_mgr;
 
+	D3DXMATRIX T;
+
+	// Interfaces
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
-	ID3DXFont* m_pFont;
+
+	// fonts
+	ID3DXFont* m_pFont; // todo: I need to match these with sprites!!! this will solve the problem of scrolling
+	typedef std::vector<DrawTextInfo> TextContainerType;
+	TextContainerType m_text;
+	
+	ID3DXSprite* m_pSprite;
+	ID3DXLine* m_pLine;
 
 	std::vector<DisplayMode> m_mode;
-
-	//fonts
-	ID3DXSprite* m_pSprite;
 
 	DWORD m_ClearBuffers;
 
 	D3DPRESENT_PARAMETERS m_D3DParameters;
 
-
 	// ===== Helper Funcrions =====
 	void RegisterScript();
+	void InitializeFont();
+	void InitializeLine();
+	void InitializeSprite();
 	void InitializeDirectX();
+
+	// this method renders everything that was cached in the end function
+
+	void RenderScene();
 
 	//void InitalizeVertexFormat(); //???
 

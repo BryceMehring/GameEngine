@@ -3,7 +3,7 @@
 
 #include "Interfaces.h"
 
-template< class C, class B = IGameEntity >
+template< class C, class B = IObject >
 class Factory
 {
 public:
@@ -13,7 +13,7 @@ public:
 
 	~Factory();
 
-	B* CreateEntity(const KeyType& type,TupleType arg);
+	B* CreateEntity(const KeyType& type,TupleType arg) const;
 	bool RegisterType(const KeyType& type, C* pCreator);
 
 private:
@@ -34,9 +34,9 @@ Factory<C,B>::~Factory()
 }
 
 template< class C, class B >
-B* Factory<C,B>::CreateEntity(const KeyType& type,TupleType arg)
+B* Factory<C,B>::CreateEntity(const KeyType& type,TupleType arg) const
 {
-	CreatorMap::iterator iter = m_creatorMap.find(type);
+	CreatorMap::const_iterator iter = m_creatorMap.find(type);
 
 	if(iter == m_creatorMap.end()) { return nullptr; }
 

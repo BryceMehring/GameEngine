@@ -5,8 +5,8 @@
 #define _PLUGIN_MANAGER_
 #pragma once
 
-#include "BEngine.h"
 #include "Interfaces.h"
+#include "asVM.h"
 
 struct PluginInfo
 {
@@ -23,14 +23,14 @@ public:
 	   This class is also a singleton because it needs global access.
 	*/
 
-	PluginManager(IBaseEngine* pEngine);
+	PluginManager(class BEngine* pEngine);
 	virtual ~PluginManager();
 
 	// more functions would go here as needed to work with the dlls...
 	//  ===== interface with dlls =====
 	HINSTANCE GetHINSTANCE() const;
 	HWND GetWindowHandle() const;
-	AngelScript::asVM& GetScriptVM() const;
+	asVM& GetScriptVM() const;
 
 	// returns the plugin if found, else, it returns null
 	IPlugin* GetPlugin(DLLType type) const;
@@ -43,7 +43,7 @@ public:
 
 private:
 
-	IBaseEngine* m_pEngine;
+	class BEngine* m_pEngine;
 
 	typedef std::map<DLLType,PluginInfo> plugin_type;
 	plugin_type m_plugins;	

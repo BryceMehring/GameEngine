@@ -6,8 +6,6 @@
 #define _FACTORY_
 #pragma once
 
-#include "Singleton.h"
-
 // abstract class
 /*template< class T >
 class ICreator

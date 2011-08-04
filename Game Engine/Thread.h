@@ -1,7 +1,7 @@
 
 #ifndef _THREAD_
 #define _THREAD_
-#pragma once
+
 
 class Threaded
 {

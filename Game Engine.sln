@@ -29,11 +29,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{2C1D4BAB-169C-47CD-9A83-0430684D1417}"
 	ProjectSection(SolutionItems) = preProject
 		Scripts\Build Script Button.as = Scripts\Build Script Button.as
-		Scripts\Clear.as = Scripts\Clear.as
-		Scripts\EnumDisplay.as = Scripts\EnumDisplay.as
-		Scripts\ScriptConsole.as = Scripts\ScriptConsole.as
-		Scripts\ShowFunctions.as = Scripts\ShowFunctions.as
-		Scripts\TextBox.as = Scripts\TextBox.as
+		Scripts\ConsoleBuildButton.as = Scripts\ConsoleBuildButton.as
 	EndProjectSection
 EndProject
 Global

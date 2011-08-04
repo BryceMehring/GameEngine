@@ -13,33 +13,35 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 	return new DX9Render(mgr);
 }
 
-DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref)
+DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref), m_p3Device(nullptr),
+m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
 {
 	// todo: need to organize constructor
-
-	m_p3Device = nullptr;
-	m_pDirect3D = nullptr;
-	m_pFont = nullptr;
-
 	ZeroMemory(&m_D3DParameters,sizeof(D3DPRESENT_PARAMETERS));
 	m_ClearBuffers = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
 
 	DX9Render::InitializeDirectX();
 
 	// post-Initialize
-	D3DXFONT_DESC desc;
-	ZeroMemory(&desc,sizeof(desc));
-
 	//desc.Width = 10;
 	//desc.Height = 20;
-
-	D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
+	this->InitializeSprite();
+	this->InitializeFont();
+	this->InitializeLine();
 
 	RegisterScript();
+
+	m_p3Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_LINEAR);
+	m_p3Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_LINEAR);
+	m_p3Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_LINEAR);
+
+	D3DXMatrixIdentity(&T);
 }
 DX9Render::~DX9Render()
 {
+	m_pSprite->Release();
 	m_pFont->Release();
+	m_pLine->Release();
 	m_p3Device->Release();
 	m_pDirect3D->Release();
 }
@@ -113,8 +115,17 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 		GetStringRec(str,R);
 	}
 
-	m_pFont->DrawText(0,str,-1,&R,DT_LEFT,color);
+	DrawTextInfo info = {str,R,color};
+	m_text.push_back(info);
+}
 
+void DX9Render::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform, D3DCOLOR color)
+{
+	m_pLine->DrawTransform(pVertexList,dwVertexListCount,pTransform,color);
+}
+void DX9Render::DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color)
+{
+	m_pLine->Draw(pVertexList,dwVertexListCount,color);
 }
 /*void DX9Render::DrawSprite()
 {
@@ -168,24 +179,37 @@ bool DX9Render::IsDeviceLost()
 void DX9Render::OnLostDevice()
 {
 	m_pFont->OnLostDevice();
+	m_pSprite->OnLostDevice();
+	m_pLine->OnLostDevice();
 }
 
 void DX9Render::OnResetDevice()
 {
 	m_pFont->OnResetDevice();
+	m_pSprite->OnResetDevice();
+	m_pLine->OnResetDevice();
 }
 
 void DX9Render::Begin()
 {
 	if( !IsDeviceLost() )
 	{
+		m_text.clear();
+
 		m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
 		m_p3Device->BeginScene();
+		// todo: these flags need to be modifiable
+		
+		m_pLine->Begin();
 	}
 }
 
 void DX9Render::End()
 {
+	RenderScene();
+
+	m_pSprite->End();
+	m_pLine->End();
 	m_p3Device->EndScene();
 }
 
@@ -234,8 +258,9 @@ void DX9Render::SetDisplayMode(unsigned int i)
 	m_D3DParameters.FullScreen_RefreshRateInHz = m_mode[i].mode.RefreshRate;
 	m_D3DParameters.Windowed         = false;
 
-	HWND h1 = SetActiveWindow(h);
-	HWND h2 = SetFocus(h);
+	// todo: look at this:
+	//HWND h1 = SetActiveWindow(h);
+	//HWND h2 = SetFocus(h);
 
 	// Change the window style to a more fullscreen friendly style.
 	SetWindowLongPtr(h, GWL_STYLE, WS_POPUP | WS_MAXIMIZE);
@@ -251,6 +276,53 @@ void DX9Render::SetDisplayMode(unsigned int i)
 const string& DX9Render::GetDisplayModeStr(unsigned int i) const
 {
 	return m_mode[i].str;
+}
+
+void DX9Render::InitializeFont()
+{
+	if(m_pFont == nullptr)
+	{
+		D3DXFONT_DESC desc;
+		ZeroMemory(&desc,sizeof(desc));
+		desc.Height = 15;
+		desc.Width = 8;
+		desc.Weight = 500;
+		desc.Quality = 255;
+
+
+		D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
+	}
+}
+
+void DX9Render::InitializeLine()
+{
+	if(m_pLine == nullptr)
+	{
+		D3DXCreateLine(m_p3Device,&m_pLine);
+		m_pLine->SetAntialias(true);
+		m_pLine->SetWidth(2.0f);
+	}
+}
+void DX9Render::InitializeSprite()
+{
+	if(m_pSprite == nullptr)
+	{
+		D3DXCreateSprite(m_p3Device,&m_pSprite);
+	}
+}
+
+void DX9Render::RenderScene()
+{
+	m_pSprite->SetTransform(&T);
+	m_pSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
+
+	for(TextContainerType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
+	{
+		DrawTextInfo& info = *iter;
+		m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,DT_TOP | DT_LEFT | DT_WORDBREAK,info.color);
+	}
+
+	m_pSprite->End();
 }
 
 void DX9Render::RegisterScript()

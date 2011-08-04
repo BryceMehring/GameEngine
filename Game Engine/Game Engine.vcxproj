@@ -56,7 +56,9 @@
     <ClCompile Include="asConsole.cpp" />
     <ClCompile Include="asVM.cpp" />
     <ClCompile Include="BEngine.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DistributedFactory.cpp" />
+    <ClCompile Include="DxPolygon.cpp" />
     <ClCompile Include="EngineHelper.cpp" />
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="Thread.cpp" />
@@ -65,21 +67,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asConsole.h" />
+    <ClInclude Include="asRegisterer.h" />
     <ClInclude Include="asVM.h" />
     <ClInclude Include="BEngine.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="DistributedFactory.h" />
+    <ClInclude Include="DxPolygon.h" />
     <ClInclude Include="EngineHelper.h" />
     <ClInclude Include="Factory.h" />
     <ClInclude Include="Graph.h" />
     <ClInclude Include="Interfaces.h" />
+    <ClInclude Include="OnceFSM.h" />
     <ClInclude Include="PluginManager.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="UICreator.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram11.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

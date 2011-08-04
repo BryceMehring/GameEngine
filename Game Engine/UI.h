@@ -3,11 +3,6 @@
 #define _UI_
 #pragma once
 
-#include "BEngine.h"
-#include "UICreator.h"
-#include "DistributedFactory.h"
-#include "Graph.h"
-#include "fsm.h"
 
 /*
 
@@ -16,14 +11,23 @@ How should I go about doing this? Should I keep a pointer to the Rendering and I
 
 */
 
+#include "Graph.h"
+#include "DistributedFactory.h"
+#include "UICreator.h"
+#include "OnceFSM.h"
+#include "DxPolygon.h"
+#include "asVM.h"
+
 
 // forward class declarations
+class BEngine;
 struct UIData;
 class IUIElement;
+class UIGraph;
 
 
 // http://www.objectmentor.com/resources/articles/umlfsm.pdf
-class UINode : public GraphVertex
+class UINode : public GraphVertex, public IRender
 {
 public:
 
@@ -50,13 +54,13 @@ public:
 
 	 ======================= AddElement =========================
 	*/
-	unsigned int AddElement(const std::string& c, UIData* pData);
 	unsigned int AddElement(IUIElement* pElement);
 	void RemoveElement(unsigned int i);
 
-	// fsm
-	virtual void On(UINT n);
-	virtual void Off(UINT n);
+	void Update(float dt);
+
+	virtual IRenderType GetRenderType() { return IRender::Text; } // todo: not everything is text.
+	virtual void Render(IRenderingPlugin& renderer);
 
 private:
 
@@ -65,7 +69,7 @@ private:
 
 };
 
-class UIFSM;
+/*class UIFSM;
 class OnState;
 class OffState;
 
@@ -105,14 +109,12 @@ class OnState : public UIState
 {
 public:
 
-	virtual void Click(UIFSM* pFSM)
-	{
-		pFSM->SetState(&s_offState);
-		pFSM->Click();
-	}
-	virtual void Back(UIFSM* pFSM)
-	{
-	}
+	//
+	//pFSM->SetState(&s_offState);
+	//	pFSM->On();
+	//	pFSM->Click();
+	virtual void Click(UIFSM* pFSM);
+	virtual void Back(UIFSM* pFSM) {}
 
 };
 
@@ -123,11 +125,42 @@ public:
 	virtual void Click(UIFSM* pFSM)
 	{
 	}
-	virtual void Back(UIFSM* pFSM)
+
+	//pFSM->SetState(&s_onState);
+	///pFSM->Off();
+	//pFSM->Back();
+	virtual void Back(UIFSM* pFSM);
+
+};*/
+
+// todo: need to implement
+// http://sourcemaking.com/design_patterns/state/cpp/1
+
+class UIGraph : public Graph<UINode,GraphEdge>, public RefCounting
+{
+public:
+
+	typedef Graph<UINode,GraphEdge> GraphBase;
+
+	virtual ~UIGraph() {} // this should be private!
+
+	using Graph<UINode,GraphEdge>::AddVertex;
+
+	UIGraph(UI* pUI) : m_pUI(pUI) {}
+
+	// These are the functions that are registered with AngelScript
+	UINode* AddVertex()
 	{
-		pFSM->SetState(&s_onState);
-		pFSM->Back();
+		UINode* pNode = new UINode();
+		AddVertex(pNode);
+		return pNode;
 	}
+
+private:
+
+	UI* m_pUI;
+
+	
 
 };
 
@@ -139,34 +172,43 @@ class UI : public IScripted
 {
 public:
 
-	// It manages all different types of items on the UI. It should
-	// support more items in the future.
+	typedef Factory<UICreator> UIFactoryType;
 
-	UI(IBaseEngine* pEngine);
+	// It manages all different types of items on the UI.
+
+	UI(BEngine* pEngine);
 	virtual ~UI();
 
-	IBaseEngine* GetEngine();
+	BEngine* GetEngine() const;
+	UIGraph* GetGraph() const;
 
-	void KeyDownCallback(char Key);
+	void SetCurrentNode(UINode* pNode);
+	UINode* GetCurrentNode() const;
+
+	IUIElement* CreateElement(const std::string& c,UIData* pObj);
 
 	// Focus
 	IUIElement* GetFocus() const;
 	void SetFocus(IUIElement* pElement);
 
 	void Update(float dt);
-	void Render() const;
+	void Render(IRenderingPlugin& renderer) const;
 
 	// virtual functions from IScripted
 	virtual void RegisterScript();
 
 private:
 
-	// typedef Uigraph TheGraph
+	// The engine that the UI is attached to
+	BEngine* m_pEngine;
+	
+	IUIElement* m_pInFocus; // The current UI element that the user is using
+	UINode* m_pCurrentNode; // The current node of the graph.
 
-	IBaseEngine* m_pEngine;
-	IUIElement* m_pInFocus;
+	// The graph data structure
+	UIGraph* m_pGraph;
 
-	Factory<UICreator> m_factory;
+	UIFactoryType m_factory;
 };
 
 struct UIData : public RefCounting
@@ -192,26 +234,21 @@ protected:
 // todo: does IUIElement have to inherit from RefCounting?
 // not all ui elements can be checked, or drawn. Need to subclass these methods
 // into more interfaces
-class IUIElement : public IGameEntity
+class IUIElement : public IObject, public RefCounting
 {
 public:
-
-	// UI is the manager of IUIElement's
-	friend class UI;
 
 	// todo: is this the best option? this is not really an interface anymore
 	// do all uielements need to access the ui?
 	IUIElement(UI* pUI);
- 
-	virtual GameEntityType GetEntityType() const; 
+	virtual ~IUIElement() {}
 
-	// todo: this interface is really weak... need to change it/add to it/subclass it
+	virtual ObjectType GetObjectType() { return ObjectType::UIType; }
+	virtual void Update(float dt) = 0;
 
 protected:
 
-	// todo: I could switch this out for a IBaseEngine pointer.
 	UI* m_pUI;
-	virtual ~IUIElement() {}
 	
 };
 
@@ -231,9 +268,8 @@ protected:
 
 private:
 
+	OnceFSM m_ClickFSM;
 	RECT* m_pClickRect;
-	float m_fClickTime;
-
 };
 
 // This is the data structure for a CheckBox
@@ -246,7 +282,7 @@ struct CheckBoxData : public UIData
 	bool checked;
 
 	// used for calling a script function
-	AngelScript::ScriptFunction func;
+	ScriptFunction func;
 
 protected:
 
@@ -261,106 +297,86 @@ public:
 	// a CheckBox manages drawing it along with checking if the mouse collides with the check box
 	CheckBox(CheckBoxData*,UI* pUI);
 	
-
 	// IUIElement
 	virtual bool IsChecked() const;
 	virtual void ClickResponse();
 	
 	// IRender
 	virtual IRenderType GetRenderType() { return Text; }
-	virtual void Render();
+	virtual void Render(IRenderingPlugin& renderer);
 
 private:
 
 	virtual ~CheckBox();                                                                
-	                
+	     
+	DxSquare m_box;
 	CheckBoxData* m_pData;
 };
 
 struct TextBoxData : public UIData
 {
 	bool focus;
-	std::string text;
-
+	
 private:
 
 	virtual ~TextBoxData() {}
 };
 
-class TextBox : public ClickableElement, public IRender
+struct LineData
+{
+	std::string line;
+	D3DCOLOR color;
+	RECT R;
+};
+
+class TextBox : public ClickableElement, public DxSquare
 {
 public:
 
-	TextBox(UIData* pData, UI* pUI) : ClickableElement(&pData->rect,pUI), m_pData(pData), m_bFocused(false) {}
+	TextBox(UIData* pData, UI* pUI);
+
+	void Write(const std::string& line, DWORD color = 0xffffffff);
+	//void Write(
+
+	void ScrollDown();
+	void ScrollUp();
+	void ScrollStop();
 
 	// ClickableElement
-	virtual void ClickResponse()
-	{
-		m_pUI->SetFocus(this);
-		m_bFocused = true;
-	}
+	virtual void ClickResponse();
 
-	void Update(char Key)
-	{
-		std::string& textRef = m_pData->str;
-		IRenderingPlugin& renderer = m_pUI->GetEngine()->GetRenderer();
-
-		RECT R = m_pData->rect;
-		renderer.GetStringRec(textRef.c_str(),R);
-
-		if(R.bottom <= m_pData->rect.bottom)
-		{
-			if(Key == 13)
-			{
-				textRef += "\n";
-			}
-
-			else if(Key == 8)
-			{
-				if(!textRef.empty())
-				{
-					textRef.resize(textRef.size() - 1);
-				}
-			}
-			else
-			{
-				// todo: need to fix the logic here
-				if(R.right >= m_pData->rect.right)
-				{
-					char end =  textRef.back();
-					textRef.resize(textRef.size() - 1);
-					textRef += "\n";
-					textRef += end;
-				}
-
-				m_pData->str += Key;
-				
-			}
-		}
-	}
-	virtual void Update(float dt)
-	{
-		if(m_bFocused == false)
-		{
-			ClickableElement::Update(dt);
-		}
-	}
+	virtual void Update(float dt);
 
 	// IRender
-	virtual IRenderType GetRenderType() { return Text; }
-	virtual void Render()
-	{
-		// todo: need to draw the name of the TextBox: 	m_pData->str
-		IRenderingPlugin& renderer = m_pUI->GetEngine()->GetRenderer();
-		renderer.DrawString(m_pData->str.c_str(),m_pData->rect,0xffffffff,false);
-	}
+	virtual IRenderType GetRenderType();
+	virtual void Render(IRenderingPlugin& renderer);
 
-private:
+	void CLS();
 
-	bool m_bFocused;
-	UIData* m_pData;
+protected:
 
 	virtual ~TextBox();
+
+//private:
+
+	// ===== Data members =====
+
+	static const int SCROLL_SPEED = 5;
+
+	OnceFSM m_Textfsm;
+	bool m_bFocused;
+
+	typedef std::deque<LineData> TextDataType;
+	TextDataType m_text;
+
+	UIData* m_pData;
+
+	int m_scrollSpeed;
+
+	// ===== helper functions =====
+	virtual void Backspace();
+	virtual void Enter();
+	void UpdateScrolling(IKMInput* pInput);
 
 };
 

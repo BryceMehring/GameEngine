@@ -22,6 +22,20 @@
 #define PLUGINDECL __declspec(dllimport)
 #endif
 
+class IObject
+{
+public:
+
+	enum ObjectType
+	{
+		UIType,
+	};
+
+	virtual ~IObject() {}
+	virtual ObjectType GetObjectType() = 0;
+
+};
+
 
 // Todo: answer these questions:
 // Why do we need this class? What does it mean when singletons inherit from the class?
@@ -121,8 +135,6 @@ public:
 
 	virtual void Update(float dt) = 0;
 	virtual GameEntityType GetEntityType() const = 0;
-	// todo: need to implement a distributed factory
-	// todo: I should register the factory instead of this class
 	// toto: add more here...
 
 protected:
@@ -134,14 +146,14 @@ protected:
 class UI;
 
 
-// A UI Distributed Factory Creator
+// A Distributed Factory Creator
 template< class T >
 class DistributedCreator
 {
 public:
 
 	virtual ~DistributedCreator() {}
-	virtual IGameEntity* Create(const T&) const = 0; 
+	virtual IObject* Create(const T&) const = 0; 
 
 };
 
@@ -154,13 +166,17 @@ public:
 		Text,
 		Picture,
 		Mesh,
-		// add more here
+		Line,
+		Polygon,
+		// todo:add more here
 	};
 
 	virtual ~IRender() {}
 
 	virtual IRenderType GetRenderType() = 0;
-	virtual void Render() = 0;
+	//virtual void Begin() = 0;
+	virtual void Render(class IRenderingPlugin& renderer) = 0;
+	//virtual void End() = 0;
 
 };
 
@@ -202,8 +218,12 @@ public:
 	// Fonts
 	virtual void GetStringRec(const char* str, RECT& out) = 0;
 	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true) = 0;
-	//virtual void DrawString(const char* str, const POINT& P, DWORD color) = 0; // todo: need to implement
 
+	// Line
+	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color) = 0;
+	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform , D3DCOLOR color) = 0;
+	
+	
 	// todo: need to create an abstract form of vertex declarations
 
 	// Effects
@@ -233,7 +253,7 @@ class IInputPlugin : public IPlugin
 {
 public:
 
-	virtual void Poll() = 0;
+	virtual void Poll(UINT msg, WPARAM wParam, LPARAM lparam) = 0;
 
 protected:
 
@@ -246,9 +266,13 @@ class IKMInput : public IInputPlugin
 {
 public:
 
+	// keyboard
 	virtual bool KeyDown(unsigned char Key) = 0;
-	virtual bool MouseClick(int Button) = 0;
+	virtual bool IsKeyDown() const = 0;
+	virtual char GetKeyDown() const = 0;
 
+	// mouse
+	virtual bool MouseClick(int Button) = 0;
 	virtual void MousePos(POINT&) = 0;
 	virtual int MouseX() = 0;
 	virtual int MouseY() = 0;
@@ -266,7 +290,7 @@ protected:
 
 	virtual ~IJoystickInput() {}
 
-	// more pure virtual functions here
+	// todo: more pure virtual functions here
 
 };
 

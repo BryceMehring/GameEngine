@@ -3,16 +3,14 @@
 #define GRAPH_H
 
 #include <vector>
-#include "UI.h"
 
 class GraphEdge;
 
-class GraphVertex
+class GraphVertex : public RefCounting
 {
 public:
 
 	GraphVertex() {}
-	virtual ~GraphVertex() {}
 
 	void AddEdge(GraphEdge* pNeighbor) { m_Neighbors.push_back(pNeighbor); }
 	std::vector<GraphEdge*>& GetEdges() { return m_Neighbors; }
@@ -31,13 +29,15 @@ protected:
 	float m_fPathSearchCost;
 
 	GraphVertex* m_pPredecessor;
+
+	virtual ~GraphVertex() {}
 };
 
-class GraphEdge
+class GraphEdge : public RefCounting
 {
 public:	
 	GraphEdge() {}
-	virtual ~GraphEdge() {}
+	
 
 	GraphVertex* GetTail() const		{ return m_pTail;  }
 	GraphVertex* GetHead() const		{ return m_pHead;  }
@@ -46,6 +46,8 @@ public:
 protected:
 	GraphVertex* m_pTail;
 	GraphVertex* m_pHead;
+
+	virtual ~GraphEdge() {}
 };
 
 class PosNode : public GraphVertex
@@ -84,14 +86,24 @@ public:
 	}
 	virtual ~Graph()
 	{
-		for(vector<VERTEX*>::iterator VertIter = m_Verts.begin(); VertIter != m_Verts.end(); ++VertIter) { delete (*VertIter); }
-		for(vector<EDGE*>::iterator EdgeIter = m_Edges.begin(); EdgeIter != m_Edges.end(); ++EdgeIter) { delete (*EdgeIter); }
+		for(std::vector<VERTEX*>::iterator VertIter = m_Verts.begin(); VertIter != m_Verts.end(); ++VertIter)
+		{ 
+			(*VertIter)->Release();
+		}
+		for(std::vector<EDGE*>::iterator EdgeIter = m_Edges.begin(); EdgeIter != m_Edges.end(); ++EdgeIter)
+		{ 
+			(*EdgeIter)->Release();
+		}
 
 		m_Verts.clear();
 		m_Edges.clear();
 	}
 
 	// use these to get the vertex in the ui
+
+	UINT GetVertexSize() const { return m_Verts.size(); }
+	UINT GetEdgeSize() const { return m_Edges.size(); }
+
 	VERTEX* GetVertex(const int iIndex) { return m_Verts[iIndex]; }
 	EDGE* GetEdge(const int iIndex) { return m_Edges[iIndex]; }
 
@@ -115,7 +127,7 @@ public:
 	}
 
 	template< class T >
-	float ComputeBestPath(VERTEX* pStart, VERTEX* pGoal, const T& Functor , vector<VERTEX*>& path)
+	float ComputeBestPath(VERTEX* pStart, VERTEX* pGoal, const T& Functor , std::vector<VERTEX*>& path)
 	{
 		InitializePathSearch();
 		priority_queue<VERTEX*,vector<VERTEX*>,GraphVertexSearchCostComparer> fringe;
@@ -179,11 +191,9 @@ public:
 		return fTotalCostToGoal;
 	}
 
-
-
 protected:
-	vector<VERTEX*> m_Verts;
-	vector<EDGE*> m_Edges;
+	std::vector<VERTEX*> m_Verts;
+	std::vector<EDGE*> m_Edges;
 
 	void InitializePathSearch()
 	{
@@ -193,52 +203,7 @@ protected:
 			(*iter)->SetPredecessor(NULL);
 		}
 	}
+	
 };
-
-class NaviGraph : public Graph<NavigationNode,GraphEdge>
-{
-public:
-
-	class NaviEdgeCost
-	{
-	public:
-
-		float operator()(const GraphEdge* const pEdge) const
-		{
-			const NavigationNode* const pTail = static_cast<NavigationNode*>(pEdge->GetTail());
-			const NavigationNode* const pHead = static_cast<NavigationNode*>(pEdge->GetHead());
-
-			return Algorithm::FindDistance(pTail->GetPos(),pHead->GetPos());
-		}
-
-	};
-
-	NaviGraph() {}
-	virtual ~NaviGraph() {}
-
-	NavigationNode* FindVertex(const int Id)
-	{
-		for(vector<NavigationNode*>::iterator NodeIter = m_Verts.begin(); NodeIter != m_Verts.end(); ++NodeIter)
-		{
-			NavigationNode* pNode = *NodeIter; 
-
-			if(dbSpriteCollision(Id,pNode->GetNodeId()))
-			{
-				return pNode;
-			}
-		}
-
-		return NULL;
-	}
-
-};
-
-// todo: need to implement
-// http://sourcemaking.com/design_patterns/state/cpp/1
-class UIGraph //: public Graph<UIVertex,UIEdge>
-{
-
-};
-
 
 #endif

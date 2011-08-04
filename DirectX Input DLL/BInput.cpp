@@ -9,7 +9,6 @@
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"Game Engine.lib")
 
-using namespace AngelScript;
 
 // Input plug-in implementation
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
@@ -17,7 +16,7 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 	return new DirectInput(mgr);
 }
 
-DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr)
+DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr), m_keyDown(false)
 {
 	ZeroMemory(m_KeyboardState,sizeof(m_KeyboardState));
 	ZeroMemory(&m_MouseState,sizeof(m_MouseState));
@@ -60,8 +59,32 @@ DLLType DirectInput::GetType()
 	return Input;
 }
 
-void DirectInput::Poll()
+void DirectInput::Poll(UINT msg, WPARAM wParam, LPARAM lparam)
 {
+	switch(msg)
+	{
+	case WM_CHAR:
+		/*if(wParam == 8) // backspace
+		{
+			m_inputText.resize(m_inputText.size() - 1);
+		}
+		else if(wParam == 13)
+		{
+			m_inputText += "\n";
+		}
+		else
+		{*/
+			m_keyDown = true;
+			m_Key = char(wParam);
+		//}
+		break;
+
+	default:
+
+		m_keyDown = false;
+		
+	}
+
 	//Poll Keyboard
 	HRESULT hr = m_pKeyboard->GetDeviceState(sizeof(m_KeyboardState),m_KeyboardState);
 
@@ -101,7 +124,14 @@ bool DirectInput::KeyDown(unsigned char Key)
 {
 	return ((m_KeyboardState[Key] & 0x80) != 0);
 }
-
+bool DirectInput::IsKeyDown() const
+{
+	return m_keyDown;
+}
+char DirectInput::GetKeyDown() const
+{
+	return m_Key;
+}
 bool DirectInput::MouseClick(int iButton)
 {
 	return ((m_MouseState.rgbButtons[iButton] & 0x80) != 0);

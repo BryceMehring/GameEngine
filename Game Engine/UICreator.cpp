@@ -3,7 +3,7 @@
 #include "UI.h"
 
 
-IGameEntity* CheckBoxCreator::Create(const TupleType& t) const
+IObject* CheckBoxCreator::Create(const TupleType& t) const
 {
 	CheckBoxData* pData = static_cast<CheckBoxData*>(t.get<0>());
 	UI* pData2 = t.get<1>();
@@ -12,7 +12,7 @@ IGameEntity* CheckBoxCreator::Create(const TupleType& t) const
 	//return new CheckBox(pData,pUI);
 }
 
-IGameEntity* TextBoxCreator::Create(const TupleType& t) const
+IObject* TextBoxCreator::Create(const TupleType& t) const
 {
 	UIData* pData = t.get<0>();
 	UI* pData2 = t.get<1>();

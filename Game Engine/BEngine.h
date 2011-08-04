@@ -3,9 +3,8 @@
 #define _BENGINE_
 #pragma once
 
-
-#include "asVM.h"
 #include "asConsole.h"
+#include "asVM.h"
 
 
 // ************************
@@ -60,12 +59,12 @@ protected:
 //  Need to subclass these methods
 // into more interfaces
 
-class IBaseEngine : public IScripted//, public RefCounting
+class BEngine : public IScripted//, public RefCounting
 {
 public:
 
-	IBaseEngine(HINSTANCE hInstance,const std::string& winCaption);
-	virtual ~IBaseEngine();
+	BEngine(HINSTANCE hInstance,const std::string& winCaption);
+	virtual ~BEngine();
 
 	// todo: can these be private members?
 	static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -73,14 +72,13 @@ public:
 
 	std::string OpenFileName() const; 
 
+	void GetStringRec(const char* str, RECT& out);
 	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
 	HWND GetWindowHandle() const { return m_hWindowHandle; }
-	char GetKeyDown() const { return m_keyPressed; }
 
 	// Interface Access
-	AngelScript::asVM& GetScriptVM() const;
-	IKMInput& GetInput() const;
-	IRenderingPlugin& GetRenderer() const;
+	asVM& GetScriptVM() const;
+	IKMInput* GetInput() const; // todo: should I get rid of this? I could
 
 	// Rendering
 	void AddObjectToRenderList(IRender*);
@@ -90,11 +88,11 @@ public:
 
 	virtual int Run() = 0;
 
-protected:
+protected: //todo: I should make some of these members private
 
 	// ====== data members ======
 	// todo: ref counting?
-	boost::scoped_ptr<AngelScript::asVM> m_vm;
+	boost::scoped_ptr<asVM> m_vm;
 	boost::scoped_ptr<UI> m_pUI;
 	boost::scoped_ptr<asConsole> m_console; // todo: should we get rid of this? Or should asConsole manage the console overlay to the win32 window?
 	boost::scoped_ptr<PluginManager> m_pm;
@@ -117,6 +115,8 @@ protected:
 
 	bool m_bPaused;
 
+protected:
+
 	// ====== helper functions ======
 
 	void StartCounter();
@@ -124,10 +124,15 @@ protected:
 
 	bool Update();
 
+	virtual void InitializePlugins();
+	virtual void InitializeConsole();
+	virtual void InitializeUI();
+	virtual void InitializeWindows(HINSTANCE hInstance, const std::string& winCaption);
+
 private:
 
 	// for win32 msg process
-	static IBaseEngine* s_pThis;
+	static BEngine* s_pThis;
 
 	// Helper functions
 	
@@ -136,11 +141,8 @@ private:
 	// http://www.cplusplus.com/reference/iostream/ios/rdbuf/
 	void RedirectIOToConsole(); // todo: try to phase out using a console window. Display to the win32 window or dump to a file: logging, try to use clog
 	void InitializeTimer();
-
-	void InitializePlugins();
-	void InitializeConsole();
-	void InitializeWindows(HINSTANCE hInstance, const std::string& winCaption);
 };
+
 
 #endif //_BENGINE_
 

@@ -4,11 +4,14 @@
 #include "Factory.h"
 #include "EngineHelper.h"
 #include "UI.h"
+#include "DxPolygon.h"
 
 #pragma comment(lib,"Game Engine.lib")
+#pragma comment(lib,"d3dx9.lib")
 
-using namespace AngelScript;
 using namespace std;
+
+
 
 // And then, as we go up in recursion, we display the rest of the numbers
 /*template< int n >
@@ -32,10 +35,8 @@ struct LoopClass<1>
 };*/
 
 
-InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : IBaseEngine(hInstance,winCaption)
+InputTestApp::InputTestApp(HINSTANCE hInstance,const string& winCaption) : BEngine(hInstance,winCaption)
 {
-	// todo: I need to move initialization into smaller helper function
-
 	ZeroMemory(buffer,sizeof(buffer));
 
 	LoadAndExecScripts();
@@ -44,68 +45,31 @@ InputTestApp::~InputTestApp()
 {
 }
 
-/*void InputTestApp::MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam)
-{
-	// todo: is this the best location for this code?
-	// todo: I need to be able to turn this on and off
-	switch(msg)
-	{
-	case WM_CHAR:
-		{
-			if(wPraram == 8)
-			{
-				if(!m_str.empty())
-				{
-					m_str.resize(m_str.size() - 1);
-				}
-			}
-			else if(wPraram == 13)
-			{
-				m_str += "\n";
-				//m_vm->ExecuteScript(m_str.c_str());
-			//	m_str.clear();
-			}
-			else
-			{
-				m_str += char(wPraram);
-			}
-
-		}
-		
-		break;
-	}
-
-	m_pUI->AddChar(char(wPraram));
-
-	return IBaseEngine::MsgProc(msg,wPraram,lparam);
-}*/
-
 int InputTestApp::Run()
 {
+	static float time = 0.0f;
+	
 	while(Update())
 	{
 		StartCounter();
-		m_pInput->Poll();
 
 		m_pUI->Update(m_fDT);
 
 		// do game update here
-	
 		m_pRenderer->Begin();
 
-		m_pUI->Render();
+		m_pUI->Render(*m_pRenderer);
 			
-		//pUI->Render();
 		//if(m_pInput->MouseClick(0))
 		{
 			POINT p;
 			m_pInput->MousePos(p);
 
-			RECT R = {250,50,0,0};
+			RECT R = {650,0,0,0};
 			clock_t c = clock() / CLOCKS_PER_SEC ;
 			wsprintf(buffer,"Time: %d",c);
-			//wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",p.x,p.y);
-			m_pRenderer->DrawString(buffer,R,0xffffffff);
+			wsprintf(buffer,"Mouse X: %d\nMouse Y:%d",p.x,p.y);
+			m_pRenderer->DrawString(buffer,R,0xffBfffff);
 		}
 		m_pRenderer->End();
 		m_pRenderer->Present();
@@ -119,7 +83,7 @@ void InputTestApp::LoadAndExecScripts()
 {
 	// AS
 	vector<string> files;
-	EngineHelper::LoadAllFilesFromDictionary(files,"../Scripts/",".as");
+	EngineHelper::LoadAllFilesFromDictionary(files,"..\\Scripts\\",".as");
 
 	for(unsigned int i = 0; i < files.size(); ++i)
 	{
@@ -136,7 +100,7 @@ void InputTestApp::LoadAndExecScripts()
 // the current fix gets rid of using a singleton and uses Reference Counting.
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	boost::scoped_ptr<IBaseEngine> pEngine(new InputTestApp(hInstance,"AngelScript"));
+	boost::scoped_ptr<BEngine> pEngine(new InputTestApp(hInstance,"Game Engine"));
 	return pEngine->Run();
 }
 				

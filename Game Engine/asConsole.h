@@ -5,45 +5,44 @@
 #define _ASCONSOLE_
 #pragma once
 
+#include "Interfaces.h"
+#include "UI.h"
 
-#include "Thread.h"
+//class BEngine;
 
-class IBaseEngine;
-
-class asConsole : public IScripted, Threaded
+class asConsole : public TextBox, public IScripted
 {
 public:
 
-	asConsole(IBaseEngine* pEngine);
+	asConsole(UIData* pData, UI* pUI);
 	~asConsole();
+
+	// sends message to console window
+	static void MessageCallback(const asSMessageInfo *msg, void *param);
+
+	virtual void Enter();
+
+	void Build();
 
 	void Open();
 	void Close();
 
-	void CLS() const;
-
 private:
 
-	// ===== data members =====
+	// ===== data members =====	
+	class BEngine* m_pEngine;
 
-	IBaseEngine* m_pEngine;
-
-	// Scripting Console
-	HWND m_hConsole;
+	static asConsole* s_pThis;
 
 	// ===== helper functions =====
 
 	// IScripted
 	virtual void RegisterScript();
 
-	// Threaded
-	virtual void DoWork();
-
 	void Run();
 
 	// function declarations
-	void PrintHelp() const;
-	
+	void PrintHelp() const;	
 };
 
 #endif

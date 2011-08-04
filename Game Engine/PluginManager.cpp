@@ -3,13 +3,13 @@
 
 // Read chapter 16, use the dynamic object mapper with the DLL files.
 #include "StdAfx.h"
+#include "BEngine.h"
 #include "PluginManager.h"
 #include "EngineHelper.h"
 
-using namespace AngelScript;
 using namespace std;
 
-PluginManager::PluginManager(IBaseEngine* pEngine) : m_pEngine(pEngine)
+PluginManager::PluginManager(BEngine* pEngine) : m_pEngine(pEngine)
 {
 }
 
