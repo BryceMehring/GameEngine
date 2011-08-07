@@ -74,6 +74,7 @@ void asConsole::MessageCallback(const asSMessageInfo *msg, void *param)
 
 	// Write line to console
 	s_pThis->Write(buffer,color);
+
 }
 void asConsole::Build()
 {
@@ -93,7 +94,7 @@ void asConsole::RegisterScript()
 	DBAS(scriptEngine.RegisterObjectMethod("asConsole","void open()",asMETHOD(asConsole,Open),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterObjectMethod("asConsole","void close()",asMETHOD(asConsole,Close),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterObjectMethod("asConsole","void cls()",asMETHOD(asConsole,CLS),asCALL_THISCALL));
-	DBAS(scriptEngine.RegisterObjectMethod("asConsole","void write(const string& in, uint)",asMETHOD(asConsole,Write),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("asConsole","void print(const string& in, uint)",asMETHOD(asConsole,Write),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterObjectMethod("asConsole","void build()",asMETHOD(asConsole,Build),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterGlobalProperty("asConsole console",this));
 	

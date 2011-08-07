@@ -64,25 +64,11 @@ void DirectInput::Poll(UINT msg, WPARAM wParam, LPARAM lparam)
 	switch(msg)
 	{
 	case WM_CHAR:
-		/*if(wParam == 8) // backspace
-		{
-			m_inputText.resize(m_inputText.size() - 1);
-		}
-		else if(wParam == 13)
-		{
-			m_inputText += "\n";
-		}
-		else
-		{*/
-			m_keyDown = true;
-			m_Key = char(wParam);
-		//}
+		m_keyDown = true;
+		m_Key = char(wParam);
 		break;
-
 	default:
-
 		m_keyDown = false;
-		
 	}
 
 	//Poll Keyboard
@@ -104,15 +90,10 @@ void DirectInput::Poll(UINT msg, WPARAM wParam, LPARAM lparam)
 		m_pMouse->Acquire();
 	}
 
-	// mouse coords relative to the window
-	RECT rect;
-
-	GetWindowRect(m_mgr.GetWindowHandle(),&rect);
+	// mouse coords
+	HWND h = m_mgr.GetWindowHandle();
 	GetCursorPos(&m_MousePos);
-
-	// todo: need to change this for full screen vs. windows
-	m_MousePos.x -= rect.left;
-	m_MousePos.y -= rect.top + 30;
+	ScreenToClient(h,&m_MousePos);	
 }
 
 void DirectInput::MousePos(POINT& pos)
@@ -162,14 +143,15 @@ void DirectInput::RegisterScript()
 	asIScriptEngine& engine = vm.GetScriptEngine();
 
 	DBAS(engine.RegisterObjectType("IKMInput",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(engine.RegisterObjectMethod("IKMInput","void Poll()",asMETHOD(DirectInput,Poll),asCALL_THISCALL));
-	DBAS(engine.RegisterObjectMethod("IKMInput","bool MouseClick(int)",asMETHOD(DirectInput,MouseClick),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("IKMInput","void about()",asMETHOD(DirectInput,About),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("IKMInput","void poll()",asMETHOD(DirectInput,Poll),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("IKMInput","bool mouseClick(int)",asMETHOD(DirectInput,MouseClick),asCALL_THISCALL));
 	//DBAS(pEngine->RegisterObjectMethod("DirectInput","bool KeyDown(char)",asMETHOD(DirectInput,KeyDown),asCALL_THISCALL));
 	
-	DBAS(engine.RegisterObjectMethod("IKMInput","void MousePos(POINT& out)",asMETHOD(DirectInput,MousePos),asCALL_THISCALL));
-	DBAS(engine.RegisterObjectMethod("IKMInput","int MouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
-	DBAS(engine.RegisterObjectMethod("IKMInput","int MouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
-	DBAS(engine.RegisterObjectMethod("IKMInput","int MouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("IKMInput","void mousePos(POINT& out)",asMETHOD(DirectInput,MousePos),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
 	DBAS(engine.RegisterGlobalProperty("IKMInput input",this));
 
 	engine.Release();

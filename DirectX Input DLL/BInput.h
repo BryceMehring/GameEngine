@@ -19,11 +19,11 @@ public:
 
 	// DirectX's version of poll 
 	virtual void Poll(UINT msg, WPARAM wParam, LPARAM lparam);
-
+	
 	// Keyboard
 	virtual bool KeyDown(unsigned char Key);
-	virtual bool IsKeyDown() const;
 	virtual char GetKeyDown() const;
+	virtual bool IsKeyDown() const; // true if WM_CHAR is thrown
 
 	// Mouse
 	virtual void MousePos(POINT&);

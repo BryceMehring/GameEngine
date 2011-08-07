@@ -108,6 +108,12 @@ void DX9Render::GetStringRec(const char* str, RECT& out)
 	m_pFont->DrawText(0,str,-1,&out,DT_CALCRECT,0);
 }
 
+void DX9Render::DrawString(const char* str, POINT P, DWORD color) // not clipped
+{
+	RECT R = {P.x,P.y};
+	DrawTextInfo info = {str,R,color,DT_NOCLIP};
+	m_text.push_back(info);
+}
 void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 {
 	if(calcRect)
@@ -115,7 +121,7 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 		GetStringRec(str,R);
 	}
 
-	DrawTextInfo info = {str,R,color};
+	DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
 	m_text.push_back(info);
 }
 
@@ -284,11 +290,10 @@ void DX9Render::InitializeFont()
 	{
 		D3DXFONT_DESC desc;
 		ZeroMemory(&desc,sizeof(desc));
-		desc.Height = 15;
-		desc.Width = 8;
+		desc.Height = 15; // 15
+		desc.Width = 7; // 8
 		desc.Weight = 500;
 		desc.Quality = 255;
-
 
 		D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
 	}
@@ -319,7 +324,7 @@ void DX9Render::RenderScene()
 	for(TextContainerType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		DrawTextInfo& info = *iter;
-		m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,DT_TOP | DT_LEFT | DT_WORDBREAK,info.color);
+		m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,info.format,info.color);
 	}
 
 	m_pSprite->End();

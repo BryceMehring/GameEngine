@@ -338,10 +338,6 @@ public:
 	void Write(const std::string& line, DWORD color = 0xffffffff);
 	//void Write(
 
-	void ScrollDown();
-	void ScrollUp();
-	void ScrollStop();
-
 	// ClickableElement
 	virtual void ClickResponse();
 
@@ -364,9 +360,17 @@ protected:
 	static const int SCROLL_SPEED = 5;
 
 	OnceFSM m_Textfsm;
+
 	bool m_bFocused;
 
-	typedef std::deque<LineData> TextDataType;
+	// todo: I could move the carrot into a class
+	// carrot
+	POINT m_carrotPos;
+	bool m_drawCarrot;
+
+	float m_fTime;
+
+	typedef std::list<LineData> TextDataType;
 	TextDataType m_text;
 
 	UIData* m_pData;
@@ -374,9 +378,19 @@ protected:
 	int m_scrollSpeed;
 
 	// ===== helper functions =====
+protected:
 	virtual void Backspace();
 	virtual void Enter();
+	virtual void AddKey(char Key); 
+private:
+
 	void UpdateScrolling(IKMInput* pInput);
+	void UpdateCarrot(IKMInput* pInput);
+	void UpdateTextInput(IKMInput* pInput);
+
+	void ScrollDown();
+	void ScrollUp();
+	void ScrollStop();
 
 };
 

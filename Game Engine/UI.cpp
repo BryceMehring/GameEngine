@@ -83,12 +83,9 @@ void ClickableElement::Update(float dt)
 		pInput->MousePos(mousePos);
 
 		// check if the box was clicked
-		if((mousePos.x >= m_pClickRect->left) && (mousePos.x <= m_pClickRect->right))
+		if(PtInRect(m_pClickRect,mousePos))
 		{
-			if((mousePos.y >= m_pClickRect->top) && (mousePos.y <= m_pClickRect->bottom))
-			{
-				ClickResponse();
-			}
+			ClickResponse();
 		}
 	});
 }
@@ -141,7 +138,9 @@ void CheckBox::Render(IRenderingPlugin& renderer)
 	renderer.DrawString(m_pData->str.c_str(),m_pData->rect,0xffffffff,false);
 }
 
-TextBox::TextBox(UIData* pData, UI* pUI) : ClickableElement(&pData->rect,pUI), m_pData(pData), m_bFocused(false), m_scrollSpeed(0)
+// constructor
+TextBox::TextBox(UIData* pData, UI* pUI) : ClickableElement(&pData->rect,pUI), m_pData(pData),
+m_bFocused(false), m_scrollSpeed(0), m_drawCarrot(true), m_fTime(0.0f)
 {
 	// todo: need to organize
 	ConstructFromRect(pData->rect);
@@ -151,6 +150,8 @@ TextBox::TextBox(UIData* pData, UI* pUI) : ClickableElement(&pData->rect,pUI), m
 	data.line = pData->str;
 	data.color = 0xffffffff;
 	data.R = pData->rect;
+
+	m_carrotPos.x = m_carrotPos.y = 0;
 
 	m_text.push_back(data);
 }
@@ -163,7 +164,7 @@ void TextBox::ClickResponse()
 void TextBox::Write(const std::string& line, DWORD color)
 {
 	// todo: need to fix the logic here, this method is bugged
-	// because when there is nothing in the deque, it crashes.
+	// because when there is nothing in the list, it crashes.
 
 	LineData data;
 	data.line =  string("> ") + line;
@@ -181,7 +182,6 @@ void TextBox::Write(const std::string& line, DWORD color)
 
 	//data.R.top = R.bottom + 45;
 	//data.R.bottom = R.bottom += 25;
-
 	m_text.push_back(data);
 }
 
@@ -205,37 +205,15 @@ void TextBox::Update(float dt)
 	// if the TextBox is checked
 	if(m_bFocused)
 	{
+		m_fTime += dt;
 
 		BEngine* pEngine = m_pUI->GetEngine();
 		IKMInput* pInput = pEngine->GetInput();
 
+		UpdateTextInput(pInput);
+		UpdateCarrot(pInput);
 		UpdateScrolling(pInput);
-	
-		// Get User input only once
-		m_Textfsm.Run([&]() -> bool { return pInput->IsKeyDown(); }, [&]() -> void
-		{
-			char Key = pInput->GetKeyDown();
 
-			// backspace
-			if(Key == 8)
-			{
-				Backspace();
-			}
-			// enter
-			else if(Key == 13)
-			{
-				 // adds a new empty line
-				Enter();
-			}
-			else
-			{
-				std::string& text = m_text.back().line;
-
-				// Add the key to the end of the current line of the textbox
-				text += Key;
-				
-			}
-		});
 	}
 	else
 	{
@@ -245,13 +223,16 @@ void TextBox::Update(float dt)
 
 void TextBox::Backspace()
 {
+	// reference to the line
+	//std::string& text = m_pData->str;
 	std::string& text = m_text.back().line;
 
-
+	// size of the line
 	size_t size = text.size(); 
 
 	if(size > 0)
 	{
+		// remove last character
 		text.resize(size - 1);
 	}
 }
@@ -259,11 +240,22 @@ void TextBox::Enter()
 {
 	Write("");
 }
+void TextBox::AddKey(char Key)
+{
+	std::string& text = m_text.back().line;
+	//std::string& text = m_pData->str;
+	text += Key;
+}
 
 IRender::IRenderType TextBox::GetRenderType() { return Text; }
 void TextBox::Render(IRenderingPlugin& renderer)
 {
 	DxSquare::Render(renderer);
+
+	if(m_drawCarrot)
+	{
+		renderer.DrawString("|",m_carrotPos,0xffffffff);
+	}
 
 	for(TextDataType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
@@ -295,6 +287,67 @@ void TextBox::UpdateScrolling(IKMInput* pInput)
 		ScrollStop();
 	}
 }
+void TextBox::UpdateCarrot(IKMInput* pInput)
+{
+	// todo: need to calc
+
+	//m_carrotPos.x = m_text.back().R.left;
+	m_carrotPos.y = m_text.back().R.top;
+
+	if(m_fTime > 0.04f)
+	{
+		m_drawCarrot = !m_drawCarrot;
+		m_fTime = 0.0f;
+
+		if(pInput->KeyDown(DIK_RIGHT))
+		{
+			m_carrotPos.x += 6;
+		}
+		else if(pInput->KeyDown(DIK_LEFT))
+		{
+			m_carrotPos.x -= 6;
+		}
+	}
+}
+
+void TextBox::UpdateTextInput(IKMInput* pInput)
+{
+	// Get User input only once for text
+	m_Textfsm.Run([&]() -> bool { return pInput->IsKeyDown(); }, [&]() -> void
+	{
+		char Key = pInput->GetKeyDown();
+
+		switch(Key)
+		{
+		case 8:
+			Backspace();
+			break;
+		case 13:
+			Enter();
+			break;
+		default:
+			AddKey(Key);
+		}
+
+		/*// backspace
+		if(Key == 8)
+		{
+				
+		}
+		// enter
+		else if(Key == 13)
+		{
+				// adds a new empty line
+				
+		}
+		else
+		{
+			// Add the key to the end of the current line of the textbox
+			AddKey(Key);				
+		}*/
+	});
+}
+
 
 
 // UI

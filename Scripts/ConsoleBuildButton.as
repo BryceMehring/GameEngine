@@ -2,7 +2,7 @@
 void BuildScript(bool b)
 {
 	//console.
-	console.Build();
+	console.build();
 }
 
 void main()
@@ -13,7 +13,7 @@ void main()
 	myCheckData.name = "Build Script";
 	
 	myCheckData.rect.left = 650;
-	myCheckData.rect.top = 250;
+	myCheckData.rect.top = 150;
 	myCheckData.checked = false;
 
 	UINode@ node = ui.GetCurrentNode();

@@ -80,6 +80,7 @@ struct DrawTextInfo
 	std::string text;
 	RECT R;
 	DWORD color;
+	DWORD format;
 };
 
 // todo: implement a deferred renderer
@@ -115,9 +116,11 @@ public:
 
 	// fonts
 	virtual void GetStringRec(const char* str, RECT& out);
+	
+	virtual void DrawString(const char* str, POINT P, DWORD color);
 	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true);
 	
-	// todo: need to implement
+	// todo: need to implement?
 	//template< class T >
 	//virtual void DrawString(T&, const D3DXMATRIX& transform);
 

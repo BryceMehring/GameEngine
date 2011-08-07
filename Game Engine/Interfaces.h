@@ -217,7 +217,8 @@ public:
 
 	// Fonts
 	virtual void GetStringRec(const char* str, RECT& out) = 0;
-	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true) = 0;
+	virtual void DrawString(const char* str, POINT P, DWORD color) = 0; // not clipped
+	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true) = 0; // clipped to rect
 
 	// Line
 	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color) = 0;
