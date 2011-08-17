@@ -60,7 +60,7 @@ int InputTestApp::Run()
 
 		m_pUI->Render(*m_pRenderer);
 			
-		//if(m_pInput->MouseClick(0))
+		if(m_pInput->MouseClick(0))
 		{
 			POINT p;
 			m_pInput->MousePos(p);

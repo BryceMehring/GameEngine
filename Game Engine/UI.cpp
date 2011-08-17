@@ -23,6 +23,10 @@ UIData* UIDataFactory()
 {
 	return new UIData();
 }
+/*UITrigger* UITriggerFactory(IUIButton* p)
+{
+	return new UITrigger(p);
+}*/
 
 unsigned int UINode::AddElement(IUIElement* pElement)
 {
@@ -45,18 +49,42 @@ void UINode::Update(float dt)
 	{
 		m_elements.at(i)->Update(dt);
 	}
+
+	for(unsigned int i = 0; i < m_Neighbors.size(); ++i)
+	{
+		// todo: need to implement
+		// If this edge is being triggered
+		UIEdge* pEdge = static_cast<UIEdge*>(m_Neighbors[i]);
+
+		// Note: there is only one node that is updating at a time, because this is true
+		// once a edge is triggered, another edge cannot be triggered that would override
+		// the previous one.
+		if(pEdge->IsTriggered())
+		{
+			UINode* pVert = static_cast<UINode*>(pEdge->GetHead());
+
+			// the edges are created in the wrong order
+			assert(pVert != this);
+
+			// Switch to the next node.
+			m_pUI->SetCurrentNode(pVert);
+
+			break;
+		}
+	}
 }
 void UINode::Render(IRenderingPlugin& renderer)
 {
 	for(unsigned int i = 0; i < m_elements.size(); ++i)
 	{
 		// Check if the UI element can be rendered
+		//IRender* pUIElement = reinterpret_cast<IRender*>(m_elements[i]);
+		// this might be where it is slowing down
 		IRender* pUIElement = dynamic_cast<IRender*>(m_elements[i]);
 
 		if(pUIElement)
 		{
 			pUIElement->Render(renderer);
-			//g_pEngine->AddObjectToRenderList(pUIElement);
 		}
 	}
 }
@@ -98,7 +126,7 @@ TextBox::~TextBox()
 
 // CheckBox
  
-CheckBox::CheckBox(CheckBoxData* pData, UI* pUI) : ClickableElement(&pData->rect,pUI), m_pData(pData)
+CheckBox::CheckBox(CheckBoxData* pData, UI* pUI) : IUIButton(&pData->rect,pUI), m_pData(pData)
 {
 	m_pUI->GetEngine()->GetStringRec(m_pData->str.c_str(),m_pData->rect);
 	m_box.ConstructFromRect(m_pData->rect);
@@ -117,7 +145,8 @@ void CheckBox::ClickResponse()
 	m_pData->checked = !m_pData->checked;
 
 	asVM& vm = m_pUI->GetEngine()->GetScriptVM();
-	vm.ExecuteScriptFunction(m_pData->func.iScriptIndex,m_pData->func.ifuncId,m_pData->checked);
+	vm.ExecuteScriptFunction(m_pData->func.iScriptIndex,m_pData->func.ifuncId);
+	//vm.ExecuteScriptFunction(m_pData->func.iScriptIndex,m_pData->func.ifuncId,m_pData->checked);
 }
 
 void CheckBox::Render(IRenderingPlugin& renderer)
@@ -177,6 +206,7 @@ void TextBox::Write(const std::string& line, DWORD color)
 		this->m_pUI->GetEngine()->GetStringRec(m_text.back().line.c_str(),R);
 	}
 
+	// todo: this is bugged
 	data.R = m_text.back().R;
 	data.R.top += (R.bottom - R.top) * 3;
 
@@ -247,7 +277,7 @@ void TextBox::AddKey(char Key)
 	text += Key;
 }
 
-IRender::IRenderType TextBox::GetRenderType() { return Text; }
+IRender::IRenderType TextBox::GetRenderType() const { return Text; }
 void TextBox::Render(IRenderingPlugin& renderer)
 {
 	DxSquare::Render(renderer);
@@ -257,13 +287,28 @@ void TextBox::Render(IRenderingPlugin& renderer)
 		renderer.DrawString("|",m_carrotPos,0xffffffff);
 	}
 
+	// Iterate across all lines
 	for(TextDataType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		LineData& data = *iter;
+
+		// scroll lines
 		data.R.top += m_scrollSpeed;
 
-		renderer.DrawString(data.line.c_str(),data.R,data.color,false);
+		// cull lines that are not on the screen
+		const RECT& R = m_pData->rect;
+
+		if(data.R.top >= R.top)
+		{
+			if(data.R.top <= R.bottom)
+			{
+				// If the line is on the screen
+				// draw it
+				renderer.DrawString(data.line.c_str(),data.R,data.color,false);
+			}
+		}
 	}
+
 	// todo: need to draw the name of the TextBox: 	m_pData->str
 	//renderer.DrawString(m_pData->str.c_str(),m_pData->rect,0xffffffff,false);
 }
@@ -436,6 +481,24 @@ void UI::RegisterScript()
 	asVM& vm = m_pEngine->GetScriptVM();
 	asIScriptEngine& engine = vm.GetScriptEngine();
 
+	// ===== Register IUIButton =====
+	DBAS(engine.RegisterObjectType("IUIButton",0,asOBJ_REF));
+	RegisterRefCountingObject(IUIButton,engine);
+
+	// ===== Register ITrigger =====
+	DBAS(engine.RegisterObjectType("ITrigger",0,asOBJ_REF));
+	RegisterRefCountingObject(ITrigger,engine);
+
+	// ===== Register UITrigger =====
+	DBAS(engine.RegisterObjectType("UITrigger",0,asOBJ_REF));
+
+//	DBAS(engine.RegisterObjectBehaviour("UITrigger",asBEHAVE_FACTORY,"UITrigger@ f(IUIButton@)",
+	//	asFUNCTION(UITriggerFactory),asCALL_CDECL));
+
+	RegisterRefCountingObject(UITrigger,engine);
+	RegisterDowncastObject(UITrigger,ITrigger,engine);
+
+
 	// ===== Register IUIElement =====
 	DBAS(engine.RegisterObjectType("IUIElement",0,asOBJ_REF));
 	RegisterRefCountingObject(IUIElement,engine);
@@ -458,6 +521,13 @@ void UI::RegisterScript()
 	DBAS(engine.RegisterObjectMethod("UINode","uint AddElement(IUIElement@)",asMETHOD(UINode,AddElement),asCALL_THISCALL));
 	DBAS(engine.RegisterObjectMethod("UINode","void RemoveElement(uint)",asMETHOD(UINode,RemoveElement),asCALL_THISCALL));
 
+	// ===== Register UIEdge =====
+	DBAS(engine.RegisterObjectType("UIEdge",0,asOBJ_REF));
+	RegisterRefCountingObject(UIEdge,engine);
+
+	DBAS(engine.RegisterObjectMethod("UIEdge","void AddTrigger(ITrigger@)",asMETHOD(UIEdge,AddTrigger),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("UIEdge","bool IsTriggered() const",asMETHOD(UIEdge,IsTriggered),asCALL_THISCALL));
+
 	// ===== Register Graph =====
 
 	DBAS(engine.RegisterObjectType("UIGraph",0,asOBJ_REF));
@@ -466,7 +536,8 @@ void UI::RegisterScript()
 
 	DBAS(engine.RegisterObjectMethod("UIGraph","uint GetVertexSize() const",asMETHOD(UIGraph::GraphBase,GetVertexSize),asCALL_THISCALL));
 	DBAS(engine.RegisterObjectMethod("UIGraph","uint GetEdgeSize() const",asMETHOD(UIGraph::GraphBase,GetEdgeSize),asCALL_THISCALL));
-	DBAS(engine.RegisterObjectMethod("UIGraph","void CreateEdge(UINode@,UINode@,bool)",asMETHOD(UIGraph::GraphBase,CreateEdge),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("UIGraph","UIEdge@ GetEdge(uint)",asMETHOD(UIGraph::GraphBase,GetEdge),asCALL_THISCALL));
+	DBAS(engine.RegisterObjectMethod("UIGraph","uint CreateEdge(UINode@,UINode@)",asMETHOD(UIGraph::GraphBase,GetEdge),asCALL_THISCALL));
 	DBAS(engine.RegisterObjectMethod("UIGraph","UINode@ AddVertex()",asMETHODPR(UIGraph,AddVertex,(void),UINode*),asCALL_THISCALL));
 
 	
@@ -476,6 +547,7 @@ void UI::RegisterScript()
 	RegisterFactoryObjectL(CheckBoxData,CheckBoxDataFactory,engine);
 	RegisterRefCountingObject(CheckBoxData,engine);
 
+	RegisterDowncastObject(CheckBoxData,UIData,engine);
 	DBAS(engine.RegisterObjectBehaviour("CheckBoxData",asBEHAVE_IMPLICIT_REF_CAST,"UIData@ f()",
 		asFUNCTION((EngineHelper::refCast<CheckBoxData,UIData>)),asCALL_CDECL_OBJLAST));
 

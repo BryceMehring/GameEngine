@@ -35,6 +35,8 @@ m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
 	m_p3Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_LINEAR);
 	m_p3Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_LINEAR);
 
+	EnumerateDisplayAdaptors();
+
 	D3DXMatrixIdentity(&T);
 }
 DX9Render::~DX9Render()
@@ -51,7 +53,7 @@ void DX9Render::About()
 
 }
 
-DLLType DX9Render::GetType()
+DLLType DX9Render::GetType() const
 {
 	return Rendering;
 }
@@ -110,9 +112,9 @@ void DX9Render::GetStringRec(const char* str, RECT& out)
 
 void DX9Render::DrawString(const char* str, POINT P, DWORD color) // not clipped
 {
-	RECT R = {P.x,P.y};
+	/*RECT R = {P.x,P.y};
 	DrawTextInfo info = {str,R,color,DT_NOCLIP};
-	m_text.push_back(info);
+	m_text.push_back(info);*/
 }
 void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 {
@@ -121,6 +123,11 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 		GetStringRec(str,R);
 	}
 
+	/*m_pSprite->Begin(0);
+	m_pFont->DrawText(m_pSprite,str,-1,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
+	m_pSprite->End();*/
+
+	//this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
 	DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
 	m_text.push_back(info);
 }
@@ -225,43 +232,52 @@ void DX9Render::Present()
 	m_p3Device->Present(0,0,0,0);
 }
 
-unsigned int DX9Render::EnumerateDisplayAdaptors()
+void DX9Render::EnumerateDisplayAdaptors()
 {
 	m_mode.clear();
 
 	DisplayMode mode;
 	for(int i = 0; i < m_pDirect3D->GetAdapterCount(); ++i)
 	{
-		UINT n = m_pDirect3D->GetAdapterModeCount(i,D3DFMT_X8R8G8B8);
+		UINT n = m_pDirect3D->GetAdapterModeCount(i,D3DFMT_X8R8G8B8) - 1;
 
-		for(int j = 0; j < n; ++j)
+		for(int j = n; j >= 0; --j)
 		{
 			m_pDirect3D->EnumAdapterModes(i,D3DFMT_X8R8G8B8,j,&mode.mode);
 
 			ostringstream oss;
 
-			oss << mode.mode.Width << " " << mode.mode.Height << " "
-			    << mode.mode.RefreshRate << endl;
+			UINT width = mode.mode.Width;
+			UINT height = mode.mode.Height;
+			UINT hz = mode.mode.RefreshRate;
+
+			float ratio = (float)width / height;
+			mode.ratio = ratio;
+
+			oss << width << " x " << height << " " << hz << "Hz" << endl;
 
 			mode.str = oss.str();
 
-			m_mode.push_back(mode);
+			m_mode[ratio].push_back(mode);
 		}
 	}
-
-	return (m_mode.size() - 1);
 }
-void DX9Render::SetDisplayMode(unsigned int i)
+void DX9Render::SetDisplayMode(float ratio, unsigned int i)
 {
 	HWND h = m_mgr.GetWindowHandle();
 
-	unsigned int Width = m_mode[i].mode.Width;
-	unsigned int Height = m_mode[i].mode.Height;
+	auto iter = m_mode.find(ratio);
+	if(iter == m_mode.end()) return;
+
+	auto modes = iter->second;
+
+	unsigned int Width = modes[i].mode.Width;
+	unsigned int Height = modes[i].mode.Height;
 
 	m_D3DParameters.BackBufferFormat = D3DFMT_X8R8G8B8;
 	m_D3DParameters.BackBufferWidth  = Width;
 	m_D3DParameters.BackBufferHeight = Height;
-	m_D3DParameters.FullScreen_RefreshRateInHz = m_mode[i].mode.RefreshRate;
+	m_D3DParameters.FullScreen_RefreshRateInHz = modes[i].mode.RefreshRate;
 	m_D3DParameters.Windowed         = false;
 
 	// todo: look at this:
@@ -279,9 +295,18 @@ void DX9Render::SetDisplayMode(unsigned int i)
 	Reset();
 }
 
-const string& DX9Render::GetDisplayModeStr(unsigned int i) const
+const string& DX9Render::GetDisplayModeStr(float ratio, unsigned int i) const
 {
-	return m_mode[i].str;
+	auto iter = m_mode.find(ratio);
+	return iter->second[i].str;
+}
+
+UINT DX9Render::GetModeSize(float ratio) const
+{
+	auto iter = m_mode.find(ratio);
+	if(iter == m_mode.end()) return 0;
+
+	return iter->second.size();
 }
 
 void DX9Render::InitializeFont()
@@ -318,13 +343,18 @@ void DX9Render::InitializeSprite()
 
 void DX9Render::RenderScene()
 {
-	m_pSprite->SetTransform(&T);
-	m_pSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
+	//m_pSprite->SetTransform(&T);
+	m_pSprite->Begin(0);
+	//::ID3DXEffect* pEffect;
+	//m_pSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
 
 	for(TextContainerType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		DrawTextInfo& info = *iter;
-		m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,info.format,info.color);
+		//m_pFont->DrawText(
+		//m_pFont->PreloadText(info.pText,length);
+		m_pFont->DrawText(m_pSprite,info.pText,-1,&info.R,info.format,info.color);
+		//m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,info.format,info.color);
 	}
 
 	m_pSprite->End();
@@ -336,8 +366,9 @@ void DX9Render::RegisterScript()
 
 	DBAS(scriptEngine.RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(scriptEngine.RegisterObjectMethod("DX9Render","uint EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors),asCALL_THISCALL));
-	DBAS(scriptEngine.RegisterObjectMethod("DX9Render","void SetDisplayMode(uint)",asMETHOD(DX9Render,SetDisplayMode),asCALL_THISCALL));
-	DBAS(scriptEngine.RegisterObjectMethod("DX9Render","const string& GetDisplayModeStr(uint) const",asMETHOD(DX9Render,GetDisplayModeStr),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("DX9Render","void SetDisplayMode(float, uint)",asMETHOD(DX9Render,SetDisplayMode),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("DX9Render","uint GetModeSize(float) const",asMETHOD(DX9Render,GetModeSize),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("DX9Render","const string& GetDisplayModeStr(float, uint) const",asMETHOD(DX9Render,GetDisplayModeStr),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterGlobalProperty("DX9Render renderer",this));
 }
 

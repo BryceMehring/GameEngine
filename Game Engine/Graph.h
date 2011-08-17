@@ -99,22 +99,24 @@ public:
 		m_Edges.clear();
 	}
 
-	// use these to get the vertex in the ui
-
 	UINT GetVertexSize() const { return m_Verts.size(); }
 	UINT GetEdgeSize() const { return m_Edges.size(); }
 
-	VERTEX* GetVertex(const int iIndex) { return m_Verts[iIndex]; }
-	EDGE* GetEdge(const int iIndex) { return m_Edges[iIndex]; }
+	VERTEX* GetVertex(UINT iIndex) { return m_Verts[iIndex]; }
+	EDGE* GetEdge(UINT iIndex) { return m_Edges[iIndex]; }
 
 	void AddVertex(VERTEX* pVert) { m_Verts.push_back(pVert); }
-	void CreateEdge(VERTEX* pTail, VERTEX* pHead, bool bTwoWay = true)
+	UINT CreateEdge(VERTEX* pTail, VERTEX* pHead, bool bTwoWay = true)
 	{
 		// Create an edge from the first vertex to the second
 		EDGE* pEdge = new EDGE;
 		pEdge->SetTail(pTail);
 		pEdge->SetHead(pHead);
 		pTail->AddEdge(pEdge);
+
+		m_Edges.push_back(pEdge);
+
+		unsigned int index = m_Edges.size() - 1;
 
 		// If the edge is marked as two way, then create a new edge going the other direction
 		if(bTwoWay)
@@ -123,7 +125,11 @@ public:
 			pEdge2->SetTail(pHead);
 			pEdge2->SetHead(pTail);
 			pHead->AddEdge(pEdge2);
+
+			m_Edges.push_back(pEdge2);
 		}
+
+		return index;
 	}
 
 	template< class T >

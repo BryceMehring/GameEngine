@@ -69,11 +69,15 @@ void asConsole::MessageCallback(const asSMessageInfo *msg, void *param)
 
 	float c = clock() / (float)CLOCKS_PER_SEC;
 
-	char buffer[200];
-	sprintf(buffer,"%5.3f(s) %s (%d, %d) : %s : %s\n",c, msg->section, msg->row, msg->col, type, msg->message);
+	ostringstream oss;
+
+	//char buffer[256];
+	oss << c << " " << msg->message << endl;
+	//sprintf(buffer,"%5.3f(s) %s (%d, %d) : %s : %s\n",c, msg->section, msg->row, msg->col, type, msg->message);
 
 	// Write line to console
-	s_pThis->Write(buffer,color);
+	//s_pThis->Write(buffer,color);
+	s_pThis->Write(oss.str(),color);
 
 }
 void asConsole::Build()

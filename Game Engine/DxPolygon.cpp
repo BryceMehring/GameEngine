@@ -38,7 +38,7 @@ void DxPolygon::Render(IRenderingPlugin& renderer)
 {
 	renderer.DrawLine(&(m_edges.front()),m_edges.size(),m_color);
 }
-IRender::IRenderType DxPolygon::GetRenderType() { return IRender::Polygon; }
+IRender::IRenderType DxPolygon::GetRenderType() const { return IRender::Polygon; }
 
 // ===== DxSquare =====
 

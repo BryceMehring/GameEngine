@@ -22,7 +22,8 @@
 #define PLUGINDECL __declspec(dllimport)
 #endif
 
-class IObject
+// todo: rename interface. Is this interface needed?
+/*class IObject
 {
 public:
 
@@ -34,7 +35,7 @@ public:
 	virtual ~IObject() {}
 	virtual ObjectType GetObjectType() = 0;
 
-};
+};*/
 
 
 // Todo: answer these questions:
@@ -108,7 +109,7 @@ public:
 	friend class PluginManager;
 
 	// returns the name of the plug-in
-	virtual DLLType GetType() = 0;
+	virtual DLLType GetType() const = 0;
 	//virtual const VersionInfo& GetVersion() = 0;
 
 	// displays a info box about the plug-in
@@ -124,22 +125,23 @@ protected:
 
 
 // todo: this is the base of all objects
-class IGameEntity : public RefCounting
+class IEntity : public RefCounting
 {
 public:
 
-	enum GameEntityType
+	// basic rtti
+	enum EntityType
 	{
 		UIType,
 	};
 
 	virtual void Update(float dt) = 0;
-	virtual GameEntityType GetEntityType() const = 0;
-	// toto: add more here...
+	virtual EntityType GetEntityType() const = 0;
+	// toto: add more here?...
 
 protected:
 
-	virtual ~IGameEntity() {}
+	virtual ~IEntity() {}
 
 };
 
@@ -153,7 +155,7 @@ class DistributedCreator
 public:
 
 	virtual ~DistributedCreator() {}
-	virtual IObject* Create(const T&) const = 0; 
+	virtual IEntity* Create(const T&) const = 0; 
 
 };
 
@@ -173,7 +175,7 @@ public:
 
 	virtual ~IRender() {}
 
-	virtual IRenderType GetRenderType() = 0;
+	virtual IRenderType GetRenderType() const = 0;
 	//virtual void Begin() = 0;
 	virtual void Render(class IRenderingPlugin& renderer) = 0;
 	//virtual void End() = 0;
@@ -239,9 +241,10 @@ public:
 
 
 	// config
-	virtual unsigned int EnumerateDisplayAdaptors() = 0;
-	virtual void SetDisplayMode(unsigned int i) = 0;
-	virtual const std::string& GetDisplayModeStr(unsigned int i) const = 0;
+	virtual void EnumerateDisplayAdaptors() = 0;
+	virtual void SetDisplayMode(float ratio, unsigned int i) = 0;
+	virtual const std::string& GetDisplayModeStr(float ratio, UINT i) const = 0;
+	virtual UINT GetModeSize(float ratio) const = 0;
 	
 	///add more functions...
 protected:

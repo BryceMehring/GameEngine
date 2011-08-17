@@ -14,7 +14,9 @@ class DirectInput : public IKMInput
 {
 public:
 
-	virtual DLLType GetType();
+
+	// IRender
+	virtual DLLType GetType() const;
 	virtual void About();
 
 	// DirectX's version of poll 

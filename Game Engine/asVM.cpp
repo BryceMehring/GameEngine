@@ -34,20 +34,6 @@ struct Script
 
 };
 
-// ===== Global functions that are registered with AngelScript =====
-void cls()
-{
-	system("cls");
-}
-void print(const string& d)
-{
-	cout<<d;
-}
-void print(int d)
-{
-	cout<<d;
-}
-
 asVM::asVM() : m_iExeScript(0), m_pTextBox(nullptr)
 {
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
@@ -254,11 +240,13 @@ void asVM::ListVariables()
 
 void asVM::ListObjects()
 {
-	ostringstream os;
-	os << "Registered Objects: " << endl;
+	//ostringstream os;
+	//os << "Registered Objects: " << endl;
 		
 	for(int o = 0; o < m_pEngine->GetObjectTypeCount(); ++o)
 	{
+		ostringstream os;
+
 		asIObjectType* pObjType = m_pEngine->GetObjectTypeByIndex(o);
 		const char* pObjName = pObjType->GetName();
 
@@ -277,9 +265,11 @@ void asVM::ListObjects()
 			const char* pPropertyStr = pObjType->GetPropertyDeclaration(p);
 			os << endl << pPropertyStr << endl;
 		}
+
+		m_pTextBox->Write(os.str());
 	}
 
-	m_pTextBox->Write(os.str());
+	//m_pTextBox->Write(os.str());
 }
 
 void asVM::ListFunctions()
@@ -352,13 +342,13 @@ void asVM::RegisterScript()
 	DBAS(m_pEngine->RegisterObjectProperty("RECT","int bottom",offsetof(RECT,bottom)));
 
 	// ============= Funcdefs ============= 
-	DBAS(m_pEngine->RegisterFuncdef("void AppCallback(bool)"));
+	DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));
+	DBAS(m_pEngine->RegisterFuncdef("void UintAppCallback(uint)"));
 	//DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));
 
-	// ============= Global Functions =============
-	DBAS(m_pEngine->RegisterGlobalFunction("void print(const string& in)",asFUNCTIONPR(print,(const string&),void),asCALL_CDECL));
-	DBAS(m_pEngine->RegisterGlobalFunction("void print(int)",asFUNCTIONPR(print,(int),void),asCALL_CDECL));
-	DBAS(m_pEngine->RegisterGlobalFunction("void cls()",asFUNCTION(cls),asCALL_CDECL));
+	// ============= array =============
+
+	RegisterScriptArray(m_pEngine,false);
 
 	// ============= asVM =============
 	DBAS(m_pEngine->RegisterObjectType("asVM",0,asOBJ_REF | asOBJ_NOHANDLE));

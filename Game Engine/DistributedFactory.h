@@ -3,7 +3,7 @@
 
 #include "Interfaces.h"
 
-template< class C, class B = IObject >
+template< class C, class B = IEntity >
 class Factory
 {
 public:

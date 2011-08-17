@@ -14,7 +14,7 @@
 #include "Interfaces.h"
 #include "DxPolygon.h"
 
-// debug AngelScript
+// debug AngelScript macro
 #ifdef _DEBUG
 #ifndef DBAS 
 #define DBAS(f) \

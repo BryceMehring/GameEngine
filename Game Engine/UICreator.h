@@ -15,7 +15,7 @@ class CheckBoxCreator : public UICreator
 {
 public:
 
-	virtual IObject* Create(const TupleType& t) const;
+	virtual IEntity* Create(const TupleType& t) const;
 
 };
 
@@ -23,7 +23,7 @@ class TextBoxCreator : public UICreator
 {
 public:
 
-	virtual IObject* Create(const TupleType& t) const;
+	virtual IEntity* Create(const TupleType& t) const;
 
 };
 

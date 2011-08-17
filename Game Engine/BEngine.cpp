@@ -24,8 +24,8 @@ m_bPaused(false), m_fDT(0.0f), m_fStartCount(0.0f), m_fSecsPerCount(0.0f)
 		//RedirectIOToConsole();
 		InitializeTimer();
 		RegisterScript();
-		InitializeUI();
 		InitializePlugins();
+		InitializeUI();
 	}
 	// catch any errors
 	catch(string error)
@@ -348,11 +348,25 @@ void BEngine::InitializeUI()
 
 	InitializeConsole();
 
+	// main menu
 	UIGraph* pGraph = m_pUI->GetGraph();
 	UINode* pNode = pGraph->AddVertex();
 	pNode->AddElement(m_console.get());
 
 	m_pUI->SetCurrentNode(pNode);
+
+	UINode* pNode2 = pGraph->AddVertex();
+
+	unsigned int id = pGraph->CreateEdge(pNode,pNode2);
+
+	UIEdge* pEdge = pGraph->GetEdge(id);
+	UIEdge* pEdge2 = pGraph->GetEdge(id+1);
+
+	ITrigger* pTrigger = new UITrigger(m_pInput,0);
+	ITrigger* pTrigger2 = new UITrigger(m_pInput,1);
+	
+	pEdge->AddTrigger(pTrigger2);
+	pEdge2->AddTrigger(pTrigger);
 
 	pGraph->Release();
 }

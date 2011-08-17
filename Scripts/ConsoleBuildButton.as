@@ -1,8 +1,13 @@
 
-void BuildScript(bool b)
+void BuildScript()
 {
 	//console.
 	console.build();
+}
+
+void Next()
+{
+
 }
 
 void main()
@@ -19,5 +24,4 @@ void main()
 	UINode@ node = ui.GetCurrentNode();
 	IUIElement@ element = ui.CreateElement("CheckBox",@myCheckData);
 	node.AddElement(element);
-
 }

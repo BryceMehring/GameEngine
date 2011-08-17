@@ -24,7 +24,7 @@ public:
 	// Get
 	DWORD GetColor() const;
 	unsigned int GetSize() const;
-	virtual IRenderType GetRenderType();
+	virtual IRenderType GetRenderType() const;
 
 	// Operations
 	virtual void Render(IRenderingPlugin& renderer);	

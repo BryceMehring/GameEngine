@@ -49,10 +49,12 @@ struct Mesh
 struct DisplayMode
 {
 	D3DDISPLAYMODE mode;
+	float ratio;
 	std::string str;
+	std::string ratioStr;
 };
 
-class DXFont
+/*class DXFont
 {
 public:
 
@@ -68,7 +70,7 @@ public:
 private:
 	std::vector<ID3DXFont*> m_fonts;
 };
-
+*/
 enum InterfaceType
 {
 	Font,
@@ -77,7 +79,8 @@ enum InterfaceType
 
 struct DrawTextInfo
 {
-	std::string text;
+	const char* pText;
+	//std::string text;
 	RECT R;
 	DWORD color;
 	DWORD format;
@@ -93,7 +96,7 @@ class DX9Render : public IRenderingPlugin
 public:
 
 	// returns the name of the plug-in
-	virtual DLLType GetType();
+	virtual DLLType GetType() const;
 
 	// displays a info box about the plug-in
 	virtual void About();
@@ -143,10 +146,14 @@ public:
 	virtual UINT CreateTriGridMesh() { return 0; }
 
 	// options
-	virtual unsigned int EnumerateDisplayAdaptors();
-	virtual void SetDisplayMode(unsigned int i);
-	virtual const std::string& GetDisplayModeStr(unsigned int i) const;
-	 
+	virtual void EnumerateDisplayAdaptors();
+	virtual void SetDisplayMode(float ratio, UINT i);
+	virtual const std::string& GetDisplayModeStr(float ratio, UINT i) const;
+	virtual UINT GetModeSize(float ratio) const;
+
+	//virtual UINT GetRatioSize() const;
+	//virtual float GetRatio(UINT n);
+
 protected:
 
 	DX9Render(PluginManager& ref);
@@ -173,13 +180,15 @@ protected:
 
 	// fonts
 	ID3DXFont* m_pFont; // todo: I need to match these with sprites!!! this will solve the problem of scrolling
-	typedef std::vector<DrawTextInfo> TextContainerType;
+	typedef std::vector<DrawTextInfo> TextContainerType; 
 	TextContainerType m_text;
 	
 	ID3DXSprite* m_pSprite;
 	ID3DXLine* m_pLine;
 
-	std::vector<DisplayMode> m_mode;
+	typedef std::map<float,std::vector<DisplayMode>> DisplayModeContainerType;// todo: use this or the keyword auto?
+	DisplayModeContainerType m_mode;
+	std::vector<float> m_modeKeyIndex;
 
 	DWORD m_ClearBuffers;
 
@@ -193,7 +202,6 @@ protected:
 	void InitializeDirectX();
 
 	// this method renders everything that was cached in the end function
-
 	void RenderScene();
 
 	//void InitalizeVertexFormat(); //???

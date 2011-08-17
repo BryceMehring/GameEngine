@@ -40,5 +40,6 @@
 #include "ScriptBuilder.h"
 #include "scriptstdstring.h"
 #include "scripthelper.h"
+#include "scriptarray.h"
 
 #endif // _STDAFX_

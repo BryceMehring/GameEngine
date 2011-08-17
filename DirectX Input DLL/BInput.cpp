@@ -54,7 +54,7 @@ DirectInput::~DirectInput()
 	m_pMouse->Release();
 }
 
-DLLType DirectInput::GetType()
+DLLType DirectInput::GetType() const
 {
 	return Input;
 }

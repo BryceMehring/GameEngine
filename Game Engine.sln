@@ -30,6 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{2C1D
 	ProjectSection(SolutionItems) = preProject
 		Scripts\Build Script Button.as = Scripts\Build Script Button.as
 		Scripts\ConsoleBuildButton.as = Scripts\ConsoleBuildButton.as
+		Scripts\EnumDisplay.as = Scripts\EnumDisplay.as
 	EndProjectSection
 EndProject
 Global

@@ -10,7 +10,23 @@
 	{
 		print("Not Checked\n");
 	}
-}*/
+}*/ 
+
+interface ITrigger
+{
+	bool IsTriggered();
+};
+
+class trigger : ITrigger
+{
+	trigger() {}
+
+	bool IsTriggered()
+	{
+		return input.MouseClick(1);
+	}
+
+};
 
 void OpenFile(bool b)
 {
@@ -19,9 +35,19 @@ void OpenFile(bool b)
 	as.ExecuteScript(i);
 }
 
+void CreateEdge(UINode@ node, UINode@ node2)
+{
+	uint id = graph.CreateEdge(node,node2);
+	UIEdge@ edge = graph.GetEdge(id);
+	UIEdge@ edge2 = graph.GetEdge(id + 1);
+	edge.AddTrigger(theTrigger);
+	edge2.AddTrigger(theTrigger);
+}
+
 
 void main()
 {
+	// node 1
 	CheckBoxData@ myCheckData = CheckBoxData();
 	myCheckData.checked = false;
 	myCheckData.func = as.GetFunc(@OpenFile);
@@ -38,7 +64,12 @@ void main()
 
 	node.AddElement(element);
 
-	//ui.SetCurrentNode(node);
+	// node 2, link node 1 to node 2
+	UINode@ node2 = graph.AddVertex();
+
+	UITrigger@ theTrigger = UITrigger(element);
+
+	CreateEdge();
 }
 
   

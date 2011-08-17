@@ -25,13 +25,79 @@ struct UIData;
 class IUIElement;
 class UIGraph;
 
+class ITrigger : public RefCounting
+{
+public:
+
+	virtual ~ITrigger() {}
+
+	// todo: maybe I could return an int to show direction?
+	// answer: no
+	virtual bool Triggered() = 0;
+
+};
+
+class UIEdge : public GraphEdge
+{
+public:
+
+
+
+	// todo: Where should this function be called?
+	// 
+	void AddTrigger(ITrigger* pTrigger)
+	{
+		if(pTrigger)
+		{
+			m_triggers.push_back(pTrigger);
+		}
+	}
+
+	// Loops through all triggers and see if they are triggered. 
+	bool IsTriggered() const
+	{
+		bool bTriggered = false;
+
+		TriggerContainerType::const_iterator iter = m_triggers.begin();
+		for(; iter != m_triggers.end(); ++iter)
+		{
+			if((*iter)->Triggered())
+			{
+				bTriggered = true;
+				break;
+			}
+		}
+		return bTriggered;
+	}
+
+	//virtual bool Trigger() = 0;
+
+private:
+	// todo: need to free space?
+	// answer: yes
+
+	virtual ~UIEdge()
+	{
+		// Release all of the triggers
+		TriggerContainerType::iterator iter = m_triggers.begin();
+		for(; iter != m_triggers.end(); ++iter)
+		{
+			(*iter)->Release();
+		}
+	}
+
+	typedef std::vector<ITrigger*> TriggerContainerType;
+	TriggerContainerType m_triggers;
+
+};
+
 
 // http://www.objectmentor.com/resources/articles/umlfsm.pdf
 class UINode : public GraphVertex, public IRender
 {
 public:
 
-	UINode()
+	UINode(UI* pUI) : m_pUI(pUI)
 	{
 	}
 	virtual ~UINode()
@@ -59,13 +125,15 @@ public:
 
 	void Update(float dt);
 
-	virtual IRenderType GetRenderType() { return IRender::Text; } // todo: not everything is text.
+	virtual IRenderType GetRenderType() const { return IRender::Text; } // todo: not everything is text.
 	virtual void Render(IRenderingPlugin& renderer);
 
 private:
 
 	typedef std::vector<IUIElement*> CollectionType;
 	CollectionType m_elements;
+
+	UI* m_pUI;
 
 };
 
@@ -136,31 +204,37 @@ public:
 // todo: need to implement
 // http://sourcemaking.com/design_patterns/state/cpp/1
 
-class UIGraph : public Graph<UINode,GraphEdge>, public RefCounting
+class UIGraph : public Graph<UINode,UIEdge>, public RefCounting
 {
 public:
 
-	typedef Graph<UINode,GraphEdge> GraphBase;
+	typedef Graph<UINode,UIEdge> GraphBase;
 
-	virtual ~UIGraph() {} // this should be private!
-
-	using Graph<UINode,GraphEdge>::AddVertex;
+	using GraphBase::AddVertex;
 
 	UIGraph(UI* pUI) : m_pUI(pUI) {}
 
 	// These are the functions that are registered with AngelScript
 	UINode* AddVertex()
 	{
-		UINode* pNode = new UINode();
-		AddVertex(pNode);
+		UINode* pNode = new UINode(m_pUI);
+		GraphBase::AddVertex(pNode);
 		return pNode;
 	}
+
+	/*UIEdge* CreateEdge(UINode* pTail, UINode* pHead)
+	{
+		UIEdge* pEdge = new UIEdge();
+		GraphBase::CreateEdge(
+	}*/
+
+protected:
+
+	virtual ~UIGraph() {}
 
 private:
 
 	UI* m_pUI;
-
-	
 
 };
 
@@ -213,10 +287,7 @@ private:
 
 struct UIData : public RefCounting
 {
-	UIData()
-	{
-		memset(&rect,0,sizeof(RECT));
-	}
+	UIData() { SetRectEmpty(&rect); }
 
 	RECT rect;
 
@@ -234,7 +305,7 @@ protected:
 // todo: does IUIElement have to inherit from RefCounting?
 // not all ui elements can be checked, or drawn. Need to subclass these methods
 // into more interfaces
-class IUIElement : public IObject, public RefCounting
+class IUIElement : public IEntity
 {
 public:
 
@@ -243,15 +314,13 @@ public:
 	IUIElement(UI* pUI);
 	virtual ~IUIElement() {}
 
-	virtual ObjectType GetObjectType() { return ObjectType::UIType; }
-	virtual void Update(float dt) = 0;
+	virtual EntityType GetEntityType() const { return EntityType::UIType; }
 
 protected:
 
 	UI* m_pUI;
 	
 };
-
 
 class ClickableElement : public IUIElement
 {
@@ -272,6 +341,40 @@ private:
 	RECT* m_pClickRect;
 };
 
+class IUIButton : public ClickableElement, public IRender
+{
+public:
+	IUIButton(RECT* r,UI* ui) : ClickableElement(r,ui) {}
+	virtual ~IUIButton() {}
+	virtual bool IsChecked() const = 0;
+};
+
+class UITrigger :  public ITrigger
+{
+public:
+
+	UITrigger(IKMInput* p, DWORD button) : m_pInterface(p), m_button(button)
+	{}
+	virtual bool Triggered()
+	{
+		bool bTriggered = false;
+
+		if(m_pInterface)
+		{
+
+			bTriggered = m_pInterface->MouseClick(m_button);
+		}
+
+		return bTriggered;
+	}
+	
+private:
+
+	IKMInput* m_pInterface;
+	DWORD m_button;
+
+};
+
 // This is the data structure for a CheckBox
 // todo: move this to the cpp file and only have a forward class declaration 
 // in the header file
@@ -290,7 +393,7 @@ protected:
 }; 
 
 // Encapsulates a CheckBox
-class CheckBox : public ClickableElement, public IRender
+class CheckBox : public IUIButton
 {
 public:
 
@@ -302,7 +405,7 @@ public:
 	virtual void ClickResponse();
 	
 	// IRender
-	virtual IRenderType GetRenderType() { return Text; }
+	virtual IRenderType GetRenderType() const { return Text; }
 	virtual void Render(IRenderingPlugin& renderer);
 
 private:
@@ -311,6 +414,40 @@ private:
 	     
 	DxSquare m_box;
 	CheckBoxData* m_pData;
+};
+
+// todo: need to finish implementing this
+struct IndexedButtonData : public UIData
+{
+	unsigned int index;
+
+	// used for calling a script function
+	// todo: I could factor this data member out
+	ScriptFunction func;
+};
+
+class IndexedButton : public ClickableElement, public IRender
+{
+public:
+
+	IndexedButton(IndexedButtonData*,UI* pUI);
+
+	// IUIElement
+	virtual bool IsChecked() const;
+	virtual void ClickResponse();
+	
+	// IRender
+	virtual IRenderType GetRenderType() const { return Text; }
+	virtual void Render(IRenderingPlugin& renderer);
+
+protected:
+
+	virtual ~IndexedButton();     
+
+private:
+
+	DxSquare m_box;
+	IndexedButtonData* m_pData;
 };
 
 struct TextBoxData : public UIData
@@ -344,7 +481,7 @@ public:
 	virtual void Update(float dt);
 
 	// IRender
-	virtual IRenderType GetRenderType();
+	virtual IRenderType GetRenderType() const;
 	virtual void Render(IRenderingPlugin& renderer);
 
 	void CLS();
@@ -370,7 +507,7 @@ protected:
 
 	float m_fTime;
 
-	typedef std::list<LineData> TextDataType;
+	typedef std::vector<LineData> TextDataType;
 	TextDataType m_text;
 
 	UIData* m_pData;
