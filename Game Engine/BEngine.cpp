@@ -149,18 +149,6 @@ void BEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 
 	switch( msg )
 	{
-		/*case WM_CHAR:
-		{
-			//m_pUI->KeyDownCallback(char(wParam));
-		
-			break;
-		}
-		case WM_KEYUP:
-		{
-			system("pause");
-
-			break;
-		}*/
 		case WM_EXITSIZEMOVE:
 		{
 			//GetWindowRect(m_hWindowHandle,&m_rect);
@@ -344,6 +332,8 @@ void BEngine::InitializeConsole()
 }
 void BEngine::InitializeUI()
 {
+	// todo: could part of this be scripted?
+
 	m_pUI.reset(new UI(this));
 
 	InitializeConsole();
@@ -355,15 +345,22 @@ void BEngine::InitializeUI()
 
 	m_pUI->SetCurrentNode(pNode);
 
+	// node 2
 	UINode* pNode2 = pGraph->AddVertex();
+	UIData* pTextBoxData = new UIData();
+	SetRect(&pTextBoxData->rect,50,50,500,500);
+	TextBox* pTextBox = new TextBox(pTextBoxData,m_pUI.get());
 
+	pNode2->AddElement(pTextBox);
+
+	// create links
 	unsigned int id = pGraph->CreateEdge(pNode,pNode2);
 
 	UIEdge* pEdge = pGraph->GetEdge(id);
 	UIEdge* pEdge2 = pGraph->GetEdge(id+1);
 
-	ITrigger* pTrigger = new UITrigger(m_pInput,0);
-	ITrigger* pTrigger2 = new UITrigger(m_pInput,1);
+	ITrigger* pTrigger = new UITrigger(m_pInput,DIK_LEFT);
+	ITrigger* pTrigger2 = new UITrigger(m_pInput,DIK_RIGHT);
 	
 	pEdge->AddTrigger(pTrigger2);
 	pEdge2->AddTrigger(pTrigger);

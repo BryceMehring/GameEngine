@@ -353,25 +353,17 @@ class UITrigger :  public ITrigger
 {
 public:
 
-	UITrigger(IKMInput* p, DWORD button) : m_pInterface(p), m_button(button)
+	UITrigger(IKMInput* p, int button) : m_pInterface(p), m_button(button)
 	{}
 	virtual bool Triggered()
 	{
-		bool bTriggered = false;
-
-		if(m_pInterface)
-		{
-
-			bTriggered = m_pInterface->MouseClick(m_button);
-		}
-
-		return bTriggered;
+		return m_pInterface->KeyDown(m_button);
 	}
 	
 private:
 
 	IKMInput* m_pInterface;
-	DWORD m_button;
+	int m_button;
 
 };
 
@@ -464,6 +456,7 @@ struct LineData
 	std::string line;
 	D3DCOLOR color;
 	RECT R;
+	int height;
 };
 
 class TextBox : public ClickableElement, public DxSquare
@@ -499,6 +492,8 @@ protected:
 	OnceFSM m_Textfsm;
 
 	bool m_bFocused;
+
+	unsigned int m_spacePos;
 
 	// todo: I could move the carrot into a class
 	// carrot

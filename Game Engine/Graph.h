@@ -132,6 +132,8 @@ public:
 		return index;
 	}
 
+	// algorithms
+
 	template< class T >
 	float ComputeBestPath(VERTEX* pStart, VERTEX* pGoal, const T& Functor , std::vector<VERTEX*>& path)
 	{
@@ -151,7 +153,7 @@ public:
 			for(vector<EDGE*>::iterator EdgeIter = edges.begin(); EdgeIter != edges.end(); ++EdgeIter)
 			{
 				EDGE* pEdge = *EdgeIter;
-				VERTEX* pNeighbor = static_cast<VERTEX*>(pEdge->GetHead());
+				VERTEX* pNeighbor = pEdge->GetHead();
 				
 				//Don't consider the vertex we just came from
 				if(pNeighbor == pCurrentVertex->GetPredecessor()) continue;
@@ -196,6 +198,8 @@ public:
 
 		return fTotalCostToGoal;
 	}
+
+
 
 protected:
 	std::vector<VERTEX*> m_Verts;

@@ -107,7 +107,7 @@ void DX9Render::Reset()
 }
 void DX9Render::GetStringRec(const char* str, RECT& out)
 {
-	m_pFont->DrawText(0,str,-1,&out,DT_CALCRECT,0);
+	m_pFont->DrawText(this->m_pSprite,str,-1,&out,DT_CALCRECT | DT_TOP | DT_LEFT | DT_WORDBREAK,0);
 }
 
 void DX9Render::DrawString(const char* str, POINT P, DWORD color) // not clipped
@@ -127,8 +127,9 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 	m_pFont->DrawText(m_pSprite,str,-1,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
 	m_pSprite->End();*/
 
-	//this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
-	DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
+	//int Height = this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
+	//DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
+	DrawTextInfo info = {str,R,color,DT_NOCLIP};
 	m_text.push_back(info);
 }
 
@@ -353,8 +354,7 @@ void DX9Render::RenderScene()
 		DrawTextInfo& info = *iter;
 		//m_pFont->DrawText(
 		//m_pFont->PreloadText(info.pText,length);
-		m_pFont->DrawText(m_pSprite,info.pText,-1,&info.R,info.format,info.color);
-		//m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,info.format,info.color);
+		int height = m_pFont->DrawText(m_pSprite,info.pText,-1,&info.R,info.format,info.color);
 	}
 
 	m_pSprite->End();

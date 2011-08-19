@@ -169,7 +169,7 @@ void CheckBox::Render(IRenderingPlugin& renderer)
 
 // constructor
 TextBox::TextBox(UIData* pData, UI* pUI) : ClickableElement(&pData->rect,pUI), m_pData(pData),
-m_bFocused(false), m_scrollSpeed(0), m_drawCarrot(true), m_fTime(0.0f)
+m_bFocused(false), m_scrollSpeed(0), m_drawCarrot(true), m_fTime(0.0f), m_spacePos(-1)
 {
 	// todo: need to organize
 	ConstructFromRect(pData->rect);
@@ -199,16 +199,16 @@ void TextBox::Write(const std::string& line, DWORD color)
 	data.line =  string("> ") + line;
 	data.color = color;
 
-	RECT R = {0};
 
-	if(m_text.empty() == false)
-	{
-		this->m_pUI->GetEngine()->GetStringRec(m_text.back().line.c_str(),R);
-	}
+	// todo: maybe I could cache the REct?
+	// Get Rect size of 
+	std::string& text = m_text.back().line;
+	RECT R = {0};
+	this->m_pUI->GetEngine()->GetStringRec(text.c_str(),R);
 
 	// todo: this is bugged
 	data.R = m_text.back().R;
-	data.R.top += (R.bottom - R.top) * 3;
+	data.R.top += (R.bottom + 10);
 
 	//data.R.top = R.bottom + 45;
 	//data.R.bottom = R.bottom += 25;
@@ -243,7 +243,6 @@ void TextBox::Update(float dt)
 		UpdateTextInput(pInput);
 		UpdateCarrot(pInput);
 		UpdateScrolling(pInput);
-
 	}
 	else
 	{
@@ -273,8 +272,39 @@ void TextBox::Enter()
 void TextBox::AddKey(char Key)
 {
 	std::string& text = m_text.back().line;
-	//std::string& text = m_pData->str;
 	text += Key;
+
+	// if there is a space
+	if(Key == 32)
+	{
+		// todo: need to cache position in string to break line with: \n
+		m_spacePos = text.size() - 1;
+	}
+
+	// todo: I could optimize this and just see if the size of the line is passed a set amount.
+	// I would have to look into this because idk how it would work yet.
+
+	// Get Rect size of 
+	RECT R = {0};
+	this->m_pUI->GetEngine()->GetStringRec(text.c_str(),R);
+
+	// If the line is out of the rect
+	// break it in-between words
+	if(R.right >= (this->m_pData->rect.right - this->m_pData->rect.left))
+	{
+		// If a space has not been entered
+		if(m_spacePos == -1)
+		{
+			// set the break pos at the end of the line.
+			m_spacePos = text.size() - 1;
+		}
+
+		// insert the break point.
+		text.insert(m_spacePos,"\n");
+		
+		// clear the break point for the next line.
+		m_spacePos = -1;
+	}
 }
 
 IRender::IRenderType TextBox::GetRenderType() const { return Text; }
@@ -298,11 +328,11 @@ void TextBox::Render(IRenderingPlugin& renderer)
 		// cull lines that are not on the screen
 		const RECT& R = m_pData->rect;
 
+		// If the line is on the screen
 		if(data.R.top >= R.top)
 		{
 			if(data.R.top <= R.bottom)
 			{
-				// If the line is on the screen
 				// draw it
 				renderer.DrawString(data.line.c_str(),data.R,data.color,false);
 			}
@@ -358,7 +388,7 @@ void TextBox::UpdateCarrot(IKMInput* pInput)
 void TextBox::UpdateTextInput(IKMInput* pInput)
 {
 	// Get User input only once for text
-	m_Textfsm.Run([&]() -> bool { return pInput->IsKeyDown(); }, [&]() -> void
+	m_Textfsm.Run([=]() -> bool { return pInput->IsKeyDown(); }, [&]() -> void
 	{
 		char Key = pInput->GetKeyDown();
 
@@ -408,7 +438,7 @@ m_pCurrentNode(nullptr)
 }
 UI::~UI()
 {
-	
+	m_pGraph->Release();
 }
 
 
