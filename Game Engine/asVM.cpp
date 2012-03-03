@@ -1,28 +1,19 @@
 // Programmed by Bryce Mehring
 
-#include "StdAfx.h"
+// todo: somehow, I need to register the delegate with AngelScript
+
 #include "asVM.h"
-#include "EngineHelper.h"
-#include "asConsole.h"
-#include "UI.h"
+#include "Delegates.h"
+#include "scripthelper\scripthelper.h"
+#include "scriptarray\scriptarray.h"
+#include <sstream>
+//#include "asConsole.h"
+//#include "EngineHelper.h"
 
 #pragma comment(lib,"AngelScript.lib")
 #pragma comment(lib,"AngelScriptAddons.lib")
 
 using namespace std;
-
-
-// constants, todo: maybe this is not the best location for these
-const WORD BLACK = 0;
-const WORD BLUE = 9;
-const WORD GREEN = 10;
-const WORD CYAN = 11;
-const WORD RED = 12;
-const WORD MAGENTA = 13;
-const WORD ORANGE = 6;
-const WORD YELLOW = 14;
-const WORD WHITE = 15;
-
 
 struct Script
 {
@@ -38,8 +29,13 @@ asVM::asVM() : m_iExeScript(0), m_pTextBox(nullptr)
 {
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
 
-	RegisterStdString(m_pEngine);
-	RegisterScript();
+	if(s_pThis == NULL)
+	{
+		s_pThis = this;
+	}
+	// turn off GARBAGE_COLLECT
+	//m_pEngine->SetEngineProperty(asEP_AUTO_GARBAGE_COLLECT,false);
+	//RegisterScript();
 }
 asVM::~asVM()
 {
@@ -106,10 +102,10 @@ void asVM::RemoveScript(unsigned int id)
 	}
 }
 
-asIScriptEngine& asVM::GetScriptEngine() const
+asIScriptEngine* asVM::GetScriptEngine() const
 {
 	m_pEngine->AddRef();
-	return *m_pEngine;
+	return m_pEngine;
 }
 
 void asVM::ExecuteScript(unsigned int scriptId)
@@ -120,7 +116,7 @@ void asVM::ExecuteScript(unsigned int scriptId)
 		m_iExeScript = scriptId;
 
 		char buffer[100];
-		sprintf(buffer,"%s %s","Script Exec:",s.fileName.c_str());
+		sprintf_s(buffer,"%s %s","Script Exec:",s.fileName.c_str());
 
 		m_pEngine->WriteMessage("",0,0,asMSGTYPE_INFORMATION,buffer);
 
@@ -134,14 +130,14 @@ void asVM::ExecuteScript(const string& script)
 {
 	ExecuteString(m_pEngine,script.c_str());
 }
-void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId)
+void asVM::ExecuteScriptFunction(const ScriptFunctionStruct& func)
 {
-	if(GoodScriptId(scriptId))
+	if(GoodScriptId(func.iScriptIndex))
 	{
-		Script s = m_scripts[scriptId];
-		m_iExeScript = scriptId;
+		Script s = m_scripts[func.iScriptIndex];
+		m_iExeScript = func.ifuncId; // todo: this might be bugged
 	
-		DBAS(s.pCtx->Prepare(funcId));
+		DBAS(s.pCtx->Prepare(func.ifuncId));
 		DBAS(s.pCtx->Execute());
 		DBAS(s.pCtx->Unprepare());
 	}
@@ -164,7 +160,7 @@ void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, char param)
 }
 
 
-asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& pos)
+/*asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& pos)
 {
 	int len;
 	asETokenClass t = m_pEngine->ParseToken(&text[pos], text.length() - pos, &len);
@@ -179,17 +175,17 @@ asETokenClass asVM::GetToken(string& token, const string& text, unsigned int& po
 	pos += len;
 
 	return t;
-}
+}*/
 
 bool asVM::GoodScriptId(unsigned int id) const
 {
 	return (id < m_scripts.size());
 }
 
-// Returns the Script Function Id
-ScriptFunction asVM::GetFunc(asIScriptFunction* pFunc) const
+// Returns the Script Function Id, this is called from the script
+asVM::asDelegate asVM::GetFunc(asIScriptFunction* pFunc)
 {
-	ScriptFunction func;
+	ScriptFunctionStruct func;
 
 	if( pFunc ) 
 	{
@@ -197,7 +193,7 @@ ScriptFunction asVM::GetFunc(asIScriptFunction* pFunc) const
 		func.ifuncId = pFunc->GetId();
 		func.iScriptIndex = m_iExeScript;
 
-		/* 
+		/*
 		Bug[FIXED]: In the latest AngelScript Update they added auto garbage collection
 		with calling AddRef and Release. Since I didn't update this method, two Release's were
 		being called on the function, which brings the counter down to 0 and delete's it.
@@ -205,15 +201,21 @@ ScriptFunction asVM::GetFunc(asIScriptFunction* pFunc) const
 		manage this for us. 
 
 		AngelScript Version 2.21.0 - 2011/07/03
-		Date Found: 7/24/2011
-		*/
+		Date Found: 7/24/2011*/
+		
 		//pFunc->Release();
 	}
 
-	return func;
+	asDelegate d;
+
+	// todo: need to fix
+	d.Bind(this,func);
+	//d.Bind(this,func);
+
+	return d;
 }
 
-void asVM::ListVariables()
+/*void asVM::ListVariables()
 {
 	asUINT n;
 	ostringstream os;
@@ -235,7 +237,7 @@ void asVM::ListVariables()
 
 		os << name << endl;
 	}
-	m_pTextBox->Write(os.str());
+	//m_pTextBox->Write(os.str()); // todo: need to fix
 }
 
 void asVM::ListObjects()
@@ -314,10 +316,12 @@ void asVM::SetTextBox(TextBox* pTextBox)
 	m_pTextBox = pTextBox;
 }
 
-void asVM::RegisterScript()
+void asVM::_RegisterScript()
 {
 	// logging output
-	DBAS(m_pEngine->SetMessageCallback(asFUNCTION(asConsole::MessageCallback),0,asCALL_CDECL));
+	DBAS(s_pScriptEngine->SetMessageCallback(asFUNCTION(asConsole::MessageCallback),0,asCALL_CDECL));
+
+	RegisterStdString(s_pScriptEngine);
 
 	// ============= POD =============
 
@@ -325,40 +329,49 @@ void asVM::RegisterScript()
 	// but it does seem to work on regular classes that use polymorphism. todo: need to look into this.
 
 	// ScriptFunction
-	DBAS(m_pEngine->RegisterObjectType("ScriptFunction",sizeof(ScriptFunction),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
-	DBAS(m_pEngine->RegisterObjectProperty("ScriptFunction","int funcId",offsetof(ScriptFunction,ifuncId)));
-	DBAS(m_pEngine->RegisterObjectProperty("ScriptFunction","uint scriptIndex",offsetof(ScriptFunction,iScriptIndex)));
+	DBAS(s_pScriptEngine->RegisterObjectType("ScriptFunction",sizeof(ScriptFunction),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
+	DBAS(s_pScriptEngine->RegisterObjectProperty("ScriptFunction","int funcId",offsetof(ScriptFunction,ifuncId)));
+	DBAS(s_pScriptEngine->RegisterObjectProperty("ScriptFunction","uint scriptIndex",offsetof(ScriptFunction,iScriptIndex)));
+
+	// Delegate
+	DBAS(s_pScriptEngine->RegisterObjectType("Delegate",sizeof(asDelegate),asOBJ_VALUE | asOBJ_APP_CLASS_C));
+	DBAS(s_pScriptEngine->RegisterObjectBehaviour("Delegate",asBEHAVE_CONSTRUCT,"void f()",asFUNCTION((EngineHelper::Construct<asDelegate>)),asCALL_CDECL_OBJLAST));
+	DBAS(s_pScriptEngine->RegisterObjectBehaviour("Delegate",asBEHAVE_CONSTRUCT,"void f(const VoidDelegate &in)",asFUNCTION((EngineHelper::CopyConstruct<asDelegate>)),asCALL_CDECL_OBJLAST));
+	DBAS(s_pScriptEngine->RegisterObjectBehaviour("Delegate",asBEHAVE_DESTRUCT,"void f()",asFUNCTION((EngineHelper::Destroy<asDelegate>)),asCALL_CDECL_OBJLAST));
+	
+	DBAS(s_pScriptEngine->RegisterObjectMethod("Delegate","VoidDelegate& opAssign(const VoidDelegate &in)", asMETHODPR(asDelegate, operator =, (const asDelegate&), asDelegate&), asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("Delegate","void call()",asMETHOD(asDelegate,Call),asCALL_THISCALL));
 
 	// POINT
-	DBAS(m_pEngine->RegisterObjectType("POINT",sizeof(POINT),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
-	DBAS(m_pEngine->RegisterObjectProperty("POINT","int x",offsetof(POINT,x)));
-	DBAS(m_pEngine->RegisterObjectProperty("POINT","int y",offsetof(POINT,y)));
+	DBAS(s_pScriptEngine->RegisterObjectType("POINT",sizeof(POINT),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
+	DBAS(s_pScriptEngine->RegisterObjectProperty("POINT","int x",offsetof(POINT,x)));
+	DBAS(s_pScriptEngine->RegisterObjectProperty("POINT","int y",offsetof(POINT,y)));
 
 	// RECT
-	DBAS(m_pEngine->RegisterObjectType("RECT",sizeof(RECT),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
-	DBAS(m_pEngine->RegisterObjectProperty("RECT","int left",offsetof(RECT,left)));
-	DBAS(m_pEngine->RegisterObjectProperty("RECT","int top",offsetof(RECT,top)));
-	DBAS(m_pEngine->RegisterObjectProperty("RECT","int right",offsetof(RECT,right)));
-	DBAS(m_pEngine->RegisterObjectProperty("RECT","int bottom",offsetof(RECT,bottom)));
+	DBAS(s_pScriptEngine->RegisterObjectType("RECT",sizeof(RECT),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
+	DBAS(s_pScriptEngine->RegisterObjectProperty("RECT","int left",offsetof(RECT,left)));
+	DBAS(s_pScriptEngine->RegisterObjectProperty("RECT","int top",offsetof(RECT,top)));
+	DBAS(s_pScriptEngine->RegisterObjectProperty("RECT","int right",offsetof(RECT,right)));
+	DBAS(s_pScriptEngine->RegisterObjectProperty("RECT","int bottom",offsetof(RECT,bottom)));
 
 	// ============= Funcdefs ============= 
-	DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));
-	DBAS(m_pEngine->RegisterFuncdef("void UintAppCallback(uint)"));
+	DBAS(s_pScriptEngine->RegisterFuncdef("void AppCallback()"));
+	DBAS(s_pScriptEngine->RegisterFuncdef("void UintAppCallback(uint)"));
 	//DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));
 
 	// ============= array =============
 
-	RegisterScriptArray(m_pEngine,false);
+	RegisterScriptArray(s_pScriptEngine,false);
 
 	// ============= asVM =============
-	DBAS(m_pEngine->RegisterObjectType("asVM",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(m_pEngine->RegisterObjectMethod("asVM","uint BuildScriptFromFile(const string& in)",asMETHOD(asVM,BuildScriptFromFile),asCALL_THISCALL));
-	DBAS(m_pEngine->RegisterObjectMethod("asVM","void ExecuteScript(const string& in)",asMETHODPR(asVM,ExecuteScript,(const string&),void),asCALL_THISCALL));
-	DBAS(m_pEngine->RegisterObjectMethod("asVM","void ExecuteScript(uint)",asMETHODPR(asVM,ExecuteScript,(unsigned int),void),asCALL_THISCALL));
-	DBAS(m_pEngine->RegisterObjectMethod("asVM","void RemoveScript(uint)",asMETHOD(asVM,RemoveScript),asCALL_THISCALL));
-	DBAS(m_pEngine->RegisterObjectMethod("asVM","ScriptFunction GetFunc(AppCallback @) const",asMETHOD(asVM,GetFunc),asCALL_THISCALL));
-	DBAS(m_pEngine->RegisterObjectMethod("asVM","void ListVariables()",asMETHOD(asVM,ListVariables),asCALL_THISCALL));
-	DBAS(m_pEngine->RegisterObjectMethod("asVM","void ListObjects()",asMETHOD(asVM,ListObjects),asCALL_THISCALL));
-	DBAS(m_pEngine->RegisterObjectMethod("asVM","void ListFunctions()",asMETHOD(asVM,ListFunctions),asCALL_THISCALL));
-	DBAS(m_pEngine->RegisterGlobalProperty("asVM as",this));
-}
+	DBAS(s_pScriptEngine->RegisterObjectType("asVM",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("asVM","uint BuildScriptFromFile(const string& in)",asMETHOD(asVM,BuildScriptFromFile),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("asVM","void ExecuteScript(const string& in)",asMETHODPR(asVM,ExecuteScript,(const string&),void),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("asVM","void ExecuteScript(uint)",asMETHODPR(asVM,ExecuteScript,(unsigned int),void),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("asVM","void RemoveScript(uint)",asMETHOD(asVM,RemoveScript),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("asVM","VoidDelegate GetFunc(AppCallback @) const",asMETHOD(asVM,GetFunc),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("asVM","void ListVariables()",asMETHOD(asVM,ListVariables),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("asVM","void ListObjects()",asMETHOD(asVM,ListObjects),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("asVM","void ListFunctions()",asMETHOD(asVM,ListFunctions),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterGlobalProperty("asVM as",(void*)s_pThis));
+}*/

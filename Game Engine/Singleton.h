@@ -1,18 +1,25 @@
 /*
-	
+	Programmed by
 	Bryce Mehring
-	IS107
 
 */
 
 
-// Singleton Macros
 // Singleton's work by only allowing one instance of a class
-// For the singleton to work, both the constructor and destructor must be private
 
 #ifndef _SINGLETON_
 #define _SINGLETON_
 #pragma once
+
+#include <boost\scoped_ptr.hpp>
+#include <boost\thread\once.hpp>
+
+// todo: need to recompile the boost lib
+
+/*#define SINGLETON(C) \
+	private: \
+		static boost::scoped_ptr<T> s_pInstance; \
+		static boost::once_flag once;*/
 
 // Thread safe singleton
 template< class T >
@@ -29,8 +36,9 @@ public:
 private:
 
 	// Init should never throw an exception
-	static void Init()
+	static void Init() throw()
 	{
+		// the constructor should never call this same function again, or else it would fail 
 		s_pInstance.reset(new T());
 	}
 

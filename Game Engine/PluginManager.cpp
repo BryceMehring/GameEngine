@@ -2,14 +2,15 @@
 // 1/20/2011
 
 // Read chapter 16, use the dynamic object mapper with the DLL files.
-#include "StdAfx.h"
-#include "BEngine.h"
+#include "WindowManager.h"
 #include "PluginManager.h"
-#include "EngineHelper.h"
+#include "FileManager.h"
+//#include "EngineHelper.h"
 
 using namespace std;
+using namespace stdext;
 
-PluginManager::PluginManager(BEngine* pEngine) : m_pEngine(pEngine)
+PluginManager::PluginManager() : m_pEngine(nullptr)
 {
 }
 
@@ -34,10 +35,10 @@ HWND PluginManager::GetWindowHandle() const
 {
 	return m_pEngine->GetWindowHandle();
 }
-asVM& PluginManager::GetScriptVM() const
+/*asVM& PluginManager::GetScriptVM() const
 {
-	return m_pEngine->GetScriptVM();
-}
+	//return m_pEngine->GetScriptVM();
+}*/
 
 IPlugin* PluginManager::GetPlugin(DLLType type) const
 {
@@ -62,6 +63,10 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 		CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress(dll.mod,"CreatePlugin");
 		dll.pPlugin = pFunct(*this);
 
+		// todo: look into this
+		//asIScriptEngine* pScriptEngine = m_pEngine->GetScriptVM()->GetScriptEngine();
+		//pScriptEngine->RegisterGlobalProperty("
+
 		DLLType type = dll.pPlugin->GetType();
 
 		m_plugins.insert(make_pair(type,dll));
@@ -73,14 +78,15 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 		cout<< endl << "Could not load: " << pDLL << endl;
 	}
 
-
 	return dll.pPlugin;
 }
 
 bool PluginManager::LoadAllPlugins(const std::string& path, const std::string& ext)
 {
 	vector<string> files;
-	EngineHelper::LoadAllFilesFromDictionary(files,path,ext);
+
+	FileManager& fm = FileManager::Instance();
+	fm.LoadAllFilesFromDictionary(files,path,ext);
 
 	for(unsigned int i = 0; i < files.size(); ++i)
 	{
@@ -88,6 +94,18 @@ bool PluginManager::LoadAllPlugins(const std::string& path, const std::string& e
 	}
 
 	return (m_plugins.size() > 0);
+}
+
+void PluginManager::FreePlugin(DLLType type)
+{
+	plugin_type::iterator iter = m_plugins.find(type);
+	if(iter != m_plugins.end())
+	{
+		PluginInfo& dll = iter->second;
+
+		delete dll.pPlugin;
+		FreeLibrary(dll.mod);
+	}
 }
 
 /*void PluginManager::RegisterScript()

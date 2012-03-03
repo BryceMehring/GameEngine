@@ -1,5 +1,6 @@
-#include "stdafx.h"
 #include "DxPolygon.h"
+#include "IRenderer.h"
+#include "PluginManager.h"
 
 using namespace std;
 
@@ -34,9 +35,11 @@ void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
 DWORD DxPolygon::GetColor() const { return m_color; }
 unsigned int DxPolygon::GetSize() const { return m_edges.size(); }
 
-void DxPolygon::Render(IRenderingPlugin& renderer)
+void DxPolygon::Render()
 {
-	renderer.DrawLine(&(m_edges.front()),m_edges.size(),m_color);
+	PluginManager& instance = PluginManager::Instance();
+	IRenderer* pRenderer = static_cast<IRenderer*>(instance.GetPlugin(Rendering));
+	pRenderer->DrawLine(&(m_edges.front()),m_edges.size(),m_color);
 }
 IRender::IRenderType DxPolygon::GetRenderType() const { return IRender::Polygon; }
 
@@ -62,4 +65,17 @@ void DxSquare::ConstructFromRect(const RECT& R)
 	vec[4] = D3DXVECTOR2((float)R.right,(float)R.bottom);
 
 	ConstructFromArray(vec,5);
+}
+
+bool DxSquare::IsPointInPolygon(POINT P)
+{
+	if((P.x <= m_edges[0].x) && (P.x >= m_edges[2].x))
+	{
+		if((P.y <= m_edges[0].y) && (P.y >= m_edges[2].y))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

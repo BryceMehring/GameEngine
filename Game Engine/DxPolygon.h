@@ -1,7 +1,9 @@
 #ifndef _DXPOLYGON_
 #define _DXPOLYGON_
 
-#include "Interfaces.h"
+#include "IRender.h"
+#include <d3dx9math.h>
+#include <vector>
 
 class DxPolygon : public IRender
 {
@@ -27,7 +29,8 @@ public:
 	virtual IRenderType GetRenderType() const;
 
 	// Operations
-	virtual void Render(IRenderingPlugin& renderer);	
+	virtual void Render();	
+	virtual bool IsPointInPolygon(POINT P) = 0;
 
 protected:
 	std::vector<D3DXVECTOR2> m_edges;
@@ -43,6 +46,8 @@ public:
 	DxSquare(const D3DXVECTOR2* pArray, unsigned int size);
 
 	void ConstructFromRect(const RECT& R);
+
+	virtual bool IsPointInPolygon(POINT P); 
 
 };
 

@@ -5,8 +5,17 @@
 #define _PLUGIN_MANAGER_
 #pragma once
 
-#include "Interfaces.h"
-#include "asVM.h"
+#ifdef PLUGIN_EXPORTS
+#define PLUGINDECL __declspec(dllexport)
+#else
+#define PLUGINDECL __declspec(dllimport)
+#endif
+
+#include "IPlugin.h"
+#include "Singleton.h"
+#include <hash_map>
+#include <Windows.h>
+
 
 struct PluginInfo
 {
@@ -14,39 +23,50 @@ struct PluginInfo
 	HMODULE mod;
 };
 
-class PluginManager : public IScripted
+class PluginManager : public Singleton<PluginManager>
 {
 public:
 
+	friend class Singleton<PluginManager>;
+
 	/* 
 	   This class manages all of the dll plugins. It will load and unload them when needed.
-	   This class is also a singleton because it needs global access.
 	*/
 
-	PluginManager(class BEngine* pEngine);
-	virtual ~PluginManager();
+	~PluginManager();
 
 	// more functions would go here as needed to work with the dlls...
 	//  ===== interface with dlls =====
 	HINSTANCE GetHINSTANCE() const;
 	HWND GetWindowHandle() const;
-	asVM& GetScriptVM() const;
+	//asVM& GetScriptVM() const;
 
 	// returns the plugin if found, else, it returns null
 	IPlugin* GetPlugin(DLLType type) const;
 
 	IPlugin* LoadDLL(const char* pFile);
 	bool LoadAllPlugins(const std::string& path, const std::string& ext);
+	
+	void FreePlugin(DLLType type);
+	void FreeAllPlugins();
+
+	// todo: is this good to do?
+	void SetEngine(class WindowManager* pEngine) { m_pEngine = pEngine; }
 
 	// todo: need to implement this?
 	virtual void RegisterScript() {}
 
 private:
 
-	class BEngine* m_pEngine;
+	class WindowManager* m_pEngine;
+	typedef stdext::hash_map<DLLType,PluginInfo> plugin_type;
+	plugin_type m_plugins;
 
-	typedef std::map<DLLType,PluginInfo> plugin_type;
-	plugin_type m_plugins;	
+	PluginManager();
 };
+
+typedef IPlugin* (*CREATEPLUGIN)(PluginManager& mgr);
+
+extern "C" PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr);
 
 #endif // _PLUGIN_MANAGER_

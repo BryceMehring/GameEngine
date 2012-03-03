@@ -1,116 +1,107 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Plugin Manager">
-      <UniqueIdentifier>{68309a82-812c-49a4-9e10-c10004de0047}</UniqueIdentifier>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="User Interface">
-      <UniqueIdentifier>{4256542b-eb53-495a-a743-a06fdf7f0905}</UniqueIdentifier>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Engine">
-      <UniqueIdentifier>{13a448d8-8ba7-48fb-ae29-66a9078c5725}</UniqueIdentifier>
+    <Filter Include="Header Files\Managers">
+      <UniqueIdentifier>{c62b9548-e921-4120-8d9d-a4c52282a637}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AngelScript">
-      <UniqueIdentifier>{fe32e262-ab10-46bc-bcb3-6fcc7e5a4880}</UniqueIdentifier>
+    <Filter Include="Header Files\Interfaces">
+      <UniqueIdentifier>{d558be9a-afde-46b9-83a9-dc4f24df8745}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Thread">
-      <UniqueIdentifier>{ea99d940-f426-4f65-8399-344fd252d502}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Factory">
-      <UniqueIdentifier>{09405420-0e34-4b4a-97b2-8cb924516888}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Graphs">
-      <UniqueIdentifier>{40918577-25fb-4f29-8efb-815a464f7de5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="FSM">
-      <UniqueIdentifier>{8564fea1-0a71-4514-8854-a83d1685497b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Camera">
-      <UniqueIdentifier>{8f3dfae7-2308-4373-b714-b21825132727}</UniqueIdentifier>
+    <Filter Include="Header Files\Scripting">
+      <UniqueIdentifier>{5a99c9f7-c342-4277-94c5-b4cb00f8ce13}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BEngine.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="PluginManager.cpp">
-      <Filter>Plugin Manager</Filter>
-    </ClCompile>
-    <ClCompile Include="UI.cpp">
-      <Filter>User Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="asVM.cpp">
-      <Filter>AngelScript</Filter>
-    </ClCompile>
-    <ClCompile Include="asConsole.cpp">
-      <Filter>AngelScript</Filter>
-    </ClCompile>
-    <ClCompile Include="Thread.cpp">
-      <Filter>Thread</Filter>
-    </ClCompile>
-    <ClCompile Include="DistributedFactory.cpp">
-      <Filter>Factory</Filter>
-    </ClCompile>
-    <ClCompile Include="UICreator.cpp">
-      <Filter>User Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="DxPolygon.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineHelper.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="BEngine.h">
-      <Filter>Engine</Filter>
+    <ClInclude Include="QuadTree.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PluginManager.h">
-      <Filter>Plugin Manager</Filter>
+    <ClInclude Include="Timer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UI.h">
-      <Filter>User Interface</Filter>
+    <ClInclude Include="RefCounting.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="asVM.h">
-      <Filter>AngelScript</Filter>
+    <ClInclude Include="Delegates.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="asConsole.h">
-      <Filter>AngelScript</Filter>
-    </ClInclude>
-    <ClInclude Include="Interfaces.h" />
-    <ClInclude Include="Singleton.h" />
-    <ClInclude Include="Thread.h">
-      <Filter>Thread</Filter>
-    </ClInclude>
-    <ClInclude Include="Factory.h">
-      <Filter>Factory</Filter>
-    </ClInclude>
-    <ClInclude Include="DistributedFactory.h">
-      <Filter>Factory</Filter>
-    </ClInclude>
-    <ClInclude Include="UICreator.h">
-      <Filter>User Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="Graph.h">
-      <Filter>Graphs</Filter>
-    </ClInclude>
-    <ClInclude Include="asRegisterer.h">
-      <Filter>AngelScript</Filter>
-    </ClInclude>
-    <ClInclude Include="OnceFSM.h">
-      <Filter>FSM</Filter>
+    <ClInclude Include="Singleton.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DxPolygon.h">
-      <Filter>Engine</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Camera</Filter>
+    <ClInclude Include="Menu.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EngineHelper.h">
-      <Filter>Engine</Filter>
+    <ClInclude Include="Game.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="IInput.h">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IKMInput.h">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IPlugin.h">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IRender.h">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IRenderer.h">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IScripted.h">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="asVM.h">
+      <Filter>Header Files\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="QuadTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RefCounting.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DxPolygon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileManager.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginManager.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="asVM.cpp">
+      <Filter>Header Files\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowManager.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

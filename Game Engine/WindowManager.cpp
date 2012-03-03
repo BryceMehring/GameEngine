@@ -1,31 +1,43 @@
 
-#include "StdAfx.h"
-#include "BEngine.h"
-#include "asVM.h"
-#include "PluginManager.h"
-#include "UI.h"
+
+#include "WindowManager.h"
 
 using namespace std;
 
 #define MAX_CONSOLE_LINES 500
 
+class DisplayError
+{
+public:
+
+	DisplayError(HWND hWnd, const char* lpText, const char* lpCaption, UINT uType)
+	{
+		MessageBox(hWnd,lpText,lpCaption,uType);
+	}
+	~DisplayError()
+	{
+		exit(0);
+	}
+
+private:
+ 
+	// Nothing goes here!
+
+};
+
 
 // static variables
-BEngine* BEngine::s_pThis = nullptr;
+WindowManager* WindowManager::s_pThis = nullptr;
 
-BEngine::BEngine(HINSTANCE hInstance,const string& winCaption) :
-m_hInstance(hInstance), m_pRenderer(nullptr), m_pInput(nullptr), m_hWindowHandle(NULL),
-m_bPaused(false), m_fDT(0.0f), m_fStartCount(0.0f), m_fSecsPerCount(0.0f)
+WindowManager::WindowManager(HINSTANCE hInstance,const string& winCaption) :
+m_hInstance(hInstance), m_hWindowHandle(NULL), m_bPaused(false)
 {
 	// Initialize
 	try
 	{
 		InitializeWindows(hInstance,winCaption);
 		//RedirectIOToConsole();
-		InitializeTimer();
 		RegisterScript();
-		InitializePlugins();
-		InitializeUI();
 	}
 	// catch any errors
 	catch(string error)
@@ -33,55 +45,27 @@ m_bPaused(false), m_fDT(0.0f), m_fStartCount(0.0f), m_fSecsPerCount(0.0f)
 		MessageBox(0,error.c_str(),0,0);
 		exit(0);
 	}
-	catch(bad_alloc& ba)
+	catch(bad_alloc ba)
 	{
 		string buffer = "bad_alloc caught: ";
 		buffer += ba.what();
-		MessageBox(0,buffer.c_str(),0,0);
-		exit(0);
+		DisplayError error(0,buffer.c_str(),0,0);
 	}
 	catch(DWORD winError)
 	{
 		string buffer = "System Error: ";
 		buffer += winError;
-		MessageBox(0,buffer.c_str(),0,0);
-		exit(0);
+		DisplayError error(0,buffer.c_str(),0,0);
 	}
 
 	// todo: is this the best location for this?
 	s_pThis = this;
 }
-BEngine::~BEngine()
+WindowManager::~WindowManager()
 {
-	FreeConsole();
-}
-void BEngine::GetStringRec(const char* str, RECT& out)
-{
-	m_pRenderer->GetStringRec(str,out);
-}
-asVM& BEngine::GetScriptVM() const
-{
-	return *m_vm;
-}
-IKMInput* BEngine::GetInput() const
-{
-	return m_pInput;
-}
-void BEngine::StartCounter()
-{
-	__int64 prevTimeStamp = 0;
-	QueryPerformanceCounter((LARGE_INTEGER*)&prevTimeStamp);
-
-	m_fStartCount = (float)prevTimeStamp;
-}
-void BEngine::EndCounter()
-{
-	__int64 currTimeStamp = 0;
-	QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
-	m_fDT = (currTimeStamp - m_fStartCount)*m_fSecsPerCount;
 }
 
-bool BEngine::Update()
+bool WindowManager::Update()
 {
 	static MSG msg;
 	static float dt = 0.01f;
@@ -112,7 +96,7 @@ bool BEngine::Update()
 
 	return true;
 }
-void BEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
+void WindowManager::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 {
 	WNDCLASS wc;
 	wc.style         = CS_HREDRAW | CS_VREDRAW;
@@ -143,9 +127,13 @@ void BEngine::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 	ShowWindow(m_hWindowHandle, SW_SHOW);
 	UpdateWindow(m_hWindowHandle);
 }
-void BEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
+void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
-	m_pInput->Poll(msg,wParam,lparam);
+	MsgProcData data = {msg,wParam,lparam};
+	m_MsgProcEvent.Notify(data);
+
+	// todo: need to get rid of this. 
+	//m_pInput->Poll(msg,wParam,lparam);
 
 	switch( msg )
 	{
@@ -180,38 +168,14 @@ void BEngine::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 			PostQuitMessage(0);
 			break;
 		case WM_KEYDOWN:
-			if( wParam == VK_ESCAPE )
+			/*if( wParam == VK_ESCAPE )
 			{
 				PostQuitMessage(0);
-			}
+			}*/
 			break;
 	}
 }
-
-// Thread Safe
-string BEngine::OpenFileName() const
-{
-	OPENFILENAME ofn = {0};
-	char fileName[MAX_PATH] = "";
- 
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = m_hWindowHandle;
-	ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
-	ofn.lpstrFile = fileName;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-	ofn.lpstrDefExt = "";
- 
-	string fileNameStr;
- 
-	if ( GetOpenFileName(&ofn) )
-	{
-		fileNameStr = fileName;
-	}
- 
-	return fileNameStr;
-}
-LRESULT CALLBACK BEngine::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WindowManager::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	// Don't start processing messages until the application has been created.
 	if(s_pThis)
@@ -222,10 +186,10 @@ LRESULT CALLBACK BEngine::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-void BEngine::RedirectIOToConsole()
+void WindowManager::RedirectIOToConsole()
 {
 
-	int hConHandle;
+	/*int hConHandle;
 
 	long lStdHandle;
 
@@ -287,97 +251,35 @@ void BEngine::RedirectIOToConsole()
 
 	// point to console as well
 
-	ios::sync_with_stdio();
+	ios::sync_with_stdio();*/
 
 }
-void BEngine::InitializeTimer()
-{
-	__int64 cntsPerSec = 0;
-	QueryPerformanceFrequency((LARGE_INTEGER*)&cntsPerSec);
-	m_fSecsPerCount = 1.0f / (float)cntsPerSec;
-}
-void BEngine::AddObjectToRenderList(IRender* pObject)
-{
-	if(pObject)
-	{
-		m_toRender.push_back(pObject);
-	}
-}
-void BEngine::Quit()
+void WindowManager::Quit()
 {
 	PostQuitMessage(0);
 }
-void BEngine::InitializePlugins()
+
+void WindowManager::RegisterScript()
 {
-	m_pm.reset(new PluginManager(this));
+	// todo: maybe I could separate this from this class
 
-	// todo: to to write code to load all dll files in a folder, or even have the user
-	// pick through OpenFileName().
+	/*m_vm.reset(new asVM());
 
-	if(m_pm->LoadAllPlugins("../DLL/",".dll"))
-	{
-		m_pRenderer = static_cast<IRenderingPlugin*>(m_pm->GetPlugin(Rendering));
-		m_pInput = static_cast<IKMInput*>(m_pm->GetPlugin(Input));
-	}
-}
-void BEngine::InitializeConsole()
-{
-	UIData* pData = new UIData();
-	pData->rect.left = pData->rect.top = 0;
-	pData->rect.right = 600;
-	pData->rect.bottom = 600;
-	pData->str = "Console: ";
+	asIScriptEngine* pEngine = m_vm->GetScriptEngine();
 
-	m_console.reset(new asConsole(pData,m_pUI.get()));
-}
-void BEngine::InitializeUI()
-{
-	// todo: could part of this be scripted?
-
-	m_pUI.reset(new UI(this));
-
-	InitializeConsole();
-
-	// main menu
-	UIGraph* pGraph = m_pUI->GetGraph();
-	UINode* pNode = pGraph->AddVertex();
-	pNode->AddElement(m_console.get());
-
-	m_pUI->SetCurrentNode(pNode);
-
-	// node 2
-	UINode* pNode2 = pGraph->AddVertex();
-	UIData* pTextBoxData = new UIData();
-	SetRect(&pTextBoxData->rect,50,50,500,500);
-	TextBox* pTextBox = new TextBox(pTextBoxData,m_pUI.get());
-
-	pNode2->AddElement(pTextBox);
-
-	// create links
-	unsigned int id = pGraph->CreateEdge(pNode,pNode2);
-
-	UIEdge* pEdge = pGraph->GetEdge(id);
-	UIEdge* pEdge2 = pGraph->GetEdge(id+1);
-
-	ITrigger* pTrigger = new UITrigger(m_pInput,DIK_LEFT);
-	ITrigger* pTrigger2 = new UITrigger(m_pInput,DIK_RIGHT);
-	
-	pEdge->AddTrigger(pTrigger2);
-	pEdge2->AddTrigger(pTrigger);
-
-	pGraph->Release();
-}
-void BEngine::RegisterScript()
-{
-	m_vm.reset(new asVM());
+	asVM::RegisterScript(pEngine);
+	UI::RegisterScript(pEngine);
 
 	asIScriptEngine& scriptEngine = GetScriptVM().GetScriptEngine();
 
 	// IEngine
+	// todo: where should the registering go?
+
+	// what should I ware today
 	DBAS(scriptEngine.RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void Quit()",asMETHOD(BEngine,Quit),asCALL_THISCALL));
-	DBAS(scriptEngine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(BEngine,OpenFileName),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void Quit()",asMETHOD(WindowManager,Quit),asCALL_THISCALL));
+	DBAS(scriptEngine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(WindowManager,OpenFileName),asCALL_THISCALL));
 	DBAS(scriptEngine.RegisterGlobalProperty("IEngine engine",this));
 
-	scriptEngine.Release();
+	scriptEngine.Release();*/
 }

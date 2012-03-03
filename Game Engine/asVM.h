@@ -11,8 +11,11 @@
 #define _ASMANAGER_
 #pragma once
 
-#include "Interfaces.h"
+
+#include "IScripted.h"
 #include "DxPolygon.h"
+#include <scriptstdstring\scriptstdstring.h>
+#include <scriptbuilder\scriptbuilder.h>
 
 // debug AngelScript macro
 #ifdef _DEBUG
@@ -30,20 +33,30 @@
 #endif
 #endif
 
-// todo: Need to rename the namespace
-
-struct ScriptFunction
+struct ScriptFunctionStruct
 {
 	int ifuncId;
 	unsigned int iScriptIndex; // should this be registered with as?
 };
 
+// ===== forward class declarations =====
+
 // Internal structure in asVM for holding contents
 struct Script;
 
-class asVM : public IScripted
+template< class R, class A >
+class Delegate;
+
+//template< class T >
+//class IScripted;
+
+// ===== forward class declarations =====
+
+class asVM : public IScripted<asVM>
 {
 public:
+
+	friend class IScripted<asVM>;
 
 	// in the constructor, the engine is created and is registered with the std::string type
 	// the message callback function is also registered along with a global print function
@@ -65,23 +78,23 @@ public:
 	void ExecuteScript(unsigned int scriptId);
 	void ExecuteScript(const std::string& script); // the script code is inserted within a function
 
-	void ExecuteScriptFunction(unsigned int scriptId, int funcId);
+	void ExecuteScriptFunction(const ScriptFunctionStruct& func);
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId, char param);
 
 	void RemoveScript(unsigned int id);
 
 	// returns a token from the input string from the script engine
-	asETokenClass GetToken(std::string& token, const std::string& text, unsigned int& pos);
+	//asETokenClass GetToken(std::string& token, const std::string& text, unsigned int& pos);
 	
 	// access to the asIScriptEngine
-	asIScriptEngine& GetScriptEngine() const;
+	asIScriptEngine* GetScriptEngine() const;
 
 	// This is where all the text out goes
 	void SetTextBox(class TextBox* pTextBox);
 
-	virtual void RegisterScript();
-
 private:
+
+	typedef Delegate<void,void> asDelegate;
 
 	// interfaces 
 	asIScriptEngine* m_pEngine;
@@ -103,7 +116,14 @@ private:
 	void ListObjects();
 	void ListFunctions();
 	bool GoodScriptId(unsigned int id) const; // returns true if the id is valid
-	ScriptFunction GetFunc(asIScriptFunction* func) const;
+
+	// called from the script, 
+	asDelegate GetFunc(asIScriptFunction* func);
+
+	//class VoidDelegate CreateDelegate(ScriptFunction func) const;
+
+	static asVM* s_pThis;
+	static void _RegisterScript();
 	
 };
 
