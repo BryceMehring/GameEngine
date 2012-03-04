@@ -1,7 +1,7 @@
 #ifndef _IRENDER_
 #define _IRENDER_
 
-class IRender
+class __declspec(novtable) IRender
 {
 public:
 

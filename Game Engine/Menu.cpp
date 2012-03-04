@@ -29,7 +29,7 @@ void Menu::AddMenu(Menu* pMenu)
 	m_SubMenu.push_back(pMenu);
 	pMenu->m_pPrev = this;
 }
-Menu* Menu::GetTriggered()
+void Menu::GetTriggered(UI* pUI)
 {
 	Menu* pMenu = nullptr;
 
@@ -42,6 +42,7 @@ Menu* Menu::GetTriggered()
 	}
 	else
 	{
+		// todo: this is where the fsm would go... 
 		if(pInput->MouseClick(0))
 		{
 			for(unsigned int i = 0; i < m_SubMenu.size(); ++i)
@@ -55,7 +56,10 @@ Menu* Menu::GetTriggered()
 		}
 	}
 
-	return pMenu;
+	if(pMenu != nullptr)
+	{
+		pUI->SetMenu(pMenu);
+	}
 }
 bool Menu::IsTriggered()
 {
@@ -78,4 +82,14 @@ void Menu::Render()
 	POINT P = {50,50};
 	pRenderer->DrawString(m_menuTitle.c_str(),P,0xffffffff);
 	m_pPolygon->Render();
+}
+
+UI::UI(Menu* pMenu) : m_pMenu(pMenu) {}
+
+void UI::SetMenu(Menu* pMenu) { m_pMenu = pMenu; }
+
+void UI::Update()
+{
+	m_pMenu->GetTriggered(this);
+	m_pMenu->Update();
 }

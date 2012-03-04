@@ -8,7 +8,7 @@ enum DLLType
 	// more dll types here
 };
 
-class IPlugin
+class __declspec(novtable) IPlugin
 {
 public:
 	

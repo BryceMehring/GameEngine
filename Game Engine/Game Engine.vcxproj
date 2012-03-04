@@ -80,6 +80,9 @@
     <ClInclude Include="DxPolygon.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameState.h" />
+    <ClInclude Include="GameStateFactory.h" />
+    <ClInclude Include="GameStateMachine.h" />
     <ClInclude Include="IInput.h" />
     <ClInclude Include="IKMInput.h" />
     <ClInclude Include="IPlugin.h" />
@@ -99,6 +102,7 @@
     <ClCompile Include="DxPolygon.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameStateMachine.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="QuadTree.cpp" />

@@ -3,6 +3,10 @@
 
 #include "WindowManager.h"
 #include "Timer.h"
+#include "GameStateFactory.h"
+#include "GameStateMachine.h"
+#include "IKMInput.h"
+#include "IRenderer.h"
 
 class Game
 {
@@ -11,13 +15,27 @@ public:
 	Game(HINSTANCE hInstance);
 	virtual ~Game() {}
 
-	virtual int PlayGame() = 0;
+	void SetStateFactory(GameStateFactory* pFactory);
+	void SetState(int id);
+
+	IRenderer* GetRenderer();
+	IKMInput* GetInput();
+	WindowManager* GetWindow();
+
+
+	virtual int PlayGame();
 
 protected:
 
 	// Data members
 	WindowManager m_window;
+	GameStateMachine m_StateMachine;
+	GameStateFactory* m_pFactory;
 	float m_fDT;
+
+	// Interfaces
+	IRenderer* m_pRenderer;
+	IKMInput* m_pInput;
 
 	// helper functions
 	void StartTimer();

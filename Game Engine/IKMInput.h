@@ -15,7 +15,7 @@ enum KeyCode
 };
 
 // Keyboard mouse
-class IKMInput : public IInputPlugin
+class __declspec(novtable) IKMInput : public IInputPlugin
 {
 public:
 

@@ -1,16 +1,14 @@
-#ifndef _GAMEOFLIFE_
-#define _GAMEOFLIFE_
+#ifndef _GAMEOFLIFEMENU_
+#define _GAMEOFLIFEMENU_
 
 #include "GameState.h"
-#include "d3dx9math.h"
+#include "Menu.h"
 
-class GameOfLife : public IGameState
+class GameOfLifeMenu : public IGameState
 {
 public:
 
-	GameOfLife();
-	virtual ~GameOfLife();
-
+	virtual ~GameOfLifeMenu() {}
 	virtual void Init(class Game* pGame);
 	virtual void Destroy(class Game* pGame);
 	virtual void Update(class Game* pGame);
@@ -18,8 +16,8 @@ public:
 
 private:
 
-	D3DXVECTOR2 m_VEC[4];
+	UI* m_pUI;
 
 };
 
-#endif _GAMEOFLIFE_
+#endif

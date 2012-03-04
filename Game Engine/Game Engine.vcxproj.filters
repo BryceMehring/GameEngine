@@ -18,6 +18,9 @@
     <Filter Include="Header Files\Scripting">
       <UniqueIdentifier>{5a99c9f7-c342-4277-94c5-b4cb00f8ce13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\State">
+      <UniqueIdentifier>{327d9768-f50d-421a-86c5-42f3c4bb4aaa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="QuadTree.h">
@@ -74,6 +77,15 @@
     <ClInclude Include="WindowManager.h">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
+    <ClInclude Include="GameState.h">
+      <Filter>Header Files\State</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStateFactory.h">
+      <Filter>Header Files\State</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStateMachine.h">
+      <Filter>Header Files\State</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QuadTree.cpp">
@@ -102,6 +114,9 @@
     </ClCompile>
     <ClCompile Include="WindowManager.cpp">
       <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStateMachine.cpp">
+      <Filter>Header Files\State</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

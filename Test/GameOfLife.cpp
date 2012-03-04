@@ -1,22 +1,47 @@
 #include "GameOfLife.h"
+#include "IRenderer.h"
+#include "Game.h"
 
-GameOfLife::GameOfLife(HINSTANCE hInstance) : Game(hInstance)
+GameOfLife::GameOfLife()
 {
 }
 GameOfLife::~GameOfLife()
 {
 }
 
-int GameOfLife::PlayGame()
+void GameOfLife::Init(Game* pGame)
 {
-	PluginManager& pm = ::PluginManager::Instance();
-	IKMInput* pInput = static_cast<IKMInput*>(pm.GetPlugin(Input));
+	//pGame->GetRenderer()->SetDisplayMode(0);
 
-	while(pInput->MouseClick(0) == false)
+	const RECT& R = pGame->GetWindow()->GetRECT();
+	m_VEC[0] = D3DXVECTOR2((R.right)/2,(R.bottom)/2);
+	m_VEC[1] = D3DXVECTOR2((R.right)/2+40,(R.bottom)/2+40);
+	m_VEC[2] = D3DXVECTOR2((R.right)/2-80,(R.bottom)/2);
+}
+void GameOfLife::Destroy(Game* pGame)
+{
+	// clear screen
+}
+void GameOfLife::Update(Game* pGame)
+{
+	IKMInput* pInput = pGame->GetInput();
+	POINT Pos = pInput->MousePos();
+	m_VEC[3] = D3DXVECTOR2(Pos.x,Pos.y);
+
+	
+	if(pInput->MouseClick(0))
 	{
-		pInput->Poll();
-		m_window.Update();
+		pGame->SetState(0);
 	}
+}
+void GameOfLife::Draw(Game* pGame)
+{
+	IRenderer* pRenderer = pGame->GetRenderer();
 
-	return 0;
+	pRenderer->Begin();
+
+	pRenderer->DrawLine(m_VEC,4,0xffff0fff);
+
+	pRenderer->End();
+	pRenderer->Present();
 }

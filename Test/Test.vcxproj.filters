@@ -17,9 +17,21 @@
     <ClCompile Include="GameOfLife.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameOfLifeMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameOfLifeFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameOfLife.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameOfLifeMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameOfLifeFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

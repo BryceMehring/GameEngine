@@ -150,11 +150,11 @@ void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 		case WM_ACTIVATE:
 			if( LOWORD(wParam) == WA_INACTIVE )
 			{
-				//m_bPaused = true;
+				m_bPaused = true;
 			}
 			else
 			{
-				//m_bPaused = false;
+				m_bPaused = false;
 			}
 			break;
 
@@ -168,10 +168,10 @@ void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 			PostQuitMessage(0);
 			break;
 		case WM_KEYDOWN:
-			/*if( wParam == VK_ESCAPE )
+			if( wParam == VK_ESCAPE )
 			{
 				PostQuitMessage(0);
-			}*/
+			}
 			break;
 	}
 }

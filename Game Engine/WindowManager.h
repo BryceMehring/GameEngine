@@ -102,6 +102,7 @@ public:
 
 	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
 	HWND GetWindowHandle() const { return m_hWindowHandle; }
+	const RECT& GetRECT() const { return m_rect; }
 
 	// todo: need to implement these functions
 	virtual void RegisterScript();

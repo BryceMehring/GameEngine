@@ -80,7 +80,7 @@ public:
 
 	void AddMenu(Menu* pMenu);
 
-	Menu* GetTriggered();
+	void GetTriggered(class UI* pUI);
 	bool IsTriggered();
 	void Update();
 
@@ -100,21 +100,11 @@ class UI
 {
 public:
 
-	explicit UI(Menu* pMenu = nullptr) : m_pMenu(pMenu) {}
+	explicit UI(Menu* pMenu = nullptr);
 
-	void SetMenu(Menu* pMenu) { m_pMenu = pMenu; }
+	void SetMenu(Menu* pMenu);
 
-	void Update()
-	{
-		Menu* pUpdated = m_pMenu->GetTriggered();
-
-		if(pUpdated != nullptr)
-		{
-			m_pMenu = pUpdated;
-		}
-
-		m_pMenu->Update();
-	}
+	void Update();
 
 	// the UI would control the changing between Menu's
 	// What if the mouse was an object that was being tracked in the quadtree

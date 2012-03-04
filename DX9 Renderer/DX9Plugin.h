@@ -21,7 +21,6 @@ struct DisplayMode
 	D3DDISPLAYMODE mode;
 	float ratio;
 	std::string str;
-	std::string ratioStr;
 };
 
 enum InterfaceType
@@ -102,9 +101,15 @@ public:
 
 	// options
 	virtual void EnumerateDisplayAdaptors();
-	virtual void SetDisplayMode(float ratio, UINT i);
-	virtual const std::string& GetDisplayModeStr(float ratio, UINT i) const;
-	virtual UINT GetModeSize(float ratio) const;
+	virtual UINT GetNumDisplayAdaptors() const;
+	virtual void SetDisplayMode(UINT i);
+	virtual const std::string& GetDisplayModeStr(UINT i) const;
+
+	// vertex buffer
+	virtual UINT CreateVertexBuffer(UINT bytes,DWORD flags);
+	virtual void* WriteToVertexBuffer(UINT iBufferIndex);
+	virtual void Unlock(UINT iIndex);
+	virtual void DrawVertexBuffer(UINT iIndex);
 
 	//virtual UINT GetRatioSize() const;
 	//virtual float GetRatio(UINT n);
@@ -133,6 +138,12 @@ protected:
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
 
+	// Vertex Buffers
+	std::vector<IDirect3DVertexBuffer9*> m_VertexBuffers;
+
+	// todo: could make this dynamic, add it to a vector
+	IDirect3DVertexDeclaration9* m_pVertexDecl;
+
 	// fonts
 	ID3DXFont* m_pFont; // todo: I need to match these with sprites!!! this will solve the problem of scrolling
 	typedef std::vector<DrawTextInfo> TextContainerType; 
@@ -141,9 +152,7 @@ protected:
 	ID3DXSprite* m_pSprite;
 	ID3DXLine* m_pLine;
 
-	typedef std::map<float,std::vector<DisplayMode>> DisplayModeContainerType;// todo: use this or the keyword auto?
-	DisplayModeContainerType m_mode;
-	std::vector<float> m_modeKeyIndex;
+	std::vector<DisplayMode> m_DisplayModes;
 
 	DWORD m_ClearBuffers;
 

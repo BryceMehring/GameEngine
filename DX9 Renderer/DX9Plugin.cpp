@@ -3,6 +3,7 @@
 
 #include "DX9Plugin.h"
 #include "PluginManager.h"
+#include "FileManager.h"
 #include "asVM.h"
 
 #pragma comment(lib,"d3d9.lib")
@@ -10,6 +11,8 @@
 #pragma comment(lib,"Game Engine.lib")
 
 using namespace std;
+
+struct
 
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 {
@@ -23,7 +26,16 @@ m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
 	ZeroMemory(&m_D3DParameters,sizeof(D3DPRESENT_PARAMETERS));
 	m_ClearBuffers = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
 
-	DX9Render::InitializeDirectX();
+	try
+	{
+		DX9Render::InitializeDirectX();
+	}
+	catch(string what)
+	{
+		FileManager& fm = ::FileManager::Instance();
+		fm.WriteToLog(what);
+		exit(0);
+	}
 
 	// post-Initialize
 	//desc.Width = 10;
@@ -83,7 +95,7 @@ void DX9Render::InitializeDirectX()
 	m_D3DParameters.AutoDepthStencilFormat     = D3DFMT_D24S8;
 	m_D3DParameters.Flags                      = 0;
 	m_D3DParameters.FullScreen_RefreshRateInHz = 0;
-	m_D3DParameters.PresentationInterval       = D3DPRESENT_INTERVAL_DEFAULT;//D3DPRESENT_INTERVAL_IMMEDIATE, D3DPRESENT_INTERVAL_DEFAULT
+	m_D3DParameters.PresentationInterval       = D3DPRESENT_INTERVAL_IMMEDIATE;//D3DPRESENT_INTERVAL_IMMEDIATE, D3DPRESENT_INTERVAL_DEFAULT
 
 	HRESULT hPass = m_pDirect3D->CheckDeviceType(D3DADAPTER_DEFAULT,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,D3DFMT_X8R8G8B8,false);
 
@@ -166,10 +178,25 @@ bool DX9Render::IsDeviceLost()
 	// Get the state of the graphics device.
 	HRESULT hr = m_p3Device->TestCooperativeLevel();
 
+	switch(hr)
+	{
+	case D3DERR_DEVICELOST:
+		Sleep(20);
+		return true;
+	case D3DERR_DRIVERINTERNALERROR:
+		MessageBox(0, "Internal Driver Error...Exiting", 0, 0);
+		PostQuitMessage(0);
+		return true;
+	case D3DERR_DEVICENOTRESET:
+		Reset();
+	default:
+		return false;
+	};
+
 	// If the device is lost and cannot be reset yet then
 	// sleep for a bit and we'll try again on the next 
 	// message loop cycle.
-	if( hr == D3DERR_DEVICELOST )
+	/*if( hr == D3DERR_DEVICELOST )
 	{
 		Sleep(20);
 		return true;
@@ -186,9 +213,9 @@ bool DX9Render::IsDeviceLost()
 	{
 		Reset();
 		return false;
-	}
+	}*/
 
-	return false;
+	//return false;
 }
 
 void DX9Render::OnLostDevice()
@@ -236,9 +263,14 @@ void DX9Render::Present()
 
 void DX9Render::EnumerateDisplayAdaptors()
 {
-	m_mode.clear();
+	m_DisplayModes.clear();
 
 	DisplayMode mode;
+
+	float X = (float)GetSystemMetrics(SM_CXSCREEN);
+	float Y = (float)GetSystemMetrics(SM_CYSCREEN);
+	float fBaseRatio = X/Y;
+
 	for(int i = 0; i < m_pDirect3D->GetAdapterCount(); ++i)
 	{
 		UINT n = m_pDirect3D->GetAdapterModeCount(i,D3DFMT_X8R8G8B8) - 1;
@@ -247,39 +279,45 @@ void DX9Render::EnumerateDisplayAdaptors()
 		{
 			m_pDirect3D->EnumAdapterModes(i,D3DFMT_X8R8G8B8,j,&mode.mode);
 
-			ostringstream oss;
-
 			UINT width = mode.mode.Width;
 			UINT height = mode.mode.Height;
-			UINT hz = mode.mode.RefreshRate;
-
 			float ratio = (float)width / height;
-			mode.ratio = ratio;
 
-			oss << width << " x " << height << " " << hz << "Hz" << endl;
+			// todo: need to fix, comparing with floats
+			if(ratio == fBaseRatio)
+			{
+				UINT hz = mode.mode.RefreshRate;
 
-			mode.str = oss.str();
+				mode.ratio = ratio;
 
-			m_mode[ratio].push_back(mode);
+				ostringstream oss;
+				oss << width << " x " << height << " " << hz << "Hz" << endl;
+
+				mode.str = oss.str();
+
+				m_DisplayModes.push_back(mode);
+			}
 		}
 	}
 }
-void DX9Render::SetDisplayMode(float ratio, unsigned int i)
+UINT DX9Render::GetNumDisplayAdaptors() const
+{
+	return m_DisplayModes.size();
+}
+void DX9Render::SetDisplayMode(UINT i)
 {
 	HWND h = m_mgr.GetWindowHandle();
 
-	auto iter = m_mode.find(ratio);
-	if(iter == m_mode.end()) return;
+	if( i > m_DisplayModes.size() )
+		return;
 
-	auto modes = iter->second;
-
-	unsigned int Width = modes[i].mode.Width;
-	unsigned int Height = modes[i].mode.Height;
+	UINT Width = m_DisplayModes[i].mode.Width;
+	UINT Height = m_DisplayModes[i].mode.Height;
 
 	m_D3DParameters.BackBufferFormat = D3DFMT_X8R8G8B8;
 	m_D3DParameters.BackBufferWidth  = Width;
 	m_D3DParameters.BackBufferHeight = Height;
-	m_D3DParameters.FullScreen_RefreshRateInHz = modes[i].mode.RefreshRate;
+	m_D3DParameters.FullScreen_RefreshRateInHz = m_DisplayModes[i].mode.RefreshRate;
 	m_D3DParameters.Windowed         = false;
 
 	// todo: look at this:
@@ -297,18 +335,9 @@ void DX9Render::SetDisplayMode(float ratio, unsigned int i)
 	Reset();
 }
 
-const string& DX9Render::GetDisplayModeStr(float ratio, unsigned int i) const
+const string& DX9Render::GetDisplayModeStr(UINT i) const
 {
-	auto iter = m_mode.find(ratio);
-	return iter->second[i].str;
-}
-
-UINT DX9Render::GetModeSize(float ratio) const
-{
-	auto iter = m_mode.find(ratio);
-	if(iter == m_mode.end()) return 0;
-
-	return iter->second.size();
+	return m_DisplayModes[i].str;
 }
 
 void DX9Render::InitializeFont()
@@ -361,13 +390,43 @@ void DX9Render::RenderScene()
 	m_pSprite->End();
 }
 
+UINT DX9Render::CreateVertexBuffer(UINT bytes,DWORD flags)
+{
+	IDirect3DVertexBuffer9* pBuffer = nullptr;
+
+	m_p3Device->CreateVertexBuffer(bytes,flags,0,D3DPOOL_DEFAULT,&pBuffer,0);
+
+	m_VertexBuffers.push_back(pBuffer);
+
+	return m_VertexBuffers.size() - 1;
+}
+
+void* DX9Render::WriteToVertexBuffer(UINT iBufferIndex)
+{
+	void* pBuffer = nullptr;
+	m_VertexBuffers[iBufferIndex]->Lock(0,0,&pBuffer,D3DLOCK_DISCARD);
+	return pBuffer;
+}
+
+void DX9Render::Unlock(UINT iIndex)
+{
+	m_VertexBuffers[iIndex]->Unlock();
+}
+
+void DX9Render::DrawVertexBuffer(UINT iIndex)
+{
+	// todo: need to fix:
+	//m_VertexBuffers[iIndex]->
+//	m_p3Device->DrawPrimitive(::D3DPT_POINTLIST,0,
+}
+
 void DX9Render::_RegisterScript()
 {
 	DBAS(s_pScriptEngine->RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","uint EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void SetDisplayMode(float, uint)",asMETHOD(DX9Render,SetDisplayMode),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","uint GetModeSize(float) const",asMETHOD(DX9Render,GetModeSize),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","const string& GetDisplayModeStr(float, uint) const",asMETHOD(DX9Render,GetDisplayModeStr),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void GetNumDisplayAdaptors()",asMETHOD(DX9Render,GetNumDisplayAdaptors),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void SetDisplayMode(uint)",asMETHOD(DX9Render,SetDisplayMode),asCALL_THISCALL));
+	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","const string& GetDisplayModeStr(uint) const",asMETHOD(DX9Render,GetDisplayModeStr),asCALL_THISCALL));
 	DBAS(s_pScriptEngine->RegisterGlobalProperty("DX9Render renderer",s_pThis));
 }
 
