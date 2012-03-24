@@ -1,6 +1,6 @@
-#include "stdafx.h"
+
 #include "Camera.h"
-#include "asRegisterer.h"
+#include <dinput.h>
 
 Camera::Camera() : m_Speed(1.0f)
 {
@@ -52,7 +52,6 @@ void Camera::setSpeed(float s)
 void Camera::update(IKMInput& input, float dt)
 {
 	D3DXVECTOR3 dir(0.0f,0.0f,0.0f);
-
 	if(input.KeyDown(DIK_W))
 	{
 		dir += m_LookW;
@@ -95,13 +94,13 @@ void Camera::update(IKMInput& input, float dt)
 
 void RegisterScript(asVM* pVM)
 {
-	asIScriptEngine& engine = pVM->GetScriptEngine();
+	//asIScriptEngine& engine = pVM->GetScriptEngine();
 
-	DBAS(engine.RegisterObjectType("Camera",0,asOBJ_REF));
-	DBAS(engine.RegisterObjectMethod("Camera","void setLens(float, float, float, float)",asMETHOD(Camera,setLens),asCALL_THISCALL));
-	DBAS(engine.RegisterObjectMethod("Camera","void setSpeed(float)",asMETHOD(Camera,setSpeed),asCALL_THISCALL));
+///	DBAS(engine.RegisterObjectType("Camera",0,asOBJ_REF));
+//	DBAS(engine.RegisterObjectMethod("Camera","void setLens(float, float, float, float)",asMETHOD(Camera,setLens),asCALL_THISCALL));
+//	DBAS(engine.RegisterObjectMethod("Camera","void setSpeed(float)",asMETHOD(Camera,setSpeed),asCALL_THISCALL));
 
-	RegisterRefCountingObject(Camera,engine);
+	//RegisterRefCountingObject(Camera,engine);
 }
 
 void Camera::buildView()

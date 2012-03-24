@@ -12,12 +12,34 @@
 
 using namespace std;
 
-struct
-
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 {
 	return new DX9Render(mgr);
 }
+
+struct DisplayMode
+{
+	D3DDISPLAYMODE mode;
+	float ratio;
+	std::string str;
+};
+
+enum InterfaceType
+{
+	Font,
+	Line,
+};
+
+struct DrawTextInfo
+{
+	const char* pText;
+	//std::string text;
+	RECT R;
+	DWORD color;
+	DWORD format;
+};
+
+
 
 DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref), m_p3Device(nullptr),
 m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
@@ -95,7 +117,7 @@ void DX9Render::InitializeDirectX()
 	m_D3DParameters.AutoDepthStencilFormat     = D3DFMT_D24S8;
 	m_D3DParameters.Flags                      = 0;
 	m_D3DParameters.FullScreen_RefreshRateInHz = 0;
-	m_D3DParameters.PresentationInterval       = D3DPRESENT_INTERVAL_IMMEDIATE;//D3DPRESENT_INTERVAL_IMMEDIATE, D3DPRESENT_INTERVAL_DEFAULT
+	m_D3DParameters.PresentationInterval       = D3DPRESENT_INTERVAL_DEFAULT;//D3DPRESENT_INTERVAL_IMMEDIATE, D3DPRESENT_INTERVAL_DEFAULT
 
 	HRESULT hPass = m_pDirect3D->CheckDeviceType(D3DADAPTER_DEFAULT,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,D3DFMT_X8R8G8B8,false);
 
@@ -192,30 +214,6 @@ bool DX9Render::IsDeviceLost()
 	default:
 		return false;
 	};
-
-	// If the device is lost and cannot be reset yet then
-	// sleep for a bit and we'll try again on the next 
-	// message loop cycle.
-	/*if( hr == D3DERR_DEVICELOST )
-	{
-		Sleep(20);
-		return true;
-	}
-	// Driver error, exit.
-	if( hr == D3DERR_DRIVERINTERNALERROR )
-	{
-		MessageBox(0, "Internal Driver Error...Exiting", 0, 0);
-		PostQuitMessage(0);
-		return true;
-	}
-	// The device is lost but we can reset and restore it.
-	if( hr == D3DERR_DEVICENOTRESET )
-	{
-		Reset();
-		return false;
-	}*/
-
-	//return false;
 }
 
 void DX9Render::OnLostDevice()
@@ -232,13 +230,18 @@ void DX9Render::OnResetDevice()
 	m_pLine->OnResetDevice();
 }
 
+void DX9Render::ClearScreen()
+{
+	m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
+}
+
 void DX9Render::Begin()
 {
 	if( !IsDeviceLost() )
 	{
 		m_text.clear();
 
-		m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
+		ClearScreen();
 		m_p3Device->BeginScene();
 		// todo: these flags need to be modifiable
 		
@@ -306,8 +309,6 @@ UINT DX9Render::GetNumDisplayAdaptors() const
 }
 void DX9Render::SetDisplayMode(UINT i)
 {
-	HWND h = m_mgr.GetWindowHandle();
-
 	if( i > m_DisplayModes.size() )
 		return;
 
@@ -324,6 +325,8 @@ void DX9Render::SetDisplayMode(UINT i)
 	//HWND h1 = SetActiveWindow(h);
 	//HWND h2 = SetFocus(h);
 
+	HWND h = m_mgr.GetWindowHandle();
+
 	// Change the window style to a more fullscreen friendly style.
 	SetWindowLongPtr(h, GWL_STYLE, WS_POPUP | WS_MAXIMIZE);
 
@@ -332,6 +335,17 @@ void DX9Render::SetDisplayMode(UINT i)
 	// need to call this function anyway to update the window dimensions.
 	SetWindowPos(h, HWND_TOP, 0, 0, Width, Height, SWP_NOZORDER | SWP_SHOWWINDOW);
 	
+	Reset();
+}
+
+void DX9Render::ToggleFullscreen()
+{
+	m_D3DParameters.Windowed = !m_D3DParameters.Windowed;
+
+	HWND h = m_mgr.GetWindowHandle();
+	SetWindowLongPtr(h,GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+	SetWindowPos(h,HWND_TOP,100,100,800,600,SWP_NOZORDER | SWP_SHOWWINDOW);
+
 	Reset();
 }
 
@@ -418,6 +432,15 @@ void DX9Render::DrawVertexBuffer(UINT iIndex)
 	// todo: need to fix:
 	//m_VertexBuffers[iIndex]->
 //	m_p3Device->DrawPrimitive(::D3DPT_POINTLIST,0,
+}
+
+UINT DX9Render::CreateVertexDecl(const VertexDeclaration& decl)
+{
+	IDirect3DVertexDeclaration9* pDecl = nullptr;
+	m_p3Device->CreateVertexDeclaration(&decl.Elements.front(),&pDecl);
+	m_VertexDecl.push_back(pDecl);
+
+	return m_VertexDecl.size() - 1;
 }
 
 void DX9Render::_RegisterScript()

@@ -3,6 +3,7 @@
 
 #include "GameState.h"
 #include "d3dx9math.h"
+#include "DxPolygon.h"
 
 class GameOfLife : public IGameState
 {

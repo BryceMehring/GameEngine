@@ -19,7 +19,7 @@
 
 // VertexDecl code from: http://www.gamedev.net/topic/461559-abstracting-directx-vertex-declarations/
 //type of element, i.e. what it specifies
-/*enum VertexElementType
+enum VertexElementType
 {
 	VET_XYZ,
 	VET_NORMAL,
@@ -49,49 +49,20 @@ enum VertexElementFormat
 	VEF_LONG_DOUBLE,
 };
 
-//specifies a single part of a vertex, e.g. one position, or one texcoord, etc.
-struct VertexElement
-{
-	unsigned int Stream;
-	unsigned int Count;
-	std::size_t Offset;		//offset in the structure
-	VertexElementFormat Format;
-	VertexElementType Type;
-
-	//normal ctor
-	VertexElement() : Stream( 0 ), Count( 0 ), Format( VEF_FLOAT ), 
-		Type( VET_XYZ ), Offset( 0 )
-	{ }
-
-	//inline ctor for laziness
-	VertexElement( unsigned int vStream, unsigned int vCount, std::size_t vOffset, 
-		VertexElementFormat vFormat, VertexElementType vType )
-		: Stream( vStream ), Count( vCount ), Format( vFormat), Type( vType ),
-		Offset( vOffset )
-	{ }
-
-	static std::size_t FormatSize( VertexElementFormat vef );
-
-	//Compute the size of this element in bytes
-	std::size_t SizeBytes() { return FormatSize( Format ) * Count; }
-};
-
-
 //specifies a complete vertex, basically just a list of elements
 struct VertexDeclaration
 {
-	typedef std::vector<VertexElement> ElementList;
+	typedef std::vector<D3DVERTEXELEMENT9> ElementList;
 	typedef ElementList::iterator Iterator;
 
 	ElementList Elements;
+	unsigned int iClassSize;
 
 	VertexDeclaration()
 	{
 		Elements.reserve( 4 );
 	}
-
-	static VertexDeclaration CreateFromFVF( unsigned int FVF );
-};*/
+};
 
 
 
@@ -107,6 +78,7 @@ public:
 	//shaders
 	virtual int LoadShader(char* pFile) = 0;
 	*/
+	virtual void ClearScreen() = 0;
 	virtual void Begin() = 0;
 	virtual void End() = 0;
 	virtual void Present() = 0;
@@ -129,17 +101,19 @@ public:
 	
 	// todo: need to create an abstract form of vertex declarations
 
-	// Effects
+	// Effects, todo: need to abstract this
 	virtual UINT CreateEffectFromFile(const char* file) = 0;
 	virtual UINT GetTechnique(UINT n, const char* name) = 0;
 	virtual void SetTechnique(UINT n) = 0;
 	virtual void SetValue(void* pData, UINT bytes) = 0;
 
-	// vertex buffer
+	// vertex buffers... todo: need to abstract this
 	virtual UINT CreateVertexBuffer(UINT bytes,DWORD flags) = 0;
 	virtual void* WriteToVertexBuffer(UINT iBufferIndex) = 0;
 	virtual void Unlock(UINT iIndex) = 0;
 	virtual void DrawVertexBuffer(UINT iIndex) = 0;
+
+	virtual UINT CreateVertexDecl(const VertexDeclaration& decl) = 0;
 	//virtual UINT CreateVertexDecl(
 
 	// Meshes
@@ -150,8 +124,9 @@ public:
 	// config
 	virtual void EnumerateDisplayAdaptors() = 0;
 	virtual UINT GetNumDisplayAdaptors() const = 0;
-	virtual void SetDisplayMode(UINT i) = 0;
+	virtual void SetDisplayMode(UINT i) = 0; // full screen mode
 	virtual const std::string& GetDisplayModeStr(UINT i) const = 0;
+	virtual void ToggleFullscreen() = 0;
 	
 	///add more functions...
 protected:

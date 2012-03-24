@@ -76,6 +76,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="asVM.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Delegates.h" />
     <ClInclude Include="DxPolygon.h" />
     <ClInclude Include="FileManager.h" />
@@ -99,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="asVM.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DxPolygon.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="Game.cpp" />

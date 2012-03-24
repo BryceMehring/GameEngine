@@ -1,7 +1,8 @@
 #ifndef _CAMERA_
 #define _CAMERA_
 
-#include "Interfaces.h"
+#include "RefCounting.h"
+#include "IKMInput.h"
 #include "asVM.h"
 
 class Camera : public RefCounting

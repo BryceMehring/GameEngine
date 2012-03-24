@@ -12,7 +12,6 @@
 #endif
 
 #include "IPlugin.h"
-#include "Singleton.h"
 #include <hash_map>
 #include <Windows.h>
 
@@ -23,16 +22,15 @@ struct PluginInfo
 	HMODULE mod;
 };
 
-class PluginManager : public Singleton<PluginManager>
+class PluginManager
 {
 public:
-
-	friend class Singleton<PluginManager>;
 
 	/* 
 	   This class manages all of the dll plugins. It will load and unload them when needed.
 	*/
 
+	PluginManager();
 	~PluginManager();
 
 	// more functions would go here as needed to work with the dlls...
@@ -62,7 +60,9 @@ private:
 	typedef stdext::hash_map<DLLType,PluginInfo> plugin_type;
 	plugin_type m_plugins;
 
-	PluginManager();
+	// Prevent copying
+	PluginManager(const PluginManager&);
+	PluginManager& operator=(const PluginManager&);
 };
 
 typedef IPlugin* (*CREATEPLUGIN)(PluginManager& mgr);

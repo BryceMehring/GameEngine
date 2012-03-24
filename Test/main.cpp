@@ -58,20 +58,6 @@ private:
 
 };*/
 
-bool isPrime(unsigned long long num)
-{
-	bool success = true;
-	for(unsigned long long i = 2; (i*i) <= num; i++)
-	{
-		if((num % i) == 0)
-		{
-			success = false;
-			break;
-		}
-	}
-	return success;
-}
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	Game myGame(hInstance);

@@ -8,7 +8,9 @@ class GameOfLifeMenu : public IGameState
 {
 public:
 
+	GameOfLifeMenu();
 	virtual ~GameOfLifeMenu() {}
+	
 	virtual void Init(class Game* pGame);
 	virtual void Destroy(class Game* pGame);
 	virtual void Update(class Game* pGame);
@@ -16,7 +18,7 @@ public:
 
 private:
 
-	UI* m_pUI;
+	UI m_ui;
 
 };
 

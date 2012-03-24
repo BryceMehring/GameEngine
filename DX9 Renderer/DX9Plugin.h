@@ -16,27 +16,11 @@
 #include "PluginManager.h"
 
 
-struct DisplayMode
-{
-	D3DDISPLAYMODE mode;
-	float ratio;
-	std::string str;
-};
+struct DisplayMode;
 
-enum InterfaceType
-{
-	Font,
-	Line,
-};
+enum InterfaceType;
 
-struct DrawTextInfo
-{
-	const char* pText;
-	//std::string text;
-	RECT R;
-	DWORD color;
-	DWORD format;
-};
+struct DrawTextInfo;
 
 // todo: implement a deferred renderer
 //http://www.ogre3d.org/tikiwiki/Deferred+Shading
@@ -61,7 +45,7 @@ public:
 
 	//shaders
 	//virtual int LoadShader(char* pFile);
-
+	virtual void ClearScreen();
 	virtual void Begin();
 	virtual void End();
 	virtual void Present();
@@ -111,6 +95,10 @@ public:
 	virtual void Unlock(UINT iIndex);
 	virtual void DrawVertexBuffer(UINT iIndex);
 
+	virtual UINT CreateVertexDecl(const VertexDeclaration& decl);
+
+	virtual void ToggleFullscreen();
+
 	//virtual UINT GetRatioSize() const;
 	//virtual float GetRatio(UINT n);
 
@@ -138,11 +126,10 @@ protected:
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
 
+	std::vector<IDirect3DVertexDeclaration9*> m_VertexDecl;
+
 	// Vertex Buffers
 	std::vector<IDirect3DVertexBuffer9*> m_VertexBuffers;
-
-	// todo: could make this dynamic, add it to a vector
-	IDirect3DVertexDeclaration9* m_pVertexDecl;
 
 	// fonts
 	ID3DXFont* m_pFont; // todo: I need to match these with sprites!!! this will solve the problem of scrolling

@@ -95,6 +95,8 @@ void Node::SubDivide()
 	int i = 0;
 	int r = 0;
 	Node* pNodeArray = new Node[MAX_NODES];
+
+
 	for(int y = R.top; y <= R.bottom; y += yMid)
 	{
 		for(int x = R.left; x <= R.right; x += xMid, ++i)
@@ -105,16 +107,22 @@ void Node::SubDivide()
 			if((i > 3) && (i % 3))
 			{
 				RECT R;
+
+				// Fill rect
 				R.left = P[i-4].x;
-				R.right = P[i].x;
-				R.bottom = P[i].y;
 				R.top = P[i-4].y;
 
-				Node* pSubNode = m_Nodes[r] = pNodeArray + (r++);
-				pSubNode->SetRect(R);
+				R.right = P[i].x;
+				R.bottom = P[i].y;
 
-				//m_Nodes[r]->P.x = m_Nodes[r]->P.y = 0;
+				// pSubNode points to the correct sub node
+				Node* pSubNode = m_Nodes[r] = pNodeArray + (r++);
+
+				// Alloc a list of ISpatialObject* to store the objects
 				LIST_DTYPE* pList = new LIST_DTYPE();
+
+				// Set the subnode's fields
+				pSubNode->SetRect(R);
 				pSubNode->m_pKeys = pList;
 				pSubNode->m_Previous = this;
 
@@ -137,6 +145,10 @@ void Node::SubDivide()
 
 	delete this->m_pKeys;
 	this->m_pKeys = nullptr;
+}
+
+void Node::ExpandLeft()
+{
 }
 
 NodeIterator::NodeIterator(Node* pNode) : m_pNode(pNode) {}
@@ -170,6 +182,7 @@ unsigned int NodeIterator::GetIndex() const
 	if(m_pNode->m_Previous)
 	{
 		index = (MAX_NODES - (m_pNode->m_Previous->m_Nodes[MAX_NODES - 1] - m_pNode));
+		//index = (MAX_NODES - (m_pNode->m_Previous->m_Nodes[MAX_NODES - 1] - m_pNode));
 	}
 		
 	return index;
@@ -267,6 +280,7 @@ void QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 	Node* pNode = pWhere;
 	const KEY& P = pObj->GetPos();
 
+	// If the point is within the the root
 	if(m_pRoot->IsPointWithin(P))
 	{
 		do
@@ -372,35 +386,6 @@ void QuadTree::Update(Node* pNode)
 			++iter;
 		}
 	}
-	/*std::remove_if(pNode->m_pKeys->begin(),pNode->m_pKeys->end(),[=](ISpatialObject* pObj) -> bool
-	{
-		bool success = false;
-		if(!pNode->IsPointWithin(pObj))
-		{
-			// Search up to find which Node the point is in
-			Node* pNewNode = SearchNodeUp((pObj)->GetPos(),pNode);
-
-			// If the point is within the root node
-			if(pNewNode)
-			{
-				// add the point to the new node
-						
-				Insert(pObj,pNewNode);
-
-				// todo: need to update node pointer within the node class
-			}
-			else
-			{
-				// the object left the area
-				pObj->SetNode(nullptr);
-			}
-
-			// return true, to erase the object from the list
-			success = true;
-		}
-
-		return success;
-	});*/
 }
 
 Node* QuadTree::SearchNodeUp(KEY P, Node* pNode) const

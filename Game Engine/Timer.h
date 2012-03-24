@@ -46,7 +46,7 @@ public:
  
     // Returns the time elapsed since Start() was called
     // in micro-seconds
-    const long double GetTimeInMicroSeconds(void) {
+    long double GetTimeInMicroSeconds(void) {
         const long double MicroFreq =
             1000000.0 / _Frequency.QuadPart;
  
@@ -61,13 +61,13 @@ public:
  
     // Returns the time elapsed since Start() was called
     // in milli-seconds
-    const long double GetTimeInMilliseconds(void) {
+    long double GetTimeInMilliseconds(void) {
         return GetTimeInMicroSeconds() * 0.001;
     }
  
     // Returns the time elapsed since Start() was called
     // in seconds
-    const long double GetTimeInSeconds( void ) {
+    long double GetTimeInSeconds( void ) {
         return GetTimeInMicroSeconds() * 0.000001;
     }
  

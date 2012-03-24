@@ -13,7 +13,7 @@ class Game
 public:
 
 	Game(HINSTANCE hInstance);
-	virtual ~Game() {}
+	virtual ~Game();
 
 	void SetStateFactory(GameStateFactory* pFactory);
 	void SetState(int id);
@@ -22,15 +22,17 @@ public:
 	IKMInput* GetInput();
 	WindowManager* GetWindow();
 
-
 	virtual int PlayGame();
 
 protected:
 
 	// Data members
 	WindowManager m_window;
+	PluginManager m_plugins;
+
 	GameStateMachine m_StateMachine;
 	GameStateFactory* m_pFactory;
+
 	float m_fDT;
 
 	// Interfaces

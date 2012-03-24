@@ -29,8 +29,10 @@ public:
 	virtual IRenderType GetRenderType() const;
 
 	// Operations
-	virtual void Render();	
-	virtual bool IsPointInPolygon(POINT P) = 0;
+	virtual void Render(class IRenderer* pRenderer);
+
+	// Ray casting algorithm
+	virtual bool IsPointInPolygon(POINT P) const;
 
 protected:
 	std::vector<D3DXVECTOR2> m_edges;
@@ -47,7 +49,17 @@ public:
 
 	void ConstructFromRect(const RECT& R);
 
-	virtual bool IsPointInPolygon(POINT P); 
+	virtual bool IsPointInPolygon(POINT P) const; 
+};
+
+class DxTriangle : public DxPolygon
+{
+public:
+
+	DxTriangle();
+	DxTriangle(const D3DXVECTOR2* pArray, unsigned int size);
+
+	virtual bool IsPointInPolygon(POINT P) const;
 
 };
 

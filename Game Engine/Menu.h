@@ -4,64 +4,27 @@
 #include "Delegates.h"
 #include "DxPolygon.h"
 #include "IRender.h"
-#include "IKMInput.h"
 #include "QuadTree.h"
 
-class IUIElement
+class IUIElement : public IRender
 {
 public:
 
 	virtual ~IUIElement() {}
 
-	virtual void foo() = 0;
-	virtual bool Update() = 0;
-
-private:
+	virtual void Update(class IKMInput* pInput) = 0;
 	
+};
+
+struct Text
+{
+	std::string name;
+	POINT P;
 };
 
 class TextBox : public IUIElement
 {
 public:
-};
-
-class Button : public IUIElement
-{
-public:
-
-	virtual bool Update()
-	{
-		// ... do interesting stuff here
-		// this is triggered
-		if(true)
-		{
-			m_callback.Call();
-		}
-		return true;
-	}
-
-private:
-
-	Delegate<void,void> m_callback;
-};
-
-class UIMenuButton : public IUIElement
-{
-public:
-
-private:
-
-
-
-};
-
-class Mouse : public ISpatialObject
-{
-public:
-
-private:
-
-	POINT m_pos;
 };
 
 
@@ -76,19 +39,20 @@ public:
 	Menu(const std::string& str);
 	~Menu();
 
-	void SetMenuTitle(const std::string& str);
+	void SetMenuTitle(const std::string& str,const POINT& P);
+	void SetPolygon(DxPolygon* pPolygon);
 
 	void AddMenu(Menu* pMenu);
+	void AddElement(IUIElement* pElement);
 
-	void GetTriggered(class UI* pUI);
-	bool IsTriggered();
-	void Update();
+	void Update(class UI* pUI, class IKMInput* pInput);
 
-	virtual void Render();
+	virtual void Render(class IRenderer* pRenderer);
 
 private:
 
 	// data members
+	POINT m_point;
 	std::string m_menuTitle;
 	std::vector<Menu*> m_SubMenu;
 	std::vector<IUIElement*> m_elements;
@@ -96,15 +60,20 @@ private:
 	DxPolygon* m_pPolygon;
 };
 
+// todo: this class should inherit from an abstract base interface class called: IRender
 class UI
 {
 public:
 
 	explicit UI(Menu* pMenu = nullptr);
+	~UI();
 
 	void SetMenu(Menu* pMenu);
 
-	void Update();
+	// The ability to treat pointers or references of objects of the same inheritance 
+	// hierarchy tree as the parent class. 
+	void Update(class IKMInput* pInput);
+	void Render(class IRenderer* pRenderer);
 
 	// the UI would control the changing between Menu's
 	// What if the mouse was an object that was being tracked in the quadtree
@@ -115,6 +84,81 @@ private:
 	//Mouse* m_pMouse; // the mouse is in the QuadTree
 //	QuadTree* m_pQuadTree;
 	Menu* m_pMenu; // this could be useful in game as well as in a real menu 
+};
+
+class ButtonBase : public IUIElement
+{
+public:
+
+	ButtonBase(const Text& name, DxPolygon* pPolygon);
+
+	virtual void Render(class IRenderer* pRenderer);
+
+protected:
+
+	Text m_name;
+	DxPolygon* m_pPolygon;
+
+	bool IsClicked(class IKMInput* pInput) const;
+
+};
+
+template< class T >
+class GenericButton : public ButtonBase
+{
+public:
+
+	typedef Delegate<void,T> DELEGATE;
+
+	GenericButton(const Text& name,DELEGATE callback, const T& type, DxPolygon* pPolygon) : ButtonBase(name,pPolygon), m_callback(callback), m_type(type)
+	{
+	}
+
+	virtual void Update(class IKMInput* pInput)
+	{
+		if(IsClicked(pInput))
+		{
+			m_callback.Call(m_type);
+		}
+	}
+
+private:
+
+	DELEGATE m_callback;
+	T m_type;
+};
+
+template<>
+class GenericButton<void> : public ButtonBase
+{
+public:
+
+	typedef Delegate<void,void> DELEGATE;
+
+	GenericButton(const Text& name, DELEGATE callback, DxPolygon* pPolygon) : ButtonBase(name,pPolygon), m_callback(callback)
+	{
+	}
+
+	virtual void Update(class IKMInput* pInput)
+	{
+		if(IsClicked(pInput))
+		{
+			m_callback.Call();
+		}
+	}
+
+private:
+
+	DELEGATE m_callback;
+};
+
+class Mouse : public ISpatialObject
+{
+public:
+
+private:
+
+	POINT m_pos;
 };
 
 #endif

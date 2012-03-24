@@ -69,6 +69,8 @@ private:
 
 	// Subdivides the current node/R into 4 sub nodes
 	void SubDivide();
+	void ExpandLeft();
+	void ExpandRight();
 };
 
 class ISpatialObject

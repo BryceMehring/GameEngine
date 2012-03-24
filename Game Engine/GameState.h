@@ -1,6 +1,6 @@
 #ifndef _GAMESTATE_
 #define _GAMESTATE_
-#include <ctime>
+#include "Timer.h"
 
 class IGameState
 {
@@ -8,7 +8,7 @@ public:
 
 	friend class GameStateMachine;
 
-	IGameState() { m_time = clock(); }
+	IGameState() { m_timer.Start(); }
 	virtual ~IGameState() {}
 
 	virtual void Init(class Game* pGame) = 0;
@@ -21,7 +21,8 @@ public:
 protected:
 
 	int m_iStateId;
-	clock_t m_time; // time in ms since 
+
+	Timer m_timer;
 
 };
 

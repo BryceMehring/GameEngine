@@ -4,6 +4,7 @@
 
 IGameState* GameOfLifeFactory::GetState(int id) const
 {
+
 	IGameState* pState = nullptr;
 
 	// todo: could make this dynamic... 

@@ -7,7 +7,7 @@ public:
 
 	enum IRenderType
 	{
-		Text,
+		//Text,
 		Picture,
 		Mesh,
 		Line,
@@ -19,7 +19,7 @@ public:
 
 	//virtual IRenderType GetRenderType() const = 0;
 	//virtual void Begin() = 0;
-	virtual void Render() = 0;
+	virtual void Render(class IRenderer* pRenderer) = 0;
 	//virtual void End() = 0;
 
 };

@@ -3,6 +3,16 @@
 Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f)
 {
 	LoadAllDLL();
+
+	VertexDeclaration decl;
+
+	//UINT iVertexDecl = m_pRenderer->CreateVertexDecl(decl);
+}
+
+Game::~Game()
+{
+	m_StateMachine.RemoveState(this);
+	delete m_pFactory;
 }
 
 void Game::SetStateFactory(GameStateFactory* pFactory)
@@ -25,11 +35,11 @@ int Game::PlayGame()
 	while(m_window.Update())
 	{
 		m_pInput->Poll();
+
 		m_StateMachine.GetState()->Update(this);
 		m_StateMachine.GetState()->Draw(this);
 	}
 
-	m_StateMachine.RemoveState(this);
 	return 0;
 }
 
@@ -49,12 +59,11 @@ WindowManager* Game::GetWindow()
 
 void Game::LoadAllDLL()
 {
-	PluginManager& pm = ::PluginManager::Instance();
-	pm.SetEngine(&m_window);
-	if(pm.LoadAllPlugins("..\\Debug\\",".dll"))
+	m_plugins.SetEngine(&m_window);
+	if(m_plugins.LoadAllPlugins("..\\Debug\\",".dll"))
 	{
-		m_pRenderer = static_cast<IRenderer*>(pm.GetPlugin(Rendering));
-		m_pInput = static_cast<IKMInput*>(pm.GetPlugin(Input));
+		assert(m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering)));
+		assert(m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input)));
 	}
 }
 

@@ -21,11 +21,11 @@
     <Filter Include="Header Files\State">
       <UniqueIdentifier>{327d9768-f50d-421a-86c5-42f3c4bb4aaa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Quadtree">
+      <UniqueIdentifier>{1f4953f4-1657-4cb9-b360-81f1ac50be41}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="QuadTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -86,11 +86,14 @@
     <ClInclude Include="GameStateMachine.h">
       <Filter>Header Files\State</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadTree.h">
+      <Filter>Quadtree</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="QuadTree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RefCounting.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -117,6 +120,12 @@
     </ClCompile>
     <ClCompile Include="GameStateMachine.cpp">
       <Filter>Header Files\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadTree.cpp">
+      <Filter>Quadtree</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
