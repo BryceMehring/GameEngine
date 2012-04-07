@@ -7,6 +7,7 @@
 
 #include <Windows.h>
 #include <set>
+#include <hash_map>
 #include "IRender.h"
 
 const int MAX_NODES = 4;
@@ -16,12 +17,6 @@ class NodeIterator;
 class ISpatialObject;
 typedef POINT KEY;
 
-class SpatialObjectCompare
-{
-public:
-
-	bool operator()(const class ISpatialObject* p1,const class ISpatialObject* p2) const;
-};
 
 
 class Node
@@ -92,10 +87,15 @@ public:
 		AnotherUnit,
 	};
 
+	ISpatialObject() : m_pNode(nullptr) {}
+
 	// todo: need some rtti info here for casting
 	virtual ~ISpatialObject()
 	{
-		m_pNode->Erase(this);
+		if(m_pNode)
+		{
+			m_pNode->Erase(this);
+		}
 	}
 	virtual const KEY& GetPos() const = 0;
 	virtual Type GetType() const = 0;
@@ -209,7 +209,7 @@ public:
 
 	// adds a point to the quadtree
 	// non-recursive
-	void Insert(ISpatialObject* pObj);
+	bool Insert(ISpatialObject* pObj);
 	void Erase(ISpatialObject* pObj);
 
 	// returns a nearest point in the tree to P
@@ -236,7 +236,7 @@ private:
 
 	Node* FindNearNode(const KEY& P, Node* pNode) const;
 
-	void Insert(ISpatialObject* pObj, Node* pWhere);
+	bool Insert(ISpatialObject* pObj, Node* pWhere);
 
 	//non-recursive
 	Node* SearchNodeUp(KEY P, Node* pNode) const;

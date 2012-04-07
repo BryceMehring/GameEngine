@@ -80,8 +80,6 @@ void GameOfLife::Init(Game* pGame)
 {
 	BuildMenu(pGame);
 
-	Delegate<void,const MsgProcData&> d = MsgFunc;
-	pGame->GetWindow()->AddMsgListener(WM_CHAR,d);
 	//pRenderer->ToggleFullscreen();
 	//pGame->GetRenderer()->SetDisplayMode(0);
 	//D3DXVECTOR2 m_VEC[4];
@@ -123,8 +121,14 @@ void GameOfLife::Update(Game* pGame)
 
 		//m_ui.Update(pInput);
 
-		m_units.push_back(pUnit);
-		m_quadTree.Insert(pUnit);
+		if(m_quadTree.Insert(pUnit) == false)
+		{
+			delete pUnit;
+		}
+		else
+		{
+			m_units.push_back(pUnit);
+		}
 	}
 	//m_VEC[3] = D3DXVECTOR2(Pos.x,Pos.y);
 

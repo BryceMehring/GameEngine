@@ -1,6 +1,7 @@
 
 #include "QuadTree.h"
 #include "DxPolygon.h"
+#include <algorithm>
 
 #define GET_INDEX(Node1) (Node1->m_Previous == nullptr) ? -1l : (MAX_NODES - (Node1->m_Previous->m_Nodes[MAX_NODES - 1] - Node1))
 
@@ -24,9 +25,13 @@ unsigned int LOG2(unsigned int v)
 	return r;
 }
 
-bool SpatialObjectCompare::operator()(const ISpatialObject* p1,const ISpatialObject* p2) const
+bool operator == (const POINT& a, const POINT& b)
 {
-	return (p1 < p2) & (p1->GetPos().y != p2->GetPos().y) & (p1->GetPos().x != p2->GetPos().x);
+	return ((a.x == b.x) && (a.y == b.y));
+}
+bool operator != (const POINT& a, const POINT& b)
+{
+	return !::operator==(a,b);
 }
 
 Node::Node() : m_Previous(nullptr), m_pKeys(nullptr)
@@ -112,24 +117,21 @@ void Node::SubDivide()
 
 			if((i > 3) && (i % 3))
 			{
-				RECT R;
+				RECT tempR;
 
 				// Fill rect
-				R.left = P[i-4].x;
-				R.top = P[i-4].y;
+				tempR.left = P[i-4].x;
+				tempR.top = P[i-4].y;
 
-				R.right = P[i].x;
-				R.bottom = P[i].y;
+				tempR.right = P[i].x;
+				tempR.bottom = P[i].y;
 
 				// pSubNode points to the correct sub node
 				Node* pSubNode = m_Nodes[r] = pNodeArray + (r++);
 
-				// Alloc a list of ISpatialObject* to store the objects
-				LIST_DTYPE* pList = new LIST_DTYPE();
-
 				// Set the subnode's fields
-				pSubNode->SetRect(R);
-				pSubNode->m_pKeys = pList;
+				pSubNode->SetRect(tempR);
+				pSubNode->m_pKeys = new LIST_DTYPE(); // Alloc a list of ISpatialObject* to store the objects
 				pSubNode->m_Previous = this;
 
 				// If the current node has points, subdivide them
@@ -273,42 +275,66 @@ void QuadTree::CalculateMaxSubDivisions()
 	m_iMaxSubDivisions = (logW < logH ? logW : logH) / 2;
 }
 
-void QuadTree::Insert(ISpatialObject* pObj)
+bool QuadTree::Insert(ISpatialObject* pObj)
 {
-	Insert(pObj,m_pRoot);
+	return Insert(pObj,m_pRoot);
 }
 
-void QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
+bool QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 {
 	// todo: need to optimize this function, line #295
 	// fixed
 
 	Node* pNode = pWhere;
 	const KEY& P = pObj->GetPos();
+	bool success = false;
 
 	// If the point is within the the root
 	if(m_pRoot->IsPointWithin(P))
 	{
+		success = true;
+
 		do
 		{
 			// Find node to insert point into
 			pNode = FindNearNode(P,pNode);
 
-			// If the node is full, subdivide it
-			if(pNode->IsFull())
+			// check if the point has already been inserted
+			auto iter = find_if(pNode->m_pKeys->begin(),pNode->m_pKeys->end(),[&](const ISpatialObject* p) -> bool
 			{
-				pNode->SubDivide();
+				return p->GetPos() == P;
+			});
+
+			// If not
+			if(iter == pNode->m_pKeys->end())
+			{
+				// insert point
+
+				// If the node is full, subdivide it
+				if(pNode->IsFull())
+				{
+					pNode->SubDivide();
+				}
+			}
+			else
+			{
+				success = false;
 			}
 
 		} while(pNode->IsDivided());
 
-		// Insert point into the current node's list
-		auto success = pNode->m_pKeys->insert(pObj);
-		if(success.second)
+		if(success)
 		{
-			pObj->SetNode(pNode);
+			// Insert point into the current node's list
+			auto success = pNode->m_pKeys->insert(pObj);
+			if(success.second)
+			{
+				pObj->SetNode(pNode);
+			}
 		}
 	}
+
+	return success;
 }
 void QuadTree::Erase(ISpatialObject* pObj)
 {
