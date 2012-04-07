@@ -7,6 +7,7 @@
 
 #include <Windows.h>
 #include <set>
+#include "IRender.h"
 
 const int MAX_NODES = 4;
 const int MAX_OBJ_PERNODE = 10;
@@ -14,6 +15,14 @@ const int MAX_OBJ_PERNODE = 10;
 class NodeIterator;
 class ISpatialObject;
 typedef POINT KEY;
+
+class SpatialObjectCompare
+{
+public:
+
+	bool operator()(const class ISpatialObject* p1,const class ISpatialObject* p2) const;
+};
+
 
 class Node
 {
@@ -188,7 +197,7 @@ public:
 
 };
 
-class QuadTree
+class QuadTree : public IRender
 {
 public:
 
@@ -196,7 +205,7 @@ public:
 
 	// constructor/destructor
 	QuadTree(const RECT& R);
-	~QuadTree();
+	virtual ~QuadTree();
 
 	// adds a point to the quadtree
 	// non-recursive
@@ -218,10 +227,14 @@ public:
 	void SaveToFile(std::string& file);
 	void LoadFile(const std::string& file);
 
+	virtual void Render(class IRenderer* pRenderer);
+
 private:
 
 	Node* m_pRoot;
 	unsigned int m_iMaxSubDivisions;
+
+	Node* FindNearNode(const KEY& P, Node* pNode) const;
 
 	void Insert(ISpatialObject* pObj, Node* pWhere);
 

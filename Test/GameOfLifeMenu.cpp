@@ -1,7 +1,10 @@
 #include "GameOfLifeMenu.h"
 #include "Game.h"
+#include "WindowManager.h"
+#include "FileManager.h"
+#include "StateUpdater.h"
 
-GameOfLifeMenu::GameOfLifeMenu()
+GameOfLifeMenu::GameOfLifeMenu() : IGameState()
 {
 }
 
@@ -19,6 +22,7 @@ void GameOfLifeMenu::Init(Game* pGame)
 
 	Text text = { "Options",{R2.left,R2.top}};
 	Text text2 = { "State",{R3.left,R3.top}};
+	Text text3 = { "Back",{250,85}};
 
 	// Create Squares for ui
 	DxSquare* pSquare = new DxSquare();
@@ -39,11 +43,8 @@ void GameOfLifeMenu::Init(Game* pGame)
 	pTriangle->ConstructFromArray(VEC,4);
 
 	// Delegates
-	GenericButton<Menu*>::DELEGATE d;
-	d.Bind(&m_ui,&UI::SetMenu);
-
-	GenericButton<int>::DELEGATE dState;
-	dState.Bind(pGame,&Game::SetState);
+	GenericButton<Menu*>::DELEGATE d(&m_ui,&UI::SetMenu);
+	GenericButton<int>::DELEGATE dState(pGame,&Game::SetState);
 
 	// Create Menu Objects
 	Menu* pMenu = new Menu;
@@ -54,7 +55,7 @@ void GameOfLifeMenu::Init(Game* pGame)
 
 	// Create Buttons
 	GenericButton<Menu*>* pButton = new GenericButton<Menu*>(text,d,pOptions,pButtonPolygon);
-	GenericButton<Menu*>* pButton2 = new GenericButton<Menu*>(text,d,pMenu,pTriangle);
+	GenericButton<Menu*>* pButton2 = new GenericButton<Menu*>(text3,d,pMenu,pTriangle);
 	GenericButton<int>* pStateButton = new GenericButton<int>(text2,dState,1,pStateButtonSquare);
 
 	// Associate square with menu
@@ -72,11 +73,13 @@ void GameOfLifeMenu::Init(Game* pGame)
 }
 void GameOfLifeMenu::Destroy(Game* pGame)
 {
-	
 }
 void GameOfLifeMenu::Update(Game* pGame)
 {
+	StateUpdater su(m_state,UPDATING);
+
 	m_ui.Update(pGame->GetInput());
+	pGame->GetInput()->Reset();
 	//m_pUI->Update();
 
 	/*if(m_timer.GetTimeInSeconds() > 1.0)
@@ -86,8 +89,16 @@ void GameOfLifeMenu::Update(Game* pGame)
 }
 void GameOfLifeMenu::Draw(Game* pGame)
 {
+	StateUpdater su(m_state,RENDERING);
+
 	IRenderer* pRenderer = pGame->GetRenderer();
 	pRenderer->Begin();
+
+	char buffer[64];
+	POINT P = {400,200};
+	sprintf_s(buffer,"Time between frames: %f",pGame->GetDt());
+
+	pRenderer->DrawString(buffer,P,0xffffffff);
 
 	m_ui.Render(pGame->GetRenderer());
 

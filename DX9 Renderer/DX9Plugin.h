@@ -120,30 +120,35 @@ protected:
 
 	class PluginManager& m_mgr;
 
-	D3DXMATRIX T;
-
 	// Interfaces
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
+
+	ID3DXSprite* m_pSprite;
+	ID3DXLine* m_pLine;
+
+	IDirect3DTexture9* m_pTexture;
+
+	// fonts
+
+	ID3DXFont* m_pFont; // todo: I need to match these with sprites!!! this will solve the problem of scrolling
+	typedef std::vector<DrawTextInfo> TextContainerType; 
+	TextContainerType m_text;
+	
+	
 
 	std::vector<IDirect3DVertexDeclaration9*> m_VertexDecl;
 
 	// Vertex Buffers
 	std::vector<IDirect3DVertexBuffer9*> m_VertexBuffers;
 
-	// fonts
-	ID3DXFont* m_pFont; // todo: I need to match these with sprites!!! this will solve the problem of scrolling
-	typedef std::vector<DrawTextInfo> TextContainerType; 
-	TextContainerType m_text;
-	
-	ID3DXSprite* m_pSprite;
-	ID3DXLine* m_pLine;
-
 	std::vector<DisplayMode> m_DisplayModes;
 
 	DWORD m_ClearBuffers;
 
 	D3DPRESENT_PARAMETERS m_D3DParameters;
+
+	D3DXMATRIX T;
 
 	// ===== Helper Funcrions =====
 	void InitializeFont();

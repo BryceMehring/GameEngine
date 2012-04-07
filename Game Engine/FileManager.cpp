@@ -59,3 +59,18 @@ void FileManager::WriteToLog(const std::string& str)
 {
 	m_buffer << str.c_str() << endl;
 }
+
+void FileManager::WriteToLog(float num)
+{
+	m_buffer << num << endl;
+}
+
+void FileManager::WriteToLog(int num)
+{
+	m_buffer << num << endl;
+}
+
+void FileManager::WriteToLog(char c)
+{
+	m_buffer << c << endl;
+}

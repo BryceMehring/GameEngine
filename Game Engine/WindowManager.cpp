@@ -54,42 +54,54 @@ m_hInstance(hInstance), m_hWindowHandle(NULL), m_bPaused(false)
 	catch(DWORD winError)
 	{
 		string buffer = "System Error: ";
-		buffer += winError;
+		buffer += (int)winError;
 		DisplayError error(0,buffer.c_str(),0,0);
 	}
 
-	// todo: is this the best location for this?
 	s_pThis = this;
+	//SendMessage(m_hWindowHandle,0,0,0);
+
+	// todo: is this the best location for this?
+	
 }
 WindowManager::~WindowManager()
 {
 }
 
+int WindowManager::AddMsgListener(UINT msg, const Delegate<void,const MsgProcData&>& d)
+{
+	return m_events[msg].Attach(d);
+}
+
+void WindowManager::RemoveListener(UINT msg, int id)
+{
+	auto iter = m_events.find(msg);
+	if(iter != m_events.end())
+	{
+		iter->second.Detach(id);
+	}
+}
+
 bool WindowManager::Update()
 {
-	static MSG msg;
-	static float dt = 0.01f;
+	MSG msg;
 
 	do
 	{
-		if(msg.message == WM_QUIT)
-		{
-			return false;
-		}
-
 		// If there are Window messages then process them.
-		if(PeekMessage( &msg, 0, 0, 0, PM_REMOVE ))
+		if(PeekMessage(&msg,0,0,0,PM_REMOVE) > 0)
 		{
 			TranslateMessage( &msg );
 			DispatchMessage( &msg );
+
+			if(msg.message == WM_QUIT)
+			{
+				return false;
+			}
 		}
-		// Otherwise, do animation/game stuff.
-		else
+		else if( m_bPaused == true)
 		{
-			// todo: I could optimize this more
-			// If the application is paused then free some CPU cycles to other 
-			// applications and then continue on to the next frame.
-			if( m_bPaused == true) { Sleep(20); }
+			Sleep(20);
 		}
 
 	} while(m_bPaused);
@@ -99,7 +111,7 @@ bool WindowManager::Update()
 void WindowManager::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
 {
 	WNDCLASS wc;
-	wc.style         = CS_HREDRAW | CS_VREDRAW;
+	wc.style         = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 	wc.lpfnWndProc   = MainWndProc; 
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
@@ -129,21 +141,22 @@ void WindowManager::InitializeWindows(HINSTANCE hInstance, const string& winCapt
 }
 void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
+
 	MsgProcData data = {msg,wParam,lparam};
-	m_MsgProcEvent.Notify(data);
+	m_pInput->Poll(data);
+	
+
+	/*auto iter = m_events.find(msg);
+	if(iter != m_events.end())
+	{
+		iter->second.Notify(data);
+	}*/
 
 	// todo: need to get rid of this. 
 	//m_pInput->Poll(msg,wParam,lparam);
 
 	switch( msg )
 	{
-		case WM_EXITSIZEMOVE:
-		{
-			//GetWindowRect(m_hWindowHandle,&m_rect);
-
-			break;
-		}
-
 		// WM_ACTIVE is sent when the window is activated or deactivated.
 		// We pause the game when the main window is deactivated and 
 		// un pause it when it becomes active.
@@ -165,12 +178,12 @@ void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 			break;
 		// WM_DESTROY is sent when the window is being destroyed.
 		case WM_DESTROY:
-			PostQuitMessage(0);
+			Quit();
 			break;
 		case WM_KEYDOWN:
 			if( wParam == VK_ESCAPE )
 			{
-				PostQuitMessage(0);
+				Quit();
 			}
 			break;
 	}
@@ -186,74 +199,6 @@ LRESULT CALLBACK WindowManager::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-void WindowManager::RedirectIOToConsole()
-{
-
-	/*int hConHandle;
-
-	long lStdHandle;
-
-	CONSOLE_SCREEN_BUFFER_INFO coninfo;
-
-	FILE *fp;
-
-	// allocate a console for this app
-
-	bool success = AllocConsole();
-
-	if(success == false)
-	{
-		throw GetLastError();
-	}
-
-	// set the screen buffer to be big enough to let us scroll text
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&coninfo);
-	coninfo.dwSize.Y = MAX_CONSOLE_LINES;
-
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),coninfo.dwSize);
-
-	// redirect unbuffered STDOUT to the console
-	lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen( hConHandle, "w" );
-
-	*stdout = *fp;
-
-	setvbuf( stdout, nullptr, _IONBF, 0 );
-
-	// redirect unbuffered STDIN to the console
-
-	lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen( hConHandle, "r" );
-
-	*stdin = *fp;
-
-	setvbuf( stdin, nullptr, _IONBF, 0 );
-
-	// redirect unbuffered STDERR to the console
-
-	lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen( hConHandle, "w" );
-
-	*stderr = *fp;
-
-	setvbuf( stderr, nullptr, _IONBF, 0 );
-
-	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
-
-	// point to console as well
-
-	ios::sync_with_stdio();*/
-
-}
 void WindowManager::Quit()
 {
 	PostQuitMessage(0);

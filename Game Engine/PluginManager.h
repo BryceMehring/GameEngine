@@ -12,6 +12,7 @@
 #endif
 
 #include "IPlugin.h"
+#include "Delegates.h"
 #include <hash_map>
 #include <Windows.h>
 
@@ -37,6 +38,7 @@ public:
 	//  ===== interface with dlls =====
 	HINSTANCE GetHINSTANCE() const;
 	HWND GetWindowHandle() const;
+	class WindowManager* GetWindowManager() { return m_pEngine; }
 	//asVM& GetScriptVM() const;
 
 	// returns the plugin if found, else, it returns null

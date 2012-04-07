@@ -4,13 +4,14 @@
 #include "GameState.h"
 #include "d3dx9math.h"
 #include "DxPolygon.h"
+#include "QuadTree.h"
+#include "Menu.h"
 
 class GameOfLife : public IGameState
 {
 public:
 
 	GameOfLife();
-	virtual ~GameOfLife();
 
 	virtual void Init(class Game* pGame);
 	virtual void Destroy(class Game* pGame);
@@ -19,7 +20,12 @@ public:
 
 private:
 
+	QuadTree m_quadTree;
+	std::vector<class Unit*> m_units;
 	D3DXVECTOR2 m_VEC[4];
+	UI m_ui;
+
+	void BuildMenu(Game* pGame);
 
 };
 

@@ -1,6 +1,8 @@
 
 #include "QuadTree.h"
+#include "DxPolygon.h"
 
+#define GET_INDEX(Node1) (Node1->m_Previous == nullptr) ? -1l : (MAX_NODES - (Node1->m_Previous->m_Nodes[MAX_NODES - 1] - Node1))
 
 using namespace std;
 
@@ -22,6 +24,10 @@ unsigned int LOG2(unsigned int v)
 	return r;
 }
 
+bool SpatialObjectCompare::operator()(const ISpatialObject* p1,const ISpatialObject* p2) const
+{
+	return (p1 < p2) & (p1->GetPos().y != p2->GetPos().y) & (p1->GetPos().x != p2->GetPos().x);
+}
 
 Node::Node() : m_Previous(nullptr), m_pKeys(nullptr)
 {
@@ -47,7 +53,7 @@ void Node::SetRect(const RECT& R)
 
 bool Node::IsPointWithin(KEY P) const
 {
-	return PtInRect(&R,P) > 0;
+	return (PtInRect(&R,P) > 0);
 }
 
 bool Node::IsPointWithin(const ISpatialObject* pObj) const
@@ -75,7 +81,7 @@ bool Node::HasPoint() const
 
 bool Node::IsFull() const
 {
-	return m_pKeys->size() > 3;
+	return (m_pKeys->size()) >= 1;
 }
 
 void Node::AssignRect(const RECT& R)
@@ -87,6 +93,7 @@ void Node::AssignRect(const RECT& R)
 void Node::SubDivide()
 {
 	// this will divide the current rect into MAX_NODES new rectangles
+	// todo: need to organize function
 	KEY P[9];
 
 	int xMid = ((R.right - R.left) / 2);
@@ -95,7 +102,6 @@ void Node::SubDivide()
 	int i = 0;
 	int r = 0;
 	Node* pNodeArray = new Node[MAX_NODES];
-
 
 	for(int y = R.top; y <= R.bottom; y += yMid)
 	{
@@ -143,12 +149,14 @@ void Node::SubDivide()
 		}
 	}
 
-	delete this->m_pKeys;
-	this->m_pKeys = nullptr;
+	// free memory, this node will no longer store points.
+	delete m_pKeys;
+	m_pKeys = nullptr;
 }
 
 void Node::ExpandLeft()
 {
+	// todo: need to implement
 }
 
 NodeIterator::NodeIterator(Node* pNode) : m_pNode(pNode) {}
@@ -177,15 +185,8 @@ Node* NodeIterator::operator->()
 
 unsigned int NodeIterator::GetIndex() const
 {
-	// m_Previous is null
-	unsigned int index = -1;
-	if(m_pNode->m_Previous)
-	{
-		index = (MAX_NODES - (m_pNode->m_Previous->m_Nodes[MAX_NODES - 1] - m_pNode));
-		//index = (MAX_NODES - (m_pNode->m_Previous->m_Nodes[MAX_NODES - 1] - m_pNode));
-	}
-		
-	return index;
+	return GET_INDEX(m_pNode);
+	//return index;
 }
 
 void NodeIterator::LoopDown(unsigned int index)
@@ -246,6 +247,7 @@ void PointIterator::Increment()
 }
 
 
+// constructor
 QuadTree::QuadTree(const RECT& R)
 {
 	m_pRoot = new Node(R);
@@ -254,6 +256,7 @@ QuadTree::QuadTree(const RECT& R)
 	CalculateMaxSubDivisions();
 }
 
+// Destructor
 QuadTree::~QuadTree()
 {
 	DeleteTree(m_pRoot);
@@ -277,6 +280,9 @@ void QuadTree::Insert(ISpatialObject* pObj)
 
 void QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 {
+	// todo: need to optimize this function, line #295
+	// fixed
+
 	Node* pNode = pWhere;
 	const KEY& P = pObj->GetPos();
 
@@ -286,7 +292,7 @@ void QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 		do
 		{
 			// Find node to insert point into
-			pNode = FindNearNode(pObj);
+			pNode = FindNearNode(P,pNode);
 
 			// If the node is full, subdivide it
 			if(pNode->IsFull())
@@ -310,12 +316,10 @@ void QuadTree::Erase(ISpatialObject* pObj)
 	pNode->Erase(pObj);
 }
 
-Node* QuadTree::FindNearNode(const KEY& P) const
+Node* QuadTree::FindNearNode(const KEY& P, Node* pNode) const
 {
 	if(!m_pRoot->IsPointWithin(P))
 		return nullptr;
-
-	Node* pNode = m_pRoot;
 
 	// Loop while the current node has sub nodes
 	while(pNode->IsDivided())
@@ -338,9 +342,14 @@ Node* QuadTree::FindNearNode(const KEY& P) const
 	return pNode;
 }
 
+Node* QuadTree::FindNearNode(const KEY& P) const
+{
+	return FindNearNode(P,m_pRoot);
+}
+
 Node* QuadTree::FindNearNode(ISpatialObject* pObj) const
 {
-	return this->FindNearNode(pObj->GetPos());
+	return FindNearNode(pObj->GetPos(),m_pRoot);
 }
 
 void QuadTree::Update()
@@ -380,6 +389,17 @@ void QuadTree::Update(Node* pNode)
 
 			// erase the object from the list
 			iter = pNode->m_pKeys->erase(iter);
+
+			// todo: delete node
+			/*if(pNode->m_pKeys->empty())
+			{
+				unsigned int index = GET_INDEX(pNode);
+
+				if(index != -1)
+				{
+					pNode->m_Previous->m_Nodes[index];
+				}
+			}*/
 		}
 		else
 		{
@@ -452,6 +472,18 @@ void QuadTree::DeleteTree(Node*& pNode)
 		}
 
 		delete[] pNode->m_Nodes[0];
+	}
+
+}
+
+void QuadTree::Render(IRenderer* pRenderer)
+{
+	DxSquare square;
+	// loop over all nodes and render them
+	for(NodeIterator iter = m_pRoot; (*iter) != nullptr; ++iter)
+	{
+		square.ConstructFromRect(iter->R);
+		square.Render(pRenderer);
 	}
 
 }

@@ -92,6 +92,9 @@
     <ClInclude Include="QuadTree.h">
       <Filter>Quadtree</Filter>
     </ClInclude>
+    <ClInclude Include="StateUpdater.h">
+      <Filter>Header Files\State</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RefCounting.cpp">

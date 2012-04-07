@@ -22,6 +22,11 @@ void Game::SetStateFactory(GameStateFactory* pFactory)
 
 void Game::SetState(int id)
 {
+	// todo: in this function, we will check the current thread calling thread 
+	//HANDLE pThread = GetCurrentThread();
+
+	//CreateThread(0,0,(unsigned long (__stdcall *)(void *))ThreadCloseListener,0,0,0);
+
 	IGameState* pState = m_StateMachine.GetState();
 	if(pState == nullptr || pState->GetStateId() != id)
 	{
@@ -32,12 +37,14 @@ void Game::SetState(int id)
 
 int Game::PlayGame()
 {
-	while(m_window.Update())
+	while((StartTimer(),m_window.Update()))
 	{
-		m_pInput->Poll();
-
 		m_StateMachine.GetState()->Update(this);
 		m_StateMachine.GetState()->Draw(this);
+
+		m_pInput->Reset();
+
+		EndTimer();
 	}
 
 	return 0;
@@ -56,6 +63,10 @@ WindowManager* Game::GetWindow()
 	return &m_window;
 }
 
+float Game::GetDt() const
+{
+	return m_fDT;
+}
 
 void Game::LoadAllDLL()
 {
@@ -64,6 +75,8 @@ void Game::LoadAllDLL()
 	{
 		assert(m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering)));
 		assert(m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input)));
+
+		m_window.SetInputPlugin(m_pInput);
 	}
 }
 
@@ -76,5 +89,5 @@ void Game::StartTimer()
 void Game::EndTimer()
 {
 	m_timer.Stop();
-	m_fDT = (float)m_timer.GetTimeInSeconds();
+	m_fDT = (float)m_timer.GetTimeInMilliseconds();
 }

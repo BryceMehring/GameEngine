@@ -95,6 +95,7 @@
     <ClInclude Include="QuadTree.h" />
     <ClInclude Include="RefCounting.h" />
     <ClInclude Include="Singleton.h" />
+    <ClInclude Include="StateUpdater.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="WindowManager.h" />
   </ItemGroup>

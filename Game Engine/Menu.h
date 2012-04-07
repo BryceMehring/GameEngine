@@ -6,6 +6,9 @@
 #include "IRender.h"
 #include "QuadTree.h"
 
+// todo: should this be a global function or should I put this into an interface?
+extern bool IsClicked(class IKMInput* pInput, DxPolygon* pPolygon);
+
 class IUIElement : public IRender
 {
 public:
@@ -13,6 +16,10 @@ public:
 	virtual ~IUIElement() {}
 
 	virtual void Update(class IKMInput* pInput) = 0;
+
+protected:
+
+	class Menu* m_pMenu;
 	
 };
 
@@ -22,21 +29,14 @@ struct Text
 	POINT P;
 };
 
-class TextBox : public IUIElement
-{
-public:
-};
-
 
 // Todo: change the name of this class?
 class Menu : public IRender // todo: could inherit from the graph node class
 {
 public:
 
-	typedef Delegate<void,void> callback;
-
 	Menu();
-	Menu(const std::string& str);
+	//Menu(const std::string& str);
 	~Menu();
 
 	void SetMenuTitle(const std::string& str,const POINT& P);
@@ -77,13 +77,14 @@ public:
 
 	// the UI would control the changing between Menu's
 	// What if the mouse was an object that was being tracked in the quadtree
-	// And then whenever the mouse was clicked, its observers would be updated
+	// And then whenever the mouse was clicked, its observers would be updated     
 
 private:
 
+
 	//Mouse* m_pMouse; // the mouse is in the QuadTree
-//	QuadTree* m_pQuadTree;
-	Menu* m_pMenu; // this could be useful in game as well as in a real menu 
+	//	QuadTree* m_pQuadTree;
+	Menu* m_pMenu; // this could be useful in game as well as in a real menu
 };
 
 class ButtonBase : public IUIElement
@@ -98,8 +99,6 @@ protected:
 
 	Text m_name;
 	DxPolygon* m_pPolygon;
-
-	bool IsClicked(class IKMInput* pInput) const;
 
 };
 
@@ -116,7 +115,7 @@ public:
 
 	virtual void Update(class IKMInput* pInput)
 	{
-		if(IsClicked(pInput))
+		if(IsClicked(pInput,m_pPolygon))
 		{
 			m_callback.Call(m_type);
 		}
@@ -141,7 +140,7 @@ public:
 
 	virtual void Update(class IKMInput* pInput)
 	{
-		if(IsClicked(pInput))
+		if(IsClicked(pInput,m_pPolygon))
 		{
 			m_callback.Call();
 		}
@@ -151,6 +150,73 @@ private:
 
 	DELEGATE m_callback;
 };
+
+/*class TextBox : public IUIElement
+{
+public:
+
+	TextBox(const std::string& name, const RECT& R);
+
+	void Write(const std::string& line, DWORD color = 0xffffffff);
+
+	virtual void Update(IKMInput* pInput);
+	virtual void Render(IRenderer* pRenderer);
+
+	void CLS();
+
+	void SaveToFile(const std::string& file) const;
+
+protected:
+
+	struct LineData
+	{
+		std::string line;
+		D3DCOLOR color;
+		RECT R;
+		int height;
+	};
+
+//private:
+
+	// ===== Data members =====
+
+	// todo: need to organize
+
+	typedef std::vector<LineData> TextDataType;
+	TextDataType m_text;
+
+	DxSquare m_square;
+
+	unsigned int m_spacePos;
+
+	// todo: I could move the carrot into a class
+	// carrot
+	POINT m_carrotPos;
+	bool m_drawCarrot;
+
+	float m_fCarrotTime;
+	float m_fScrollTime;
+
+	int m_scrollSpeed;
+
+	// ===== helper functions =====
+protected:
+	virtual void Backspace();
+	virtual void Enter();
+	virtual void AddKey(char Key); 
+private:
+
+	// todo: passing around these interfaces seems redundant
+	void UpdateScrolling(class IKMInput* pInput);
+	void UpdateCarrot(class IKMInput* pInput);
+	void UpdateInput(class IKMInput* pInput);
+	void UpdateTextInput(class IKMInput* pInput);
+
+	void ScrollDown(int speed);
+	void ScrollUp(int speed);
+	void ScrollStop();
+
+};*/
 
 class Mouse : public ISpatialObject
 {

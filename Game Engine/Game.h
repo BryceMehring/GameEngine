@@ -15,12 +15,15 @@ public:
 	Game(HINSTANCE hInstance);
 	virtual ~Game();
 
+	// Set state
 	void SetStateFactory(GameStateFactory* pFactory);
 	void SetState(int id);
 
+	// Get Functions
 	IRenderer* GetRenderer();
 	IKMInput* GetInput();
 	WindowManager* GetWindow();
+	float GetDt() const;
 
 	virtual int PlayGame();
 

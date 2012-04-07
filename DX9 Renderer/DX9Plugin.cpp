@@ -72,6 +72,26 @@ m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
 
 	EnumerateDisplayAdaptors();
 
+	m_p3Device->CreateTexture(16,16,0,0,D3DFMT_X8R8G8B8,D3DPOOL_SYSTEMMEM,&m_pTexture,0);
+
+	
+	/*RECT R;
+	D3DLOCKED_RECT drect;
+	m_pTexture->LockRect(0,&drect,&R,0);
+
+	char* pTex = (char*)drect.pBits;
+
+	for(int i = 0; i < 16; ++i)
+	{
+		for(int j = 0; j < drect.Pitch; ++j)
+		{
+			*pTex++ = 0xf;
+		}
+	}
+
+	m_pTexture->UnlockRect(0);*/
+
+
 	D3DXMatrixIdentity(&T);
 }
 DX9Render::~DX9Render()
@@ -79,6 +99,7 @@ DX9Render::~DX9Render()
 	m_pSprite->Release();
 	m_pFont->Release();
 	m_pLine->Release();
+	m_pTexture->Release();
 	m_p3Device->Release();
 	m_pDirect3D->Release();
 }
@@ -276,7 +297,7 @@ void DX9Render::EnumerateDisplayAdaptors()
 
 	for(int i = 0; i < m_pDirect3D->GetAdapterCount(); ++i)
 	{
-		UINT n = m_pDirect3D->GetAdapterModeCount(i,D3DFMT_X8R8G8B8) - 1;
+		int n = m_pDirect3D->GetAdapterModeCount(i,D3DFMT_X8R8G8B8) - 1;
 
 		for(int j = n; j >= 0; --j)
 		{

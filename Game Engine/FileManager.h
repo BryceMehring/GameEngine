@@ -22,6 +22,9 @@ public:
 
 	std::string OpenFileName() const; 
 
+	void WriteToLog(char c);
+	void WriteToLog(int num);
+	void WriteToLog(float num);
 	void WriteToLog(const std::string& str);
 
 private:

@@ -23,6 +23,9 @@ void DxPolygon::SetColor(DWORD color) { m_color = color; }
 
 void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
 {
+	assert(pArray != nullptr);
+	assert(pArray[0] == pArray[size-1]);
+
 	m_edges.clear();
 	m_edges.resize(size);
 
@@ -47,7 +50,7 @@ bool DxPolygon::IsPointInPolygon(POINT P) const
 	int j= m_edges.size()-1;
 	bool oddNodes = false;
 
-	for(int i=0; i < m_edges.size(); i++)
+	for(unsigned int i=0; i < m_edges.size(); i++)
 	{
 		if ((m_edges[i].y< P.y && m_edges[j].y>= P.y ||   m_edges[j].y< P.y && m_edges[i].y>=P.y) &&  (m_edges[i].x<=P.x || m_edges[j].x<=P.x))
 		{
@@ -109,7 +112,7 @@ DxTriangle::DxTriangle(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon
 // algorithm from: http://www.blackpawn.com/texts/pointinpoly/default.html
 bool DxTriangle::IsPointInPolygon(POINT P) const
 {
-	D3DXVECTOR2 point(P.x,P.y);
+	D3DXVECTOR2 point((float)P.x,(float)P.y);
 
 	// Compute vectors        
 	D3DXVECTOR2 v0 = m_edges[2] - m_edges[0];
@@ -117,7 +120,7 @@ bool DxTriangle::IsPointInPolygon(POINT P) const
 	D3DXVECTOR2 v2 = point - m_edges[0];
 
 	// Compute dot products
-	float dot00 = ::D3DXVec2Dot(&v0, &v0);
+	float dot00 = D3DXVec2Dot(&v0, &v0);
 	float dot01 = D3DXVec2Dot(&v0, &v1);
 	float dot02 = D3DXVec2Dot(&v0, &v2);
 	float dot11 = D3DXVec2Dot(&v1, &v1);

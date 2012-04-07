@@ -14,8 +14,6 @@
 #include <boost\scoped_ptr.hpp>
 #include <boost\thread\once.hpp>
 
-// todo: need to recompile the boost lib
-
 /*#define SINGLETON(C) \
 	private: \
 		static boost::scoped_ptr<T> s_pInstance; \

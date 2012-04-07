@@ -1,5 +1,7 @@
 
 #include "DXInput.h"
+#include "WindowManager.h"
+#include <Windowsx.h>
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
@@ -12,67 +14,105 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 	return new DirectInput(mgr);
 }
 
-DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr), m_keyDown(false)
+DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr), m_bLeftMouseClick(false)
 {
-	ZeroMemory(m_KeyboardState,sizeof(m_KeyboardState));
-	ZeroMemory(&m_MouseState,sizeof(m_MouseState));
+	RAWINPUTDEVICE Rid[2] = {0};
 
-	DirectInput8Create(m_mgr.GetHINSTANCE(),DIRECTINPUT_VERSION,IID_IDirectInput8A,(void**)&m_pDirectInput,0);
+	Rid[0].usUsagePage = 0x01; 
+	Rid[0].usUsage = 0x02; 
+	Rid[0].dwFlags = RIDEV_DEVNOTIFY;//RIDEV_NOLEGACY;   // adds HID mouse and also ignores legacy mouse messages
+	Rid[0].hwndTarget = 0;
 
-	//Create Keyboard
-	m_pDirectInput->CreateDevice(GUID_SysKeyboard,&m_pKeyboard,0);
-	m_pKeyboard->SetDataFormat(&c_dfDIKeyboard);
-	m_pKeyboard->SetCooperativeLevel(m_mgr.GetWindowHandle(),DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
-	m_pKeyboard->Acquire();
-
-	//Create Mouse 
-	m_pDirectInput->CreateDevice(GUID_SysMouse,&m_pMouse,0);
-	m_pMouse->SetDataFormat(&c_dfDIMouse2);
-	m_pMouse->SetCooperativeLevel(m_mgr.GetWindowHandle(),DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-	m_pMouse->Acquire();
+/*	Rid[1].usUsagePage = 0x01; 
+	Rid[1].usUsage = 0x06; 
+	Rid[1].dwFlags = 0;//RIDEV_NOLEGACY;   // adds HID keyboard and also ignores legacy keyboard messages
+	Rid[1].hwndTarget = 0;*/
 
 	m_MousePos.x = m_MousePos.y = 0;
 
 	//RegisterScript();
+	//RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
 }
 
 
 DirectInput::~DirectInput()
 {
-	//m_mgr->Release();
-
-	m_pDirectInput->Release();
-
-	m_pKeyboard->Unacquire();
-	m_pMouse->Unacquire();
-
-	m_pKeyboard->Release();
-	m_pMouse->Release();
+	//m_mgr.GetMsgProcEvent().Detach(m_id);
 }
+
+/*void DirectInput::Notify(const MsgProcData& data)
+{
+	
+}*/
 
 DLLType DirectInput::GetType() const
 {
 	return Input;
 }
-void DirectInput::Poll()
+
+void DirectInput::Reset()
 {
-	//Poll Keyboard
-	HRESULT hr = m_pKeyboard->GetDeviceState(sizeof(m_KeyboardState),m_KeyboardState);
+	m_bLeftMouseClick = false;
+	m_cKeyDown = m_cCharDown = -1;
+}
 
-	if(FAILED(hr))
+void DirectInput::ReadKeyboard()
+{
+}
+
+void DirectInput::Poll(const MsgProcData& data)
+{
+	switch(data.msg)
 	{
-		// Keyboard Lost
-		ZeroMemory(m_KeyboardState,sizeof(m_KeyboardState));
-		m_pKeyboard->Acquire();
-	}
+		case WM_INPUT:
+		{
+			UINT dwSize;
+			 
+			GetRawInputData((HRAWINPUT)data.lparam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+			LPBYTE lpb = new BYTE[dwSize];
+			if (lpb == NULL) 
+			{
+				break;
+			}
+			if (GetRawInputData((HRAWINPUT)data.lparam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize )
+			 OutputDebugString (TEXT("GetRawInputData does not return correct size !\n")); 
+			
+			RAWINPUT* raw = (RAWINPUT*)lpb;
 
-	// Poll mouse
-	hr = m_pMouse->GetDeviceState(sizeof(m_MouseState),&m_MouseState);
+			if(raw->header.dwType == RIM_TYPEMOUSE)
+			{
+				m_iMouseX = raw->data.mouse.lLastX;
+				m_iMouseX = raw->data.mouse.lLastY;
+			}
+	
+			/*hResult = StringCchPrintf(szTempOutput, STRSAFE_MAX_CCH, TEXT("Mouse: usFlags=%04x ulButtons=%04x usButtonFlags=%04x usButtonData=%04x ulRawButtons=%04x lLastX=%04x lLastY=%04x ulExtraInformation=%04x\r\n"), 
+				raw->data.mouse.usFlags, 
+				raw->data.mouse.ulButtons, 
+				raw->data.mouse.usButtonFlags, 
+				raw->data.mouse.usButtonData, 
+				raw->data.mouse.ulRawButtons, 
+				raw->data.mouse.lLastX, 
+				raw->data.mouse.lLastY, 
+				raw->data.mouse.ulExtraInformation);
 
-	if(FAILED(hr))
-	{
-		ZeroMemory(&m_MouseState,sizeof(m_MouseState));
-		m_pMouse->Acquire();
+			if (FAILED(hResult))
+			{
+			// TODO: write error handler
+			}
+			OutputDebugString(szTempOutput);*/
+
+			delete[] lpb;
+			break;
+		}
+		case WM_KEYDOWN:
+			m_cKeyDown = data.wParam;
+			break;
+		case WM_CHAR:
+			m_cCharDown = data.wParam;
+			break;
+		case WM_LBUTTONDOWN:
+			m_bLeftMouseClick = true;
+			break;
 	}
 
 	// mouse coords
@@ -80,53 +120,47 @@ void DirectInput::Poll()
 	GetCursorPos(&m_MousePos);
 	ScreenToClient(h,&m_MousePos);	
 }
-void DirectInput::Poll(UINT msg, WPARAM wParam, LPARAM lparam)
-{
-	switch(msg)
-	{
-	case WM_CHAR:
-		m_keyDown = true;
-		m_Key = char(wParam);
-		break;
-	default:
-		m_keyDown = false;
-	}
-}
 
 POINT DirectInput::MousePos()
 {
 	return m_MousePos;
 }
 
-bool DirectInput::KeyDown(unsigned char Key)
+bool DirectInput::KeyDown(char Key)
 {
-	return ((m_KeyboardState[Key] & 0x80) != 0);
+	return (m_cKeyDown == Key);
 }
 bool DirectInput::IsKeyDown() const
 {
-	return m_keyDown;
+	return (m_cCharDown != -1) && (m_cCharDown >= 32);
+	//return m_keyDown;
 }
 char DirectInput::GetKeyDown() const
 {
-	return m_Key;
+	return m_cCharDown;
+	//return m_Key;
 }
 bool DirectInput::MouseClick(int iButton)
 {
-	return ((m_MouseState.rgbButtons[iButton] & 0x80) != 0);
+	return m_bLeftMouseClick;
+	//return ((m_MouseState.rgbButtons[iButton] & 0x80) != 0);
 }
 int DirectInput::MouseX()
 {
-	return m_MouseState.lX;
+	return 0;
+	//return m_MouseState.lX;
 }
 
 int DirectInput::MouseY()
 {
-	return m_MouseState.lY;
+	return 0;
+	//return m_MouseState.lY;
 }
 
 int DirectInput::MouseZ()
 {
-	return m_MouseState.lZ;
+	return 0;
+	//return m_MouseState.lZ;
 }
 
 void DirectInput::About()

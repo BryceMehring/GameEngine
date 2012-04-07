@@ -91,27 +91,43 @@ public:
 	// one fsm manager anymore.
 	// should I split these up into more specific events?
 
-	Event<void,const MsgProcData&> m_MsgProcEvent;
-
 	WindowManager(HINSTANCE hInstance,const std::string& winCaption);
-	virtual ~WindowManager();
+	~WindowManager();
+
+	// listener, todo: change or remove
+	typedef Delegate<void,const MsgProcData&> MsgDelegate;
+	int AddMsgListener(UINT msg, const MsgDelegate&);
+	void RemoveListener(UINT msg, int id);
 
 	// todo: can these be private members?
 	static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	virtual void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
+	void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
 
 	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
 	HWND GetWindowHandle() const { return m_hWindowHandle; }
 	const RECT& GetRECT() const { return m_rect; }
 
+	void SetInputPlugin(class IInputPlugin* pInput)
+	{
+		m_pInput = pInput;
+	}
+
 	// todo: need to implement these functions
-	virtual void RegisterScript();
+	void RegisterScript();
 
 	bool Update();
 
-protected: //todo: I should make some of these members private
+private: //todo: I should make some of these members private
 
 	// ====== data members ======
+
+	// for win32 msg process
+	static WindowManager* s_pThis;
+
+	class IInputPlugin* m_pInput;
+
+	typedef stdext::hash_map<UINT,Event<void,const MsgProcData&>> EventType;
+	EventType m_events;
 
 	// win32 window
 	HWND m_hWindowHandle;
@@ -121,23 +137,10 @@ protected: //todo: I should make some of these members private
 
 	bool m_bPaused;
 
-protected:
-
 	// ====== helper functions ======
 
-	virtual void InitializeWindows(HINSTANCE hInstance, const std::string& winCaption);
-
-private:
-
-	// for win32 msg process
-	static WindowManager* s_pThis;
-
-	// Helper functions
-	
+	void InitializeWindows(HINSTANCE hInstance, const std::string& winCaption);
 	void Quit();
-
-	// http://www.cplusplus.com/reference/iostream/ios/rdbuf/
-	void RedirectIOToConsole(); // todo: try to phase out using a console window. Display to the win32 window or dump to a file: logging, try to use clog
 };
 
 

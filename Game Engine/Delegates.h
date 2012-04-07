@@ -28,7 +28,7 @@
 
 #include "RefCounting.h"
 #include "asVM.h"
-#include <map>
+#include <hash_map>
 
 // Base Interface for Delegates
 template< class RETURN, class PARAM>
@@ -202,6 +202,23 @@ public:
 	typedef IFunction<RETURN,PARAM> GENERIC_FUNC;
 
 	DelegateBase() : m_ptr(nullptr) {}
+	DelegateBase(typename GlobalFunction<RETURN,PARAM>::PTR pFunc) : m_ptr(nullptr)
+	{
+		Bind(pFunc);
+	}
+
+	template< class CLASS >
+	DelegateBase(CLASS* pThis,typename MemberFunction<CLASS,RETURN,PARAM>::PTR pFunc) : m_ptr(nullptr)
+	{
+		Bind(pThis,pFunc);
+	}
+	
+	template< class CLASS >
+	DelegateBase(CLASS* pThis,typename ConstMemberFunction<CLASS,RETURN,PARAM>::PTR pFunc) : m_ptr(nullptr)
+	{
+		Bind(pThis,pFunc);
+	}
+
 	DelegateBase(const DelegateBase& d)
 	{
 		m_ptr = d.m_ptr;
@@ -298,6 +315,19 @@ class Delegate : public DelegateBase<RETURN,PARAM>
 {
 public:
 
+	Delegate() {}
+	Delegate(typename GlobalFunction<RETURN,PARAM>::PTR pFunc) : DelegateBase(pFunc) {}
+
+	template< class CLASS >
+	Delegate(CLASS* pThis,typename MemberFunction<CLASS,RETURN,PARAM>::PTR pFunc) : DelegateBase(pThis,pFunc)
+	{
+	}
+	
+	template< class CLASS >
+	Delegate(CLASS* pThis,typename ConstMemberFunction<CLASS,RETURN,PARAM>::PTR pFunc) : DelegateBase(pThis,pFunc)
+	{
+	}
+
 	RETURN Call(PARAM param) const
 	{
 		return m_ptr->Call(param);
@@ -328,25 +358,28 @@ public:
 
 	typedef Delegate<RETURN,PARAM> DELEGATE;
 
+	EventBase() : m_iId(0) {}
+
 	// adds a Delegate to the map and returns its key.
-	void Attach(int id, DELEGATE d)
+	int Attach(DELEGATE d)
 	{
-		DelegateMap::iterator iter = m_delegates.find(id);
-		if(iter != m_delegates.end())
+		unsigned int id = m_iId;
+		DelegateMap::iterator iter = m_delegates.find(m_iId);
+
+		while(iter != m_delegates.end())
 		{
-			iter->first = id;
-			iter->second = d;
+			id = ++m_iId;
+			iter = m_delegates.find(m_iId);
 		}
+
+		m_delegates.insert(std::make_pair(m_iId++,d));
+
+		return id;
 	}
 	// Detaches a delegate by its key
     void Detach(int id)
     {
-        DelegateMap::iterator iter = m_delegates.find(id);
-
-        if(iter != m_delegates.end())
-		{
-			m_delegates.erase(iter);
-		}
+		m_delegates.erase(id);
     }
 
 protected:
@@ -368,9 +401,10 @@ protected:
 
 	*/
 
-	typedef std::map<int,DELEGATE> DelegateMap;
-    DelegateMap m_delegates;
+	typedef stdext::hash_map<int,DELEGATE> DelegateMap;
 
+    DelegateMap m_delegates;
+	int m_iId;
 };
 
 // Event with parameters

@@ -6,9 +6,18 @@ class IGameState
 {
 public:
 
+	enum State
+	{
+		NOTHING,
+		// updating
+		UPDATING,
+		RENDERING,
+		
+	};
+
 	friend class GameStateMachine;
 
-	IGameState() { m_timer.Start(); }
+	IGameState() : m_state(NOTHING), m_iStateId(0) { m_timer.Start(); }
 	virtual ~IGameState() {}
 
 	virtual void Init(class Game* pGame) = 0;
@@ -16,12 +25,13 @@ public:
 	virtual void Update(class Game* pGame) = 0;
 	virtual void Draw(class Game* pGame) = 0;
 
-	int GetStateId() { return m_iStateId; }
+	int GetStateId() const { return m_iStateId; }
+	State GetState() const { return m_state; }
 
 protected:
 
 	int m_iStateId;
-
+	State m_state;
 	Timer m_timer;
 
 };

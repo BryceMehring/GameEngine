@@ -20,7 +20,7 @@ class __declspec(novtable) IKMInput : public IInputPlugin
 public:
 
 	// keyboard
-	virtual bool KeyDown(unsigned char Key) = 0;
+	virtual bool KeyDown(char Key) = 0;
 	virtual bool IsKeyDown() const = 0;
 	virtual char GetKeyDown() const = 0;
 

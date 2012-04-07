@@ -24,11 +24,10 @@ public:
 	virtual void About();
 
 	// DirectX's version of poll 
-	virtual void Poll();
-	virtual void Poll(UINT msg, WPARAM wParam, LPARAM lparam);
+	virtual void Poll(const struct MsgProcData& data);
 	
 	// Keyboard
-	virtual bool KeyDown(unsigned char Key);
+	virtual bool KeyDown(char Key);
 	virtual char GetKeyDown() const;
 	virtual bool IsKeyDown() const; // true if WM_CHAR is thrown
 
@@ -49,21 +48,23 @@ private:
 	PluginManager& m_mgr;
 
 	// Interface
-	IDirectInput8* m_pDirectInput;
 
 	// Keyboard
-	IDirectInputDevice8* m_pKeyboard;
-	char m_KeyboardState[256]; 
-	char m_Key;
+	char m_cKeyDown;
+	char m_cCharDown;
 
-	bool m_keyDown;
+	bool m_bLeftMouseClick;
 
 	// Mouse
-	IDirectInputDevice8* m_pMouse;
-	DIMOUSESTATE2 m_MouseState;
+	int m_iMouseX;
+	int m_iMouseY;
 	POINT m_MousePos;
 
 	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager&);
+
+	// helper functions
+	void Reset();
+	void ReadKeyboard();
 
 	static void _RegisterScript();
 };
