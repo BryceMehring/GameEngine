@@ -94,11 +94,6 @@ public:
 	WindowManager(HINSTANCE hInstance,const std::string& winCaption);
 	~WindowManager();
 
-	// listener, todo: change or remove
-	typedef Delegate<void,const MsgProcData&> MsgDelegate;
-	int AddMsgListener(UINT msg, const MsgDelegate&);
-	void RemoveListener(UINT msg, int id);
-
 	// todo: can these be private members?
 	static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void MsgProc(UINT msg, WPARAM wPraram, LPARAM lparam);
@@ -125,9 +120,6 @@ private: //todo: I should make some of these members private
 	static WindowManager* s_pThis;
 
 	class IInputPlugin* m_pInput;
-
-	typedef stdext::hash_map<UINT,Event<void,const MsgProcData&>> EventType;
-	EventType m_events;
 
 	// win32 window
 	HWND m_hWindowHandle;

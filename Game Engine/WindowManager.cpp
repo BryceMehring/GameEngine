@@ -68,19 +68,6 @@ WindowManager::~WindowManager()
 {
 }
 
-int WindowManager::AddMsgListener(UINT msg, const Delegate<void,const MsgProcData&>& d)
-{
-	return m_events[msg].Attach(d);
-}
-
-void WindowManager::RemoveListener(UINT msg, int id)
-{
-	auto iter = m_events.find(msg);
-	if(iter != m_events.end())
-	{
-		iter->second.Detach(id);
-	}
-}
 
 bool WindowManager::Update()
 {
@@ -137,7 +124,7 @@ void WindowManager::InitializeWindows(HINSTANCE hInstance, const string& winCapt
 	if( !m_hWindowHandle ) { throw std::string("RegisterClass Failed"); }
 
 	ShowWindow(m_hWindowHandle, SW_SHOW);
-	UpdateWindow(m_hWindowHandle);
+	assert(UpdateWindow(m_hWindowHandle) != 0);
 }
 void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
@@ -173,17 +160,15 @@ void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 
 		// WM_CLOSE is sent when the user presses the 'X' button in the
 		// caption bar menu.
-		case WM_CLOSE:
-			DestroyWindow(m_hWindowHandle);
-			break;
 		// WM_DESTROY is sent when the window is being destroyed.
 		case WM_DESTROY:
-			Quit();
+			PostQuitMessage(0);
+			//Quit();
 			break;
 		case WM_KEYDOWN:
 			if( wParam == VK_ESCAPE )
 			{
-				Quit();
+				::PostQuitMessage(0);
 			}
 			break;
 	}

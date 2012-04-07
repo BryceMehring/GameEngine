@@ -79,7 +79,6 @@ void GameOfLifeMenu::Update(Game* pGame)
 	StateUpdater su(m_state,UPDATING);
 
 	m_ui.Update(pGame->GetInput());
-	pGame->GetInput()->Reset();
 	//m_pUI->Update();
 
 	/*if(m_timer.GetTimeInSeconds() > 1.0)

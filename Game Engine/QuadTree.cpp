@@ -282,9 +282,6 @@ bool QuadTree::Insert(ISpatialObject* pObj)
 
 bool QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 {
-	// todo: need to optimize this function, line #295
-	// fixed
-
 	Node* pNode = pWhere;
 	const KEY& P = pObj->GetPos();
 	bool success = false;
