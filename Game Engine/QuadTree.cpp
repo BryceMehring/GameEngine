@@ -326,10 +326,14 @@ bool QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 		if(success)
 		{
 			// Insert point into the current node's list
-			auto success = pNode->m_pKeys->insert(pObj);
-			if(success.second)
+			auto iterPair = pNode->m_pKeys->insert(pObj);
+			if(iterPair.second)
 			{
 				pObj->SetNode(pNode);
+			}
+			else
+			{
+				success = false;
 			}
 		}
 	}

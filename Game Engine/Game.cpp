@@ -22,11 +22,6 @@ void Game::SetStateFactory(GameStateFactory* pFactory)
 
 void Game::SetState(int id)
 {
-	// todo: in this function, we will check the current thread calling thread 
-	//HANDLE pThread = GetCurrentThread();
-
-	//CreateThread(0,0,(unsigned long (__stdcall *)(void *))ThreadCloseListener,0,0,0);
-
 	IGameState* pState = m_StateMachine.GetState();
 	if(pState == nullptr || pState->GetStateId() != id)
 	{

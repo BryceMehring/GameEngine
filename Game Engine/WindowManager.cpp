@@ -89,7 +89,7 @@ bool WindowManager::Update()
 	do
 	{
 		// If there are Window messages then process them.
-		if(PeekMessage(&msg,0,0,0,PM_REMOVE) > 0)
+		if(PeekMessage(&msg,0,0,0,PM_REMOVE))
 		{
 			TranslateMessage( &msg );
 			DispatchMessage( &msg );

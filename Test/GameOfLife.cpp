@@ -99,8 +99,8 @@ void GameOfLife::Destroy(Game* pGame)
 	IRenderer* pRenderer = pGame->GetRenderer();
 
 	//pRenderer->ToggleFullscreen();
-	pRenderer->ClearScreen();
-	pRenderer->Present();
+	//pRenderer->ClearScreen();
+	//pRenderer->Present();
 
 	for(unsigned int i = 0; i < m_units.size(); ++i)
 	{
