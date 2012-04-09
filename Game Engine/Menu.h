@@ -91,6 +91,7 @@ class ButtonBase : public IUIElement
 {
 public:
 
+	ButtonBase() {}
 	ButtonBase(const Text& name, DxPolygon* pPolygon);
 
 	virtual void Render(class IRenderer* pRenderer);
@@ -109,10 +110,20 @@ public:
 
 	typedef Delegate<void,T> DELEGATE;
 
+	GenericButton() {}
 	GenericButton(const Text& name,DELEGATE callback, const T& type, DxPolygon* pPolygon) : ButtonBase(name,pPolygon), m_callback(callback), m_type(type)
 	{
 	}
 
+	void SetName(const Text& name) { m_name = name; }
+	void SetCallback(const DELEGATE& callback, const T& arg)
+	{ 
+		m_callback = callback;
+		m_type = arg;
+	}
+	void SetPolygon(DxPolygon* pPolygon) { m_pPolygon = pPolygon; }
+	
+	
 	virtual void Update(class IKMInput* pInput)
 	{
 		if(IsClicked(pInput,m_pPolygon))
@@ -149,6 +160,22 @@ public:
 private:
 
 	DELEGATE m_callback;
+};
+
+template< class T >
+class SquareButton : public GenericButton<T>
+{
+public:
+
+	SquareButton(const RECT& R, const std::string& name)
+	{
+		Text text = {name,{R.left,R.top}};
+		this->SetPolygon(new DxSquare(R));
+		this->SetName(text);
+	}
+
+private:
+
 };
 
 /*class TextBox : public IUIElement

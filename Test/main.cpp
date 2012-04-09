@@ -12,55 +12,6 @@ using namespace std;
 
 const int MAX_NUM = 100;
 
-/*class Unit : public ISpatialObject
-{
-public:
-
-	virtual const KEY& GetPos() const
-	{
-		return m_pos;
-	}
-	virtual Type GetType() const
-	{
-		return Type::Unit;
-	}
-	void SetPos(const KEY& P)
-	{
-		m_pos = P;
-	}
-
-	void Move()
-	{
-		if(m_pNode)
-		{
-			const Node::LIST_DTYPE* pNearObjs = m_pNode->GetNearObjects();
-			for_each(pNearObjs->begin(),pNearObjs->end(),[&](ISpatialObject* pObj)
-			{
-				if(pObj != this)
-				{
-					if(pObj->GetType() == ISpatialObject::Unit)
-					{
-						Unit* pUnit = static_cast<Unit*>(pObj);
-						cout<<pNearObjs->size()<<endl;
-					}
-				}
-			});
-		}
-
-		int scalar = 10;
-		m_pos.x += scalar;
-		//m_pos.y -= scalar;
-	}
-
-private:
-
-	KEY m_pos;
-
-};*/
-
-#include "Dice.h"
-#include <time.h>
-
 class RTTI
 {
 public:

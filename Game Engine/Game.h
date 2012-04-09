@@ -49,9 +49,12 @@ protected:
 private:
 
 	Timer m_timer;
+	int m_iEventId;
 
 	// helper functions
 	void LoadAllDLL();
+
+	void MsgProc(const struct MsgProcData& data);
 
 	// Prevent copying
 	Game(const Game&);

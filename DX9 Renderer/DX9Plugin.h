@@ -88,6 +88,7 @@ public:
 	virtual UINT GetNumDisplayAdaptors() const;
 	virtual void SetDisplayMode(UINT i);
 	virtual const std::string& GetDisplayModeStr(UINT i) const;
+	virtual void GetWinSize(POINT&) const;
 
 	// vertex buffer
 	virtual UINT CreateVertexBuffer(UINT bytes,DWORD flags);
@@ -134,8 +135,6 @@ protected:
 	ID3DXFont* m_pFont; // todo: I need to match these with sprites!!! this will solve the problem of scrolling
 	typedef std::vector<DrawTextInfo> TextContainerType; 
 	TextContainerType m_text;
-	
-	
 
 	std::vector<IDirect3DVertexDeclaration9*> m_VertexDecl;
 

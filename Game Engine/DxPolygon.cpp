@@ -7,7 +7,7 @@ using namespace std;
 
 // ===== DxPolygon =====
 
-DxPolygon::DxPolygon()
+DxPolygon::DxPolygon() : m_color(0xffffffff)
 {
 }
 DxPolygon::DxPolygon(const D3DXVECTOR2* pArray, unsigned int size)

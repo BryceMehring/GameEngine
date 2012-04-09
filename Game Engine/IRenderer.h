@@ -126,6 +126,7 @@ public:
 	virtual UINT GetNumDisplayAdaptors() const = 0;
 	virtual void SetDisplayMode(UINT i) = 0; // full screen mode
 	virtual const std::string& GetDisplayModeStr(UINT i) const = 0;
+	virtual void GetWinSize(POINT&) const = 0;
 	virtual void ToggleFullscreen() = 0;
 	
 	///add more functions...

@@ -20,7 +20,7 @@ public:
 
 private:
 
-	QuadTree m_quadTree;
+	QuadTree* m_pQuadTree;
 	std::vector<class Unit*> m_units;
 	D3DXVECTOR2 m_VEC[4];
 	UI m_ui;

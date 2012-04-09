@@ -1,134 +1,156 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Header Files\Managers">
-      <UniqueIdentifier>{c62b9548-e921-4120-8d9d-a4c52282a637}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Interfaces">
-      <UniqueIdentifier>{d558be9a-afde-46b9-83a9-dc4f24df8745}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Scripting">
-      <UniqueIdentifier>{5a99c9f7-c342-4277-94c5-b4cb00f8ce13}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\State">
-      <UniqueIdentifier>{327d9768-f50d-421a-86c5-42f3c4bb4aaa}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Quadtree">
       <UniqueIdentifier>{1f4953f4-1657-4cb9-b360-81f1ac50be41}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{c62b9548-e921-4120-8d9d-a4c52282a637}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{5a99c9f7-c342-4277-94c5-b4cb00f8ce13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="State">
+      <UniqueIdentifier>{327d9768-f50d-421a-86c5-42f3c4bb4aaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{a7757324-9553-41ab-b5fc-b3a2d5fa52d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{727b7c44-df0a-4abd-a710-553a41ce9024}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering Addons">
+      <UniqueIdentifier>{eb58491a-097b-463a-88ed-b37c5ee32c4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base Classes">
+      <UniqueIdentifier>{d558be9a-afde-46b9-83a9-dc4f24df8745}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Binding">
+      <UniqueIdentifier>{f59d1e59-c885-4eef-82d3-de79c28dda96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory Management">
+      <UniqueIdentifier>{fc603ad1-b4c6-47df-98a9-66654a014e54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RefCounting.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Delegates.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Singleton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DxPolygon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Menu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FileManager.h">
-      <Filter>Header Files\Managers</Filter>
+      <Filter>Managers</Filter>
     </ClInclude>
     <ClInclude Include="PluginManager.h">
-      <Filter>Header Files\Managers</Filter>
+      <Filter>Managers</Filter>
     </ClInclude>
     <ClInclude Include="IInput.h">
-      <Filter>Header Files\Interfaces</Filter>
+      <Filter>Base Classes</Filter>
     </ClInclude>
     <ClInclude Include="IKMInput.h">
-      <Filter>Header Files\Interfaces</Filter>
+      <Filter>Base Classes</Filter>
     </ClInclude>
     <ClInclude Include="IPlugin.h">
-      <Filter>Header Files\Interfaces</Filter>
+      <Filter>Base Classes</Filter>
     </ClInclude>
     <ClInclude Include="IRender.h">
-      <Filter>Header Files\Interfaces</Filter>
+      <Filter>Base Classes</Filter>
     </ClInclude>
     <ClInclude Include="IRenderer.h">
-      <Filter>Header Files\Interfaces</Filter>
+      <Filter>Base Classes</Filter>
     </ClInclude>
     <ClInclude Include="IScripted.h">
-      <Filter>Header Files\Interfaces</Filter>
+      <Filter>Base Classes</Filter>
     </ClInclude>
     <ClInclude Include="asVM.h">
-      <Filter>Header Files\Scripting</Filter>
+      <Filter>Scripting</Filter>
     </ClInclude>
     <ClInclude Include="WindowManager.h">
-      <Filter>Header Files\Managers</Filter>
+      <Filter>Managers</Filter>
     </ClInclude>
     <ClInclude Include="GameState.h">
-      <Filter>Header Files\State</Filter>
+      <Filter>State</Filter>
     </ClInclude>
     <ClInclude Include="GameStateFactory.h">
-      <Filter>Header Files\State</Filter>
+      <Filter>State</Filter>
     </ClInclude>
     <ClInclude Include="GameStateMachine.h">
-      <Filter>Header Files\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
+      <Filter>State</Filter>
     </ClInclude>
     <ClInclude Include="QuadTree.h">
       <Filter>Quadtree</Filter>
     </ClInclude>
     <ClInclude Include="StateUpdater.h">
-      <Filter>Header Files\State</Filter>
+      <Filter>State</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="Camera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="DxPolygon.h">
+      <Filter>Rendering Addons</Filter>
+    </ClInclude>
+    <ClInclude Include="RefCounting.h">
+      <Filter>Base Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>Base Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="Delegates.h">
+      <Filter>Binding</Filter>
+    </ClInclude>
+    <ClInclude Include="Heap.h">
+      <Filter>Memory Management</Filter>
+    </ClInclude>
+    <ClInclude Include="MallocAllocator.h">
+      <Filter>Memory Management</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPool.h">
+      <Filter>Memory Management</Filter>
+    </ClInclude>
+    <ClInclude Include="BNew.h">
+      <Filter>Memory Management</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RefCounting.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DxPolygon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Menu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FileManager.cpp">
-      <Filter>Header Files\Managers</Filter>
+      <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="PluginManager.cpp">
-      <Filter>Header Files\Managers</Filter>
+      <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="asVM.cpp">
-      <Filter>Header Files\Scripting</Filter>
+      <Filter>Scripting</Filter>
     </ClCompile>
     <ClCompile Include="WindowManager.cpp">
-      <Filter>Header Files\Managers</Filter>
+      <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="GameStateMachine.cpp">
-      <Filter>Header Files\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>State</Filter>
     </ClCompile>
     <ClCompile Include="QuadTree.cpp">
       <Filter>Quadtree</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Camera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="DxPolygon.cpp">
+      <Filter>Rendering Addons</Filter>
+    </ClCompile>
+    <ClCompile Include="RefCounting.cpp">
+      <Filter>Base Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="Heap.cpp">
+      <Filter>Memory Management</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryPool.cpp">
+      <Filter>Memory Management</Filter>
+    </ClCompile>
+    <ClCompile Include="BNew.cpp">
+      <Filter>Memory Management</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

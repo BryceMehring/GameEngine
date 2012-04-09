@@ -20,6 +20,8 @@ private:
 
 	UI m_ui;
 
+	void BuildResolutionMenu(class Game* pGame, Menu* pMenu);
+
 };
 
 #endif

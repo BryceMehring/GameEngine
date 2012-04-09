@@ -307,8 +307,7 @@ void DX9Render::EnumerateDisplayAdaptors()
 			UINT height = mode.mode.Height;
 			float ratio = (float)width / height;
 
-			// todo: need to fix, comparing with floats
-			if(ratio == fBaseRatio)
+			if(fabsf(ratio - fBaseRatio) < 0.000001f)
 			{
 				UINT hz = mode.mode.RefreshRate;
 
@@ -373,6 +372,12 @@ void DX9Render::ToggleFullscreen()
 const string& DX9Render::GetDisplayModeStr(UINT i) const
 {
 	return m_DisplayModes[i].str;
+}
+
+void DX9Render::GetWinSize(POINT& P) const
+{
+	P.x = m_D3DParameters.BackBufferWidth;
+	P.y = m_D3DParameters.BackBufferHeight;
 }
 
 void DX9Render::InitializeFont()

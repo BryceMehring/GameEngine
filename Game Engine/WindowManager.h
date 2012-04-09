@@ -91,8 +91,13 @@ public:
 	// one fsm manager anymore.
 	// should I split these up into more specific events?
 
+	typedef Delegate<void,const MsgProcData&> MsgDelegate;
+
 	WindowManager(HINSTANCE hInstance,const std::string& winCaption);
 	~WindowManager();
+
+	int AddMsgListener(const MsgDelegate&);
+	void RemoveListener(int id);
 
 	// todo: can these be private members?
 	static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -101,11 +106,6 @@ public:
 	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
 	HWND GetWindowHandle() const { return m_hWindowHandle; }
 	const RECT& GetRECT() const { return m_rect; }
-
-	void SetInputPlugin(class IInputPlugin* pInput)
-	{
-		m_pInput = pInput;
-	}
 
 	// todo: need to implement these functions
 	void RegisterScript();
@@ -119,11 +119,12 @@ private: //todo: I should make some of these members private
 	// for win32 msg process
 	static WindowManager* s_pThis;
 
-	class IInputPlugin* m_pInput;
-
 	// win32 window
 	HWND m_hWindowHandle;
 	HINSTANCE m_hInstance;
+
+	typedef Event<void,const MsgProcData&> EventType;
+	EventType m_events;
 
 	RECT m_rect;
 

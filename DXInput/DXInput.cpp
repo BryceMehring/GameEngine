@@ -16,27 +16,15 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 
 DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr), m_bLeftMouseClick(false)
 {
-	RAWINPUTDEVICE Rid[2] = {0};
-
-	Rid[0].usUsagePage = 0x01; 
-	Rid[0].usUsage = 0x02; 
-	Rid[0].dwFlags = RIDEV_DEVNOTIFY;//RIDEV_NOLEGACY;   // adds HID mouse and also ignores legacy mouse messages
-	Rid[0].hwndTarget = 0;
-
-/*	Rid[1].usUsagePage = 0x01; 
-	Rid[1].usUsage = 0x06; 
-	Rid[1].dwFlags = 0;//RIDEV_NOLEGACY;   // adds HID keyboard and also ignores legacy keyboard messages
-	Rid[1].hwndTarget = 0;*/
-
-	m_MousePos.x = m_MousePos.y = 0;
-
-	//RegisterScript();
-	//RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
+	WindowManager* pWinMgr = m_mgr.GetWindowManager();
+	m_eventId = pWinMgr->AddMsgListener(WindowManager::MsgDelegate(this,&DirectInput::Poll));
 }
 
 
 DirectInput::~DirectInput()
 {
+	WindowManager* pWinMgr = m_mgr.GetWindowManager();
+	pWinMgr->RemoveListener(m_eventId);
 	//m_mgr.GetMsgProcEvent().Detach(m_id);
 }
 
@@ -105,8 +93,14 @@ void DirectInput::Poll(const MsgProcData& data)
 			break;
 		}
 		case WM_KEYDOWN:
-			m_cKeyDown = data.wParam;
+		{
+			// if this is the first WM_KEYDOWN msg
+			if((data.lparam & (1 << 30)) == 0)
+			{
+				m_cKeyDown = data.wParam;
+			}
 			break;
+		}
 		case WM_CHAR:
 			m_cCharDown = data.wParam;
 			break;

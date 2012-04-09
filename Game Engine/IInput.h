@@ -8,9 +8,10 @@ class __declspec(novtable) IInputPlugin : public IPlugin
 public:
 
 	virtual void Reset() = 0;
-	virtual void Poll(const struct MsgProcData&) = 0;
-	 
+	
 protected:
+
+	virtual void Poll(const struct MsgProcData&) = 0;
 
 	virtual ~IInputPlugin() {}
 

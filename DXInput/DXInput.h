@@ -24,7 +24,7 @@ public:
 	virtual void About();
 
 	// DirectX's version of poll 
-	virtual void Poll(const struct MsgProcData& data);
+	
 	
 	// Keyboard
 	virtual bool KeyDown(char Key);
@@ -40,6 +40,8 @@ public:
 	virtual int MouseZ();
 
 private:
+
+	virtual void Poll(const struct MsgProcData& data);
 
 	DirectInput(PluginManager& mgr);
 	virtual ~DirectInput();
@@ -59,6 +61,8 @@ private:
 	int m_iMouseX;
 	int m_iMouseY;
 	POINT m_MousePos;
+
+	int m_eventId;
 
 	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager&);
 

@@ -34,12 +34,12 @@ bool operator != (const POINT& a, const POINT& b)
 	return !::operator==(a,b);
 }
 
-Node::Node() : m_Previous(nullptr), m_pKeys(nullptr)
+Node::Node() : m_Previous(nullptr), m_pObjects(nullptr)
 {
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
 }
 
-Node::Node(const RECT& R) : m_Previous(nullptr), m_pKeys(nullptr)
+Node::Node(const RECT& R) : m_Previous(nullptr), m_pObjects(nullptr)
 {
 	AssignRect(R);
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
@@ -47,8 +47,8 @@ Node::Node(const RECT& R) : m_Previous(nullptr), m_pKeys(nullptr)
 Node::~Node()
 {
 	// todo: destroy allocated memory
-	delete m_pKeys;
-	m_pKeys = nullptr;
+	delete m_pObjects;
+	m_pObjects = nullptr;
 }
 
 void Node::SetRect(const RECT& R)
@@ -76,9 +76,9 @@ bool Node::HasPoint() const
 {
 	bool success = false;
 
-	if(m_pKeys)
+	if(m_pObjects)
 	{
-		success = !m_pKeys->empty();
+		success = !m_pObjects->empty();
 	}
 
 	return success;
@@ -86,7 +86,7 @@ bool Node::HasPoint() const
 
 bool Node::IsFull() const
 {
-	return (m_pKeys->size()) >= 1;
+	return (m_pObjects->size()) >= 1;
 }
 
 void Node::AssignRect(const RECT& R)
@@ -131,18 +131,18 @@ void Node::SubDivide()
 
 				// Set the subnode's fields
 				pSubNode->SetRect(tempR);
-				pSubNode->m_pKeys = new LIST_DTYPE(); // Alloc a list of ISpatialObject* to store the objects
+				pSubNode->m_pObjects = new LIST_DTYPE(); // Alloc a list of ISpatialObject* to store the objects
 				pSubNode->m_Previous = this;
 
 				// If the current node has points, subdivide them
-				if(m_pKeys)
+				if(m_pObjects)
 				{
-					LIST_DTYPE::iterator iter = m_pKeys->begin();
-					for(; iter != m_pKeys->end(); ++iter)
+					LIST_DTYPE::iterator iter = m_pObjects->begin();
+					for(; iter != m_pObjects->end(); ++iter)
 					{
 						if(pSubNode->IsPointWithin(*iter))
 						{
-							pSubNode->m_pKeys->insert(*iter);
+							pSubNode->m_pObjects->insert(*iter);
 							(*iter)->SetNode(pSubNode);
 						}
 					}
@@ -152,8 +152,8 @@ void Node::SubDivide()
 	}
 
 	// free memory, this node will no longer store points.
-	delete m_pKeys;
-	m_pKeys = nullptr;
+	delete m_pObjects;
+	m_pObjects = nullptr;
 }
 
 void Node::ExpandLeft()
@@ -250,7 +250,7 @@ void PointIterator::Increment()
 
 
 // constructor
-QuadTree::QuadTree(const RECT& R)
+QuadTree::QuadTree(const RECT& R) : m_iDepth(0)
 {
 	m_pRoot = new Node(R);
 	m_pRoot->SubDivide();
@@ -282,9 +282,11 @@ bool QuadTree::Insert(ISpatialObject* pObj)
 
 bool QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 {
-	Node* pNode = pWhere;
 	const KEY& P = pObj->GetPos();
 	bool success = false;
+
+	// reset depth counter
+	m_iDepth = 0;
 
 	// If the point is within the the root
 	if(m_pRoot->IsPointWithin(P))
@@ -294,39 +296,47 @@ bool QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 		do
 		{
 			// Find node to insert point into
-			pNode = FindNearNode(P,pNode);
+			pWhere = FindNearNode(P,pWhere);
+
+			if(m_iDepth > m_iMaxSubDivisions)
+			{
+				success = false;
+				break;
+			}
 
 			// check if the point has already been inserted
-			auto iter = find_if(pNode->m_pKeys->begin(),pNode->m_pKeys->end(),[&](const ISpatialObject* p) -> bool
+			auto iter = find_if(pWhere->m_pObjects->begin(),pWhere->m_pObjects->end(),[&](const ISpatialObject* p) -> bool
 			{
 				return p->GetPos() == P;
 			});
 
-			// If not
-			if(iter == pNode->m_pKeys->end())
+			// If point is in list, it means that we are at the lowest level, so the
+			//  break statement here is redundant 
+			if(iter != pWhere->m_pObjects->end())
 			{
-				// insert point
-
-				// If the node is full, subdivide it
-				if(pNode->IsFull())
-				{
-					pNode->SubDivide();
-				}
-			}
-			else
-			{
+				// todo: break here is not needed?
+				// failure
 				success = false;
+				break;
 			}
 
-		} while(pNode->IsDivided());
+			// insert point
+
+			// If the node is full, subdivide it
+			if(pWhere->IsFull())
+			{
+				pWhere->SubDivide();
+			}
+
+		} while(pWhere->IsDivided());
 
 		if(success)
 		{
 			// Insert point into the current node's list
-			auto iterPair = pNode->m_pKeys->insert(pObj);
+			auto iterPair = pWhere->m_pObjects->insert(pObj);
 			if(iterPair.second)
 			{
-				pObj->SetNode(pNode);
+				pObj->SetNode(pWhere);
 			}
 			else
 			{
@@ -357,6 +367,8 @@ Node* QuadTree::FindNearNode(const KEY& P, Node* pNode) const
 			Node* pSubNode = pNode->m_Nodes[i];
 			if(pSubNode->IsPointWithin(P)) // If the point is within the sub node  
 			{
+				m_iDepth++;
+
 				// iterate to this sub node 
 				pNode = pSubNode;
 
@@ -393,8 +405,8 @@ void QuadTree::Update()
 
 void QuadTree::Update(Node* pNode)
 {
-	Node::LIST_DTYPE::iterator iter = pNode->m_pKeys->begin();
-	Node::LIST_DTYPE::iterator end = pNode->m_pKeys->end();
+	Node::LIST_DTYPE::iterator iter = pNode->m_pObjects->begin();
+	Node::LIST_DTYPE::iterator end = pNode->m_pObjects->end();
 	while(iter != end)
 	{
 		if(!pNode->IsPointWithin(*iter))
@@ -415,10 +427,10 @@ void QuadTree::Update(Node* pNode)
 			}
 
 			// erase the object from the list
-			iter = pNode->m_pKeys->erase(iter);
+			iter = pNode->m_pObjects->erase(iter);
 
 			// todo: delete node
-			/*if(pNode->m_pKeys->empty())
+			/*if(pNode->m_pObjects->empty())
 			{
 				unsigned int index = GET_INDEX(pNode);
 
@@ -472,8 +484,8 @@ void QuadTree::SaveToFile(std::string& file)
 			if(iter->HasPoint())
 			{
 				// Loop over all points in the node
-				std::list<KEY>::iterator listIter = iter->m_pKeys->begin(); 
-				for(; listIter != iter->m_pKeys->end(); ++listIter)
+				std::list<KEY>::iterator listIter = iter->m_pObjects->begin(); 
+				for(; listIter != iter->m_pObjects->end(); ++listIter)
 				{
 					fout << "(" << listIter->x << "," << listIter->y << "), ";
 				}

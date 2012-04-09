@@ -7,20 +7,6 @@
 // C++0x standard which just got passed. 
 
 // good programming project
-// to implement this version of delegates you need to know:
-
-// 1. Interfaces
-// 2. Templates
-// 3. Template specialization
-// 4. Function pointers
-// 5. Member function pointers
-// 6. Polymorphism
-// 7. operator overloading
-// 8. Custom Copy Constructor
-// 9. Ref Counting
-// 10. overloading functions 
-// 11. overloading casting operators
-// 12. Memory pools to make it faster - have not added yet. 
 
 
 #ifndef _DELEGATES_

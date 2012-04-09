@@ -36,10 +36,12 @@ public:
 	Node(const RECT& R);
 	~Node();
 
-	void SetRect(const RECT& R);
+	void SetRect(const RECT& R); 
 
-	void Erase(ISpatialObject* pObj) { m_pKeys->erase(pObj); }
-	const LIST_DTYPE* GetNearObjects() const { return m_pKeys; }
+	const RECT& GetRect() const { return R; }
+
+	void Erase(ISpatialObject* pObj) { m_pObjects->erase(pObj); }
+	const LIST_DTYPE* GetNearObjects() const { return m_pObjects; }
 
 	// returns true if P lies within the rectangle
 	bool IsPointWithin(KEY P) const;
@@ -58,10 +60,9 @@ private:
 
 	// The rectangle of the current node
 	RECT R;
-	//std::list<obj*>* m_pKeys;
+	//std::list<obj*>* m_pObjects;
 	// obj
-	
-	LIST_DTYPE* m_pKeys;
+	LIST_DTYPE* m_pObjects;
 	//KEY* m_pKey;
 
 	// the sub nodes of the current node
@@ -233,6 +234,7 @@ private:
 
 	Node* m_pRoot;
 	unsigned int m_iMaxSubDivisions;
+	mutable unsigned int m_iDepth;
 
 	Node* FindNearNode(const KEY& P, Node* pNode) const;
 

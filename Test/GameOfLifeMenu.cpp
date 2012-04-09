@@ -54,7 +54,9 @@ void GameOfLifeMenu::Init(Game* pGame)
 	pOptions->SetMenuTitle("Options",mainPoint);
 
 	// Create Buttons
-	GenericButton<Menu*>* pButton = new GenericButton<Menu*>(text,d,pOptions,pButtonPolygon);
+	GenericButton<Menu*>* pButton = new SquareButton<Menu*>(R2,"Options");
+	pButton->SetCallback(d,pOptions);
+
 	GenericButton<Menu*>* pButton2 = new GenericButton<Menu*>(text3,d,pMenu,pTriangle);
 	GenericButton<int>* pStateButton = new GenericButton<int>(text2,dState,1,pStateButtonSquare);
 
@@ -69,8 +71,46 @@ void GameOfLifeMenu::Init(Game* pGame)
 	pMenu->AddElement(pButton);
 	pMenu->AddElement(pStateButton);
 
+	BuildResolutionMenu(pGame,pOptions);
+
 	m_ui.SetMenu(pMenu);
 }
+
+void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
+{
+	IRenderer* pRenderer = pGame->GetRenderer();
+	
+	RECT R = {10,10,500,500};
+	RECT R2 = {200,300,0,0};
+
+	Menu* pResMenu = new Menu();
+	POINT menuTitlePoint = {15,15};
+	pResMenu->SetMenuTitle("Resolution Menu",menuTitlePoint);
+	pResMenu->SetPolygon(new DxSquare(R));
+
+	GenericButton<UINT>::DELEGATE setDisplayModeCallback(pRenderer,&IRenderer::SetDisplayMode);
+	GenericButton<Menu*>::DELEGATE setMenuCallback(&m_ui,&UI::SetMenu);
+
+	pRenderer->GetStringRec("Resolution Options",R2);
+	GenericButton<Menu*>* pResMenuButton = new SquareButton<Menu*>(R2,"Resolution Options");
+	pResMenuButton->SetCallback(setMenuCallback,pResMenu);
+
+	pMenu->AddElement(pResMenuButton);
+	pMenu->AddMenu(pResMenu);
+
+	UINT uiDisplayModes = pRenderer->GetNumDisplayAdaptors();
+	for(UINT i = 0; i < uiDisplayModes; ++i)
+	{
+		RECT R3 = {100,100 + 50*i,0,0};
+		pRenderer->GetStringRec(pRenderer->GetDisplayModeStr(i).c_str(),R3);
+
+		GenericButton<UINT>* pStateButton = new SquareButton<UINT>(R3,pRenderer->GetDisplayModeStr(i));
+		pStateButton->SetCallback(setDisplayModeCallback,i);
+
+		pResMenu->AddElement(pStateButton);
+	}
+}
+
 void GameOfLifeMenu::Destroy(Game* pGame)
 {
 }
@@ -94,7 +134,7 @@ void GameOfLifeMenu::Draw(Game* pGame)
 	pRenderer->Begin();
 
 	char buffer[64];
-	POINT P = {400,200};
+	POINT P = {500,20};
 	sprintf_s(buffer,"Time between frames: %f",pGame->GetDt());
 
 	pRenderer->DrawString(buffer,P,0xffffffff);

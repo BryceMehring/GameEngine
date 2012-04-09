@@ -1,3 +1,4 @@
+#include "BNew.h"
 #include "GameOfLife.h"
 #include "IRenderer.h"
 #include "Game.h"
@@ -56,7 +57,7 @@ private:
 
 };
 
-GameOfLife::GameOfLife() : m_quadTree(SCREEN_R)
+GameOfLife::GameOfLife()
 {
 }
 
@@ -78,6 +79,12 @@ void GameOfLife::BuildMenu(Game* pGame)
 
 void GameOfLife::Init(Game* pGame)
 {
+	RECT R;
+	GetClientRect(pGame->GetWindow()->GetWindowHandle(),&R);
+	InflateRect(&R,-20,-20);
+
+	m_pQuadTree = new QuadTree(R);
+
 	BuildMenu(pGame);
 
 	//pRenderer->ToggleFullscreen();
@@ -97,6 +104,8 @@ void GameOfLife::Destroy(Game* pGame)
 {
 	// clear screen
 	IRenderer* pRenderer = pGame->GetRenderer();
+
+	delete m_pQuadTree;
 
 	//pRenderer->ToggleFullscreen();
 	//pRenderer->ClearScreen();
@@ -121,7 +130,7 @@ void GameOfLife::Update(Game* pGame)
 
 		//m_ui.Update(pInput);
 
-		if(m_quadTree.Insert(pUnit) == false)
+		if(m_pQuadTree->Insert(pUnit) == false)
 		{
 			delete pUnit;
 		}
@@ -151,7 +160,7 @@ void GameOfLife::Draw(Game* pGame)
 
 	//m_ui.Render(pRenderer);
 
-	m_quadTree.Render(pRenderer);
+	m_pQuadTree->Render(pRenderer);
 
 	pRenderer->DrawLine(m_VEC,4,0xdeadc0de);
 	pRenderer->DrawString(out.str().c_str(),P,0xffffffff);

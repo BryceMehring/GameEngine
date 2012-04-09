@@ -4,6 +4,8 @@ Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f)
 {
 	LoadAllDLL();
 
+	m_iEventId = m_window.AddMsgListener(WindowManager::MsgDelegate(this,&Game::MsgProc));
+
 	VertexDeclaration decl;
 
 	//UINT iVertexDecl = m_pRenderer->CreateVertexDecl(decl);
@@ -11,6 +13,8 @@ Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f)
 
 Game::~Game()
 {
+	m_window.RemoveListener(m_iEventId);
+
 	m_StateMachine.RemoveState(this);
 	delete m_pFactory;
 }
@@ -71,7 +75,7 @@ void Game::LoadAllDLL()
 		assert(m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering)));
 		assert(m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input)));
 
-		m_window.SetInputPlugin(m_pInput);
+		m_pRenderer->EnumerateDisplayAdaptors();
 	}
 }
 
@@ -85,4 +89,21 @@ void Game::EndTimer()
 {
 	m_timer.Stop();
 	m_fDT = (float)m_timer.GetTimeInMilliseconds();
+}
+
+void Game::MsgProc(const MsgProcData& data)
+{
+	switch(data.msg)
+	{
+	case WM_ACTIVATE:
+		if( LOWORD(data.wParam) == WA_INACTIVE )
+		{
+			this->m_pRenderer->OnLostDevice();
+		}
+		else
+		{
+			this->m_pRenderer->OnResetDevice();
+		}
+		break;
+	}
 }

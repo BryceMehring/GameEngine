@@ -24,6 +24,8 @@ public:
 	virtual void Destroy(class Game* pGame) = 0;
 	virtual void Update(class Game* pGame) = 0;
 	virtual void Draw(class Game* pGame) = 0;
+	//virtual void OnLostDevice() = 0;
+	//virtual void OnResetDevice() = 0;
 
 	int GetStateId() const { return m_iStateId; }
 	State GetState() const { return m_state; }

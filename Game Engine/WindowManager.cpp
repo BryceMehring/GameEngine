@@ -68,6 +68,16 @@ WindowManager::~WindowManager()
 {
 }
 
+int WindowManager::AddMsgListener(const MsgDelegate& d)
+{
+	return m_events.Attach(d);
+}
+
+void WindowManager::RemoveListener(int id)
+{
+	m_events.Detach(id);
+}
+
 
 bool WindowManager::Update()
 {
@@ -128,19 +138,8 @@ void WindowManager::InitializeWindows(HINSTANCE hInstance, const string& winCapt
 }
 void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
-
 	MsgProcData data = {msg,wParam,lparam};
-	m_pInput->Poll(data);
-	
-
-	/*auto iter = m_events.find(msg);
-	if(iter != m_events.end())
-	{
-		iter->second.Notify(data);
-	}*/
-
-	// todo: need to get rid of this. 
-	//m_pInput->Poll(msg,wParam,lparam);
+	m_events.Notify(data);
 
 	switch( msg )
 	{
