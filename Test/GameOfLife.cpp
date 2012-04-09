@@ -107,14 +107,14 @@ void GameOfLife::Destroy(Game* pGame)
 
 	delete m_pQuadTree;
 
-	//pRenderer->ToggleFullscreen();
-	//pRenderer->ClearScreen();
-	//pRenderer->Present();
-
 	for(unsigned int i = 0; i < m_units.size(); ++i)
 	{
 		delete m_units[i];
 	}
+
+	//pRenderer->ToggleFullscreen();
+	//pRenderer->ClearScreen();
+	//pRenderer->Present();
 }
 void GameOfLife::Update(Game* pGame)
 {

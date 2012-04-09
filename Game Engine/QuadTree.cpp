@@ -46,9 +46,20 @@ Node::Node(const RECT& R) : m_Previous(nullptr), m_pObjects(nullptr)
 }
 Node::~Node()
 {
-	// todo: destroy allocated memory
-	delete m_pObjects;
-	m_pObjects = nullptr;
+	// If m_pObjects points to an object
+	if(m_pObjects != nullptr)
+	{
+		// Notify each object in the node about deletion
+		for_each(m_pObjects->begin(),m_pObjects->end(),[](ISpatialObject* pObj)
+		{
+			pObj->SetNode(nullptr);
+		});
+
+		// The delete operator already checks if m_pObjects is null, but because of the 
+		// for_each loop, this is needed.
+		delete m_pObjects; 
+		m_pObjects = nullptr;
+	}
 }
 
 void Node::SetRect(const RECT& R)
