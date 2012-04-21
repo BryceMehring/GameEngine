@@ -8,13 +8,15 @@ class GameOfLifeMenu : public IGameState
 {
 public:
 
-	GameOfLifeMenu();
+	GameOfLifeMenu(class Game* pGame);
 	virtual ~GameOfLifeMenu() {}
 	
-	virtual void Init(class Game* pGame);
-	virtual void Destroy(class Game* pGame);
-	virtual void Update(class Game* pGame);
-	virtual void Draw(class Game* pGame);
+	virtual void Init();
+	virtual void Destroy();
+	virtual void Update();
+	virtual void Draw();
+
+	virtual const char* GetName() const { return "GameOfLifeMenu"; }
 
 private:
 

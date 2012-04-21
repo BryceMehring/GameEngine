@@ -17,12 +17,18 @@ PluginManager::PluginManager() : m_pEngine(nullptr)
 // ===== Destructor =====
 PluginManager::~PluginManager()
 {
-	for(plugin_type::iterator iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
-	{
-		delete iter->second.pPlugin;
-		FreeLibrary(iter->second.mod);
-	}
+	FreeAllPlugins();
 	m_pEngine = nullptr;
+}
+
+void PluginManager::FreeAllPlugins()
+{
+	for_each(m_plugins.begin(),m_plugins.end(),[&](const plugin_type::value_type& dll)
+	{
+		FreePlugin(dll.second);
+	});
+
+	m_plugins.clear();
 }
 
 //  ===== interface with dlls =====
@@ -42,42 +48,87 @@ HWND PluginManager::GetWindowHandle() const
 
 IPlugin* PluginManager::GetPlugin(DLLType type) const
 {
-	IPlugin* pPlugin = nullptr;
 	plugin_type::const_iterator iter = m_plugins.find(type);
 
 	if(iter != m_plugins.end())
 	{
-		pPlugin = iter->second.pPlugin;
+		return iter->second.pPlugin;
 	}
 
-	return pPlugin;
+	return nullptr;
 }
 
 IPlugin* PluginManager::LoadDLL(const char* pDLL)
 {
+	FileManager& fm = FileManager::Instance();
+	char buffer[128];
 	PluginInfo dll = {0,0};
+
 	dll.mod = LoadLibrary(pDLL);
 
-	if(dll.mod)
+	if(dll.mod == nullptr)
 	{
-		CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress(dll.mod,"CreatePlugin");
-		dll.pPlugin = pFunct(*this);
+		// error, could not load dll
 
-		// todo: look into this
-		//asIScriptEngine* pScriptEngine = m_pEngine->GetScriptVM()->GetScriptEngine();
-		//pScriptEngine->RegisterGlobalProperty("
+		// need to output message to log
+		// todo: should create a logging singleton that should interact with the console.
 
-		DLLType type = dll.pPlugin->GetType();
+		sprintf_s(buffer,"Could not load: %s",pDLL);
+		fm.WriteToLog(buffer);
 
-		m_plugins.insert(make_pair(type,dll));
+		MessageBox(0,buffer,0,0);
+		
+		return nullptr;
+	}
+
+	CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress(dll.mod,"CreatePlugin");
+
+	if(pFunct == nullptr)
+	{
+		// error, corrupted dll
+		FreeLibrary(dll.mod);
+
+		sprintf_s(buffer,"CreatePlugin() function not found in: %s",pDLL);
+		fm.WriteToLog(buffer);
+
+		MessageBox(0,buffer,0,0);
+
+		return nullptr;
+	}
+
+		
+	// Create the plugin
+	dll.pPlugin = pFunct(*this);
+
+	// todo: look into this
+	//asIScriptEngine* pScriptEngine = m_pEngine->GetScriptVM()->GetScriptEngine();
+	//pScriptEngine->RegisterGlobalProperty("
+
+	// Get the type of the plugin
+	DLLType type = dll.pPlugin->GetType();
+	auto iter = m_plugins.find(type); // see if the plugin is already loaded
+
+	// If it is already loaded
+	if(iter != m_plugins.end())
+	{
+		// Free the old plugin
+		FreePlugin(iter->second);
+
+		// replace with new
+		iter->second = dll;
 	}
 	else
 	{
-		// need to output message to log
-		// todo: should create a logging singleton that should interact with the console.
-		cout<< endl << "Could not load: " << pDLL << endl;
+
+		// insert plugin into hash table
+		m_plugins.insert(make_pair(type,dll));
 	}
 
+	// update log file
+	sprintf_s(buffer,"(%s) is loaded",pDLL);
+	fm.WriteToLog(buffer);
+
+	// return the plugin interface
 	return dll.pPlugin;
 }
 
@@ -88,12 +139,18 @@ bool PluginManager::LoadAllPlugins(const std::string& path, const std::string& e
 	FileManager& fm = FileManager::Instance();
 	fm.LoadAllFilesFromDictionary(files,path,ext);
 
-	for(unsigned int i = 0; i < files.size(); ++i)
+	for_each(files.begin(),files.end(),[&](const string& str)
 	{
-		LoadDLL(files[i].c_str());
-	}
+		LoadDLL(str.c_str());
+	});
+		
+	return !m_plugins.empty();
+}
 
-	return (m_plugins.size() > 0);
+void PluginManager::FreePlugin(const PluginInfo& plugin)
+{
+	delete plugin.pPlugin;
+	FreeLibrary(plugin.mod);
 }
 
 void PluginManager::FreePlugin(DLLType type)
@@ -101,10 +158,7 @@ void PluginManager::FreePlugin(DLLType type)
 	plugin_type::iterator iter = m_plugins.find(type);
 	if(iter != m_plugins.end())
 	{
-		PluginInfo& dll = iter->second;
-
-		delete dll.pPlugin;
-		FreeLibrary(dll.mod);
+		FreePlugin(iter->second);
 	}
 }
 

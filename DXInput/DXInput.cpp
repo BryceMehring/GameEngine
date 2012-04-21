@@ -33,6 +33,11 @@ DirectInput::~DirectInput()
 	
 }*/
 
+int DirectInput::GetVersion() const
+{
+	return 0;
+}
+
 DLLType DirectInput::GetType() const
 {
 	return Input;

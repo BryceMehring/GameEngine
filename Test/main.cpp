@@ -165,6 +165,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	
 	Game myGame(hInstance);
 	myGame.SetStateFactory(new GameOfLifeFactory);
+	myGame.SetState(GAME);
 	myGame.SetState(MENU);
 	return myGame.PlayGame();
 }

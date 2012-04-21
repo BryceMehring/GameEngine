@@ -3,8 +3,7 @@
 #include "FileManager.h"
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/filesystem.hpp>
-#include <Windows.h>
-#include <fstream>
+#include <Shlobj.h>
 
 using namespace std;
 
@@ -22,23 +21,66 @@ FileManager::~FileManager()
 }
 void FileManager::LoadAllFilesFromDictionary(std::vector<std::string>& files, const std::string& path, const std::string& ext) const
 {
-	for ( boost::filesystem::directory_iterator it( path );
-        it != boost::filesystem::directory_iterator(); ++it )
+	// note: when the path is empty, it causes the program to crash
+	if(!path.empty())
 	{
-		if ( boost::filesystem::is_regular_file( it->status() ))
+		for ( boost::filesystem::directory_iterator it( path );
+			it != boost::filesystem::directory_iterator(); ++it )
 		{
-			if( boost::algorithm::to_lower_copy(it->path().extension().string()) == ext)
+			if ( boost::filesystem::is_regular_file( it->status() ))
 			{
-				files.push_back(it->path().string());
+				if( boost::algorithm::to_lower_copy(it->path().extension().string()) == ext)
+				{
+					files.push_back(it->path().string());
+				}
+
 			}
 
 		}
-
 	}
 
 }
 
-std::string FileManager::OpenFileName() const
+bool FileManager::GetFolder(std::string& folderpath)
+{
+   bool retVal = false;
+
+   // The BROWSEINFO struct tells the shell 
+   // how it should display the dialog.
+   BROWSEINFO bi;
+   memset(&bi, 0, sizeof(bi));
+
+   bi.ulFlags   = BIF_USENEWUI;
+
+   // must call this if using BIF_USENEWUI
+   ::OleInitialize(NULL);
+
+   // Show the dialog and get the itemIDList for the 
+   // selected folder.
+   LPITEMIDLIST pIDL = ::SHBrowseForFolder(&bi);
+
+   if(pIDL != NULL)
+   {
+      // Create a buffer to store the path, then 
+      // get the path.
+      char buffer[_MAX_PATH] = {'\0'};
+      if(::SHGetPathFromIDList(pIDL, buffer) != 0)
+      {
+         // Set the string value.
+         folderpath = buffer;
+         retVal = true;
+      }
+
+      // free the item id list
+      CoTaskMemFree(pIDL);
+   }
+
+   ::OleUninitialize();
+
+   return retVal;
+}
+
+bool FileManager::OpenFileName(std::string& file) const
 {
 	OPENFILENAME ofn = {0};
 	char fileName[MAX_PATH] = "";
@@ -50,27 +92,17 @@ std::string FileManager::OpenFileName() const
 	ofn.nMaxFile = MAX_PATH;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 	ofn.lpstrDefExt = "";
- 
-	GetOpenFileName(&ofn);
-	return std::string(fileName);
+
+	if(GetOpenFileName(&ofn) > 0)
+	{
+		file = fileName;
+		return true;
+	}
+
+	return false;
 }
 
-void FileManager::WriteToLog(const std::string& str)
+void FileManager::WriteTime()
 {
-	m_buffer << str.c_str() << endl;
-}
-
-void FileManager::WriteToLog(float num)
-{
-	m_buffer << num << endl;
-}
-
-void FileManager::WriteToLog(int num)
-{
-	m_buffer << num << endl;
-}
-
-void FileManager::WriteToLog(char c)
-{
-	m_buffer << c << endl;
+	m_buffer << clock() / (float)CLOCKS_PER_SEC << ": ";
 }

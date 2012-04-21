@@ -1,6 +1,12 @@
-#include "Game.h"
 
-Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f)
+#include "Game.h"
+#include "FileManager.h"
+#include "Heap.h"
+
+using namespace std;
+
+Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f), m_fFPSTime(10000.0f), 
+m_pRenderer(nullptr), m_pInput(nullptr)
 {
 	LoadAllDLL();
 
@@ -14,8 +20,6 @@ Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f)
 Game::~Game()
 {
 	m_window.RemoveListener(m_iEventId);
-
-	m_StateMachine.RemoveState(this);
 	delete m_pFactory;
 }
 
@@ -29,24 +33,98 @@ void Game::SetState(int id)
 	IGameState* pState = m_StateMachine.GetState();
 	if(pState == nullptr || pState->GetStateId() != id)
 	{
-		IGameState* pState = m_pFactory->GetState(id);
-		m_StateMachine.SetState(pState,this,id);
+		IGameState* pState = m_pFactory->GetState(id,this);
+		m_StateMachine.PushState(pState,this,id);
+		//m_StateMachine.SetState(pState,this,id);
+
+		char buffer[64];
+		sprintf_s(buffer,"Changing state to: %s",pState->GetName());
+		FileManager::Instance().WriteToLog(buffer);
 	}
+}
+
+void Game::PopState()
+{
+	m_StateMachine.Pop();
+}
+void Game::PushState()
+{
+	m_StateMachine.Push();
 }
 
 int Game::PlayGame()
 {
+	// init the first state
+	m_StateMachine.GetState()->Init();
+
+	// Loop while the use has not quit
 	while((StartTimer(),m_window.Update()))
 	{
-		m_StateMachine.GetState()->Update(this);
-		m_StateMachine.GetState()->Draw(this);
+		// Update the game
+		Update();
+
+		// Render the game
+		Draw();
 
 		m_pInput->Reset();
 
+		// End timer 
 		EndTimer();
 	}
 
 	return 0;
+}
+
+void Game::Update()
+{
+	/*if(m_pInput->KeyDown(KeyCode::SPACE))
+	{
+		// Start
+		PopState();
+	}
+	else*/ if(m_pInput->KeyDown(KeyCode::ESCAPE))
+	{
+		// Back
+		PushState();
+	}
+
+	m_StateMachine.GetState()->Update();
+}
+
+void Game::Draw()
+{
+	// tell the renderer that we are starting
+	m_pRenderer->Begin();
+
+	// render fps overlay
+	DrawFPS();
+
+	// render the current state
+	m_StateMachine.GetState()->Draw();
+
+	// end rendering
+	m_pRenderer->End();
+
+	// Present the screen
+	m_pRenderer->Present();
+}
+
+void Game::DrawFPS()
+{
+	static char buffer[64];
+	POINT P = {650,0};
+
+	m_fFPSTime += GetDt();
+
+	if(m_fFPSTime > 300.0f)
+	{
+		m_fFPSTime = 0.0f;
+
+		
+		sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
+	}
+
+	m_pRenderer->DrawString(buffer,P,0xffffffff);
 }
 
 IRenderer* Game::GetRenderer()
@@ -66,17 +144,41 @@ float Game::GetDt() const
 {
 	return m_fDT;
 }
+float Game::GetFps() const
+{
+	return 1000.0f / GetDt();
+}
+
+void Game::ReloadPlugins()
+{
+	ReloadPlugins("..\\Debug\\");
+}
+
+void Game::ReloadPlugins(const std::string& file)
+{
+	m_plugins.FreeAllPlugins();
+
+	if(m_plugins.LoadAllPlugins(file,".dll"))
+	{
+		m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering));
+		m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input));
+	}
+}
+
+void Game::ReloadPluginsFromUserFolder()
+{
+	string folder;
+	if(FileManager::Instance().GetFolder(folder))
+	{
+		ReloadPlugins(folder);
+	}
+	
+}
 
 void Game::LoadAllDLL()
 {
 	m_plugins.SetEngine(&m_window);
-	if(m_plugins.LoadAllPlugins("..\\Debug\\",".dll"))
-	{
-		assert(m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering)));
-		assert(m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input)));
-
-		m_pRenderer->EnumerateDisplayAdaptors();
-	}
+	ReloadPlugins();
 }
 
 void Game::StartTimer()

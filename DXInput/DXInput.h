@@ -22,6 +22,7 @@ public:
 	// IRender
 	virtual DLLType GetType() const;
 	virtual void About();
+	virtual int GetVersion() const;
 
 	// DirectX's version of poll 
 	

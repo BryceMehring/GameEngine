@@ -32,8 +32,10 @@ enum InterfaceType
 
 struct DrawTextInfo
 {
-	const char* pText;
-	//std::string text;
+	DrawTextInfo(const string& str, const RECT& rect, DWORD c, DWORD f) 
+		: text(str), R(rect),color(c),format(f) {}
+
+	std::string text;
 	RECT R;
 	DWORD color;
 	DWORD format;
@@ -72,9 +74,8 @@ m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
 
 	EnumerateDisplayAdaptors();
 
-	m_p3Device->CreateTexture(16,16,0,0,D3DFMT_X8R8G8B8,D3DPOOL_SYSTEMMEM,&m_pTexture,0);
+	assert(D3DXCreateTextureFromFile(m_p3Device,"..\\Textures\\Point.png",&m_pTexture) == D3D_OK);
 
-	
 	/*RECT R;
 	D3DLOCKED_RECT drect;
 	m_pTexture->LockRect(0,&drect,&R,0);
@@ -90,9 +91,6 @@ m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
 	}
 
 	m_pTexture->UnlockRect(0);*/
-
-
-	D3DXMatrixIdentity(&T);
 }
 DX9Render::~DX9Render()
 {
@@ -102,6 +100,11 @@ DX9Render::~DX9Render()
 	m_pTexture->Release();
 	m_p3Device->Release();
 	m_pDirect3D->Release();
+}
+
+int DX9Render::GetVersion() const
+{
+	return 0;
 }
 
 void DX9Render::About()
@@ -169,8 +172,8 @@ void DX9Render::GetStringRec(const char* str, RECT& out)
 void DX9Render::DrawString(const char* str, POINT P, DWORD color) // not clipped
 {
 	RECT R = {P.x,P.y};
-	DrawTextInfo info = {str,R,color,DT_NOCLIP};
-	m_text.push_back(info);
+	//DrawTextInfo info = {str,R,color,DT_NOCLIP};
+	m_text.push_back(DrawTextInfo(str,R,color,DT_NOCLIP));
 }
 void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 {
@@ -185,8 +188,8 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 
 	//int Height = this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
 	//DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
-	DrawTextInfo info = {str,R,color,DT_NOCLIP};
-	m_text.push_back(info);
+	//DrawTextInfo info = {str,R,color,DT_NOCLIP};
+	//m_text.push_back(info);
 }
 
 void DX9Render::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform, D3DCOLOR color)
@@ -196,6 +199,12 @@ void DX9Render::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount
 void DX9Render::DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color)
 {
 	m_pLine->Draw(pVertexList,dwVertexListCount,color);
+}
+
+void DX9Render::DrawPoint(const D3DXVECTOR2& pos, DWORD color)
+{
+	PointStruct P = {pos,color};
+	m_points.push_back(P);
 }
 /*void DX9Render::DrawSprite()
 {
@@ -253,6 +262,9 @@ void DX9Render::OnResetDevice()
 
 void DX9Render::ClearScreen()
 {
+	m_text.clear();
+	m_points.clear();
+
 	m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
 }
 
@@ -260,8 +272,6 @@ void DX9Render::Begin()
 {
 	if( !IsDeviceLost() )
 	{
-		m_text.clear();
-
 		ClearScreen();
 		m_p3Device->BeginScene();
 		// todo: these flags need to be modifiable
@@ -401,7 +411,7 @@ void DX9Render::InitializeLine()
 	{
 		D3DXCreateLine(m_p3Device,&m_pLine);
 		m_pLine->SetAntialias(true);
-		m_pLine->SetWidth(2.0f);
+		m_pLine->SetWidth(1.0f);
 	}
 }
 void DX9Render::InitializeSprite()
@@ -419,15 +429,43 @@ void DX9Render::RenderScene()
 	//::ID3DXEffect* pEffect;
 	//m_pSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
 
+	RenderText();
+	RenderPoints();
+	
+
+	m_pSprite->End();
+}
+
+void DX9Render::RenderText()
+{
 	for(TextContainerType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		DrawTextInfo& info = *iter;
 		//m_pFont->DrawText(
 		//m_pFont->PreloadText(info.pText,length);
-		int height = m_pFont->DrawText(m_pSprite,info.pText,-1,&info.R,info.format,info.color);
+		int height = m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,info.format,info.color);
+	}
+}
+
+void DX9Render::RenderPoints()
+{
+	D3DXMATRIX T;
+
+	const unsigned int size = m_points.size();
+	for(unsigned int i = 0; i < size; ++i)
+	{
+		D3DXVECTOR2& point = m_points[i].P;
+		DWORD color = m_points[i].Color;
+
+		D3DXMatrixTranslation(&T,point.x,point.y,0);
+		m_pSprite->SetTransform(&T);
+		m_pSprite->Draw(m_pTexture,0,0,0,color);
 	}
 
-	m_pSprite->End();
+	// reset to normal transform matrix after rendering
+	D3DXMatrixIdentity(&T);
+	m_pSprite->SetTransform(&T);
+	
 }
 
 UINT DX9Render::CreateVertexBuffer(UINT bytes,DWORD flags)
@@ -454,7 +492,7 @@ void DX9Render::Unlock(UINT iIndex)
 }
 
 void DX9Render::DrawVertexBuffer(UINT iIndex)
-{
+{ 
 	// todo: need to fix:
 	//m_VertexBuffers[iIndex]->
 //	m_p3Device->DrawPrimitive(::D3DPT_POINTLIST,0,

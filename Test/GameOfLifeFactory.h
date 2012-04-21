@@ -14,7 +14,7 @@ class GameOfLifeFactory : public GameStateFactory
 public:
 
 	virtual ~GameOfLifeFactory() {}
-	virtual IGameState* GetState(int id) const;
+	virtual IGameState* GetState(int id, class Game* pGame) const;
 
 };
 

@@ -92,7 +92,6 @@
     <ClInclude Include="IRender.h" />
     <ClInclude Include="IRenderer.h" />
     <ClInclude Include="IScripted.h" />
-    <ClInclude Include="MallocAllocator.h" />
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="PluginManager.h" />

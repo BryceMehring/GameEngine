@@ -4,19 +4,15 @@
 #include "FileManager.h"
 #include "StateUpdater.h"
 
-GameOfLifeMenu::GameOfLifeMenu() : IGameState()
-{
-}
-
-void GameOfLifeMenu::Init(Game* pGame)
+GameOfLifeMenu::GameOfLifeMenu(Game* m_pGame) : IGameState(m_pGame)
 {
 	RECT R = {10,10,500,500};
 
-	RECT R2 = {200,200,0,0};
-	pGame->GetRenderer()->GetStringRec("Options",R2);
+	RECT R2 = {200,100,0,0};
+	m_pGame->GetRenderer()->GetStringRec("Options",R2);
 
 	RECT R3 = {300,100,0,0};
-	pGame->GetRenderer()->GetStringRec("State",R3);
+	m_pGame->GetRenderer()->GetStringRec("State",R3);
 
 	POINT mainPoint = {15,15};
 
@@ -44,7 +40,7 @@ void GameOfLifeMenu::Init(Game* pGame)
 
 	// Delegates
 	GenericButton<Menu*>::DELEGATE d(&m_ui,&UI::SetMenu);
-	GenericButton<int>::DELEGATE dState(pGame,&Game::SetState);
+	GenericButton<void>::DELEGATE dState(m_pGame,&Game::PopState);
 
 	// Create Menu Objects
 	Menu* pMenu = new Menu;
@@ -58,7 +54,7 @@ void GameOfLifeMenu::Init(Game* pGame)
 	pButton->SetCallback(d,pOptions);
 
 	GenericButton<Menu*>* pButton2 = new GenericButton<Menu*>(text3,d,pMenu,pTriangle);
-	GenericButton<int>* pStateButton = new GenericButton<int>(text2,dState,1,pStateButtonSquare);
+	GenericButton<void>* pStateButton = new GenericButton<void>(text2,dState,pStateButtonSquare);
 
 	// Associate square with menu
 	pMenu->SetPolygon(pSquare);
@@ -71,14 +67,19 @@ void GameOfLifeMenu::Init(Game* pGame)
 	pMenu->AddElement(pButton);
 	pMenu->AddElement(pStateButton);
 
-	BuildResolutionMenu(pGame,pOptions);
+	BuildResolutionMenu(m_pGame,pOptions);
 
 	m_ui.SetMenu(pMenu);
 }
 
-void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
+void GameOfLifeMenu::Init()
 {
-	IRenderer* pRenderer = pGame->GetRenderer();
+	ShowCursor(true);
+}
+
+void GameOfLifeMenu::BuildResolutionMenu(Game* m_pGame, Menu* pMenu)
+{
+	IRenderer* pRenderer = m_pGame->GetRenderer();
 	
 	RECT R = {10,10,500,500};
 	RECT R2 = {200,300,0,0};
@@ -111,36 +112,34 @@ void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
 	}
 }
 
-void GameOfLifeMenu::Destroy(Game* pGame)
+void GameOfLifeMenu::Destroy()
 {
+	//StateUpdater su(m_state,_DESTROYING);
+	IRenderer* pRenderer = m_pGame->GetRenderer();
+	//StateUpdater su(m_state,::DESTROYING);
+
 }
-void GameOfLifeMenu::Update(Game* pGame)
+void GameOfLifeMenu::Update()
 {
 	StateUpdater su(m_state,UPDATING);
 
-	m_ui.Update(pGame->GetInput());
+	m_ui.Update(m_pGame->GetInput());
 	//m_pUI->Update();
 
 	/*if(m_timer.GetTimeInSeconds() > 1.0)
 	{
-		pGame->SetState(1);
+		m_pGame->SetState(1);
 	}*/
 }
-void GameOfLifeMenu::Draw(Game* pGame)
+void GameOfLifeMenu::Draw()
 {
 	StateUpdater su(m_state,RENDERING);
 
-	IRenderer* pRenderer = pGame->GetRenderer();
-	pRenderer->Begin();
+	IRenderer* pRenderer = m_pGame->GetRenderer();
+	//pRenderer->Begin();
 
-	char buffer[64];
-	POINT P = {500,20};
-	sprintf_s(buffer,"Time between frames: %f",pGame->GetDt());
+	m_ui.Render(m_pGame->GetRenderer());
 
-	pRenderer->DrawString(buffer,P,0xffffffff);
-
-	m_ui.Render(pGame->GetRenderer());
-
-	pRenderer->End();
-	pRenderer->Present();
+	//pRenderer->End();
+	//pRenderer->Present();
 }

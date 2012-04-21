@@ -19,8 +19,8 @@ Heap::~Heap()
 }
 
 // returns total memory usage of all memory pools
-// this algorithm must be implemented this way, as in being 0(n) because
-// the number of blocks each pool may change over time
+//!this algorithm must be implemented this way, as in being 0(n) because
+//!the number of blocks each pool may change over time
 unsigned int Heap::GetMemoryUsageInBytes() const
 {
 	unsigned int total = 0;
@@ -43,8 +43,12 @@ void Heap::Sort()
 
 float Heap::GetMemoryUsageInKb() const
 {
-	float size = (float)GetMemoryUsageInBytes();
-	return size / 1024.0f;
+	return GetMemoryUsageInBytes() / 1024.0f;
+}
+
+float Heap::GetMemoryUsageInMb() const
+{
+	return GetMemoryUsageInBytes() / 1048576.0f;
 }
 
 void Heap::GetMemoryInfo(char* pStr, unsigned int uiLength) const
@@ -60,22 +64,11 @@ MemoryPool& Heap::GetPool(unsigned int size)
 	
 	if(iter == m_pool.end())
 	{
-		// alloc memory pool using malloc because the global version of new uses the memory pool,
-		// which in turn calls this function.
-		MemoryPool* pMemoryPool = (MemoryPool*)malloc(sizeof(MemoryPool));
-		assert(pMemoryPool != nullptr);
-		new (pMemoryPool) MemoryPool(size,(size >= 512 ? 5 : 512)); // construct memory pool
-
 		// insert pool into hash map
-		auto pair = m_pool.insert(make_pair(size,pMemoryPool)); // todo, could make size dynamic
+		auto pair = m_pool.insert(make_pair(size,new MemoryPool(size,512))); // todo, could make size dynamic
 		iter = pair.first;
 	}
 
 	// return the memory pool
 	return *(iter->second);
 }
-
-/*void Heap::MemoryUsageChange(int bytes)
-{
-	m_uiMemoryUsage += bytes;
-}*/

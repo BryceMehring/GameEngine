@@ -1,6 +1,7 @@
 
 
 #include "WindowManager.h"
+#include "FileManager.h"
 
 using namespace std;
 
@@ -58,6 +59,7 @@ m_hInstance(hInstance), m_hWindowHandle(NULL), m_bPaused(false)
 		DisplayError error(0,buffer.c_str(),0,0);
 	}
 
+	::FileManager::Instance().WriteToLog("Window Constructed");
 	s_pThis = this;
 	//SendMessage(m_hWindowHandle,0,0,0);
 
@@ -167,7 +169,7 @@ void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 		case WM_KEYDOWN:
 			if( wParam == VK_ESCAPE )
 			{
-				::PostQuitMessage(0);
+				//::PostQuitMessage(0);
 			}
 			break;
 	}

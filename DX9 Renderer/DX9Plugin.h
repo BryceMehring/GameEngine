@@ -15,7 +15,6 @@
 #include "IScripted.h"
 #include "PluginManager.h"
 
-
 struct DisplayMode;
 
 enum InterfaceType;
@@ -35,6 +34,8 @@ public:
 
 	// returns the name of the plug-in
 	virtual DLLType GetType() const;
+
+	virtual int GetVersion() const;
 
 	// displays a info box about the plug-in
 	virtual void About();
@@ -70,6 +71,9 @@ public:
 	// lines
 	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color);
 	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform , D3DCOLOR color);
+
+	// points
+	virtual void DrawPoint(const D3DXVECTOR2& pos, DWORD color);
 
 	// effects
 	// todo: need to implement
@@ -136,6 +140,13 @@ protected:
 	typedef std::vector<DrawTextInfo> TextContainerType; 
 	TextContainerType m_text;
 
+	struct PointStruct
+	{
+		D3DXVECTOR2 P;
+		DWORD Color;
+	};
+	std::vector<PointStruct> m_points;
+
 	std::vector<IDirect3DVertexDeclaration9*> m_VertexDecl;
 
 	// Vertex Buffers
@@ -146,8 +157,6 @@ protected:
 	DWORD m_ClearBuffers;
 
 	D3DPRESENT_PARAMETERS m_D3DParameters;
-
-	D3DXMATRIX T;
 
 	// ===== Helper Funcrions =====
 	void InitializeFont();
@@ -187,6 +196,12 @@ protected:
 	//void EnumerateDisplayAdaptors();
 
 	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager&);
+
+private:
+
+	void RenderText();
+	void RenderPoints();
+
 
 };
 

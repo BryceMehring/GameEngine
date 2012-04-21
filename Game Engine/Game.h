@@ -18,12 +18,18 @@ public:
 	// Set state
 	void SetStateFactory(GameStateFactory* pFactory);
 	void SetState(int id);
+	void PopState();
+	void PushState();
+
+	void ReloadPlugins();
+	void ReloadPluginsFromUserFolder();
 
 	// Get Functions
 	IRenderer* GetRenderer();
 	IKMInput* GetInput();
 	WindowManager* GetWindow();
 	float GetDt() const;
+	float GetFps() const;
 
 	virtual int PlayGame();
 
@@ -50,11 +56,19 @@ private:
 
 	Timer m_timer;
 	int m_iEventId;
+	float m_fFPSTime;
 
 	// helper functions
 	void LoadAllDLL();
 
 	void MsgProc(const struct MsgProcData& data);
+
+	void ReloadPlugins(const std::string& file);
+
+	void Update();
+
+	void Draw();
+	void DrawFPS();
 
 	// Prevent copying
 	Game(const Game&);

@@ -155,6 +155,8 @@ void MemoryPool::LinkMemoryBlock()
 	// iterator that iterates over the memory block, pMem
 	MemoryBlock* pIter = m_pNode->pMemoryBlock;
 
+	// Loop m_iLength - 1 times, since the first node in the list is 
+	// m_pNode->pMemoryBlock
 	for(unsigned int i = 1; i < m_iLength; ++i)
 	{
 		pMem += m_iSize;
@@ -168,7 +170,10 @@ void MemoryPool::LinkMemoryBlock()
 		pIter = pIter->pNext;
 	}
 
+	//x todo: need to check this, this might be incorrect
+	// this is the end of the linked list
 	pIter->pNode = m_pNode; // this was the problem:
+	
 }
 
 unsigned int MemoryPool::BlockArraySize() const

@@ -6,8 +6,6 @@
 // todo: I could add support for n amount of arguments with Variadic templates when MSVS updates to the new
 // C++0x standard which just got passed. 
 
-// good programming project
-
 
 #ifndef _DELEGATES_
 #define _DELEGATES_
@@ -326,6 +324,19 @@ template< class RETURN >
 class Delegate<RETURN,void> : public DelegateBase<RETURN,void>
 {
 public:
+
+	Delegate() {}
+	Delegate(typename GlobalFunction<RETURN,void>::PTR pFunc) : DelegateBase(pFunc) {}
+
+	template< class CLASS >
+	Delegate(CLASS* pThis,typename MemberFunction<CLASS,RETURN,void>::PTR pFunc) : DelegateBase(pThis,pFunc)
+	{
+	}
+	
+	template< class CLASS >
+	Delegate(CLASS* pThis,typename ConstMemberFunction<CLASS,RETURN,void>::PTR pFunc) : DelegateBase(pThis,pFunc)
+	{
+	}
 
 	RETURN Call() const
 	{

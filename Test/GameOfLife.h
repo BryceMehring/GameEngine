@@ -11,19 +11,26 @@ class GameOfLife : public IGameState
 {
 public:
 
-	GameOfLife();
+	GameOfLife(class Game* pGame);
+	virtual ~GameOfLife();
 
-	virtual void Init(class Game* pGame);
-	virtual void Destroy(class Game* pGame);
-	virtual void Update(class Game* pGame);
-	virtual void Draw(class Game* pGame);
+	virtual void Init();
+	virtual void Destroy();
+	virtual void Update();
+	virtual void Draw();
+
+	virtual const char* GetName() const { return "GameOfLife"; }
 
 private:
 
 	QuadTree* m_pQuadTree;
-	std::vector<class Unit*> m_units;
+	std::vector<ISpatialObject*> m_units;
 	D3DXVECTOR2 m_VEC[4];
 	UI m_ui;
+
+	class Mouse* m_pMouse;
+	POINT m_pos;
+	float m_fTime;
 
 	void BuildMenu(Game* pGame);
 

@@ -245,13 +245,4 @@ private:
 
 };*/
 
-class Mouse : public ISpatialObject
-{
-public:
-
-private:
-
-	POINT m_pos;
-};
-
 #endif

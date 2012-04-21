@@ -37,7 +37,7 @@ public:
         if (_Active)
             Stop();
  
-        QueryPerformanceFrequency(&_Frequency);
+       QueryPerformanceFrequency(&_Frequency);
  
         _StartTime = (_EndTime = 0.0);
         _StartCount.QuadPart = (_EndCount.QuadPart = 0);

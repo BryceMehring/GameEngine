@@ -2,20 +2,30 @@
 #define _GAMESTATEMACHINE_
 
 #include "GameState.h"
+#include <stack>
 
 class GameStateMachine
 {
 public:
 
-	GameStateMachine() : m_pState(nullptr) {}
-	void SetState(IGameState* pState, class Game* pGame, int stateId);
-	void RemoveState(class Game* pGame);
+	~GameStateMachine();
 
-	IGameState* GetState() { return m_pState; }
+	//void SetState(IGameState* pState, class Game* pGame, int stateId);
+	//void RemoveState(class Game* pGame);
+
+	IGameState* GetState();
+	void PushState(IGameState* pState, Game* pGame, int stateId);
+	void Push();
+	void Pop();
 
 private:
 
-	IGameState* m_pState;
+	typedef std::stack<IGameState*> StackType;
+
+	StackType m_States;
+	StackType m_StatesPoped;
+
+	void DestroyStack(StackType& stack);
 
 };
 

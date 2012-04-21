@@ -21,6 +21,7 @@ public:
 
 	// returns the name of the plug-in
 	virtual DLLType GetType() const = 0;
+	virtual int GetVersion() const = 0;
  
 	//virtual const VersionInfo& GetVersion() = 0;
 

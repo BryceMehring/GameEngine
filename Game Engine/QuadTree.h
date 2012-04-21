@@ -9,6 +9,7 @@
 #include <set>
 #include <hash_map>
 #include "IRender.h"
+#include <assert.h>
 
 const int MAX_NODES = 4;
 const int MAX_OBJ_PERNODE = 10;
@@ -40,7 +41,11 @@ public:
 
 	const RECT& GetRect() const { return R; }
 
-	void Erase(ISpatialObject* pObj) { m_pObjects->erase(pObj); }
+	void Erase(ISpatialObject* pObj)
+	{ 
+		m_pObjects->erase(pObj);
+		
+	}
 	const LIST_DTYPE* GetNearObjects() const { return m_pObjects; }
 
 	// returns true if P lies within the rectangle
@@ -78,7 +83,7 @@ private:
 	void ExpandRight();
 };
 
-class ISpatialObject
+class ISpatialObject : public IRender
 {
 public:
 
@@ -98,8 +103,9 @@ public:
 			m_pNode->Erase(this);
 		}
 	}
-	virtual const KEY& GetPos() const = 0;
+	virtual KEY GetPos() const = 0;
 	virtual Type GetType() const = 0;
+	virtual void Update(float dt) = 0;
 
 	void SetNode(Node* pNode) { m_pNode = pNode; }
 
@@ -183,21 +189,6 @@ protected:
 
 };
 
-class BaseQuadTree
-{
-public:
-
-protected:
-};
-
-class PointQuadTree
-{
-public:
-
-
-
-};
-
 class QuadTree : public IRender
 {
 public:
@@ -248,6 +239,8 @@ private:
 
 	// todo: need to implement 
 	void CalculateMaxSubDivisions();
+
+	void CheckNodeForDeletion(Node* pNode, int i);
 };
 
 /*class Unit : public CollidableObject

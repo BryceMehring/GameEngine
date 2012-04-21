@@ -98,6 +98,8 @@ public:
 	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color) = 0;
 	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform , D3DCOLOR color) = 0;
 	
+
+	virtual void DrawPoint(const D3DXVECTOR2& pos, DWORD color) = 0;
 	
 	// todo: need to create an abstract form of vertex declarations
 

@@ -62,6 +62,9 @@ private:
 	typedef stdext::hash_map<DLLType,PluginInfo> plugin_type;
 	plugin_type m_plugins;
 
+	// Helper functions
+	void FreePlugin(const PluginInfo& plugin);
+
 	// Prevent copying
 	PluginManager(const PluginManager&);
 	PluginManager& operator=(const PluginManager&);

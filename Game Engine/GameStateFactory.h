@@ -8,7 +8,7 @@ class GameStateFactory
 public:
 
 	virtual ~GameStateFactory() {}
-	virtual IGameState* GetState(int id) const = 0;
+	virtual IGameState* GetState(int id, class Game* pGame) const = 0;
 };
 
 #endif _GAMESTATEFACTORY_

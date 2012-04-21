@@ -1,6 +1,7 @@
 
 #include "QuadTree.h"
 #include "DxPolygon.h"
+#include "IRenderer.h"
 #include <algorithm>
 
 #define GET_INDEX(Node1) (Node1->m_Previous == nullptr) ? -1l : (MAX_NODES - (Node1->m_Previous->m_Nodes[MAX_NODES - 1] - Node1))
@@ -69,7 +70,16 @@ void Node::SetRect(const RECT& R)
 
 bool Node::IsPointWithin(KEY P) const
 {
-	return (PtInRect(&R,P) > 0);
+	//return PtInRect(&R,P) > 0;
+	if((P.x >= R.left) && (P.x <= R.right))
+	{
+		if((P.y >= R.top) && (P.y <= R.bottom))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool Node::IsPointWithin(const ISpatialObject* pObj) const
@@ -97,7 +107,7 @@ bool Node::HasPoint() const
 
 bool Node::IsFull() const
 {
-	return (m_pObjects->size()) >= 1;
+	return (m_pObjects->size()) >= 8;
 }
 
 void Node::AssignRect(const RECT& R)
@@ -134,8 +144,8 @@ void Node::SubDivide()
 				tempR.left = P[i-4].x;
 				tempR.top = P[i-4].y;
 
-				tempR.right = P[i].x;
-				tempR.bottom = P[i].y;
+				tempR.right = P[i].x + 1;
+				tempR.bottom = P[i].y + 1;
 
 				// pSubNode points to the correct sub node
 				Node* pSubNode = m_Nodes[r] = pNodeArray + (r++);
@@ -263,8 +273,14 @@ void PointIterator::Increment()
 // constructor
 QuadTree::QuadTree(const RECT& R) : m_iDepth(0)
 {
+
 	m_pRoot = new Node(R);
 	m_pRoot->SubDivide();
+
+	for(unsigned int i = 0; i < 4; ++i)
+	{
+		m_pRoot->m_Nodes[i]->SubDivide();
+	}
 
 	CalculateMaxSubDivisions();
 }
@@ -405,11 +421,38 @@ Node* QuadTree::FindNearNode(ISpatialObject* pObj) const
 void QuadTree::Update()
 {
 	// Loop through all the nodes
+	int i = 0;
 	for(NodeIterator iter = m_pRoot; (*iter) != nullptr; ++iter)
 	{
 		if(iter->HasPoint())
 		{
-			Update(*iter);
+			Node* pNode = *iter;
+
+			Update(pNode);
+			// todo: need to fix
+			//CheckNodeForDeletion(pNode,++i);
+		}
+	}
+}
+
+void QuadTree::CheckNodeForDeletion(Node* pNode, int n)
+{
+	if(n == MAX_NODES)
+	{
+		bool bDelete = false;
+		for(int i = 0; i < MAX_NODES; ++i)
+		{
+			if(pNode->m_Nodes[i]->HasPoint())
+			{
+				bDelete = false;
+				break;
+			}
+		}
+
+		if(bDelete)
+		{
+			delete[] pNode->m_Nodes[0];
+			memset(pNode->m_Nodes,0,sizeof(Node*)*MAX_NODES);
 		}
 	}
 }
@@ -429,7 +472,7 @@ void QuadTree::Update(Node* pNode)
 			if(pNewNode)
 			{
 				// add the point to the new node
-				Insert(*iter,pNewNode);
+				(Insert(*iter,pNewNode));
 			}
 			else
 			{
@@ -529,6 +572,7 @@ void QuadTree::DeleteTree(Node*& pNode)
 void QuadTree::Render(IRenderer* pRenderer)
 {
 	DxSquare square;
+
 	// loop over all nodes and render them
 	for(NodeIterator iter = m_pRoot; (*iter) != nullptr; ++iter)
 	{

@@ -72,14 +72,6 @@ struct MsgProcData
 	LPARAM lparam;
 };
 
-class IEvent
-{
-public:
-
-	virtual ~IEvent() {}
-	virtual void Notify(const MsgProcData&) const = 0;
-};
-
 // This class should be renamed to WindowManager
 
 class WindowManager//, public RefCounting

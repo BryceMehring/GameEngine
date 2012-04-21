@@ -101,9 +101,6 @@
     <ClInclude Include="Heap.h">
       <Filter>Memory Management</Filter>
     </ClInclude>
-    <ClInclude Include="MallocAllocator.h">
-      <Filter>Memory Management</Filter>
-    </ClInclude>
     <ClInclude Include="MemoryPool.h">
       <Filter>Memory Management</Filter>
     </ClInclude>

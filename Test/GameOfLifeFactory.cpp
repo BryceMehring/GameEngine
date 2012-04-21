@@ -2,7 +2,7 @@
 #include "GameOfLifeMenu.h"
 #include "GameOfLife.h"
 
-IGameState* GameOfLifeFactory::GetState(int id) const
+IGameState* GameOfLifeFactory::GetState(int id, Game* pGame) const
 {
 
 	IGameState* pState = nullptr;
@@ -11,11 +11,11 @@ IGameState* GameOfLifeFactory::GetState(int id) const
 	switch(id)
 	{
 	case MENU:
-		pState = new GameOfLifeMenu();
+		pState = new GameOfLifeMenu(pGame);
 		break;
 
 	case GAME:
-		pState = new ::GameOfLife();
+		pState = new ::GameOfLife(pGame);
 		break;
 	default:
 
