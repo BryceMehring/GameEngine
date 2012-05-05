@@ -1,31 +1,37 @@
+// Programmed by Bryce Mehring
+
 #ifndef _GAMESTATEMACHINE_
 #define _GAMESTATEMACHINE_
 
 #include "GameState.h"
 #include <stack>
 
+
+// This class manages setting and removing the current state
 class GameStateMachine
 {
 public:
 
-	~GameStateMachine();
+	GameStateMachine() : m_pState(nullptr) {}
 
-	//void SetState(IGameState* pState, class Game* pGame, int stateId);
-	//void RemoveState(class Game* pGame);
+	// Removes current state if there is one
+	// And then initializes the new state
+	void SetState(IGameState* pState, class Game* pGame);
 
-	IGameState* GetState();
-	void PushState(IGameState* pState, Game* pGame, int stateId);
-	void Push();
-	void Pop();
+	// Adds the current state string id to the stack
+	// Destroy the current state
+	void RemoveState(class Game* pGame);
+
+	// Sets the last state that was called with RemoveState()
+	void LoadPreviousState(class Game* pGame);
+
+	IGameState* GetState() { return m_pState; }
 
 private:
 
-	typedef std::stack<IGameState*> StackType;
+	IGameState* m_pState;
 
-	StackType m_States;
-	StackType m_StatesPoped;
-
-	void DestroyStack(StackType& stack);
+	std::stack<std::string> m_states;
 
 };
 

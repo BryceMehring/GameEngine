@@ -14,6 +14,10 @@
     <ProjectGuid>{C9F3F3FF-F83F-406A-81EA-B7D1A01A40CF}</ProjectGuid>
     <RootNamespace>DX9Renderer</RootNamespace>
     <ProjectName>DX9Renderer</ProjectName>
+    <SccProjectName>Svn</SccProjectName>
+    <SccAuxPath>Svn</SccAuxPath>
+    <SccLocalPath>Svn</SccLocalPath>
+    <SccProvider>SubversionScc</SccProvider>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
