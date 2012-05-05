@@ -31,6 +31,9 @@
     <Filter Include="Memory Management">
       <UniqueIdentifier>{fc603ad1-b4c6-47df-98a9-66654a014e54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="State\Creator">
+      <UniqueIdentifier>{801eeabe-573f-4934-ac6e-54af254dcaeb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileManager.h">
@@ -75,9 +78,6 @@
     <ClInclude Include="QuadTree.h">
       <Filter>Quadtree</Filter>
     </ClInclude>
-    <ClInclude Include="StateUpdater.h">
-      <Filter>State</Filter>
-    </ClInclude>
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Camera.h">
@@ -107,6 +107,17 @@
     <ClInclude Include="BNew.h">
       <Filter>Memory Management</Filter>
     </ClInclude>
+    <ClInclude Include="IStateCreator.h">
+      <Filter>State\Creator</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuCreator.h">
+      <Filter>State\Creator</Filter>
+    </ClInclude>
+    <ClInclude Include="CreatorId.h">
+      <Filter>State\Creator</Filter>
+    </ClInclude>
+    <ClInclude Include="RTTI.h" />
+    <ClInclude Include="VecMath.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileManager.cpp">
@@ -149,5 +160,12 @@
     <ClCompile Include="BNew.cpp">
       <Filter>Memory Management</Filter>
     </ClCompile>
+    <ClCompile Include="GameStateFactory.cpp">
+      <Filter>State</Filter>
+    </ClCompile>
+    <ClCompile Include="GameState.cpp">
+      <Filter>State</Filter>
+    </ClCompile>
+    <ClCompile Include="VecMath.cpp" />
   </ItemGroup>
 </Project>

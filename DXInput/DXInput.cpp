@@ -57,7 +57,7 @@ void DirectInput::Poll(const MsgProcData& data)
 {
 	switch(data.msg)
 	{
-		case WM_INPUT:
+		/*case WM_INPUT:
 		{
 			UINT dwSize;
 			 
@@ -78,7 +78,7 @@ void DirectInput::Poll(const MsgProcData& data)
 				m_iMouseX = raw->data.mouse.lLastY;
 			}
 	
-			/*hResult = StringCchPrintf(szTempOutput, STRSAFE_MAX_CCH, TEXT("Mouse: usFlags=%04x ulButtons=%04x usButtonFlags=%04x usButtonData=%04x ulRawButtons=%04x lLastX=%04x lLastY=%04x ulExtraInformation=%04x\r\n"), 
+			hResult = StringCchPrintf(szTempOutput, STRSAFE_MAX_CCH, TEXT("Mouse: usFlags=%04x ulButtons=%04x usButtonFlags=%04x usButtonData=%04x ulRawButtons=%04x lLastX=%04x lLastY=%04x ulExtraInformation=%04x\r\n"), 
 				raw->data.mouse.usFlags, 
 				raw->data.mouse.ulButtons, 
 				raw->data.mouse.usButtonFlags, 
@@ -92,11 +92,11 @@ void DirectInput::Poll(const MsgProcData& data)
 			{
 			// TODO: write error handler
 			}
-			OutputDebugString(szTempOutput);*/
+			OutputDebugString(szTempOutput);
 
 			delete[] lpb;
 			break;
-		}
+		}*/
 		case WM_KEYDOWN:
 		{
 			// if this is the first WM_KEYDOWN msg

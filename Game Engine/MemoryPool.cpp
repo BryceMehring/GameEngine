@@ -18,10 +18,7 @@ using namespace std;
 // MemoryBlock links together the allocated memory
 
 
-#define SIGNATURE_DATA_TYPE unsigned int
 
-const SIGNATURE_DATA_TYPE MEM_SIGNATURE = 0xDEADC0DE;
-const unsigned int MEM_SIGNATURE_SIZE = sizeof(SIGNATURE_DATA_TYPE);
 
 
 MemoryPool::MemoryPool(unsigned int size, unsigned int n) : m_pNode(NULL),
@@ -241,24 +238,23 @@ void MemoryPool::Erase(Node* pNode)
 // this function inserts pNode before pWhere
 void MemoryPool::Insert(Node* pWhere, Node* pNode)
 {
-	if(pNode && pWhere)
-	{
-		pNode->pPrevious = pWhere->pPrevious;
-		pNode->pNext = pWhere;
+	pNode->pPrevious = pWhere->pPrevious;
+	pNode->pNext = pWhere;
 
-		if(pWhere->pPrevious == nullptr)
-		{
-			// insert in the front
-			m_pNodeHead->pPrevious = pNode;
-			m_pNodeHead->pPrevious->pNext = m_pNodeHead;
+	if(pWhere->pPrevious == nullptr)
+	{
+		// insert in the front
+		pWhere->pPrevious = pNode;
+
+		// todo: check if this is not needed
+		//m_pNodeHead->pPrevious->pNext = m_pNodeHead;
 					
-			m_pNodeHead = m_pNodeHead->pPrevious; // Set m_pFirst to the new node
-		}
-		else
-		{
-			pWhere->pPrevious->pNext = pNode;
-			pWhere->pPrevious = pNode;
-		}
+		m_pNodeHead = m_pNodeHead->pPrevious; // Set m_pFirst to the new node
+	}
+	else
+	{
+		pWhere->pPrevious->pNext = pNode;
+		pWhere->pPrevious = pNode;
 	}
 }
 
@@ -290,7 +286,7 @@ unsigned int MemoryPool::SortBlocks()
 				pPrevIter = m_pNodeHead;
 			}
 
-			// Move the node to the new location in thelist
+			// Move the node to the new location in the list
 			Move(pPrevIter,pIter->pNext);
 
 			count++;

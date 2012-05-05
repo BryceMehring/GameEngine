@@ -46,7 +46,7 @@ public:
 
 	// these function should only be called during idle cpu time.
 	// it sorts the pools so that the free pools are in front
-	// The underlying sorting algorithm is insertion sort
+	// The underlying sorting algorithm is insertion sort, returning the number of out of order nodes
 	unsigned int SortBlocks();
 
 	// info
@@ -60,10 +60,36 @@ public:
 
 private:
 
+	struct Node;
+
+	struct MemoryBlock 
+	{
+		Node* pNode;
+
+		// memory
+		MemoryBlock* pNext;
+	};
+
+	struct Node
+	{
+		// The next free memory block in the list
+		MemoryBlock* pMemoryBlock;
+
+		unsigned int iSize; // number of MemoryBlocks in the list
+
+		MemoryPool* pPool;
+
+		// Pointers to create linked list of nodes
+		Node* pNext;
+		Node* pPrevious;
+	};
+
+	friend void BDelete(void* p);
+
 	// ========== Data Members ========== 
-	struct Node* m_pNode; // points to the current node
-	struct Node* m_pNodeHead; // points to the first node
-	struct Node* m_pNodeTail; // points to the last node
+	Node* m_pNode; // points to the current node
+	Node* m_pNodeHead; // points to the first node
+	Node* m_pNodeTail; // points to the last node
 
 	unsigned int m_iSize; // sizeof(elements)
 	const unsigned int m_iLength; // total number of elements in each memory block
@@ -98,26 +124,6 @@ private:
 
 };
 
-struct MemoryBlock 
-{
-	struct Node* pNode;
 
-	// memory
-	MemoryBlock* pNext;
-};
-
-struct Node
-{
-	// The next free memory block in the list
-	MemoryBlock* pMemoryBlock;
-
-	unsigned int iSize; // number of MemoryBlocks in the list
-
-	MemoryPool* pPool;
-
-	// Pointers to create linked list of nodes
-	Node* pNext;
-	Node* pPrevious;
-};
 
 #endif //_MEMPOOL_

@@ -107,7 +107,7 @@ bool Node::HasPoint() const
 
 bool Node::IsFull() const
 {
-	return (m_pObjects->size()) >= 8;
+	return (m_pObjects->size()) >= 4;
 }
 
 void Node::AssignRect(const RECT& R)
@@ -332,7 +332,7 @@ bool QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 			}
 
 			// check if the point has already been inserted
-			auto iter = find_if(pWhere->m_pObjects->begin(),pWhere->m_pObjects->end(),[&](const ISpatialObject* p) -> bool
+			/*auto iter = find_if(pWhere->m_pObjects->begin(),pWhere->m_pObjects->end(),[&](const ISpatialObject* p) -> bool
 			{
 				return p->GetPos() == P;
 			});
@@ -345,7 +345,7 @@ bool QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
 				// failure
 				success = false;
 				break;
-			}
+			}*/
 
 			// insert point
 
@@ -421,13 +421,12 @@ Node* QuadTree::FindNearNode(ISpatialObject* pObj) const
 void QuadTree::Update()
 {
 	// Loop through all the nodes
-	int i = 0;
 	for(NodeIterator iter = m_pRoot; (*iter) != nullptr; ++iter)
 	{
-		if(iter->HasPoint())
-		{
-			Node* pNode = *iter;
+		Node* pNode = *iter;
 
+		if(pNode->HasPoint())
+		{
 			Update(pNode);
 			// todo: need to fix
 			//CheckNodeForDeletion(pNode,++i);
@@ -437,6 +436,7 @@ void QuadTree::Update()
 
 void QuadTree::CheckNodeForDeletion(Node* pNode, int n)
 {
+	// todo: check this function
 	if(n == MAX_NODES)
 	{
 		bool bDelete = false;

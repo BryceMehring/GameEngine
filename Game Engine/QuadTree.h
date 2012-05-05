@@ -8,8 +8,9 @@
 #include <Windows.h>
 #include <set>
 #include <hash_map>
-#include "IRender.h"
 #include <assert.h>
+#include "IRender.h"
+#include "RTTI.h"
 
 const int MAX_NODES = 4;
 const int MAX_OBJ_PERNODE = 10;
@@ -103,6 +104,8 @@ public:
 			m_pNode->Erase(this);
 		}
 	}
+
+	// todo: need to change the KEY structure to D3dxvector?
 	virtual KEY GetPos() const = 0;
 	virtual Type GetType() const = 0;
 	virtual void Update(float dt) = 0;

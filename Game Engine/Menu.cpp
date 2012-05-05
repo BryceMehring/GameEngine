@@ -6,7 +6,11 @@
 #include "WindowManager.h"
 #include <dinput.h>
 
+
 using namespace std;
+
+//const RTTI Menu::s_rtti("Menu");
+RTTI_IMPL(Menu);
 
 bool IsClicked(IKMInput* pInput, DxPolygon* pPolygon)
 {
@@ -21,20 +25,19 @@ bool IsClicked(IKMInput* pInput, DxPolygon* pPolygon)
 Menu::Menu() : m_pPrev(nullptr), m_pPolygon(nullptr)
 {
 }
-//Menu::Menu(const std::string& str) : m_menuTitle(str), m_pPrev(nullptr), m_pPolygon(nullptr)  {}
 Menu::~Menu()
 {
-	// This is recursive...
-	// todo: fix this?... 
-	for(unsigned int i = 0; i < m_SubMenu.size(); ++i)
-	{
-		delete m_SubMenu[i];
-	}
-
 	for(unsigned int i = 0; i < m_elements.size(); ++i)
 	{
 		delete m_elements[i];
 	}
+
+	for(unsigned int i = 0; i < m_menus.size(); ++i)
+	{
+		delete m_menus[i];
+	}
+
+	delete m_pPolygon;
 }
 void Menu::SetMenuTitle(const std::string& str,const POINT& P)
 {
@@ -48,29 +51,47 @@ void Menu::SetPolygon(DxPolygon* pPolygon)
 		m_pPolygon = pPolygon;
 	}
 }
+
 void Menu::AddMenu(Menu* pMenu)
 {
-	m_SubMenu.push_back(pMenu);
-	pMenu->m_pPrev = this;
+	if(pMenu != nullptr)
+	{
+		pMenu->m_pPrev = this;
+		m_menus.push_back(pMenu);
+	}
 }
+
 void Menu::AddElement(IUIElement* pElement)
 {
-	if(pElement)
+	if(pElement != nullptr)
 	{
 		m_elements.push_back(pElement);
 	}
 }
 
-void Menu::Update(UI* pUI, IKMInput* pInput)
+void Menu::Update(GUI* pGUI, IKMInput* pInput)
 {
 	if(pInput->IsKeyDown())
 	{
 		m_menuTitle += pInput->GetKeyDown();
 	}
 
-	if(pInput->KeyDown(BACKSPACE) && (m_pPrev != nullptr))
+	if(pInput->KeyDown(ESCAPE))
 	{
-		pUI->SetMenu(m_pPrev);
+		if(m_pPrev != nullptr)
+		{
+			pGUI->SetMenu(m_pPrev);
+		}
+	}
+
+	if(pInput->KeyDown(TAB))
+	{
+		pGUI->m_uiCurrentIndex = ((pGUI->m_uiCurrentIndex + 1) % m_elements.size());
+		m_elements[pGUI->m_uiCurrentIndex]->Select();
+	}
+	else if(pInput->KeyDown(ENTER))
+	{
+		m_elements[pGUI->m_uiCurrentIndex]->Enter();
 	}
 	else
 	{
@@ -97,37 +118,63 @@ void Menu::Render(IRenderer* pRenderer)
 	}
 }
 
-UI::UI(Menu* pMenu) : m_pMenu(pMenu)
+GUI::GUI(Menu* pMenu) : m_pMenu(pMenu), m_uiCurrentIndex(0)
 {
 }
-UI::~UI()
+
+GUI::~GUI()
 {
 	delete m_pMenu;
 }
 
-void UI::SetMenu(Menu* pMenu)
+GUI::ChangeMenuCallback GUI::CreateCallback()
 {
-	m_pMenu = pMenu;
+	return ChangeMenuCallback(this,&GUI::SetMenu);
 }
 
-void UI::Update(IKMInput* pInput)
+void GUI::Update(IKMInput* pInput)
 {
 	m_pMenu->Update(this,pInput);
 }
 
-void UI::Render(IRenderer* pRenderer)
+void GUI::Render(IRenderer* pRenderer)
 {
 	m_pMenu->Render(pRenderer);
 }
 
-ButtonBase::ButtonBase(const Text& name, DxPolygon* pPolygon) :
-m_name(name), m_pPolygon(pPolygon)
+void GUI::SetMenu(Menu* pMenu)
 {
+	if(pMenu != nullptr)
+	{
+		m_pMenu = pMenu;
+	}
+}
+
+ButtonBase::ButtonBase(const Text& name, DxPolygon* pPolygon) :
+m_name(name), m_pPolygon(pPolygon), m_color(-1)
+{
+}
+
+ButtonBase::~ButtonBase()
+{
+	delete m_pPolygon;
+}
+
+void ButtonBase::Update(IKMInput* pInput)
+{
+	if(m_pPolygon->IsPointInPolygon(pInput->MousePos()))
+	{
+		m_color = 0xffffff00;
+	}
+	else
+	{
+		m_color = 0xffffffff;
+	}
 }
 
 void ButtonBase::Render(class IRenderer* pRenderer)
 {
-	pRenderer->DrawString(m_name.name.c_str(),m_name.P,0xffffffff);
+	pRenderer->DrawString(m_name.name.c_str(),m_name.P,m_color);
 
 	m_pPolygon->Render(pRenderer);
 }

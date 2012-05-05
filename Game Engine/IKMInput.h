@@ -8,8 +8,10 @@ enum KeyCode
 {
 	BACKSPACE = 8,
 	TAB,
+	ENTER = 13,
 	ESCAPE = 27,
 	SPACE = 32,
+	LEFT = 37, UP,RIGHT,DOWN,
 	A = 65, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, 
 	DEL = 127,
 };

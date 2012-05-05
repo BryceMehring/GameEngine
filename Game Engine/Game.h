@@ -1,3 +1,5 @@
+// Programmed By Bryce Mehring
+
 #ifndef _GAME_
 #define _GAME_
 
@@ -7,6 +9,27 @@
 #include "GameStateMachine.h"
 #include "IKMInput.h"
 #include "IRenderer.h"
+#include <stack>
+#include <string>
+
+class GameInfo
+{
+public:
+
+	GameInfo();
+	void Update(double dt);
+
+	unsigned int GetFPS() const;
+
+private:
+
+	void UpdateFPS(double dt);
+
+	double m_fTimeElapsed;
+	unsigned int m_uiFrames;
+	unsigned int m_uiFPS;
+
+};
 
 class Game
 {
@@ -15,12 +38,8 @@ public:
 	Game(HINSTANCE hInstance);
 	virtual ~Game();
 
-	// Set state
-	void SetStateFactory(GameStateFactory* pFactory);
-	void SetState(int id);
-	void PopState();
-	void PushState();
-
+	void SetNextState(const std::string& name);
+	
 	void ReloadPlugins();
 	void ReloadPluginsFromUserFolder();
 
@@ -28,8 +47,8 @@ public:
 	IRenderer* GetRenderer();
 	IKMInput* GetInput();
 	WindowManager* GetWindow();
-	float GetDt() const;
-	float GetFps() const;
+	double GetDt() const;
+	unsigned int GetFps() const;
 
 	virtual int PlayGame();
 
@@ -40,23 +59,26 @@ protected:
 	PluginManager m_plugins;
 
 	GameStateMachine m_StateMachine;
-	GameStateFactory* m_pFactory;
 
-	float m_fDT;
+	// todo: this is where I could add the asVM in the future...
 
+	double m_fDT;
+	GameInfo m_info;
 	// Interfaces
 	IRenderer* m_pRenderer;
 	IKMInput* m_pInput;
+
+private:
+
+	IGameState* m_pNextState;
 
 	// helper functions
 	void StartTimer();
 	void EndTimer();
 
-private:
-
 	Timer m_timer;
+
 	int m_iEventId;
-	float m_fFPSTime;
 
 	// helper functions
 	void LoadAllDLL();
@@ -66,6 +88,7 @@ private:
 	void ReloadPlugins(const std::string& file);
 
 	void Update();
+	void UpdateFPS();
 
 	void Draw();
 	void DrawFPS();

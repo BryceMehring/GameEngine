@@ -13,55 +13,53 @@ class Timer
 public:
     // Construct the timer and initialize all of the
     // members by resetting them to their zero-values.
-    Timer(void) {
+    Timer()
+	{
+		LARGE_INTEGER f;
+		QueryPerformanceFrequency(&f);
+
+		_Frequency = (double)f.QuadPart;
+
         Reset();
     }
  
-    ~Timer(void){ /* empty */ }
+    ~Timer(){ /* empty */ }
  
     // Activate the timer and poll the counter.
-    void Start(void) {
+    void Start()
+	{
         _Active = true;
         PollCounter(_StartCount);
     }
  
     // Deactivate the timer and poll the counter.
-    void Stop(void) {
+    void Stop() {
         _Active = false;
         PollCounter(_EndCount);
     }
  
     // Stops the timer if it's active and resets all
     // of the Timer's members to their initial values.
-    void Reset(void) {
+    void Reset() {
         if (_Active)
             Stop();
- 
-       QueryPerformanceFrequency(&_Frequency);
- 
-        _StartTime = (_EndTime = 0.0);
+
         _StartCount.QuadPart = (_EndCount.QuadPart = 0);
         _Active = false;
     }
  
     // Returns the time elapsed since Start() was called
     // in micro-seconds
-    long double GetTimeInMicroSeconds(void) {
-        const long double MicroFreq =
-            1000000.0 / _Frequency.QuadPart;
+    double GetTime()
+	{
+		if (_Active) { PollCounter(_EndCount); }
  
-        if (_Active)
-            PollCounter(_EndCount);
- 
-        _StartTime = _StartCount.QuadPart * MicroFreq;
-        _EndTime = _EndCount.QuadPart * MicroFreq;
- 
-        return _EndTime - _StartTime;
+        return (_EndCount.QuadPart - _StartCount.QuadPart) / _Frequency;
     }
  
     // Returns the time elapsed since Start() was called
     // in milli-seconds
-    long double GetTimeInMilliseconds(void) {
+    /*long double GetTimeInMilliseconds(void) {
         return GetTimeInMicroSeconds() * 0.001;
     }
  
@@ -69,10 +67,10 @@ public:
     // in seconds
     long double GetTimeInSeconds( void ) {
         return GetTimeInMicroSeconds() * 0.000001;
-    }
+    }*/
  
     // Returns TRUE if the Timer is currently active
-    const bool IsActive(void) const {
+    const bool IsActive() const {
         return _Active;
     }
 private:
@@ -89,11 +87,8 @@ private:
  
 private:
     bool _Active;
-    long double
-        _StartTime,
-        _EndTime;
+	double _Frequency;
     LARGE_INTEGER
-        _Frequency,
         _StartCount,
         _EndCount;
 }; // class Timer

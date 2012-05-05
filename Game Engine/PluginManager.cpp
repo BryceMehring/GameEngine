@@ -66,6 +66,7 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 
 	dll.mod = LoadLibrary(pDLL);
 
+	// todo: fix the error handling here
 	if(dll.mod == nullptr)
 	{
 		// error, could not load dll

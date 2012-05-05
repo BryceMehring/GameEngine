@@ -14,7 +14,7 @@ void BDelete(void* p)
 	if(p != nullptr)
 	{
 		// release the memory back to the pool
-		MemoryBlock* pBlock = (MemoryBlock*)((char*)p - sizeof(Node*));
+		MemoryPool::MemoryBlock* pBlock = (MemoryPool::MemoryBlock*)((char*)p - sizeof(MemoryPool::Node*));
 		pBlock->pNode->pPool->Deallocate(p);
 	}
 }

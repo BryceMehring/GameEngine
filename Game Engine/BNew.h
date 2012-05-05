@@ -18,7 +18,7 @@ class Pooled
 {
 public:
 
-	USE_MEM_POOL();
+	//USE_MEM_POOL();
 
 };
 

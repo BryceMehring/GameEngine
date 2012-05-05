@@ -25,10 +25,14 @@ class Singleton
 {
 public:
 
+	// note: using boot here fails when creating the global creator objects
+	// todo: fix this
 	static T& Instance()
 	{
-		boost::call_once(once,Init);
-		return *s_pInstance;
+		static T instance;
+		//boost::call_once(once,Init);
+		return instance;
+		//return *s_pInstance;
 	}
 
 private:
@@ -37,7 +41,7 @@ private:
 	static void Init() throw()
 	{
 		// the constructor should never call this same function again, or else it would fail 
-		s_pInstance.reset(new T());
+		//s_pInstance.reset(new T());
 	}
 
 	static boost::scoped_ptr<T> s_pInstance;

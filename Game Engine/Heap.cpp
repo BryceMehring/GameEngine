@@ -13,7 +13,7 @@ Heap::~Heap()
 
 	for(auto iter = m_pool.begin(); iter != m_pool.end(); ++iter)
 	{
-		free(iter->second);
+		delete (iter->second);
 	}
 
 }
@@ -58,14 +58,17 @@ void Heap::GetMemoryInfo(char* pStr, unsigned int uiLength) const
 
 MemoryPool& Heap::GetPool(unsigned int size)
 {
-	size = ((size+7)&~7);
+	const unsigned int uiNewSize = ((size+7)&~7);
+	const unsigned int uiDifference = uiNewSize - size;
 
-	auto iter = m_pool.find(size);
+	m_uiWastedBytes = uiDifference * 512;
+
+	auto iter = m_pool.find(uiNewSize);
 	
 	if(iter == m_pool.end())
 	{
 		// insert pool into hash map
-		auto pair = m_pool.insert(make_pair(size,new MemoryPool(size,512))); // todo, could make size dynamic
+		auto pair = m_pool.insert(make_pair(uiNewSize,new MemoryPool(uiNewSize,512))); // todo, could make size dynamic
 		iter = pair.first;
 	}
 

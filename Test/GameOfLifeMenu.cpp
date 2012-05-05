@@ -2,17 +2,30 @@
 #include "Game.h"
 #include "WindowManager.h"
 #include "FileManager.h"
-#include "StateUpdater.h"
 
-GameOfLifeMenu::GameOfLifeMenu(Game* m_pGame) : IGameState(m_pGame)
+RTTI_IMPL(GameOfLifeMenu);
+
+void Quit()
 {
+	PostQuitMessage(0);
+}
+
+GameOfLifeMenu::GameOfLifeMenu()
+{
+	
+}
+
+void GameOfLifeMenu::Init(Game* pGame)
+{
+	const int iSkize = sizeof(GameOfLifeMenu);
+
 	RECT R = {10,10,500,500};
 
 	RECT R2 = {200,100,0,0};
-	m_pGame->GetRenderer()->GetStringRec("Options",R2);
+	pGame->GetRenderer()->GetStringRec("Options",R2);
 
 	RECT R3 = {300,100,0,0};
-	m_pGame->GetRenderer()->GetStringRec("State",R3);
+	pGame->GetRenderer()->GetStringRec("State",R3);
 
 	POINT mainPoint = {15,15};
 
@@ -39,10 +52,11 @@ GameOfLifeMenu::GameOfLifeMenu(Game* m_pGame) : IGameState(m_pGame)
 	pTriangle->ConstructFromArray(VEC,4);
 
 	// Delegates
-	GenericButton<Menu*>::DELEGATE d(&m_ui,&UI::SetMenu);
-	GenericButton<void>::DELEGATE dState(m_pGame,&Game::PopState);
+	GenericButton<Menu*>::DELEGATE dPush(&m_gui,&GUI::SetMenu);
+	GenericButton<const std::string&>::DELEGATE dState(pGame,&Game::SetNextState);
 
 	// Create Menu Objects
+	//m_pGame->SetState(MENU);
 	Menu* pMenu = new Menu;
 	Menu* pOptions = new Menu;
 
@@ -51,10 +65,11 @@ GameOfLifeMenu::GameOfLifeMenu(Game* m_pGame) : IGameState(m_pGame)
 
 	// Create Buttons
 	GenericButton<Menu*>* pButton = new SquareButton<Menu*>(R2,"Options");
-	pButton->SetCallback(d,pOptions);
+	pButton->SetCallback(dPush);
+	pButton->SetArg(pOptions);
 
-	GenericButton<Menu*>* pButton2 = new GenericButton<Menu*>(text3,d,pMenu,pTriangle);
-	GenericButton<void>* pStateButton = new GenericButton<void>(text2,dState,pStateButtonSquare);
+	GenericButton<Menu*>* pButton2 = new GenericButton<Menu*>(text3,dPush,pMenu,pTriangle);
+	GenericButton<const std::string&>* pStateButton = new GenericButton<const std::string&>(text2,dState,"GameOfLife",pStateButtonSquare);
 
 	// Associate square with menu
 	pMenu->SetPolygon(pSquare);
@@ -67,22 +82,18 @@ GameOfLifeMenu::GameOfLifeMenu(Game* m_pGame) : IGameState(m_pGame)
 	pMenu->AddElement(pButton);
 	pMenu->AddElement(pStateButton);
 
-	BuildResolutionMenu(m_pGame,pOptions);
+	BuildResolutionMenu(pGame,pOptions);
+	BuildQuitButton(pGame,pMenu);
 
-	m_ui.SetMenu(pMenu);
+	m_gui.SetMenu(pMenu);
 }
 
-void GameOfLifeMenu::Init()
+void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
 {
-	ShowCursor(true);
-}
-
-void GameOfLifeMenu::BuildResolutionMenu(Game* m_pGame, Menu* pMenu)
-{
-	IRenderer* pRenderer = m_pGame->GetRenderer();
+	IRenderer* pRenderer = pGame->GetRenderer();
 	
 	RECT R = {10,10,500,500};
-	RECT R2 = {200,300,0,0};
+	RECT R2 = {200,300};
 
 	Menu* pResMenu = new Menu();
 	POINT menuTitlePoint = {15,15};
@@ -90,11 +101,12 @@ void GameOfLifeMenu::BuildResolutionMenu(Game* m_pGame, Menu* pMenu)
 	pResMenu->SetPolygon(new DxSquare(R));
 
 	GenericButton<UINT>::DELEGATE setDisplayModeCallback(pRenderer,&IRenderer::SetDisplayMode);
-	GenericButton<Menu*>::DELEGATE setMenuCallback(&m_ui,&UI::SetMenu);
+	GenericButton<Menu*>::DELEGATE setMenuCallback(&m_gui,&GUI::SetMenu);
 
 	pRenderer->GetStringRec("Resolution Options",R2);
 	GenericButton<Menu*>* pResMenuButton = new SquareButton<Menu*>(R2,"Resolution Options");
-	pResMenuButton->SetCallback(setMenuCallback,pResMenu);
+	pResMenuButton->SetCallback(setMenuCallback);
+	pResMenuButton->SetArg(pResMenu);
 
 	pMenu->AddElement(pResMenuButton);
 	pMenu->AddMenu(pResMenu);
@@ -106,40 +118,43 @@ void GameOfLifeMenu::BuildResolutionMenu(Game* m_pGame, Menu* pMenu)
 		pRenderer->GetStringRec(pRenderer->GetDisplayModeStr(i).c_str(),R3);
 
 		GenericButton<UINT>* pStateButton = new SquareButton<UINT>(R3,pRenderer->GetDisplayModeStr(i));
-		pStateButton->SetCallback(setDisplayModeCallback,i);
+		pStateButton->SetCallback(setDisplayModeCallback);
+		pStateButton->SetArg(i);
 
 		pResMenu->AddElement(pStateButton);
 	}
 }
 
-void GameOfLifeMenu::Destroy()
+void GameOfLifeMenu::BuildQuitButton(Game* pGame, Menu* pMenu)
+{
+	const char* pStr = "Quit";
+
+	GenericButton<void>::DELEGATE callback(Quit);
+
+	::RECT R = { 400,400,0,0};
+	pGame->GetRenderer()->GetStringRec(pStr,R);
+
+	SquareButton<void>* pButton = new SquareButton<void>(R,pStr);
+	pButton->SetCallback(callback);
+	pButton->SetTextColor(0xffff0000);
+
+	pMenu->AddElement(pButton);
+}
+
+void GameOfLifeMenu::Destroy(Game* pGame)
 {
 	//StateUpdater su(m_state,_DESTROYING);
-	IRenderer* pRenderer = m_pGame->GetRenderer();
+	IRenderer* pRenderer = pGame->GetRenderer();
 	//StateUpdater su(m_state,::DESTROYING);
 
 }
-void GameOfLifeMenu::Update()
+void GameOfLifeMenu::Update(Game* pGame)
 {
-	StateUpdater su(m_state,UPDATING);
-
-	m_ui.Update(m_pGame->GetInput());
-	//m_pUI->Update();
-
-	/*if(m_timer.GetTimeInSeconds() > 1.0)
-	{
-		m_pGame->SetState(1);
-	}*/
+	IKMInput* pInput = pGame->GetInput();
+	m_gui.Update(pInput);
 }
-void GameOfLifeMenu::Draw()
+void GameOfLifeMenu::Draw(Game* pGame)
 {
-	StateUpdater su(m_state,RENDERING);
-
-	IRenderer* pRenderer = m_pGame->GetRenderer();
-	//pRenderer->Begin();
-
-	m_ui.Render(m_pGame->GetRenderer());
-
-	//pRenderer->End();
-	//pRenderer->Present();
+	IRenderer* pRenderer = pGame->GetRenderer();
+	m_gui.Render(pRenderer);
 }

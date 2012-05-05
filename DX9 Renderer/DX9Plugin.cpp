@@ -126,6 +126,8 @@ void DX9Render::InitializeDirectX()
 	//EnumerateDisplayAdaptors();
 	HWND windowHandle = m_mgr.GetWindowHandle();
 
+	// todo: need to check device caps 
+
 	// Fill out the D3DPRESENT_PARAMETERS structure.
 	
 	m_D3DParameters.BackBufferWidth            = 0;
@@ -400,6 +402,7 @@ void DX9Render::InitializeFont()
 		desc.Width = 7; // 8
 		desc.Weight = 500;
 		desc.Quality = 255;
+		desc.MipLevels = 1;
 
 		D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
 	}
@@ -447,9 +450,17 @@ void DX9Render::RenderText()
 	}
 }
 
+float GetRandFloat(float a, float b)
+{
+	float fRand = (rand() % 10001) * 0.0001f;
+	return fRand*(b - a) + a;
+}
+
 void DX9Render::RenderPoints()
 {
-	D3DXMATRIX T;
+	D3DXMATRIX T, R, S;
+
+	::D3DXMatrixScaling(&S,0.3f,0.3f,1.0f);
 
 	const unsigned int size = m_points.size();
 	for(unsigned int i = 0; i < size; ++i)
@@ -458,7 +469,9 @@ void DX9Render::RenderPoints()
 		DWORD color = m_points[i].Color;
 
 		D3DXMatrixTranslation(&T,point.x,point.y,0);
-		m_pSprite->SetTransform(&T);
+		D3DXMatrixRotationY(&R,GetRandFloat(0.0f,6.2831f));
+
+		m_pSprite->SetTransform(&(S*T));
 		m_pSprite->Draw(m_pTexture,0,0,0,color);
 	}
 

@@ -49,6 +49,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -78,6 +79,7 @@
     <ClInclude Include="asVM.h" />
     <ClInclude Include="BNew.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CreatorId.h" />
     <ClInclude Include="Delegates.h" />
     <ClInclude Include="DxPolygon.h" />
     <ClInclude Include="FileManager.h" />
@@ -92,14 +94,17 @@
     <ClInclude Include="IRender.h" />
     <ClInclude Include="IRenderer.h" />
     <ClInclude Include="IScripted.h" />
+    <ClInclude Include="IStateCreator.h" />
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="MenuCreator.h" />
     <ClInclude Include="PluginManager.h" />
     <ClInclude Include="QuadTree.h" />
     <ClInclude Include="RefCounting.h" />
+    <ClInclude Include="RTTI.h" />
     <ClInclude Include="Singleton.h" />
-    <ClInclude Include="StateUpdater.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="VecMath.h" />
     <ClInclude Include="WindowManager.h" />
   </ItemGroup>
   <ItemGroup>
@@ -109,6 +114,8 @@
     <ClCompile Include="DxPolygon.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameState.cpp" />
+    <ClCompile Include="GameStateFactory.cpp" />
     <ClCompile Include="GameStateMachine.cpp" />
     <ClCompile Include="Heap.cpp" />
     <ClCompile Include="MemoryPool.cpp" />
@@ -116,6 +123,7 @@
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RefCounting.cpp" />
+    <ClCompile Include="VecMath.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

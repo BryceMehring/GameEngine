@@ -38,6 +38,8 @@ private:
 	// Data members
 	typedef std::hash_map<unsigned int,MemoryPool*> POOL_MAP;
 	POOL_MAP m_pool;
+
+	unsigned int m_uiWastedBytes;
 };
 
 /*#define MEMPOOL_DECLARE(CLASS) \

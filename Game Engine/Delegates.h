@@ -4,7 +4,7 @@
 
 // Note: These delegates only support 1 argument 
 // todo: I could add support for n amount of arguments with Variadic templates when MSVS updates to the new
-// C++0x standard which just got passed. 
+// C++0x standard.
 
 
 #ifndef _DELEGATES_
@@ -259,6 +259,8 @@ public:
 		}
 	}
 
+	bool IsBound() { return m_ptr != nullptr; }
+
 	DelegateBase& operator =(const DelegateBase& d)
 	{
 		if(this != &d)
@@ -280,10 +282,6 @@ public:
 		}
 
 		return *this;
-	}
-	operator void*()
-	{
-		return (void*)m_ptr;
 	}
 
 protected:

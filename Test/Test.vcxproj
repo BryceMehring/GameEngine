@@ -68,14 +68,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GameOfLife.cpp" />
-    <ClCompile Include="GameOfLifeFactory.cpp" />
+    <ClCompile Include="GameOfLifeCreator.cpp" />
     <ClCompile Include="GameOfLifeMenu.cpp" />
+    <ClCompile Include="GameOfLifeMenuCreator.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameOfLife.h" />
-    <ClInclude Include="GameOfLifeFactory.h" />
+    <ClInclude Include="GameOfLifeCreator.h" />
     <ClInclude Include="GameOfLifeMenu.h" />
+    <ClInclude Include="GameOfLifeMenuCreator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

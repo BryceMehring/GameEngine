@@ -26,13 +26,15 @@ void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
 	assert(pArray != nullptr);
 	assert(pArray[0] == pArray[size-1]);
 
-	m_edges.clear();
+	// todo: is this line below needed?
+	// If one is constructing a polygon again, most of the time
+	// It will be the same shape
+	//note: Loop at QuadTree::Render()
+	 m_edges.clear();
 	m_edges.resize(size);
 
-	for(unsigned int i = 0; i < size; ++i)
-	{
-		m_edges[i] = pArray[i];
-	}
+	// copy vectors from array into the dynamic array
+	std::copy(pArray,pArray+size,&(m_edges.front()));
 }
 
 // Get
@@ -72,12 +74,12 @@ DxSquare::DxSquare(const RECT& R)
 }
 DxSquare::DxSquare(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon(pArray,size) 
 {
-	assert(size != 5);
+	assert(size != SIZE);
 }
 
 void DxSquare::ConstructFromRect(const RECT& R)
 {
-	D3DXVECTOR2 vec[5];
+	D3DXVECTOR2 vec[SIZE];
 
 	vec[0] = D3DXVECTOR2((float)R.right,(float)R.bottom);
 	vec[1] = D3DXVECTOR2((float)R.right,(float)R.top);
@@ -85,7 +87,7 @@ void DxSquare::ConstructFromRect(const RECT& R)
 	vec[3] = D3DXVECTOR2((float)R.left,(float)R.bottom);
 	vec[4] = D3DXVECTOR2((float)R.right,(float)R.bottom);
 
-	ConstructFromArray(vec,5);
+	ConstructFromArray(vec,SIZE);
 }
 
 bool DxSquare::IsPointInPolygon(POINT P) const
@@ -106,7 +108,7 @@ bool DxSquare::IsPointInPolygon(POINT P) const
 DxTriangle::DxTriangle() {}
 DxTriangle::DxTriangle(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon(pArray,size) 
 {
-	assert(size != 4);
+	assert(size != SIZE);
 }
 
 // algorithm from: http://www.blackpawn.com/texts/pointinpoly/default.html

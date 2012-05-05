@@ -1,13 +1,20 @@
 #ifndef _MENU_
 #define _MENU_
 
+
+
 #include "Delegates.h"
 #include "DxPolygon.h"
 #include "IRender.h"
-#include "QuadTree.h"
+#include "GameState.h"
+//#include "CreatorId.h"
+
+
+#include "RTTI.h"
+
 
 // todo: should this be a global function or should I put this into an interface?
-extern bool IsClicked(class IKMInput* pInput, DxPolygon* pPolygon);
+bool IsClicked(class IKMInput* pInput, DxPolygon* pPolygon);
 
 class IUIElement : public IRender
 {
@@ -15,6 +22,8 @@ public:
 
 	virtual ~IUIElement() {}
 
+	virtual void Select() = 0;
+	virtual void Enter() = 0;
 	virtual void Update(class IKMInput* pInput) = 0;
 
 protected:
@@ -31,13 +40,20 @@ struct Text
 
 
 // Todo: change the name of this class?
-class Menu : public IRender // todo: could inherit from the graph node class
+class Menu : public IRender
 {
 public:
+
+	RTTI_DECL;
+
+	// todo: make this thread safe
 
 	Menu();
 	//Menu(const std::string& str);
 	~Menu();
+
+	virtual void Update(class GUI* pGUI, class IKMInput* pInput);
+	virtual void Render(class IRenderer* pRenderer);
 
 	void SetMenuTitle(const std::string& str,const POINT& P);
 	void SetPolygon(DxPolygon* pPolygon);
@@ -45,60 +61,69 @@ public:
 	void AddMenu(Menu* pMenu);
 	void AddElement(IUIElement* pElement);
 
-	void Update(class UI* pUI, class IKMInput* pInput);
-
-	virtual void Render(class IRenderer* pRenderer);
-
 private:
 
 	// data members
 	POINT m_point;
 	std::string m_menuTitle;
-	std::vector<Menu*> m_SubMenu;
 	std::vector<IUIElement*> m_elements;
+	std::vector<Menu*> m_menus;
 	Menu * m_pPrev;
 	DxPolygon* m_pPolygon;
 };
 
-// todo: this class should inherit from an abstract base interface class called: IRender
-class UI
+
+// todo: this class should traverse the menu graph
+class GUI : public IRender
 {
 public:
 
-	explicit UI(Menu* pMenu = nullptr);
-	~UI();
+	friend class Menu;
+
+	typedef Delegate<void,Menu*> ChangeMenuCallback;
+
+	explicit GUI(Menu* pMenu = nullptr);
+	~GUI();
+
+	ChangeMenuCallback CreateCallback();
 
 	void SetMenu(Menu* pMenu);
 
-	// The ability to treat pointers or references of objects of the same inheritance 
-	// hierarchy tree as the parent class. 
 	void Update(class IKMInput* pInput);
 	void Render(class IRenderer* pRenderer);
 
-	// the UI would control the changing between Menu's
-	// What if the mouse was an object that was being tracked in the quadtree
-	// And then whenever the mouse was clicked, its observers would be updated     
-
 private:
 
+	Menu* m_pMenu;
+	unsigned int m_uiCurrentIndex;
 
-	//Mouse* m_pMouse; // the mouse is in the QuadTree
-	//	QuadTree* m_pQuadTree;
-	Menu* m_pMenu; // this could be useful in game as well as in a real menu
 };
 
 class ButtonBase : public IUIElement
 {
 public:
 
-	ButtonBase() {}
+	ButtonBase() : m_color(-1) {}
 	ButtonBase(const Text& name, DxPolygon* pPolygon);
+	virtual ~ButtonBase();
 
 	virtual void Render(class IRenderer* pRenderer);
+	virtual void Update(class IKMInput* pInput);
+
+	virtual void Select()
+	{
+		m_pPolygon->SetColor(m_pPolygon->GetColor()*24);
+	}
+
+	void SetPolygon(DxPolygon* pPolygon) { m_pPolygon = pPolygon; }
+	void SetPolygonColor(DWORD color) { m_pPolygon->SetColor(color); }
+	void SetTextColor(DWORD color) { m_color = color; }
+	void SetName(const Text& name) { m_name = name; }
 
 protected:
 
 	Text m_name;
+	DWORD m_color;
 	DxPolygon* m_pPolygon;
 
 };
@@ -115,17 +140,64 @@ public:
 	{
 	}
 
-	void SetName(const Text& name) { m_name = name; }
-	void SetCallback(const DELEGATE& callback, const T& arg)
+	void SetCallback(const DELEGATE& callback)
 	{ 
 		m_callback = callback;
+	}
+	void SetArg(const T& arg)
+	{
 		m_type = arg;
 	}
-	void SetPolygon(DxPolygon* pPolygon) { m_pPolygon = pPolygon; }
 	
-	
+	virtual void Enter()
+	{
+		m_callback.Call(m_type);
+	}
 	virtual void Update(class IKMInput* pInput)
 	{
+		ButtonBase::Update(pInput);
+
+		if(IsClicked(pInput,m_pPolygon))
+		{
+			m_callback.Call(m_type);
+		}
+	}
+
+private:
+
+	DELEGATE m_callback;
+	T m_type;
+};
+
+template< class T >
+class GenericButton<T&> : public ButtonBase
+{
+public:
+
+	typedef Delegate<void,T&> DELEGATE;
+
+	GenericButton() {}
+	GenericButton(const Text& name,DELEGATE callback, const T& type, DxPolygon* pPolygon) : ButtonBase(name,pPolygon), m_callback(callback), m_type(type)
+	{
+	}
+
+	void SetCallback(const DELEGATE& callback)
+	{ 
+		m_callback = callback;
+	}
+	void SetArg(const T& arg)
+	{
+		m_type = arg;
+	}
+	
+	virtual void Enter()
+	{
+		m_callback.Call(m_type);
+	}
+	virtual void Update(class IKMInput* pInput)
+	{
+		ButtonBase::Update(pInput);
+
 		if(IsClicked(pInput,m_pPolygon))
 		{
 			m_callback.Call(m_type);
@@ -145,12 +217,26 @@ public:
 
 	typedef Delegate<void,void> DELEGATE;
 
+	GenericButton()
+	{
+	}
 	GenericButton(const Text& name, DELEGATE callback, DxPolygon* pPolygon) : ButtonBase(name,pPolygon), m_callback(callback)
 	{
 	}
 
+	void SetCallback(const DELEGATE& callback)
+	{ 
+		m_callback = callback;
+	}
+
+	virtual void Enter()
+	{
+		m_callback.Call();
+	}
 	virtual void Update(class IKMInput* pInput)
 	{
+		ButtonBase::Update(pInput);
+
 		if(IsClicked(pInput,m_pPolygon))
 		{
 			m_callback.Call();

@@ -9,30 +9,39 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Creators">
+      <UniqueIdentifier>{96a61f0c-0db9-4d5b-a57e-17ba08beeac9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameOfLife.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameOfLifeMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameOfLifeFactory.cpp">
+    <ClCompile Include="GameOfLife.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameOfLifeMenuCreator.cpp">
+      <Filter>Creators</Filter>
+    </ClCompile>
+    <ClCompile Include="GameOfLifeCreator.cpp">
+      <Filter>Creators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GameOfLife.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameOfLifeMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameOfLifeFactory.h">
+    <ClInclude Include="GameOfLife.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameOfLifeMenuCreator.h">
+      <Filter>Creators</Filter>
+    </ClInclude>
+    <ClInclude Include="GameOfLifeCreator.h">
+      <Filter>Creators</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,63 +2,53 @@
 #include "Game.h"
 #include "FileManager.h"
 #include "Heap.h"
+#include "CreatorId.h"
+#include "RTTI.h"
+//#include "MenuCreator.h"
 
 using namespace std;
 
-Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f), m_fFPSTime(10000.0f), 
-m_pRenderer(nullptr), m_pInput(nullptr)
+Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f), 
+m_pRenderer(nullptr), m_pInput(nullptr), m_pNextState(nullptr)
 {
 	LoadAllDLL();
 
 	m_iEventId = m_window.AddMsgListener(WindowManager::MsgDelegate(this,&Game::MsgProc));
 
-	VertexDeclaration decl;
-
-	//UINT iVertexDecl = m_pRenderer->CreateVertexDecl(decl);
+	//m_timer.Start();
 }
 
 Game::~Game()
 {
+	m_StateMachine.RemoveState(this);
 	m_window.RemoveListener(m_iEventId);
-	delete m_pFactory;
 }
 
-void Game::SetStateFactory(GameStateFactory* pFactory)
+void Game::SetNextState(const std::string& name)
 {
-	m_pFactory = pFactory;
-}
-
-void Game::SetState(int id)
-{
+	// get the current state
 	IGameState* pState = m_StateMachine.GetState();
-	if(pState == nullptr || pState->GetStateId() != id)
+
+	// If the current state is null, or if the new state is different than the current
+	if((pState == nullptr) || (pState->GetType()->GetName() != name))
 	{
-		IGameState* pState = m_pFactory->GetState(id,this);
-		m_StateMachine.PushState(pState,this,id);
-		//m_StateMachine.SetState(pState,this,id);
-
-		char buffer[64];
-		sprintf_s(buffer,"Changing state to: %s",pState->GetName());
-		FileManager::Instance().WriteToLog(buffer);
+		// If this is the first SetNextState call in this update loop
+		if(m_pNextState == nullptr)
+		{
+			// Create new state, but do not use it until we are out of the update/render phase
+			m_pNextState = GameStateFactory::Instance().CreateState(name);
+		}
 	}
-}
-
-void Game::PopState()
-{
-	m_StateMachine.Pop();
-}
-void Game::PushState()
-{
-	m_StateMachine.Push();
+	
 }
 
 int Game::PlayGame()
 {
-	// init the first state
-	m_StateMachine.GetState()->Init();
+	//m_PrevTime = m_timer.GetTimeInSeconds();
+	//QueryPerformanceCounter((LARGE_INTEGER*)&m_PrevTime);
 
 	// Loop while the use has not quit
-	while((StartTimer(),m_window.Update()))
+	while(StartTimer(),(m_window.Update()))
 	{
 		// Update the game
 		Update();
@@ -77,18 +67,28 @@ int Game::PlayGame()
 
 void Game::Update()
 {
-	/*if(m_pInput->KeyDown(KeyCode::SPACE))
+	m_info.Update(m_fDT);
+
+	// If There has been a state change, 
+	if(m_pNextState != nullptr)
 	{
-		// Start
-		PopState();
+		// switch states
+		m_StateMachine.SetState(m_pNextState,this);
+
+		// Update change to log
+		char buffer[64];
+		sprintf_s(buffer,"Changing state to: %s",m_pNextState->GetType()->GetName().c_str());
+		FileManager::Instance().WriteToLog(buffer);
+
+		// Reset next state
+		m_pNextState = nullptr;
 	}
-	else*/ if(m_pInput->KeyDown(KeyCode::ESCAPE))
+	else if(m_pInput->KeyDown(B))
 	{
-		// Back
-		PushState();
+		m_StateMachine.LoadPreviousState(this);
 	}
 
-	m_StateMachine.GetState()->Update();
+	m_StateMachine.GetState()->Update(this);
 }
 
 void Game::Draw()
@@ -100,10 +100,12 @@ void Game::Draw()
 	DrawFPS();
 
 	// render the current state
-	m_StateMachine.GetState()->Draw();
+	m_StateMachine.GetState()->Draw(this);
 
 	// end rendering
 	m_pRenderer->End();
+
+	//Sleep(2);
 
 	// Present the screen
 	m_pRenderer->Present();
@@ -111,20 +113,15 @@ void Game::Draw()
 
 void Game::DrawFPS()
 {
-	static char buffer[64];
-	POINT P = {650,0};
+	static char buffer[128];
+	static int i = 0;
+	POINT P = {700,0};
 
-	m_fFPSTime += GetDt();
-
-	if(m_fFPSTime > 300.0f)
-	{
-		m_fFPSTime = 0.0f;
-
-		
-		sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
-	}
-
-	m_pRenderer->DrawString(buffer,P,0xffffffff);
+	::std::ostringstream out;
+	out<<"FPS: " << GetFps() << endl << "Dt: " << GetDt() << endl;
+	//sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
+	
+	m_pRenderer->DrawString(out.str().c_str(),P,0xffffffff);
 }
 
 IRenderer* Game::GetRenderer()
@@ -140,13 +137,13 @@ WindowManager* Game::GetWindow()
 	return &m_window;
 }
 
-float Game::GetDt() const
+double Game::GetDt() const
 {
 	return m_fDT;
 }
-float Game::GetFps() const
+unsigned int Game::GetFps() const
 {
-	return 1000.0f / GetDt();
+	return m_info.GetFPS();
 }
 
 void Game::ReloadPlugins()
@@ -183,14 +180,13 @@ void Game::LoadAllDLL()
 
 void Game::StartTimer()
 {
-	m_timer.Reset();
 	m_timer.Start();
 }
 
 void Game::EndTimer()
 {
 	m_timer.Stop();
-	m_fDT = (float)m_timer.GetTimeInMilliseconds();
+	m_fDT =  m_timer.GetTime();
 }
 
 void Game::MsgProc(const MsgProcData& data)
@@ -200,12 +196,40 @@ void Game::MsgProc(const MsgProcData& data)
 	case WM_ACTIVATE:
 		if( LOWORD(data.wParam) == WA_INACTIVE )
 		{
-			this->m_pRenderer->OnLostDevice();
+			m_pRenderer->OnLostDevice();
 		}
 		else
 		{
-			this->m_pRenderer->OnResetDevice();
+			m_pRenderer->OnResetDevice();
 		}
 		break;
+	}
+}
+
+GameInfo::GameInfo() : m_fTimeElapsed(0.0f), m_uiFrames(0), m_uiFPS(0)
+{
+	
+}
+
+unsigned int GameInfo::GetFPS() const
+{
+	return m_uiFPS;
+}
+
+void GameInfo::Update(double dt)
+{
+	UpdateFPS(dt);
+}
+
+void GameInfo::UpdateFPS(double dt)
+{
+	m_fTimeElapsed += dt;
+	m_uiFrames += 1;
+
+	if(m_fTimeElapsed >= 1.0f)
+	{
+		m_uiFPS = m_uiFrames;
+		m_uiFrames = 0;
+		m_fTimeElapsed = 0.0f;
 	}
 }

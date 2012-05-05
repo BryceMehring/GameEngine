@@ -50,6 +50,10 @@ public:
 	void ConstructFromRect(const RECT& R);
 
 	virtual bool IsPointInPolygon(POINT P) const; 
+
+private:
+
+	static const int SIZE = 5;
 };
 
 class DxTriangle : public DxPolygon
@@ -60,6 +64,10 @@ public:
 	DxTriangle(const D3DXVECTOR2* pArray, unsigned int size);
 
 	virtual bool IsPointInPolygon(POINT P) const;
+
+private:
+
+	static const int SIZE = 4;
 
 };
 
