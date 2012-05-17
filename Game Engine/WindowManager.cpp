@@ -87,8 +87,7 @@ bool WindowManager::Update()
 
 	do
 	{
-		// If there are Window messages then process them.
-		if(PeekMessage(&msg,0,0,0,PM_REMOVE))
+		while(PeekMessage(&msg,0,0,0,PM_REMOVE))
 		{
 			TranslateMessage( &msg );
 			DispatchMessage( &msg );
@@ -98,8 +97,9 @@ bool WindowManager::Update()
 				return false;
 			}
 		}
-		else if( m_bPaused == true)
-		{
+		
+		if(m_bPaused)
+		{	
 			Sleep(20);
 		}
 

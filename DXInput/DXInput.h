@@ -19,9 +19,11 @@ public:
 
 	friend class IScripted<DirectInput>;
 
+
 	// IRender
 	virtual DLLType GetType() const;
-	virtual void About();
+	virtual const char* GetName() const { return "DirectInput"; }
+	virtual void About() const;
 	virtual int GetVersion() const;
 
 	// DirectX's version of poll 
@@ -56,12 +58,13 @@ private:
 	char m_cKeyDown;
 	char m_cCharDown;
 
-	bool m_bLeftMouseClick;
-
 	// Mouse
 	int m_iMouseX;
 	int m_iMouseY;
+	int m_iMouseZ;
 	POINT m_MousePos;
+
+	bool m_bMouseClick[2];
 
 	int m_eventId;
 
@@ -69,7 +72,9 @@ private:
 
 	// helper functions
 	void Reset();
+	void ReadMouse(const RAWMOUSE& mouse);
 	void ReadKeyboard();
+	void InitRawInput();
 
 	static void _RegisterScript();
 };

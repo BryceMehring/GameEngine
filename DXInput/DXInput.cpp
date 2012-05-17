@@ -14,10 +14,15 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 	return new DirectInput(mgr);
 }
 
-DirectInput::DirectInput(PluginManager& mgr) : m_mgr(mgr), m_bLeftMouseClick(false)
+DirectInput::DirectInput(PluginManager& mgr)
+: m_mgr(mgr), m_iMouseX(0), m_iMouseY(0)
 {
 	WindowManager* pWinMgr = m_mgr.GetWindowManager();
 	m_eventId = pWinMgr->AddMsgListener(WindowManager::MsgDelegate(this,&DirectInput::Poll));
+
+	InitRawInput();
+
+	Reset();
 }
 
 
@@ -26,6 +31,25 @@ DirectInput::~DirectInput()
 	WindowManager* pWinMgr = m_mgr.GetWindowManager();
 	pWinMgr->RemoveListener(m_eventId);
 	//m_mgr.GetMsgProcEvent().Detach(m_id);
+}
+
+void DirectInput::InitRawInput()
+{
+	RAWINPUTDEVICE Rid;
+        
+	Rid.usUsagePage = 0x01; 
+	Rid.usUsage = 0x02; 
+	Rid.dwFlags = 0;   // adds HID mouse and also ignores legacy mouse messages
+	Rid.hwndTarget = m_mgr.GetWindowHandle();
+
+	/*Rid[1].usUsagePage = 0x01; 
+	Rid[1].usUsage = 0x06; 
+	Rid[1].dwFlags = RIDEV_NOLEGACY;   // adds HID keyboard and also ignores legacy keyboard messages
+	Rid[1].hwndTarget = 0;*/
+
+	if (RegisterRawInputDevices(&Rid, 1, sizeof(Rid)) == FALSE) {
+	//registration failed. Call GetLastError for the cause of the error.
+	}
 }
 
 /*void DirectInput::Notify(const MsgProcData& data)
@@ -45,79 +69,79 @@ DLLType DirectInput::GetType() const
 
 void DirectInput::Reset()
 {
-	m_bLeftMouseClick = false;
 	m_cKeyDown = m_cCharDown = -1;
-}
+	m_iMouseX = m_iMouseY = m_iMouseZ = 0;
 
-void DirectInput::ReadKeyboard()
-{
+	memset(m_bMouseClick,0,sizeof(m_bMouseClick));
 }
 
 void DirectInput::Poll(const MsgProcData& data)
 {
+	// todo: Look up SendInput()
+	// Link: http://msdn.microsoft.com/en-us/library/windows/desktop/ms646310(v=vs.85).aspx
+
 	switch(data.msg)
 	{
-		/*case WM_INPUT:
+		case WM_INPUT: 
 		{
-			UINT dwSize;
-			 
-			GetRawInputData((HRAWINPUT)data.lparam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
-			LPBYTE lpb = new BYTE[dwSize];
-			if (lpb == NULL) 
-			{
-				break;
-			}
-			if (GetRawInputData((HRAWINPUT)data.lparam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize )
-			 OutputDebugString (TEXT("GetRawInputData does not return correct size !\n")); 
-			
+			UINT dwSize = 40;
+			BYTE lpb[40];
+    
+			GetRawInputData((HRAWINPUT)data.lparam, RID_INPUT, 
+			lpb, &dwSize, sizeof(RAWINPUTHEADER));
+    
 			RAWINPUT* raw = (RAWINPUT*)lpb;
 
-			if(raw->header.dwType == RIM_TYPEMOUSE)
-			{
-				m_iMouseX = raw->data.mouse.lLastX;
-				m_iMouseX = raw->data.mouse.lLastY;
-			}
-	
-			hResult = StringCchPrintf(szTempOutput, STRSAFE_MAX_CCH, TEXT("Mouse: usFlags=%04x ulButtons=%04x usButtonFlags=%04x usButtonData=%04x ulRawButtons=%04x lLastX=%04x lLastY=%04x ulExtraInformation=%04x\r\n"), 
-				raw->data.mouse.usFlags, 
-				raw->data.mouse.ulButtons, 
-				raw->data.mouse.usButtonFlags, 
-				raw->data.mouse.usButtonData, 
-				raw->data.mouse.ulRawButtons, 
-				raw->data.mouse.lLastX, 
-				raw->data.mouse.lLastY, 
-				raw->data.mouse.ulExtraInformation);
+			ReadMouse(raw->data.mouse);
 
-			if (FAILED(hResult))
-			{
-			// TODO: write error handler
-			}
-			OutputDebugString(szTempOutput);
-
-			delete[] lpb;
 			break;
-		}*/
+		} 
+
+		case WM_MOUSEMOVE:
+			m_MousePos.x  = LOWORD(data.lparam);
+			m_MousePos.y = HIWORD(data.lparam);
+			break;
 		case WM_KEYDOWN:
-		{
-			// if this is the first WM_KEYDOWN msg
-			if((data.lparam & (1 << 30)) == 0)
-			{
-				m_cKeyDown = data.wParam;
-			}
+			m_cKeyDown = data.wParam;
 			break;
-		}
+		case WM_KEYUP:
+			m_cKeyDown = -1;
+			break;
 		case WM_CHAR:
 			m_cCharDown = data.wParam;
 			break;
 		case WM_LBUTTONDOWN:
-			m_bLeftMouseClick = true;
+			//m_bLeftMouseClick = true;
 			break;
 	}
+}
 
-	// mouse coords
-	HWND h = m_mgr.GetWindowHandle();
-	GetCursorPos(&m_MousePos);
-	ScreenToClient(h,&m_MousePos);	
+void DirectInput::ReadMouse(const RAWMOUSE& mouse)
+{
+	switch(mouse.usButtonFlags)
+	{
+		case RI_MOUSE_LEFT_BUTTON_DOWN:
+			m_bMouseClick[0] = true;
+		break;
+		case RI_MOUSE_RIGHT_BUTTON_DOWN:
+			m_bMouseClick[1] = true;
+			break;
+		case RI_MOUSE_WHEEL:
+		{
+			m_iMouseZ = mouse.usButtonData / 120;
+
+			if(m_iMouseZ > 1)
+			{
+				m_iMouseZ = -1;
+			}
+
+			break;
+		}
+
+	}
+
+	m_iMouseX = mouse.lLastX;
+	m_iMouseY = -mouse.lLastY;
 }
 
 POINT DirectInput::MousePos()
@@ -141,28 +165,27 @@ char DirectInput::GetKeyDown() const
 }
 bool DirectInput::MouseClick(int iButton)
 {
-	return m_bLeftMouseClick;
+	return m_bMouseClick[iButton];
 	//return ((m_MouseState.rgbButtons[iButton] & 0x80) != 0);
 }
 int DirectInput::MouseX()
 {
-	return 0;
+	return m_iMouseX;
 	//return m_MouseState.lX;
 }
 
 int DirectInput::MouseY()
 {
-	return 0;
+	return m_iMouseY;
 	//return m_MouseState.lY;
 }
 
 int DirectInput::MouseZ()
 {
-	return 0;
-	//return m_MouseState.lZ;
+	return m_iMouseZ;
 }
 
-void DirectInput::About()
+void DirectInput::About() const
 {
 	MessageBox(m_mgr.GetWindowHandle(),"DirectInput DLL\nProgrammed By Bryce Mehring","About",MB_OK);
 }

@@ -41,10 +41,14 @@ public:
 	class WindowManager* GetWindowManager() { return m_pEngine; }
 	//asVM& GetScriptVM() const;
 
-	// returns the plugin if found, else, it returns null
-	IPlugin* GetPlugin(DLLType type) const;
+	// Returns all of the keys for all of the dll's that are loaded
+	const std::vector<DLLType>& GetPluginKeys() const { return m_Keys; }
 
+	// returns the plugin if found, else, it returns null
+	const IPlugin* GetPlugin(DLLType type) const;
+	IPlugin* GetPlugin(DLLType type);
 	IPlugin* LoadDLL(const char* pFile);
+
 	bool LoadAllPlugins(const std::string& path, const std::string& ext);
 	
 	void FreePlugin(DLLType type);
@@ -61,6 +65,8 @@ private:
 	class WindowManager* m_pEngine;
 	typedef stdext::hash_map<DLLType,PluginInfo> plugin_type;
 	plugin_type m_plugins;
+
+	std::vector<DLLType> m_Keys;
 
 	// Helper functions
 	void FreePlugin(const PluginInfo& plugin);

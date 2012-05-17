@@ -11,6 +11,8 @@
 #include <sstream>
 #include <ctime>
 
+#pragma comment(lib,"d3dx9.lib")
+
 using namespace std;
 
 const RECT SCREEN_R = {50,50,700,550};
@@ -77,6 +79,14 @@ public:
 
 		bool bMouseIsNear = false;
 
+		D3DXVECTOR2 box[5];
+		box[0] = D3DXVECTOR2(m_pos.x - 8.0f,m_pos.y + 8.0f);
+		box[1] = D3DXVECTOR2(m_pos.x - 8.0f,m_pos.y - 8.0f);
+		box[2] = D3DXVECTOR2(m_pos.x + 8.0f,m_pos.y - 8.0f);
+		box[3] = D3DXVECTOR2(m_pos.x + 8.0f,m_pos.y + 8.0f);
+		box[4] = D3DXVECTOR2(m_pos.x - 8.0f,m_pos.y + 8.0f);
+
+
 		if(m_pNode != nullptr)
 		{
 			const Node::LIST_DTYPE& nearObj = *(m_pNode->GetNearObjects());
@@ -84,23 +94,54 @@ public:
 			{
 				if(*iter != this)
 				{
+					Unit* pUnit = nullptr;
+
 					if((*iter)->GetType() == AnotherUnit)
 					{
 						bMouseIsNear = true;
 					}
-
-					D3DXVECTOR2 pos = D3DXVECTOR2((*iter)->GetPos().x,(*iter)->GetPos().y);
-
-					if(D3DXVec2LengthSq(&(pos-this->m_pos)) < 200)
+					else
 					{
-						m_fSpeed = -m_fSpeed;
-						break;
+						pUnit = (Unit*)(*iter);
+					}
+
+					if(pUnit)
+					{
+						// If they are parallel
+						//if(::D3DXVec2Dot(&m_dir,&pUnit->m_dir) < 0.0f)
+						{
+							D3DXVECTOR2 pos = D3DXVECTOR2((*iter)->GetPos().x,(*iter)->GetPos().y);
+							D3DXVECTOR2 dist = pos - m_pos;
+
+							if(IsPointInPolygon(box,5,(*iter)->GetPos()))
+							{
+							// todo: use a ray casting algorithm here for collision
+							//if(D3DXVec2LengthSq(&(dist)) < 100)
+							//{
+								/*D3DXVECTOR2 thisPos;
+
+								D3DXVec2Normalize(&pos,&pos);
+								D3DXVec2Normalize(&thisPos,&m_pos);
+
+								float fDot = D3DXVec2Dot(&pos,&thisPos);*/
+
+								::D3DXVec2Normalize(&dist,&dist);
+
+								m_dir = Reflect(-m_dir,dist);
+								break;
+
+								//m_fSpeed = -m_fSpeed;
+								//break;
+							}
+						}
 					}
 				}
 			}
+
+			::D3DXVec2Normalize(&m_dir,&m_dir);
 		}
 
-		if(bMouseIsNear)
+		/*if(bMouseIsNear)
 		{
 			m_fAcceleration += 0.5f*dt;
 		}
@@ -112,7 +153,7 @@ public:
 			{
 				m_fAcceleration = 0.0f;
 			}
-		}
+		}*/
 
 		m_fSpeed += m_fAcceleration;
 		m_pos += m_dir * m_fSpeed * dt;
@@ -125,7 +166,8 @@ public:
 		POINT P = GetPos();
 		//P.y += 20;*/
 		//pRenderer->DrawString(buffer,P,0xffffffff);
-		pRenderer->DrawPoint(D3DXVECTOR2(m_pos.x,m_pos.y),m_color);
+		pRenderer->DrawSprite(D3DXVECTOR2(m_pos.x,m_pos.y),"Point",m_color);
+		//pRenderer->DrawPoint(D3DXVECTOR2(m_pos.x,m_pos.y),m_color);
 	}
 
 	/*void Move()
@@ -180,8 +222,9 @@ public:
 
 	virtual void Render(IRenderer* pRenderer)
 	{
-		DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
-		pRenderer->DrawPoint(D3DXVECTOR2(m_pos.x,m_pos.y),color);
+		//DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
+		pRenderer->DrawSprite(D3DXVECTOR2(m_pos.x,m_pos.y),"Square");
+		//pRenderer->DrawPoint(D3DXVECTOR2(m_pos.x,m_pos.y),color);
 	}
 
 private:
@@ -191,7 +234,7 @@ private:
 
 RTTI_IMPL(GameOfLife);
 
-GameOfLife::GameOfLife() : m_fTime(0.0f), m_pQuadTree(nullptr)
+GameOfLife::GameOfLife() : m_fTime(0.0f), m_pQuadTree(nullptr), m_bDrawQuadTree(false)
 {
 	srand(time(0));
 }
@@ -225,7 +268,7 @@ void GameOfLife::Init(Game* pGame)
 
 	m_pMouse->SetMousePos(m_pos);
 
-	m_pQuadTree->Insert(m_pMouse);
+	//m_pQuadTree->Insert(m_pMouse);
 	m_units.push_back(m_pMouse);
 
 	BuildMenu(pGame);
@@ -253,6 +296,11 @@ void GameOfLife::Update(Game* pGame)
 
 	m_pos = pInput->MousePos();
 	m_pMouse->SetMousePos(m_pos);
+
+	if(pInput->KeyDown(SPACE))
+	{
+		m_bDrawQuadTree = !m_bDrawQuadTree;
+	}
 	
 	if(pInput->MouseClick(0))
 	//if(m_fTime > 0.1f && m_units.size() < 200)
@@ -260,8 +308,8 @@ void GameOfLife::Update(Game* pGame)
 		m_fTime = 0.0f;
 		//m_pos.y += 1;
 		DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
-		float angle = (float)(1 + rand() % 360) * 0.01745329f;
-		D3DXVECTOR2 dir(cosf(angle),sinf(angle));
+		//float angle = (float)(1 + rand() % 360) * 0.01745329f;
+		D3DXVECTOR2 dir(cosf(0),sinf(0));
 		Unit* pUnit = new Unit(color,200.0f);
 		pUnit->SetPos(D3DXVECTOR2(m_pos.x,m_pos.y));
 		pUnit->SetDir(dir);
@@ -294,9 +342,10 @@ void GameOfLife::Draw(Game* pGame)
 		pUnit->Render(pRenderer);
 	});
 
-	//m_ui.Render(pRenderer);
-
-	//m_pQuadTree->Render(pRenderer);
+	if(m_bDrawQuadTree)
+	{
+		m_pQuadTree->Render(pRenderer);
+	}
 
 	//pRenderer->DrawLine(m_VEC,4,0xdeadc0de);
 	//pRenderer->DrawString(out.str().c_str(),P,0xffffffff);

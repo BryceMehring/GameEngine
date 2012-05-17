@@ -25,6 +25,36 @@ struct DrawTextInfo;
 //http://www.ogre3d.org/tikiwiki/Deferred+Shading
 //http://www.catalinzima.com/tutorials/deferred-rendering-in-xna/
 
+class TextureManager
+{
+public:
+
+	struct Texture
+	{
+		IDirect3DTexture9* pTexture;
+		unsigned int uiWidth;
+		unsigned int uiHeight;
+	};
+
+
+	TextureManager(IDirect3DDevice9* pDevice);
+	~TextureManager();
+
+	void AddTexture(const std::string& name, IDirect3DTexture9* pTexture);
+	void LoadAllTexturesFromFolder(const std::string& folder);
+
+	IDirect3DTexture9* GetTexture(const std::string& name);
+	void RemoveTexture(const std::string& name);
+	void RemoveAllTextures();
+
+private:
+
+	typedef std::map<std::string,IDirect3DTexture9*> TextureMap;
+	TextureMap m_textures;
+	IDirect3DDevice9* m_pDevice;
+
+};
+
 // I should subclass this class
 class DX9Render : public IRenderer, public IScripted<DX9Render>
 {
@@ -34,11 +64,12 @@ public:
 
 	// returns the name of the plug-in
 	virtual DLLType GetType() const;
+	virtual const char* GetName() const { return "DX9Render"; }
 
 	virtual int GetVersion() const;
 
 	// displays a info box about the plug-in
-	virtual void About();
+	virtual void About() const;
 
 	// mesh functions
 	//virtual int LoadMesh(char* pFile);
@@ -72,8 +103,8 @@ public:
 	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color);
 	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform , D3DCOLOR color);
 
-	// points
-	virtual void DrawPoint(const D3DXVECTOR2& pos, DWORD color);
+	// sprites
+	virtual void DrawSprite(const D3DXVECTOR2& pos, const std::string& texture, DWORD color = 0xffffffff);
 
 	// effects
 	// todo: need to implement
@@ -140,12 +171,25 @@ protected:
 	typedef std::vector<DrawTextInfo> TextContainerType; 
 	TextContainerType m_text;
 
-	struct PointStruct
+	TextureManager* m_pTextureManager;
+
+	struct Sprite
 	{
+		// default ctor
+		Sprite()
+		{
+		}
+
+		Sprite(const D3DXVECTOR2& V, const std::string& str, DWORD color) :
+		P(V), texture(str), Color(color) 
+		{
+		}
+
 		D3DXVECTOR2 P;
+		std::string texture;
 		DWORD Color;
 	};
-	std::vector<PointStruct> m_points;
+	std::vector<Sprite> m_sprites;
 
 	std::vector<IDirect3DVertexDeclaration9*> m_VertexDecl;
 
@@ -200,7 +244,7 @@ protected:
 private:
 
 	void RenderText();
-	void RenderPoints();
+	void RenderSprites();
 
 
 };

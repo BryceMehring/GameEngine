@@ -7,8 +7,6 @@
 #include "DxPolygon.h"
 #include "IRender.h"
 #include "GameState.h"
-//#include "CreatorId.h"
-
 
 #include "RTTI.h"
 
@@ -23,8 +21,9 @@ public:
 	virtual ~IUIElement() {}
 
 	virtual void Select() = 0;
+	virtual void Deselect() = 0;
 	virtual void Enter() = 0;
-	virtual void Update(class IKMInput* pInput) = 0;
+	virtual void Update(class IKMInput* pInput, double dt) = 0;
 
 protected:
 
@@ -32,7 +31,7 @@ protected:
 	
 };
 
-struct Text
+struct Text 
 {
 	std::string name;
 	POINT P;
@@ -52,7 +51,7 @@ public:
 	//Menu(const std::string& str);
 	~Menu();
 
-	virtual void Update(class GUI* pGUI, class IKMInput* pInput);
+	virtual void Update(class GUI* pGUI, class IKMInput* pInput, double dt);
 	virtual void Render(class IRenderer* pRenderer);
 
 	void SetMenuTitle(const std::string& str,const POINT& P);
@@ -89,7 +88,7 @@ public:
 
 	void SetMenu(Menu* pMenu);
 
-	void Update(class IKMInput* pInput);
+	void Update(class IKMInput* pInput, double dt);
 	void Render(class IRenderer* pRenderer);
 
 private:
@@ -99,6 +98,7 @@ private:
 
 };
 
+// Buttons
 class ButtonBase : public IUIElement
 {
 public:
@@ -112,7 +112,11 @@ public:
 
 	virtual void Select()
 	{
-		m_pPolygon->SetColor(m_pPolygon->GetColor()*24);
+		m_pPolygon->SetColor(0xffff0000);
+	}
+	virtual void Deselect()
+	{
+		m_pPolygon->SetColor(0xffffffff);
 	}
 
 	void SetPolygon(DxPolygon* pPolygon) { m_pPolygon = pPolygon; }
@@ -153,7 +157,7 @@ public:
 	{
 		m_callback.Call(m_type);
 	}
-	virtual void Update(class IKMInput* pInput)
+	virtual void Update(class IKMInput* pInput, double)
 	{
 		ButtonBase::Update(pInput);
 
@@ -194,7 +198,7 @@ public:
 	{
 		m_callback.Call(m_type);
 	}
-	virtual void Update(class IKMInput* pInput)
+	virtual void Update(class IKMInput* pInput, double)
 	{
 		ButtonBase::Update(pInput);
 
@@ -233,7 +237,7 @@ public:
 	{
 		m_callback.Call();
 	}
-	virtual void Update(class IKMInput* pInput)
+	virtual void Update(class IKMInput* pInput, double)
 	{
 		ButtonBase::Update(pInput);
 
@@ -264,29 +268,43 @@ private:
 
 };
 
-/*class TextBox : public IUIElement
+// A basic ui textbox
+class TextBox : public IUIElement
 {
 public:
 
 	TextBox(const std::string& name, const RECT& R);
 
+	// Enters a new line
 	void Write(const std::string& line, DWORD color = 0xffffffff);
 
-	virtual void Update(IKMInput* pInput);
+	virtual void Update(IKMInput* pInput, double dt);
 	virtual void Render(IRenderer* pRenderer);
-
+	
+	// todo: clears the buffer
 	void CLS();
 
+	// todo: Save text buffer to file
 	void SaveToFile(const std::string& file) const;
+
+	// todo: need to implement
+	virtual void Select() {}
+	virtual void Deselect() {}
 
 protected:
 
 	struct LineData
 	{
+		LineData() {}
+		LineData(const std::string& str, D3DCOLOR color, const RECT& rect)
+		: line(str), color(color), R(rect)
+		{
+
+		}
+
 		std::string line;
 		D3DCOLOR color;
 		RECT R;
-		int height;
 	};
 
 //private:
@@ -301,16 +319,17 @@ protected:
 	DxSquare m_square;
 
 	unsigned int m_spacePos;
-
+	
 	// todo: I could move the carrot into a class
 	// carrot
 	POINT m_carrotPos;
 	bool m_drawCarrot;
 
 	float m_fCarrotTime;
-	float m_fScrollTime;
+	double m_fScrollTime;
 
-	int m_scrollSpeed;
+	float m_scrollAccel;
+	float m_scrollSpeed;
 
 	// ===== helper functions =====
 protected:
@@ -320,15 +339,13 @@ protected:
 private:
 
 	// todo: passing around these interfaces seems redundant
-	void UpdateScrolling(class IKMInput* pInput);
+	void UpdateScrolling(class IKMInput* pInput, double dt);
 	void UpdateCarrot(class IKMInput* pInput);
 	void UpdateInput(class IKMInput* pInput);
 	void UpdateTextInput(class IKMInput* pInput);
 
-	void ScrollDown(int speed);
-	void ScrollUp(int speed);
-	void ScrollStop();
+	unsigned int GetNumberOfRowsInLine() const;
 
-};*/
+};
 
 #endif

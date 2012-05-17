@@ -48,11 +48,13 @@ public:
 	DxSquare(const D3DXVECTOR2* pArray, unsigned int size);
 
 	void ConstructFromRect(const RECT& R);
+	const RECT& GetRect() const;
 
 	virtual bool IsPointInPolygon(POINT P) const; 
 
 private:
 
+	RECT m_rect;
 	static const int SIZE = 5;
 };
 

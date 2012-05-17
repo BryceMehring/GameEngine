@@ -1,10 +1,7 @@
 
 #include "Menu.h"
-#include "PluginManager.h"
 #include "IRenderer.h"
 #include "Game.h"
-#include "WindowManager.h"
-#include <dinput.h>
 
 
 using namespace std;
@@ -69,13 +66,8 @@ void Menu::AddElement(IUIElement* pElement)
 	}
 }
 
-void Menu::Update(GUI* pGUI, IKMInput* pInput)
+void Menu::Update(GUI* pGUI, IKMInput* pInput, double dt)
 {
-	if(pInput->IsKeyDown())
-	{
-		m_menuTitle += pInput->GetKeyDown();
-	}
-
 	if(pInput->KeyDown(ESCAPE))
 	{
 		if(m_pPrev != nullptr)
@@ -84,8 +76,10 @@ void Menu::Update(GUI* pGUI, IKMInput* pInput)
 		}
 	}
 
+	// todo: fix this
 	if(pInput->KeyDown(TAB))
 	{
+		m_elements[pGUI->m_uiCurrentIndex]->Deselect();
 		pGUI->m_uiCurrentIndex = ((pGUI->m_uiCurrentIndex + 1) % m_elements.size());
 		m_elements[pGUI->m_uiCurrentIndex]->Select();
 	}
@@ -97,7 +91,7 @@ void Menu::Update(GUI* pGUI, IKMInput* pInput)
 	{
 		for(unsigned int i = 0; i < m_elements.size(); ++i)
 		{
-			m_elements[i]->Update(pInput);
+			m_elements[i]->Update(pInput,dt);
 		}
 	}
 }
@@ -132,9 +126,9 @@ GUI::ChangeMenuCallback GUI::CreateCallback()
 	return ChangeMenuCallback(this,&GUI::SetMenu);
 }
 
-void GUI::Update(IKMInput* pInput)
+void GUI::Update(IKMInput* pInput, double dt)
 {
-	m_pMenu->Update(this,pInput);
+	m_pMenu->Update(this,pInput,dt);
 }
 
 void GUI::Render(IRenderer* pRenderer)
@@ -192,111 +186,60 @@ void Button::Update()
 }*/
 
 
-/*TextBox::TextBox(const std::string& name, const RECT& R) : m_spacePos(-1), m_square(R)
+// textbox ctor
+TextBox::TextBox(const std::string& name, const RECT& R)
+: m_spacePos(-1), m_square(R), m_scrollSpeed(0), m_scrollAccel(0), m_fScrollTime(0.0)
 {
-	m_square.SetColor(0xffffffff);
+	//m_text.reserve(10);
+	Enter();
 
-	// Next we add an empty line
-	LineData data;
-	data.line = name;
-	data.color = 0xffffffff;
-	data.R = R;
-
-	m_text.push_back(data);
 	m_carrotPos.x = m_carrotPos.y = 0;
 }
 
 void TextBox::Write(const std::string& line, DWORD color)
 {
-	// todo: need to fix the logic here, this method is bugged
-	// because when there is nothing in the list, it crashes.
+	// calculate the rect of the line
+	RECT R;
+	if(!m_text.empty())
+	{
+		R =  m_text.back().R;
 
-	LineData data;
-	data.line =  string("> ") + line;
-	data.color = color;
-
-	// todo: maybe I could cache the REct?
-	// Get Rect size of 
-	std::string& text = m_text.back().line;
-	RECT R = {0};
-	this->m_pUI->GetEngine()->GetStringRec(text.c_str(),R);
-
-	// todo: this is bugged
-	data.R = m_text.back().R;
-	data.R.top += (R.bottom + 10);
-
-	//data.R.top = R.bottom + 45;
-	//data.R.bottom = R.bottom += 25;
-	m_text.push_back(data);
-}
-
-void TextBox::ScrollDown(int speed)
-{
-	m_scrollSpeed = -speed;
-}
-
-void TextBox::ScrollUp(int speed)
-{
-	m_scrollSpeed = speed;
-}
-
-void TextBox::ScrollStop()
-{
-	m_scrollSpeed = 0;
+		// calculate the # of rows in the textbox
+		R.top += 15*GetNumberOfRowsInLine();
+	}
+	else
+	{
+		R = m_square.GetRect();
+	}
+	
+	// Add line to vector
+	m_text.push_back(LineData(string("> ") + line,color,R));
 }
 
 void TextBox::Backspace()
 {
 	// reference to the line
-	//std::string& text = m_pData->str;
 	std::string& text = m_text.back().line;
-
-	// size of the line
 	size_t size = text.size(); 
 
-	if(size > 0)
+	// if the current line has text to remove(excluding the '>')
+	if(size > 2)
 	{
 		// remove last character
 		text.resize(size - 1);
+	}
+	// If there is no text to remove, try to pop the line in the vector
+	else if(m_text.size() > 1)
+	{
+		m_text.pop_back();
 	}
 }
 
 void TextBox::AddKey(char Key)
 {
+	// Add key to the last line
 	std::string& text = m_text.back().line;
 	text += Key;
-
-	// if there is a space
-	if(Key == 32)
-	{
-		// todo: need to cache position in string to break line with: \n
-		m_spacePos = text.size() - 1;
-	}
-
-	// todo: I could optimize this and just see if the size of the line is passed a set amount.
-	// I would have to look into this because idk how it would work yet.
-
-	// Get Rect size of 
-	RECT R = {0};
-	this->m_pUI->GetEngine()->GetStringRec(text.c_str(),R);
-
-	// If the line is out of the rect
-	// break it in-between words
-	if(R.right >= m_rect.right - m_rect.left)
-	{
-		// If a space has not been entered
-		if(m_spacePos == -1)
-		{
-			// set the break pos at the end of the line.
-			m_spacePos = text.size() - 1;
-		}
-
-		// insert the break point.
-		text.insert(m_spacePos,"\n");
-		
-		// clear the break point for the next line.
-		m_spacePos = -1;
-	}
 }
 
 void TextBox::Enter()
@@ -304,21 +247,29 @@ void TextBox::Enter()
 	Write("");
 }
 
-void TextBox::Update(IKMInput* pInput)
+void TextBox::Update(IKMInput* pInput, double dt)
 {
+
+	if(pInput->KeyDown(BACKSPACE))
+	{
+		Backspace();
+	}
+
 	if(pInput->IsKeyDown())
 	{
 		char key = pInput->GetKeyDown();
 
-		if(key == 13)
+		if(key == ENTER)
 		{
-			m_text += "\n";
+			Enter();
 		}
 		else
 		{
-			m_text += key;
+			AddKey(key);
 		}
 	}
+
+	UpdateScrolling(pInput,dt);
 }
 
 void TextBox::Render(IRenderer* pRenderer)
@@ -339,7 +290,7 @@ void TextBox::Render(IRenderer* pRenderer)
 		data.R.top += m_scrollSpeed;
 
 		// cull lines that are not on the screen
-		const RECT& R = m_rect;
+		const RECT& R = m_square.GetRect();
 
 		// If the line is on the screen
 		if(data.R.top >= R.top)
@@ -353,33 +304,53 @@ void TextBox::Render(IRenderer* pRenderer)
 	}
 }
 
-void TextBox::UpdateScrolling(IKMInput* pInput)
+void TextBox::UpdateScrolling(IKMInput* pInput, double dt)
 {
-	// todo: need to implement auto scroll
+	// Use the scroll on the mouse to scroll the textbox
+	m_scrollSpeed = -pInput->MouseZ()*8;
 
 	// Scroll Text Box using MouseY
-	if(IsClicked(pInput,&m_square))
+	/*if(IsClicked(pInput,&m_square))
 	{
-		int dy = pInput->MouseY();
+		//m_scrollAccel = -pInput->MouseY() * 10;
+		m_scrollSpeed = -pInput->MouseY()*2;
 
-		if(dy > 1)
+		if(dy >= 1)
 		{
-			ScrollUp(dy);
+			ScrollUp(-dy);
 		}
-		else if(dy < -1)
+		else if(dy <= -1)
 		{
-			ScrollDown(-dy);
+			ScrollDown(dy);
 		}
 		else
 		{
 			ScrollStop();
 		}
 	}
-	else if(m_fScrollTime > 0.1f)
+	else
 	{
-		m_fScrollTime = 0.0f;
-		m_scrollSpeed /= 2;
-	}
+		m_fScrollTime += dt;
+
+		if(m_fScrollTime > .3)
+		{
+			m_fScrollTime = 0;
+			m_scrollSpeed = 0;
+		}
+		//m_scrollSpeed -= 1.0*dt;
+	}*/
 
 }
-*/
+
+unsigned int TextBox::GetNumberOfRowsInLine() const
+{
+	// Get the last line of the textbox
+	const LineData& lastLineData = m_text.back();
+
+	// Get the rectangle for the textbox
+	const RECT& squareRect = m_square.GetRect();
+
+	// todo: the value '6' here should be modifiable in the ctor, because there could be different size font
+	// which is not yet implemented yet.
+	return (unsigned int)ceil((float)(6*lastLineData.line.length()) / (squareRect.right - squareRect.left));
+}

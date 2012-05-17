@@ -24,6 +24,8 @@ private:
 
 	void BuildResolutionMenu(class Game* pGame, Menu* pMenu);
 	void BuildQuitButton(class Game* pGame, Menu* pMenu);
+	void BuildTextBoxButton(class Game* pGame, Menu* pMenu);
+	void BuildPluginViewMenu(class Game* pGame, Menu* pMenu);
 
 };
 

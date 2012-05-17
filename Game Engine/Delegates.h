@@ -120,7 +120,7 @@ public:
 	// class method signature 
 	typedef RETURN (CLASS::*PTR)(PARAM) const;
 
-	ConstMemberFunction(CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
+	ConstMemberFunction(const CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
 
 	virtual RETURN Call(PARAM param) const
 	{
@@ -129,7 +129,7 @@ public:
 
 private:
 
-	CLASS* m_pThis;
+	const CLASS* m_pThis;
 	PTR m_method;
 	
 };
@@ -141,7 +141,7 @@ public:
 
 	typedef RETURN (CLASS::*PTR)() const;
 
-	ConstMemberFunction(CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
+	ConstMemberFunction(const CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
 
 	virtual RETURN Call() const
 	{
@@ -150,7 +150,7 @@ public:
 
 private:
 
-	CLASS* m_pThis;
+	const CLASS* m_pThis;
 	PTR m_method;
 	
 };
@@ -191,14 +191,15 @@ public:
 		Bind(pFunc);
 	}
 
-	template< class CLASS >
-	DelegateBase(CLASS* pThis,typename MemberFunction<CLASS,RETURN,PARAM>::PTR pFunc) : m_ptr(nullptr)
+
+	template< class T >
+	DelegateBase(T* pThis,RETURN (T::*pFunc)(PARAM)) : m_ptr(nullptr)
 	{
 		Bind(pThis,pFunc);
 	}
 	
-	template< class CLASS >
-	DelegateBase(CLASS* pThis,typename ConstMemberFunction<CLASS,RETURN,PARAM>::PTR pFunc) : m_ptr(nullptr)
+	template< class T >
+	DelegateBase(const T* pThis,RETURN (T::*pFunc)(PARAM) const) : m_ptr(nullptr)
 	{
 		Bind(pThis,pFunc);
 	}
@@ -232,23 +233,43 @@ public:
 		}
 	}
 
-	template< class CLASS >
-	void Bind(CLASS* pThis,typename MemberFunction<CLASS,RETURN,PARAM>::PTR pFunc)
+	/*template< class CLASS >
+	void Bind(const CLASS* pThis,typename const ConstMemberFunctionData<CLASS,RETURN,PARAM>::PTR pFunc)
 	{
 		if(m_ptr == nullptr)
 		{
-			m_ptr = new MemberFunction<CLASS,RETURN,PARAM>(pThis,pFunc);
+			m_ptr = new ConstMemberFunctionData<CLASS,RETURN,PARAM>(pThis,pFunc);
+			//m_ptr = TestFunct<CLASS>::GetFunct(pThis,pFunc);
+			//m_ptr = new ConstMemberFunction<CLASS,RETURN,PARAM>((pThis),pFunc);
 		}
-	}
-	
-	template< class CLASS >
-	void Bind(CLASS* pThis,typename ConstMemberFunction<CLASS,RETURN,PARAM>::PTR pFunc)
+	}*/
+
+	template< class T >
+	void Bind(T* pThis, RETURN (T::*pFunc)(PARAM))
 	{
 		if(m_ptr == nullptr)
 		{
-			m_ptr = new ConstMemberFunction<CLASS,RETURN,PARAM>(pThis,pFunc);
+			m_ptr = new MemberFunction<T,RETURN,PARAM>(pThis,pFunc);
 		}
 	}
+
+	template< class T >
+	void Bind(const T* pThis, RETURN (T::*pFunc)(PARAM) const)
+	{
+		if(m_ptr == nullptr)
+		{
+			m_ptr = new ConstMemberFunction<T,RETURN,PARAM>(pThis,pFunc);
+		}
+	}
+
+	/*template< class CLASS >
+	void Bind(CLASS* pThis,typename ConstMemberFunction<CLASS,RETURN,PARAM>::PTR pFunc,int)
+	{
+		if(m_ptr == nullptr)
+		{
+			m_ptr = new ConstMemberFunctionData<CLASS,RETURN,PARAM>(pThis,pFunc);
+		}
+	}*/
 
 	void Unbind()
 	{
@@ -300,13 +321,13 @@ public:
 	Delegate() {}
 	Delegate(typename GlobalFunction<RETURN,PARAM>::PTR pFunc) : DelegateBase(pFunc) {}
 
-	template< class CLASS >
-	Delegate(CLASS* pThis,typename MemberFunction<CLASS,RETURN,PARAM>::PTR pFunc) : DelegateBase(pThis,pFunc)
-	{
+	template< class T >
+	Delegate(T* pThis,RETURN (T::*pFunc)(PARAM)) : DelegateBase(pThis,pFunc)
+	{	
 	}
 	
-	template< class CLASS >
-	Delegate(CLASS* pThis,typename ConstMemberFunction<CLASS,RETURN,PARAM>::PTR pFunc) : DelegateBase(pThis,pFunc)
+	template< class T >
+	Delegate(const T* pThis,RETURN (T::*pFunc)(PARAM) const) : DelegateBase(pThis,pFunc)
 	{
 	}
 
@@ -326,13 +347,13 @@ public:
 	Delegate() {}
 	Delegate(typename GlobalFunction<RETURN,void>::PTR pFunc) : DelegateBase(pFunc) {}
 
-	template< class CLASS >
-	Delegate(CLASS* pThis,typename MemberFunction<CLASS,RETURN,void>::PTR pFunc) : DelegateBase(pThis,pFunc)
-	{
+	template< class T >
+	Delegate(T* pThis,RETURN (T::*pFunc)()) : DelegateBase(pThis,pFunc)
+	{	
 	}
 	
-	template< class CLASS >
-	Delegate(CLASS* pThis,typename ConstMemberFunction<CLASS,RETURN,void>::PTR pFunc) : DelegateBase(pThis,pFunc)
+	template< class T >
+	Delegate(const T* pThis,RETURN (T::*pFunc)() const) : DelegateBase(pThis,pFunc)
 	{
 	}
 
@@ -356,7 +377,7 @@ public:
 	EventBase() : m_iId(0) {}
 
 	// adds a Delegate to the map and returns its key.
-	int Attach(DELEGATE d)
+	int Attach(const DELEGATE& d)
 	{
 		unsigned int id = m_iId;
 		DelegateMap::iterator iter = m_delegates.find(m_iId);

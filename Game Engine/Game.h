@@ -47,6 +47,7 @@ public:
 	IRenderer* GetRenderer();
 	IKMInput* GetInput();
 	WindowManager* GetWindow();
+	const PluginManager* GetPluginManager() const;
 	double GetDt() const;
 	unsigned int GetFps() const;
 

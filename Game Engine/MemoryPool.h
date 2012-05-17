@@ -42,6 +42,7 @@ public:
 	void* Allocate();
 	void Deallocate(void* p);
 
+	// frees all memory in pool
 	void FreePool();
 
 	// these function should only be called during idle cpu time.

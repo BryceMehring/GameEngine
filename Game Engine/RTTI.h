@@ -1,7 +1,11 @@
+// Programmed by Bryce Mehring 
+
 #ifndef _RTTI_
 #define _RTTI_
 
 #include <string>
+
+// A fast and easy to debug RTTI system
 
 #define RTTI_DECL \
 	public: \
@@ -11,6 +15,7 @@
 #define RTTI_IMPL(name) \
 	const RTTI name::s_rtti(#name);
 
+// Each class will have a static member of this class
 class RTTI
 {
 public:
@@ -22,6 +27,14 @@ private:
 
 	std::string m_className;
 
+};
+
+class IRTTI
+{
+public:
+
+	virtual ~IRTTI() {}
+	virtual const RTTI* GetType() const = 0;
 };
 
 #endif // _RTTI_

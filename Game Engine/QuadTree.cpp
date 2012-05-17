@@ -119,54 +119,36 @@ void Node::AssignRect(const RECT& R)
 void Node::SubDivide()
 {
 	// this will divide the current rect into MAX_NODES new rectangles
-	// todo: need to organize function
-	KEY P[9];
 
-	int xMid = ((R.right - R.left) / 2);
-	int yMid = ((R.bottom - R.top) / 2);
+	int xMid = ((R.right + R.left) / 2);
+	int yMid = ((R.bottom + R.top) / 2);
 
-	int i = 0;
-	int r = 0;
 	Node* pNodeArray = new Node[MAX_NODES];
-
-	for(int y = R.top; y <= R.bottom; y += yMid)
+	RECT subRects[MAX_NODES] =
 	{
-		for(int x = R.left; x <= R.right; x += xMid, ++i)
+		{R.left,R.top,xMid,yMid},
+		{xMid,R.top,R.right,yMid},
+		{R.left,yMid,xMid,R.bottom},
+		{xMid,yMid,R.right,R.bottom}
+	};
+
+	for(unsigned int i = 0; i < MAX_NODES; ++i)
+	{
+		Node* pSubNode = m_Nodes[i] = pNodeArray + i;
+		pSubNode->SetRect(subRects[i]);
+		pSubNode->m_pObjects = new LIST_DTYPE();
+		pSubNode->m_Previous = this;
+
+		// If the current node has points, subdivide them
+		if(m_pObjects)
 		{
-			P[i].x = x;
-			P[i].y = y;
-
-			if((i > 3) && (i % 3))
+			LIST_DTYPE::iterator iter = m_pObjects->begin();
+			for(; iter != m_pObjects->end(); ++iter)
 			{
-				RECT tempR;
-
-				// Fill rect
-				tempR.left = P[i-4].x;
-				tempR.top = P[i-4].y;
-
-				tempR.right = P[i].x + 1;
-				tempR.bottom = P[i].y + 1;
-
-				// pSubNode points to the correct sub node
-				Node* pSubNode = m_Nodes[r] = pNodeArray + (r++);
-
-				// Set the subnode's fields
-				pSubNode->SetRect(tempR);
-				pSubNode->m_pObjects = new LIST_DTYPE(); // Alloc a list of ISpatialObject* to store the objects
-				pSubNode->m_Previous = this;
-
-				// If the current node has points, subdivide them
-				if(m_pObjects)
+				if(pSubNode->IsPointWithin(*iter))
 				{
-					LIST_DTYPE::iterator iter = m_pObjects->begin();
-					for(; iter != m_pObjects->end(); ++iter)
-					{
-						if(pSubNode->IsPointWithin(*iter))
-						{
-							pSubNode->m_pObjects->insert(*iter);
-							(*iter)->SetNode(pSubNode);
-						}
-					}
+					pSubNode->m_pObjects->insert(*iter);
+					(*iter)->SetNode(pSubNode);
 				}
 			}
 		}
@@ -183,11 +165,6 @@ void Node::ExpandLeft()
 }
 
 NodeIterator::NodeIterator(Node* pNode) : m_pNode(pNode) {}
-NodeIterator& NodeIterator::operator=(const Node* pNode)
-{
-	this->m_pNode = m_pNode;
-	return *this;
-}
 NodeIterator& NodeIterator::operator++()
 {
 	Increment();
@@ -254,10 +231,7 @@ void NodeIterator::Increment()
 PointIterator::PointIterator(Node* pNode) : NodeIterator(pNode)
 {
 	// todo: need to fix
-	if(!pNode->HasPoint())
-	{
-		NodeIterator::Increment();
-	}
+	Increment();
 }
 
 void PointIterator::Increment()
@@ -266,7 +240,7 @@ void PointIterator::Increment()
 	{
 		NodeIterator::Increment();
 
-	} while(!m_pNode->HasPoint());
+	} while((m_pNode != nullptr) && !m_pNode->HasPoint());
 }
 
 
@@ -277,10 +251,10 @@ QuadTree::QuadTree(const RECT& R) : m_iDepth(0)
 	m_pRoot = new Node(R);
 	m_pRoot->SubDivide();
 
-	for(unsigned int i = 0; i < 4; ++i)
+	/*for(unsigned int i = 0; i < 4; ++i)
 	{
 		m_pRoot->m_Nodes[i]->SubDivide();
-	}
+	}*/
 
 	CalculateMaxSubDivisions();
 }

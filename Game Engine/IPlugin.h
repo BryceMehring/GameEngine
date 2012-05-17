@@ -21,12 +21,13 @@ public:
 
 	// returns the name of the plug-in
 	virtual DLLType GetType() const = 0;
+	virtual const char* GetName() const = 0;
 	virtual int GetVersion() const = 0;
  
 	//virtual const VersionInfo& GetVersion() = 0;
 
 	// displays a info box about the plug-in
-	virtual void About() = 0;
+	virtual void About() const = 0;
 
 protected:
 

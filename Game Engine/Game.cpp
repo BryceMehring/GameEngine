@@ -48,7 +48,7 @@ int Game::PlayGame()
 	//QueryPerformanceCounter((LARGE_INTEGER*)&m_PrevTime);
 
 	// Loop while the use has not quit
-	while(StartTimer(),(m_window.Update()))
+	while(StartTimer(),m_window.Update())
 	{
 		// Update the game
 		Update();
@@ -118,7 +118,8 @@ void Game::DrawFPS()
 	POINT P = {700,0};
 
 	::std::ostringstream out;
-	out<<"FPS: " << GetFps() << endl << "Dt: " << GetDt() << endl;
+	out<<"FPS: " << GetFps() << endl << "Dt: " << GetDt() << "\ndx: " << m_pInput->MouseX() <<
+	"\ndy: " << m_pInput->MouseY() << endl;
 	//sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
 	
 	m_pRenderer->DrawString(out.str().c_str(),P,0xffffffff);
@@ -135,6 +136,10 @@ IKMInput* Game::GetInput()
 WindowManager* Game::GetWindow()
 {
 	return &m_window;
+}
+const PluginManager* Game::GetPluginManager() const
+{
+	return &m_plugins;
 }
 
 double Game::GetDt() const
@@ -157,8 +162,20 @@ void Game::ReloadPlugins(const std::string& file)
 
 	if(m_plugins.LoadAllPlugins(file,".dll"))
 	{
-		m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering));
-		m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input));
+		const auto& keys = m_plugins.GetPluginKeys();
+
+		for(auto iter = keys.begin(); iter != keys.end(); ++iter)
+		{
+			switch(*iter)
+			{
+			case Rendering:
+				m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering));
+				break;
+			case Input:
+				m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input));
+				break;
+			}
+		}
 	}
 }
 
@@ -180,6 +197,7 @@ void Game::LoadAllDLL()
 
 void Game::StartTimer()
 {
+	m_timer.Reset();
 	m_timer.Start();
 }
 
@@ -197,16 +215,18 @@ void Game::MsgProc(const MsgProcData& data)
 		if( LOWORD(data.wParam) == WA_INACTIVE )
 		{
 			m_pRenderer->OnLostDevice();
+			m_timer.Stop();
 		}
 		else
 		{
 			m_pRenderer->OnResetDevice();
+			m_timer.Start();
 		}
 		break;
 	}
 }
 
-GameInfo::GameInfo() : m_fTimeElapsed(0.0f), m_uiFrames(0), m_uiFPS(0)
+GameInfo::GameInfo() : m_fTimeElapsed(0.0), m_uiFrames(0), m_uiFPS(0)
 {
 	
 }
@@ -226,10 +246,10 @@ void GameInfo::UpdateFPS(double dt)
 	m_fTimeElapsed += dt;
 	m_uiFrames += 1;
 
-	if(m_fTimeElapsed >= 1.0f)
+	if(m_fTimeElapsed >= 1.0)
 	{
 		m_uiFPS = m_uiFrames;
 		m_uiFrames = 0;
-		m_fTimeElapsed = 0.0f;
+		m_fTimeElapsed = 0.0;
 	}
 }

@@ -60,7 +60,7 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\boost\boost_1_47\lib;C:\Users\Bryce\Documents\C++\angelscript sdk\angelscript\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\boost\boost_1_47\lib;C:\Users\Bryce\Documents\C++\angelscript sdk\angelscript\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

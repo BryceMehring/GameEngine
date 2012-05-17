@@ -41,10 +41,81 @@ struct DrawTextInfo
 	DWORD format;
 };
 
+TextureManager::TextureManager(IDirect3DDevice9* pDevice) : m_pDevice(pDevice)
+{
+}
+
+TextureManager::~TextureManager()
+{
+	RemoveAllTextures();
+	m_pDevice->Release();
+}
+
+void TextureManager::AddTexture(const std::string& name, IDirect3DTexture9* pTexture)
+{
+	m_textures.insert(make_pair(name,pTexture));
+}
+
+void TextureManager::LoadAllTexturesFromFolder(const std::string& folder)
+{
+	FileManager& fm = ::FileManager::Instance();
+
+	std::vector<string> textureFileNames;
+	fm.LoadAllFilesFromDictionary(textureFileNames,folder,".png");
+
+	for_each(textureFileNames.begin(),textureFileNames.end(),[&](string& file)
+	{
+		IDirect3DTexture9* pTexture = nullptr;
+		assert(D3DXCreateTextureFromFile(m_pDevice,file.c_str(),&pTexture) == D3D_OK);
+
+		// Get texture info
+		D3DSURFACE_DESC format;
+		pTexture->GetLevelDesc(0,&format);
+
+		size_t start = file.find_last_of("/\\") + 1;
+		size_t n = file.find_last_of('.') - start;
+
+		AddTexture(file.substr(start,n),pTexture);
+		//m_textures.insert(make_pair(file.substr(0,pos),pTexture));
+	});
+}
+
+IDirect3DTexture9* TextureManager::GetTexture(const std::string& name)
+{
+	auto iter = m_textures.find(name);
+
+	if(iter != m_textures.end())
+	{
+		return iter->second;
+	}
+
+	return nullptr;
+}
+
+void TextureManager::RemoveTexture(const std::string& name)
+{
+	auto iter = m_textures.find(name);
+
+	if(iter != m_textures.end())
+	{
+		iter->second->Release();
+		m_textures.erase(iter);
+	}
+}
+
+void TextureManager::RemoveAllTextures()
+{
+	for_each(m_textures.begin(),m_textures.end(),[&](TextureMap::value_type& data)
+	{
+		data.second->Release();
+	});
+}
 
 
 DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref), m_p3Device(nullptr),
-m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
+m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr),
+m_pTextureManager(nullptr)
+
 {
 	// todo: need to organize constructor
 	ZeroMemory(&m_D3DParameters,sizeof(D3DPRESENT_PARAMETERS));
@@ -61,6 +132,11 @@ m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
 		exit(0);
 	}
 
+	// Load Textures
+	m_p3Device->AddRef();
+	m_pTextureManager = new TextureManager(m_p3Device);
+	m_pTextureManager->LoadAllTexturesFromFolder("..\\Textures");
+
 	// post-Initialize
 	//desc.Width = 10;
 	//desc.Height = 20;
@@ -73,31 +149,14 @@ m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr)
 	m_p3Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_LINEAR);
 
 	EnumerateDisplayAdaptors();
-
-	assert(D3DXCreateTextureFromFile(m_p3Device,"..\\Textures\\Point.png",&m_pTexture) == D3D_OK);
-
-	/*RECT R;
-	D3DLOCKED_RECT drect;
-	m_pTexture->LockRect(0,&drect,&R,0);
-
-	char* pTex = (char*)drect.pBits;
-
-	for(int i = 0; i < 16; ++i)
-	{
-		for(int j = 0; j < drect.Pitch; ++j)
-		{
-			*pTex++ = 0xf;
-		}
-	}
-
-	m_pTexture->UnlockRect(0);*/
 }
 DX9Render::~DX9Render()
 {
+	delete m_pTextureManager;
+
 	m_pSprite->Release();
 	m_pFont->Release();
 	m_pLine->Release();
-	m_pTexture->Release();
 	m_p3Device->Release();
 	m_pDirect3D->Release();
 }
@@ -107,7 +166,7 @@ int DX9Render::GetVersion() const
 	return 0;
 }
 
-void DX9Render::About()
+void DX9Render::About() const
 {
 	MessageBox(m_mgr.GetWindowHandle(),"DX9 DLL\nProgrammed By Bryce Mehring","About",MB_OK);
 }
@@ -184,9 +243,8 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 		GetStringRec(str,R);
 	}
 
-	/*m_pSprite->Begin(0);
-	m_pFont->DrawText(m_pSprite,str,-1,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
-	m_pSprite->End();*/
+	m_text.push_back(DrawTextInfo(str,R,color,DT_LEFT | DT_WORDBREAK));
+
 
 	//int Height = this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
 	//DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
@@ -203,10 +261,9 @@ void DX9Render::DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount
 	m_pLine->Draw(pVertexList,dwVertexListCount,color);
 }
 
-void DX9Render::DrawPoint(const D3DXVECTOR2& pos, DWORD color)
+void DX9Render::DrawSprite(const D3DXVECTOR2& pos, const std::string& texture, DWORD color)
 {
-	PointStruct P = {pos,color};
-	m_points.push_back(P);
+	m_sprites.push_back(Sprite(pos,texture,color));
 }
 /*void DX9Render::DrawSprite()
 {
@@ -265,7 +322,7 @@ void DX9Render::OnResetDevice()
 void DX9Render::ClearScreen()
 {
 	m_text.clear();
-	m_points.clear();
+	m_sprites.clear();
 
 	m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
 }
@@ -433,7 +490,7 @@ void DX9Render::RenderScene()
 	//m_pSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
 
 	RenderText();
-	RenderPoints();
+	RenderSprites();
 	
 
 	m_pSprite->End();
@@ -456,23 +513,24 @@ float GetRandFloat(float a, float b)
 	return fRand*(b - a) + a;
 }
 
-void DX9Render::RenderPoints()
+void DX9Render::RenderSprites()
 {
-	D3DXMATRIX T, R, S;
+	D3DXMATRIX T, S;
 
-	::D3DXMatrixScaling(&S,0.3f,0.3f,1.0f);
+	::D3DXMatrixScaling(&S,0.2f,0.2f,1.0f);
 
-	const unsigned int size = m_points.size();
+	const unsigned int size = m_sprites.size();
 	for(unsigned int i = 0; i < size; ++i)
 	{
-		D3DXVECTOR2& point = m_points[i].P;
-		DWORD color = m_points[i].Color;
+		D3DXVECTOR2& point = m_sprites[i].P;
+		DWORD color = m_sprites[i].Color;
+		IDirect3DTexture9* pTexture = m_pTextureManager->GetTexture(m_sprites[i].texture);
 
 		D3DXMatrixTranslation(&T,point.x,point.y,0);
-		D3DXMatrixRotationY(&R,GetRandFloat(0.0f,6.2831f));
+		//D3DXMatrixRotationY(&R,GetRandFloat(0.0f,6.2831f));
 
 		m_pSprite->SetTransform(&(S*T));
-		m_pSprite->Draw(m_pTexture,0,0,0,color);
+		m_pSprite->Draw(pTexture,0,0,0,color);
 	}
 
 	// reset to normal transform matrix after rendering

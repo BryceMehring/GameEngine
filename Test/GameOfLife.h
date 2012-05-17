@@ -31,6 +31,8 @@ private:
 	POINT m_pos;
 	float m_fTime;
 
+	bool m_bDrawQuadTree;
+
 	void BuildMenu(Game* pGame);
 
 };

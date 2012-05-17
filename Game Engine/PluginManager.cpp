@@ -28,6 +28,7 @@ void PluginManager::FreeAllPlugins()
 		FreePlugin(dll.second);
 	});
 
+	m_Keys.clear();
 	m_plugins.clear();
 }
 
@@ -46,7 +47,19 @@ HWND PluginManager::GetWindowHandle() const
 	//return m_pEngine->GetScriptVM();
 }*/
 
-IPlugin* PluginManager::GetPlugin(DLLType type) const
+const IPlugin* PluginManager::GetPlugin(DLLType type) const
+{
+	plugin_type::const_iterator iter = m_plugins.find(type);
+
+	if(iter != m_plugins.end())
+	{
+		return iter->second.pPlugin;
+	}
+
+	return nullptr;
+}
+
+IPlugin* PluginManager::GetPlugin(DLLType type)
 {
 	plugin_type::const_iterator iter = m_plugins.find(type);
 
@@ -123,6 +136,8 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 
 		// insert plugin into hash table
 		m_plugins.insert(make_pair(type,dll));
+
+		m_Keys.push_back(type);
 	}
 
 	// update log file
@@ -159,6 +174,10 @@ void PluginManager::FreePlugin(DLLType type)
 	plugin_type::iterator iter = m_plugins.find(type);
 	if(iter != m_plugins.end())
 	{
+		auto posIter = std::find(m_Keys.begin(),m_Keys.end(),type);
+
+		m_Keys.erase(posIter);
+
 		FreePlugin(iter->second);
 	}
 }

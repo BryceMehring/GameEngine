@@ -18,9 +18,6 @@ using namespace std;
 // MemoryBlock links together the allocated memory
 
 
-
-
-
 MemoryPool::MemoryPool(unsigned int size, unsigned int n) : m_pNode(NULL),
 	m_pNodeHead(NULL), m_pNodeTail(NULL), m_iBlocks(0), m_iLength(n)
 {

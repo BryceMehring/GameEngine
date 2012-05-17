@@ -2,6 +2,9 @@
 #include "Game.h"
 #include "WindowManager.h"
 #include "FileManager.h"
+#include "BNew.h"
+
+using namespace std;
 
 RTTI_IMPL(GameOfLifeMenu);
 
@@ -84,6 +87,8 @@ void GameOfLifeMenu::Init(Game* pGame)
 
 	BuildResolutionMenu(pGame,pOptions);
 	BuildQuitButton(pGame,pMenu);
+	BuildTextBoxButton(pGame,pOptions);
+	BuildPluginViewMenu(pGame,pOptions);
 
 	m_gui.SetMenu(pMenu);
 }
@@ -101,7 +106,7 @@ void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
 	pResMenu->SetPolygon(new DxSquare(R));
 
 	GenericButton<UINT>::DELEGATE setDisplayModeCallback(pRenderer,&IRenderer::SetDisplayMode);
-	GenericButton<Menu*>::DELEGATE setMenuCallback(&m_gui,&GUI::SetMenu);
+	GenericButton<Menu*>::DELEGATE setMenuCallback = m_gui.CreateCallback();
 
 	pRenderer->GetStringRec("Resolution Options",R2);
 	GenericButton<Menu*>* pResMenuButton = new SquareButton<Menu*>(R2,"Resolution Options");
@@ -141,6 +146,61 @@ void GameOfLifeMenu::BuildQuitButton(Game* pGame, Menu* pMenu)
 	pMenu->AddElement(pButton);
 }
 
+void GameOfLifeMenu::BuildTextBoxButton(Game* pGame, Menu* pMenu)
+{
+	Menu* pTextMenu = new Menu;
+	pMenu->AddMenu(pTextMenu);
+
+	RECT R = {400,400,450,470};
+	SquareButton<Menu*>* pButton = new SquareButton<Menu*>(R,"Text Box");
+	pButton->SetCallback(m_gui.CreateCallback());
+	pButton->SetArg(pTextMenu);
+
+	pMenu->AddElement(pButton);
+
+	SetRect(&R,10,10,500,500);
+	TextBox* pTextBox = new TextBox("Hello World",R);
+	pTextMenu->AddElement(pTextBox);
+}
+
+void GameOfLifeMenu::BuildPluginViewMenu(Game* pGame, Menu* pMenu)
+{
+	// Create the Menu
+	Menu* pPluginMenu = new Menu;
+	pMenu->AddMenu(pPluginMenu);
+
+	// Create the button
+	const char* pName = "View Plugins";
+	RECT R = {100,100};
+	pGame->GetRenderer()->GetStringRec(pName,R);
+
+	SquareButton<Menu*>* pButton = new SquareButton<Menu*>(R,pName);
+	pButton->SetCallback(m_gui.CreateCallback());
+	pButton->SetArg(pPluginMenu);
+
+	pMenu->AddElement(pButton);
+
+	// Define the Menu
+	const PluginManager* pPluginManager = pGame->GetPluginManager();
+	const std::vector<DLLType>& PluginKeys = pPluginManager->GetPluginKeys();
+
+	for(unsigned int i = 0; i < PluginKeys.size(); ++i)
+	{
+		RECT R = {100,100 + 50*i,0,0};
+		const IPlugin* pPlugin = pPluginManager->GetPlugin(PluginKeys[i]);
+
+		char text[64];
+		sprintf_s(text,"%i. %s",i+1,pPlugin->GetName());
+
+		pGame->GetRenderer()->GetStringRec(text,R);
+
+		SquareButton<void>* pButton = new SquareButton<void>(R,text);
+		pButton->SetCallback(GenericButton<void>::DELEGATE(pPlugin,&IPlugin::About));
+
+		pPluginMenu->AddElement(pButton);
+	}
+}
+
 void GameOfLifeMenu::Destroy(Game* pGame)
 {
 	//StateUpdater su(m_state,_DESTROYING);
@@ -151,7 +211,7 @@ void GameOfLifeMenu::Destroy(Game* pGame)
 void GameOfLifeMenu::Update(Game* pGame)
 {
 	IKMInput* pInput = pGame->GetInput();
-	m_gui.Update(pInput);
+	m_gui.Update(pInput,pGame->GetDt());
 }
 void GameOfLifeMenu::Draw(Game* pGame)
 {

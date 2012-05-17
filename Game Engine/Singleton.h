@@ -25,7 +25,7 @@ class Singleton
 {
 public:
 
-	// note: using boot here fails when creating the global creator objects
+	// note: using boost here fails when creating the global creator objects
 	// todo: fix this
 	static T& Instance()
 	{

@@ -2,6 +2,7 @@
 #include "DxPolygon.h"
 #include "IRenderer.h"
 #include "PluginManager.h"
+#include "VecMath.h"
 
 using namespace std;
 
@@ -49,19 +50,7 @@ void DxPolygon::Render(IRenderer* pRenderer)
 // algorithm from: http://alienryderflex.com/polygon/
 bool DxPolygon::IsPointInPolygon(POINT P) const
 {
-	int j= m_edges.size()-1;
-	bool oddNodes = false;
-
-	for(unsigned int i=0; i < m_edges.size(); i++)
-	{
-		if ((m_edges[i].y< P.y && m_edges[j].y>= P.y ||   m_edges[j].y< P.y && m_edges[i].y>=P.y) &&  (m_edges[i].x<=P.x || m_edges[j].x<=P.x))
-		{
-			oddNodes^=(m_edges[i].x+(P.y-m_edges[i].y)/(m_edges[j].y-m_edges[i].y)*(m_edges[j].x-m_edges[i].x)<P.x);
-		}
-		j=i;
-	}
-
-	return oddNodes; 
+	return ::IsPointInPolygon(&(m_edges.front()),m_edges.size(),P);
 }
 IRender::IRenderType DxPolygon::GetRenderType() const { return IRender::Polygon; }
 
@@ -72,7 +61,7 @@ DxSquare::DxSquare(const RECT& R)
 {
 	ConstructFromRect(R);
 }
-DxSquare::DxSquare(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon(pArray,size) 
+DxSquare::DxSquare(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon(pArray,size)
 {
 	assert(size != SIZE);
 }
@@ -88,19 +77,18 @@ void DxSquare::ConstructFromRect(const RECT& R)
 	vec[4] = D3DXVECTOR2((float)R.right,(float)R.bottom);
 
 	ConstructFromArray(vec,SIZE);
+
+	m_rect = R;
+}
+
+const RECT& DxSquare::GetRect() const
+{
+	return m_rect;
 }
 
 bool DxSquare::IsPointInPolygon(POINT P) const
 {
-	if((P.x <= m_edges[0].x) && (P.x >= m_edges[2].x))
-	{
-		if((P.y <= m_edges[0].y) && (P.y >= m_edges[2].y))
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return PtInRect(&m_rect,P) > 0;
 }
 
 // ==== DxTriangle ====

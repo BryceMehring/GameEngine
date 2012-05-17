@@ -1,3 +1,5 @@
+// Programmed by Bryce Mehring
+
 #ifndef _BNEW_
 #define _BNEW_
 
@@ -18,7 +20,7 @@ class Pooled
 {
 public:
 
-	//USE_MEM_POOL();
+	USE_MEM_POOL();
 
 };
 

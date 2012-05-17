@@ -9,8 +9,9 @@ Heap::Heap()
 }
 Heap::~Heap()
 {
-	// Save log file
+	// todo:Save log file
 
+	// free memory
 	for(auto iter = m_pool.begin(); iter != m_pool.end(); ++iter)
 	{
 		delete (iter->second);
@@ -68,7 +69,8 @@ MemoryPool& Heap::GetPool(unsigned int size)
 	if(iter == m_pool.end())
 	{
 		// insert pool into hash map
-		auto pair = m_pool.insert(make_pair(uiNewSize,new MemoryPool(uiNewSize,512))); // todo, could make size dynamic
+		// todo: could make size dynamic
+		auto pair = m_pool.insert(make_pair(uiNewSize,new MemoryPool(uiNewSize,512)));
 		iter = pair.first;
 	}
 
