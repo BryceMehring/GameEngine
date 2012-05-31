@@ -4,9 +4,6 @@
     <Filter Include="Quadtree">
       <UniqueIdentifier>{1f4953f4-1657-4cb9-b360-81f1ac50be41}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Managers">
-      <UniqueIdentifier>{c62b9548-e921-4120-8d9d-a4c52282a637}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scripting">
       <UniqueIdentifier>{5a99c9f7-c342-4277-94c5-b4cb00f8ce13}</UniqueIdentifier>
     </Filter>
@@ -33,6 +30,9 @@
     </Filter>
     <Filter Include="State\Creator">
       <UniqueIdentifier>{801eeabe-573f-4934-ac6e-54af254dcaeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{c62b9548-e921-4120-8d9d-a4c52282a637}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

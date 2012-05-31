@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <queue>
 
 #include "IRenderer.h"
 #include "IScripted.h"
@@ -25,31 +26,32 @@ struct DrawTextInfo;
 //http://www.ogre3d.org/tikiwiki/Deferred+Shading
 //http://www.catalinzima.com/tutorials/deferred-rendering-in-xna/
 
+struct Texture
+{
+	IDirect3DTexture9* pTexture;
+	unsigned int uiWidth;
+	unsigned int uiHeight;
+	D3DXVECTOR3 center;
+};
+
 class TextureManager
 {
 public:
-
-	struct Texture
-	{
-		IDirect3DTexture9* pTexture;
-		unsigned int uiWidth;
-		unsigned int uiHeight;
-	};
 
 
 	TextureManager(IDirect3DDevice9* pDevice);
 	~TextureManager();
 
-	void AddTexture(const std::string& name, IDirect3DTexture9* pTexture);
+	void AddTexture(const std::string& name, const Texture& tex);
 	void LoadAllTexturesFromFolder(const std::string& folder);
 
-	IDirect3DTexture9* GetTexture(const std::string& name);
+	const Texture* GetTexture(const std::string& name);
 	void RemoveTexture(const std::string& name);
 	void RemoveAllTextures();
 
 private:
 
-	typedef std::map<std::string,IDirect3DTexture9*> TextureMap;
+	typedef std::map<std::string,Texture> TextureMap;
 	TextureMap m_textures;
 	IDirect3DDevice9* m_pDevice;
 
@@ -87,7 +89,9 @@ public:
 	virtual void OnResetDevice();
 	virtual bool IsDeviceLost();
 
-	// fonts
+	// strings
+
+	// screen space
 	virtual void GetStringRec(const char* str, RECT& out);
 	
 	virtual void DrawString(const char* str, POINT P, DWORD color);
@@ -104,7 +108,8 @@ public:
 	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform , D3DCOLOR color);
 
 	// sprites
-	virtual void DrawSprite(const D3DXVECTOR2& pos, const std::string& texture, DWORD color = 0xffffffff);
+	//virtual void SetSpriteTransformation(float s, float r);
+	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
 
 	// effects
 	// todo: need to implement
@@ -180,16 +185,32 @@ protected:
 		{
 		}
 
-		Sprite(const D3DXVECTOR2& V, const std::string& str, DWORD color) :
-		P(V), texture(str), Color(color) 
+		Sprite(const D3DXMATRIX& T, const std::string& str, DWORD color, unsigned int Priority) :
+		T(T), texture(str), Color(color), uiPriority(Priority)
 		{
 		}
 
-		D3DXVECTOR2 P;
-		std::string texture;
+		D3DXMATRIX T;
 		DWORD Color;
+		unsigned int uiPriority;
+		std::string texture;
+		
 	};
-	std::vector<Sprite> m_sprites;
+
+	class SpriteSorter
+	{
+	public:
+
+		// todo: could implement switch to switch draw order
+
+		bool operator()(const Sprite& a, const Sprite& b) const
+		{
+			return a.uiPriority > b.uiPriority;
+		}
+
+	};
+
+	std::priority_queue<Sprite,std::vector<Sprite>,SpriteSorter> m_sprites;
 
 	std::vector<IDirect3DVertexDeclaration9*> m_VertexDecl;
 

@@ -99,8 +99,8 @@ public:
 	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform , D3DCOLOR color) = 0;
 	
 	// sprites
-	virtual void DrawSprite(const D3DXVECTOR2& pos, const std::string& texture, DWORD color = 0xffffffff);
-	
+	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
+
 	// todo: need to create an abstract form of vertex declarations
 
 	// Effects, todo: need to abstract this

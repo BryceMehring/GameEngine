@@ -166,12 +166,6 @@ void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 			PostQuitMessage(0);
 			//Quit();
 			break;
-		case WM_KEYDOWN:
-			if( wParam == VK_ESCAPE )
-			{
-				//::PostQuitMessage(0);
-			}
-			break;
 	}
 }
 LRESULT CALLBACK WindowManager::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

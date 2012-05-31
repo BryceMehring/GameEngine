@@ -2,12 +2,11 @@
 #include "istatecreator.h"
 #include "GameStateFactory.h"
 
-class GameOfLifeCreator : public IStateCreator
+class PongCreator : public IStateCreator
 {
 public:
 
-	GameOfLifeCreator();
+	PongCreator();
 	virtual IGameState* Create() const;
 
 } ;
-

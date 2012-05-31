@@ -5,6 +5,7 @@
 #include "PluginManager.h"
 #include "FileManager.h"
 #include "asVM.h"
+#include "VecMath.h"
 
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
@@ -51,18 +52,17 @@ TextureManager::~TextureManager()
 	m_pDevice->Release();
 }
 
-void TextureManager::AddTexture(const std::string& name, IDirect3DTexture9* pTexture)
+void TextureManager::AddTexture(const std::string& name, const Texture& tex)
 {
-	m_textures.insert(make_pair(name,pTexture));
+	m_textures.insert(make_pair(name,tex));
 }
 
 void TextureManager::LoadAllTexturesFromFolder(const std::string& folder)
 {
-	FileManager& fm = ::FileManager::Instance();
-
 	std::vector<string> textureFileNames;
-	fm.LoadAllFilesFromDictionary(textureFileNames,folder,".png");
+	FileManager::Instance().LoadAllFilesFromDictionary(textureFileNames,folder,".png");
 
+	// loop through each file, and create the texture
 	for_each(textureFileNames.begin(),textureFileNames.end(),[&](string& file)
 	{
 		IDirect3DTexture9* pTexture = nullptr;
@@ -72,21 +72,23 @@ void TextureManager::LoadAllTexturesFromFolder(const std::string& folder)
 		D3DSURFACE_DESC format;
 		pTexture->GetLevelDesc(0,&format);
 
+		Texture tex = {pTexture,format.Width,format.Height,D3DXVECTOR3(format.Width / 2, format.Height / 2, 0)};
+
 		size_t start = file.find_last_of("/\\") + 1;
 		size_t n = file.find_last_of('.') - start;
 
-		AddTexture(file.substr(start,n),pTexture);
+		AddTexture(file.substr(start,n),tex);
 		//m_textures.insert(make_pair(file.substr(0,pos),pTexture));
 	});
 }
 
-IDirect3DTexture9* TextureManager::GetTexture(const std::string& name)
+const Texture* TextureManager::GetTexture(const std::string& name)
 {
 	auto iter = m_textures.find(name);
 
 	if(iter != m_textures.end())
 	{
-		return iter->second;
+		return &iter->second;
 	}
 
 	return nullptr;
@@ -98,7 +100,7 @@ void TextureManager::RemoveTexture(const std::string& name)
 
 	if(iter != m_textures.end())
 	{
-		iter->second->Release();
+		iter->second.pTexture->Release();
 		m_textures.erase(iter);
 	}
 }
@@ -107,7 +109,7 @@ void TextureManager::RemoveAllTextures()
 {
 	for_each(m_textures.begin(),m_textures.end(),[&](TextureMap::value_type& data)
 	{
-		data.second->Release();
+		data.second.pTexture->Release();
 	});
 }
 
@@ -149,6 +151,7 @@ m_pTextureManager(nullptr)
 	m_p3Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_LINEAR);
 
 	EnumerateDisplayAdaptors();
+	//SetDisplayMode(0);
 }
 DX9Render::~DX9Render()
 {
@@ -202,7 +205,7 @@ void DX9Render::InitializeDirectX()
 	m_D3DParameters.AutoDepthStencilFormat     = D3DFMT_D24S8;
 	m_D3DParameters.Flags                      = 0;
 	m_D3DParameters.FullScreen_RefreshRateInHz = 0;
-	m_D3DParameters.PresentationInterval       = D3DPRESENT_INTERVAL_DEFAULT;//D3DPRESENT_INTERVAL_IMMEDIATE, D3DPRESENT_INTERVAL_DEFAULT
+	m_D3DParameters.PresentationInterval       = D3DPRESENT_INTERVAL_IMMEDIATE;//D3DPRESENT_INTERVAL_IMMEDIATE, D3DPRESENT_INTERVAL_DEFAULT
 
 	HRESULT hPass = m_pDirect3D->CheckDeviceType(D3DADAPTER_DEFAULT,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,D3DFMT_X8R8G8B8,false);
 
@@ -225,6 +228,7 @@ void DX9Render::Reset()
 	m_p3Device->Reset(&m_D3DParameters);
 	OnResetDevice();
 }
+
 void DX9Render::GetStringRec(const char* str, RECT& out)
 {
 	m_pFont->DrawText(this->m_pSprite,str,-1,&out,DT_CALCRECT | DT_TOP | DT_LEFT | DT_WORDBREAK,0);
@@ -244,8 +248,6 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 	}
 
 	m_text.push_back(DrawTextInfo(str,R,color,DT_LEFT | DT_WORDBREAK));
-
-
 	//int Height = this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
 	//DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
 	//DrawTextInfo info = {str,R,color,DT_NOCLIP};
@@ -261,9 +263,9 @@ void DX9Render::DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount
 	m_pLine->Draw(pVertexList,dwVertexListCount,color);
 }
 
-void DX9Render::DrawSprite(const D3DXVECTOR2& pos, const std::string& texture, DWORD color)
+void DX9Render::DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color)
 {
-	m_sprites.push_back(Sprite(pos,texture,color));
+	m_sprites.push(Sprite(transformation,texture,color,iPriority));
 }
 /*void DX9Render::DrawSprite()
 {
@@ -321,9 +323,6 @@ void DX9Render::OnResetDevice()
 
 void DX9Render::ClearScreen()
 {
-	m_text.clear();
-	m_sprites.clear();
-
 	m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
 }
 
@@ -479,6 +478,12 @@ void DX9Render::InitializeSprite()
 	if(m_pSprite == nullptr)
 	{
 		D3DXCreateSprite(m_p3Device,&m_pSprite);
+
+		m_p3Device->SetSamplerState(0,::D3DSAMP_MAGFILTER,::D3DTEXF_LINEAR);
+		m_p3Device->SetSamplerState(0,::D3DSAMP_MINFILTER,::D3DTEXF_LINEAR);
+		m_p3Device->SetSamplerState(0,::D3DSAMP_MIPFILTER,::D3DTEXF_LINEAR);
+
+		m_p3Device->SetRenderState(D3DRS_LIGHTING,false);
 	}
 }
 
@@ -486,8 +491,6 @@ void DX9Render::RenderScene()
 {
 	//m_pSprite->SetTransform(&T);
 	m_pSprite->Begin(0);
-	//::ID3DXEffect* pEffect;
-	//m_pSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
 
 	RenderText();
 	RenderSprites();
@@ -498,40 +501,35 @@ void DX9Render::RenderScene()
 
 void DX9Render::RenderText()
 {
-	for(TextContainerType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
+	while(!m_text.empty())
 	{
-		DrawTextInfo& info = *iter;
-		//m_pFont->DrawText(
-		//m_pFont->PreloadText(info.pText,length);
-		int height = m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,info.format,info.color);
+		DrawTextInfo& info = m_text.back();
+		m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,info.format,info.color);
+		m_text.pop_back();
 	}
-}
-
-float GetRandFloat(float a, float b)
-{
-	float fRand = (rand() % 10001) * 0.0001f;
-	return fRand*(b - a) + a;
 }
 
 void DX9Render::RenderSprites()
 {
-	D3DXMATRIX T, S;
-
-	::D3DXMatrixScaling(&S,0.2f,0.2f,1.0f);
-
-	const unsigned int size = m_sprites.size();
-	for(unsigned int i = 0; i < size; ++i)
+	// Render all sprites
+	while(!m_sprites.empty())
 	{
-		D3DXVECTOR2& point = m_sprites[i].P;
-		DWORD color = m_sprites[i].Color;
-		IDirect3DTexture9* pTexture = m_pTextureManager->GetTexture(m_sprites[i].texture);
+		// top sprite in the queue
+		const Sprite& top = m_sprites.top();
 
-		D3DXMatrixTranslation(&T,point.x,point.y,0);
-		//D3DXMatrixRotationY(&R,GetRandFloat(0.0f,6.2831f));
+		// Get texture for the sprite
+		const Texture* pTex = m_pTextureManager->GetTexture(top.texture);
 
-		m_pSprite->SetTransform(&(S*T));
-		m_pSprite->Draw(pTexture,0,0,0,color);
+		//m_pSprite->SetWorldViewLH(&m_T,0);
+		m_pSprite->SetTransform(&(top.T));
+		m_pSprite->Draw(pTex->pTexture,0,&(pTex->center),0,top.Color);
+
+		m_sprites.pop();
 	}
+
+	m_pSprite->Flush();
+
+	::D3DXMATRIX T;
 
 	// reset to normal transform matrix after rendering
 	D3DXMatrixIdentity(&T);

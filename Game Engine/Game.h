@@ -9,7 +9,6 @@
 #include "GameStateMachine.h"
 #include "IKMInput.h"
 #include "IRenderer.h"
-#include <stack>
 #include <string>
 
 class GameInfo
@@ -73,13 +72,13 @@ private:
 
 	IGameState* m_pNextState;
 
-	// helper functions
-	void StartTimer();
-	void EndTimer();
-
 	Timer m_timer;
 
 	int m_iEventId;
+
+	// helper functions
+	void StartTimer();
+	void EndTimer();
 
 	// helper functions
 	void LoadAllDLL();

@@ -43,7 +43,7 @@ void MemoryPool::FreePool()
 		Node* pTemp = pIter;
 		pIter = pIter->pNext;
 
-		::free(pTemp);
+		free(pTemp);
 	}
 
 	m_pNode = m_pNodeHead = m_pNodeTail = nullptr;
@@ -105,11 +105,11 @@ char* MemoryPool::AllocMemoryBlock()
 	unsigned int iBlockArraySize = BlockArraySize() + sizeof(Node);
 
 	// Alloc memory from the system
-	void* pMem = ::malloc(iBlockArraySize);
+	void* pMem = malloc(iBlockArraySize);
 	assert(pMem != nullptr);
 
-	// fill memory with zeros
-	memset(pMem,0,iBlockArraySize);
+	//memset(pMem,0,iBlockArraySize);
+
 	++m_iBlocks;
 
 	// return memory
@@ -132,9 +132,11 @@ void MemoryPool::LinkMemoryBlock()
 	else
 	{
 		m_pNodeHead = m_pNodeTail = (Node*)pMem;
+		m_pNodeHead->pNext = nullptr;
 	}
 
 	m_pNode = m_pNodeHead;
+	m_pNode->pPrevious = nullptr;
 
 	// ===== link the memory block =====
 
@@ -167,6 +169,7 @@ void MemoryPool::LinkMemoryBlock()
 	//x todo: need to check this, this might be incorrect
 	// this is the end of the linked list
 	pIter->pNode = m_pNode; // this was the problem:
+	pIter->pNext = nullptr;
 	
 }
 

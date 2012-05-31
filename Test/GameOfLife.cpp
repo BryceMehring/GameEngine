@@ -1,12 +1,10 @@
 
+#include "Game.h"
 #include "GameOfLife.h"
 #include "IRenderer.h"
-#include "Game.h"
 #include "FileManager.h"
 #include "QuadTree.h"
 #include "BNew.h"
-#include "VecMath.h"
-#include "RTTI.h"
 
 #include <sstream>
 #include <ctime>
@@ -20,17 +18,28 @@ const RECT SCREEN_R = {50,50,700,550};
 // note: global variable only temporary, simple to test concept
 RECT g_R;
 
-class Unit : public ISpatialObject, public Pooled
+class ISpatialObjectUpdate : public ISpatialObject
 {
 public:
 
-	Unit(DWORD color, float speed)
-	: m_color(color), m_fSpeed(speed), m_fAcceleration(0.0f), m_fdistance(0.0f) {}
+	virtual void Update(double dt) = 0;
 
-	virtual KEY GetPos() const
+};
+
+// todo: need to rewrite this class
+class Unit : public ISpatialObjectUpdate, public Pooled
+{
+public:
+
+	Unit(const D3DXVECTOR2& center, float fRad, DWORD color, float speed)
+	: m_color(color), m_fSpeed(speed), m_fAcceleration(0.0f), m_fdistance(0.0f), m_fRad(fRad), m_pos(center), m_fTime(0.0f)
 	{
-		POINT P = {m_pos.x,m_pos.y};
-		return P;
+		m_pCollisionPolygon = new CCircle(Circle(center,fRad));
+	}
+
+	virtual D3DXVECTOR2 GetPos() const
+	{
+		return m_pos;
 	}
 	virtual Type GetType() const
 	{
@@ -41,13 +50,15 @@ public:
 		m_pos = P;
 	}
 	void SetDir(const D3DXVECTOR2& dir) { m_dir = dir; }
-	virtual void Update(float dt)
+	virtual void Update(double dt)
 	{
 		D3DXVECTOR2 normal[4];
 		normal[0] = D3DXVECTOR2(1.0f,0.0f);
 		normal[1] = D3DXVECTOR2(-1.0f,0.0f);
 		normal[2] = D3DXVECTOR2(0.0f,1.0f);
 		normal[3] = D3DXVECTOR2(0.0f,-1.0f);
+
+		D3DXVECTOR2 G = D3DXVECTOR2(0.0f,.58f);
 
 		unsigned int index = -1;
 		if(m_pos.x <= 0)
@@ -70,103 +81,66 @@ public:
 		{
 			//m_pos.y = 0.0f;
 			index = 3;
+			//G = D3DXVECTOR2(0.0f,-1.2f);
 		}
 
 		if(index != -1)
 		{
 			m_dir = Reflect(-m_dir,normal[index]);
 		}
+		else
+		{
+			//G = D3DXVECTOR2(0.0f,2.8f);
+		}
 
-		bool bMouseIsNear = false;
-
-		D3DXVECTOR2 box[5];
-		box[0] = D3DXVECTOR2(m_pos.x - 8.0f,m_pos.y + 8.0f);
-		box[1] = D3DXVECTOR2(m_pos.x - 8.0f,m_pos.y - 8.0f);
-		box[2] = D3DXVECTOR2(m_pos.x + 8.0f,m_pos.y - 8.0f);
-		box[3] = D3DXVECTOR2(m_pos.x + 8.0f,m_pos.y + 8.0f);
-		box[4] = D3DXVECTOR2(m_pos.x - 8.0f,m_pos.y + 8.0f);
-
-
-		if(m_pNode != nullptr)
+		/*if(m_pNode != nullptr)
 		{
 			const Node::LIST_DTYPE& nearObj = *(m_pNode->GetNearObjects());
 			for(auto iter = nearObj.begin(); iter != nearObj.end(); ++iter)
 			{
 				if(*iter != this)
 				{
-					Unit* pUnit = nullptr;
-
-					if((*iter)->GetType() == AnotherUnit)
+					if(m_pCollisionPolygon->Intersects((*iter)->GetCollisionPolygon()))
 					{
-						bMouseIsNear = true;
-					}
-					else
-					{
-						pUnit = (Unit*)(*iter);
-					}
+						D3DXVECTOR2 pos = D3DXVECTOR2((*iter)->GetPos().x,(*iter)->GetPos().y);
+						D3DXVECTOR2 dist = pos - m_pos;
+						D3DXVECTOR2 dir = m_dir + G;
+								
+						::D3DXVec2Normalize(&dir,&dir);
+						D3DXVec2Normalize(&dist,&dist);
 
-					if(pUnit)
-					{
-						// If they are parallel
-						//if(::D3DXVec2Dot(&m_dir,&pUnit->m_dir) < 0.0f)
-						{
-							D3DXVECTOR2 pos = D3DXVECTOR2((*iter)->GetPos().x,(*iter)->GetPos().y);
-							D3DXVECTOR2 dist = pos - m_pos;
 
-							if(IsPointInPolygon(box,5,(*iter)->GetPos()))
-							{
-							// todo: use a ray casting algorithm here for collision
-							//if(D3DXVec2LengthSq(&(dist)) < 100)
-							//{
-								/*D3DXVECTOR2 thisPos;
-
-								D3DXVec2Normalize(&pos,&pos);
-								D3DXVec2Normalize(&thisPos,&m_pos);
-
-								float fDot = D3DXVec2Dot(&pos,&thisPos);*/
-
-								::D3DXVec2Normalize(&dist,&dist);
-
-								m_dir = Reflect(-m_dir,dist);
-								break;
-
-								//m_fSpeed = -m_fSpeed;
-								//break;
-							}
-						}
+						m_dir = Reflect(-dir,dist);
+						break;
 					}
 				}
 			}
-
-			::D3DXVec2Normalize(&m_dir,&m_dir);
 		}
+		*/
+		//D3DXVec2Normalize(&m_dir,&m_dir);
 
-		/*if(bMouseIsNear)
-		{
-			m_fAcceleration += 0.5f*dt;
-		}
-		else
-		{
-			m_fAcceleration -= 0.4f*dt;
+		m_fTime += dt;
+		G *= m_fTime;
 
-			if(m_fSpeed <= 0.0f)
-			{
-				m_fAcceleration = 0.0f;
-			}
-		}*/
+		m_pos += (m_dir + G) * m_fSpeed * dt;
 
-		m_fSpeed += m_fAcceleration;
-		m_pos += m_dir * m_fSpeed * dt;
+		static_cast<CCircle*>(m_pCollisionPolygon)->GetCircle().center = m_pos;
 	}
 
 	virtual void Render(IRenderer* pRenderer)
 	{
+		//ClearNodes();
+
 		/*char buffer[64];
 		sprintf_s(buffer,"D: %f",m_fdistance);
 		POINT P = GetPos();
 		//P.y += 20;*/
 		//pRenderer->DrawString(buffer,P,0xffffffff);
-		pRenderer->DrawSprite(D3DXVECTOR2(m_pos.x,m_pos.y),"Point",m_color);
+		::D3DXMATRIX S, T;
+		::D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,0.0f);
+		::D3DXMatrixScaling(&S,m_fRad / 16.0f,m_fRad/16.0f,1.0f);
+
+		pRenderer->DrawSprite(S*T,"Point",0,m_color);
 		//pRenderer->DrawPoint(D3DXVECTOR2(m_pos.x,m_pos.y),m_color);
 	}
 
@@ -199,44 +173,49 @@ private:
 	float m_fSpeed;
 	float m_fAcceleration;
 	float m_fdistance;
+	float m_fRad;
+	float m_fTime;
 	D3DXVECTOR2 m_dir;
 	DWORD m_color;
 
 };
 
-class Mouse : public ISpatialObject
+class Mouse : public ISpatialObjectUpdate
 {
 public:
 
-	virtual KEY GetPos() const
-	{ 
+	virtual D3DXVECTOR2 GetPos() const
+	{
 		return m_pos;
 	}
 	virtual Type GetType() const { return AnotherUnit; }
 
-	void SetMousePos(const POINT& P) { m_pos = P; }
+	void SetMousePos(const D3DXVECTOR2& P) { m_pos = P; }
 
-	virtual void Update(float dt)
+	virtual void Update(double dt)
 	{
 	}
 
 	virtual void Render(IRenderer* pRenderer)
 	{
+		::D3DXMATRIX T;
+		::D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,0.0f);
+
 		//DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
-		pRenderer->DrawSprite(D3DXVECTOR2(m_pos.x,m_pos.y),"Square");
+		pRenderer->DrawSprite(T,"Square",1);
 		//pRenderer->DrawPoint(D3DXVECTOR2(m_pos.x,m_pos.y),color);
 	}
 
 private:
 
-	POINT m_pos;
+	D3DXVECTOR2 m_pos;
 };
 
 RTTI_IMPL(GameOfLife);
 
 GameOfLife::GameOfLife() : m_fTime(0.0f), m_pQuadTree(nullptr), m_bDrawQuadTree(false)
 {
-	srand(time(0));
+	
 }
 GameOfLife::~GameOfLife()
 {
@@ -259,14 +238,17 @@ void GameOfLife::Init(Game* pGame)
 	RECT R;
 	GetClientRect(pGame->GetWindow()->GetWindowHandle(),&R);
 	g_R = R;
-	InflateRect(&R,40,40);
+	//InflateRect(&R,40,40);
 
-	m_pQuadTree = new QuadTree(R);
+	// build FRECT from regular rect
+	FRECT fRect(D3DXVECTOR2(0.0f,0.0f),D3DXVECTOR2(800.0f,600.0f));
+
+	m_pQuadTree = new QuadTree(fRect);
 	m_pMouse = new Mouse();
 
 	m_pos = pGame->GetInput()->MousePos();
 
-	m_pMouse->SetMousePos(m_pos);
+	m_pMouse->SetMousePos(D3DXVECTOR2(m_pos.x,m_pos.y));
 
 	//m_pQuadTree->Insert(m_pMouse);
 	m_units.push_back(m_pMouse);
@@ -295,7 +277,7 @@ void GameOfLife::Update(Game* pGame)
 	IKMInput* pInput = pGame->GetInput();
 
 	m_pos = pInput->MousePos();
-	m_pMouse->SetMousePos(m_pos);
+	m_pMouse->SetMousePos(::D3DXVECTOR2(m_pos.x,m_pos.y));
 
 	if(pInput->KeyDown(SPACE))
 	{
@@ -303,33 +285,50 @@ void GameOfLife::Update(Game* pGame)
 	}
 	
 	if(pInput->MouseClick(0))
-	//if(m_fTime > 0.1f && m_units.size() < 200)
 	{
-		m_fTime = 0.0f;
-		//m_pos.y += 1;
-		DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
-		//float angle = (float)(1 + rand() % 360) * 0.01745329f;
-		D3DXVECTOR2 dir(cosf(0),sinf(0));
-		Unit* pUnit = new Unit(color,200.0f);
-		pUnit->SetPos(D3DXVECTOR2(m_pos.x,m_pos.y));
-		pUnit->SetDir(dir);
-
-		//m_ui.Update(pInput);
-
-		if(m_pQuadTree->Insert(pUnit) == false)
+		if(m_fTime > 0.05f && m_units.size() < 200)
 		{
-			delete pUnit;
-		}
-		else
-		{
-			m_units.push_back(pUnit);
+			m_fTime = 0.0f;
+			//m_pos.y += 1;
+			DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
+			float angle = (float)(rand() % 180) * 0.01745329f;
+			float v = GetRandFloat(50.0f,250.0f);
+			float s = ::GetRandFloat(15.0f,20.0f);
+			D3DXVECTOR2 dir(cosf(angle),-sinf(angle));
+			Unit* pUnit = new Unit(D3DXVECTOR2(m_pos.x,m_pos.y),s,color,v);
+			pUnit->SetDir(dir);
+
+			//m_ui.Update(pInput);
+
+			if(m_pQuadTree->Insert(pUnit) == false)
+			{
+				delete pUnit;
+			}
+			else
+			{
+				m_units.push_back(pUnit);
+			}
 		}
 	}
 
-	for_each(m_units.begin(),m_units.end(),[=](ISpatialObject* pUnit)
+	// Update all units
+	for(unsigned int i = 0; i < m_units.size();)
 	{
-		pUnit->Update(dt);
-	});
+		m_units[i]->Update(dt);
+
+		// if it the unit is a ball, and is left the screen
+		if((m_units[i]->GetType() == ISpatialObject::Unit) && (!m_units[i]->HasNode()))
+		{
+			// remove it
+			delete m_units[i];
+			m_units.erase(m_units.begin() + i);
+		}
+		else
+		{
+			// loop to next node
+			++i;
+		}
+	}
 
 	m_pQuadTree->Update();
 }

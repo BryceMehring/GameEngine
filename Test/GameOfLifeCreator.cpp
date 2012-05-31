@@ -1,4 +1,5 @@
 #include "GameOfLifeCreator.h"
+#include "GameOfLife.h"
 
 GameOfLifeCreator GameOfLifeGameCreatorinstance;
 

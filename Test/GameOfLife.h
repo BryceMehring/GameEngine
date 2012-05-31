@@ -24,8 +24,7 @@ public:
 private:
 
 	class QuadTree* m_pQuadTree;
-	std::vector<class ISpatialObject*> m_units;
-	D3DXVECTOR2 m_VEC[4];
+	std::vector<class ISpatialObjectUpdate*> m_units;
 
 	class Mouse* m_pMouse;
 	POINT m_pos;

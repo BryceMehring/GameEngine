@@ -4,6 +4,7 @@
 #include "Heap.h"
 #include "CreatorId.h"
 #include "RTTI.h"
+#include <ctime>
 //#include "MenuCreator.h"
 
 using namespace std;
@@ -11,6 +12,8 @@ using namespace std;
 Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f), 
 m_pRenderer(nullptr), m_pInput(nullptr), m_pNextState(nullptr)
 {
+	srand(time(0));
+
 	LoadAllDLL();
 
 	m_iEventId = m_window.AddMsgListener(WindowManager::MsgDelegate(this,&Game::MsgProc));
@@ -75,11 +78,6 @@ void Game::Update()
 		// switch states
 		m_StateMachine.SetState(m_pNextState,this);
 
-		// Update change to log
-		char buffer[64];
-		sprintf_s(buffer,"Changing state to: %s",m_pNextState->GetType()->GetName().c_str());
-		FileManager::Instance().WriteToLog(buffer);
-
 		// Reset next state
 		m_pNextState = nullptr;
 	}
@@ -118,8 +116,9 @@ void Game::DrawFPS()
 	POINT P = {700,0};
 
 	::std::ostringstream out;
-	out<<"FPS: " << GetFps() << endl << "Dt: " << GetDt() << "\ndx: " << m_pInput->MouseX() <<
-	"\ndy: " << m_pInput->MouseY() << endl;
+	::POINT pos = m_pInput->MousePos();
+	out<<"FPS: " << GetFps() << endl << "Dt: " << GetDt() << "\nx: " << pos.x <<
+	"\ny: " << pos.y << endl;
 	//sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
 	
 	m_pRenderer->DrawString(out.str().c_str(),P,0xffffffff);

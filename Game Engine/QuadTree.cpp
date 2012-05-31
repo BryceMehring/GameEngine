@@ -3,6 +3,7 @@
 #include "DxPolygon.h"
 #include "IRenderer.h"
 #include <algorithm>
+#include <stack>
 
 #define GET_INDEX(Node1) (Node1->m_Previous == nullptr) ? -1l : (MAX_NODES - (Node1->m_Previous->m_Nodes[MAX_NODES - 1] - Node1))
 
@@ -40,10 +41,10 @@ Node::Node() : m_Previous(nullptr), m_pObjects(nullptr)
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
 }
 
-Node::Node(const RECT& R) : m_Previous(nullptr), m_pObjects(nullptr)
+Node::Node(const FRECT& R) : m_Previous(nullptr), m_pObjects(nullptr), R(R)
 {
-	AssignRect(R);
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
+	SubDivide();
 }
 Node::~Node()
 {
@@ -53,51 +54,38 @@ Node::~Node()
 		// Notify each object in the node about deletion
 		for_each(m_pObjects->begin(),m_pObjects->end(),[](ISpatialObject* pObj)
 		{
-			pObj->SetNode(nullptr);
+			pObj->ClearNodes();
 		});
 
 		// The delete operator already checks if m_pObjects is null, but because of the 
 		// for_each loop, this is needed.
 		delete m_pObjects; 
 		m_pObjects = nullptr;
+
+		delete[] m_Nodes[0];
 	}
 }
 
-void Node::SetRect(const RECT& R)
+void Node::SetRect(const CRectangle& R)
 {
-	AssignRect(R);
+	this->R = R;
 }
-
-bool Node::IsPointWithin(KEY P) const
+bool Node::IsWithin(const ISpatialObject* pObj) const
 {
-	//return PtInRect(&R,P) > 0;
-	if((P.x >= R.left) && (P.x <= R.right))
-	{
-		if((P.y >= R.top) && (P.y <= R.bottom))
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool Node::IsPointWithin(const ISpatialObject* pObj) const
-{
-	return IsPointWithin(pObj->GetPos());
+	return pObj->GetCollisionPolygon()->Intersects(&R);
 }
 
 
 bool Node::IsDivided() const
 {
-	return m_Nodes[0] != nullptr;
+	return (m_Nodes[0] != nullptr);
 }
 
 bool Node::HasPoint() const
 {
 	bool success = false;
 
-	if(m_pObjects)
+	if(m_pObjects != nullptr)
 	{
 		success = !m_pObjects->empty();
 	}
@@ -110,28 +98,28 @@ bool Node::IsFull() const
 	return (m_pObjects->size()) >= 4;
 }
 
-void Node::AssignRect(const RECT& R)
-{
-	this->R = R;
-}
-
 
 void Node::SubDivide()
 {
-	// this will divide the current rect into MAX_NODES new rectangles
+	//const GetRect& this->m
+	const FRECT& rect = R.GetRect();
 
-	int xMid = ((R.right + R.left) / 2);
-	int yMid = ((R.bottom + R.top) / 2);
+	// this will divide the current rect into MAX_NODES new rectangles
+	D3DXVECTOR2 middle = rect.Middle();
+	const D3DXVECTOR2& topLeft = rect.topLeft;
+	const D3DXVECTOR2& bottomRight = rect.bottomRight;
 
 	Node* pNodeArray = new Node[MAX_NODES];
-	RECT subRects[MAX_NODES] =
+	FRECT subRects[MAX_NODES] =
 	{
-		{R.left,R.top,xMid,yMid},
-		{xMid,R.top,R.right,yMid},
-		{R.left,yMid,xMid,R.bottom},
-		{xMid,yMid,R.right,R.bottom}
+		FRECT(topLeft,middle),
+		FRECT(D3DXVECTOR2(middle.x,topLeft.y),D3DXVECTOR2(bottomRight.x,middle.y)),
+		FRECT(D3DXVECTOR2(topLeft.x,middle.y),D3DXVECTOR2(middle.x,bottomRight.y)),
+		FRECT(middle,bottomRight)
+		//{xMid,yMid,R.right,R.bottom}*/
 	};
 
+	// Loop over all rects, and create them
 	for(unsigned int i = 0; i < MAX_NODES; ++i)
 	{
 		Node* pSubNode = m_Nodes[i] = pNodeArray + i;
@@ -145,10 +133,10 @@ void Node::SubDivide()
 			LIST_DTYPE::iterator iter = m_pObjects->begin();
 			for(; iter != m_pObjects->end(); ++iter)
 			{
-				if(pSubNode->IsPointWithin(*iter))
+				if(pSubNode->IsWithin(*iter))
 				{
 					pSubNode->m_pObjects->insert(*iter);
-					(*iter)->SetNode(pSubNode);
+					(*iter)->AddNode(pSubNode);
 				}
 			}
 		}
@@ -157,6 +145,138 @@ void Node::SubDivide()
 	// free memory, this node will no longer store points.
 	delete m_pObjects;
 	m_pObjects = nullptr;
+}
+
+void Node::Render(IRenderer* pRenderer)
+{
+	DxSquare square;
+
+	for(NodeIterator iter = this; (*iter) != nullptr; ++iter)
+	{
+		if(iter->HasPoint())
+		{
+			RECT R = iter->R.GetRect().Rect();
+			square.ConstructFromRect(R);
+			square.Render(pRenderer);
+		}
+	}
+}
+
+bool Node::Insert(ISpatialObject* pObj)
+{
+	// If the point is within the the root
+	if(IsWithin(pObj))
+	{
+		RInsert(pObj);
+	}
+
+	return true;
+}
+
+void Node::RInsert(ISpatialObject* pObj)
+{
+	// find the near nodes to pObj
+	std::vector<Node*> nodes;
+	FindNearNodes(pObj,nodes);
+
+	// as we iterate over the near nodes
+	for(unsigned int i = 0; i < nodes.size(); ++i)
+	{
+		// if the current node is full
+		if(nodes[i]->IsFull())
+		{
+			// subdivide the node
+			nodes[i]->SubDivide();
+
+			// Try to insert pObj into this sub node
+			nodes[i]->Insert(pObj);
+		}
+		// node is not yet full
+		else
+		{
+			// Add pObj to node
+			nodes[i]->m_pObjects->insert(pObj);
+
+			// Add node to pObj
+			pObj->AddNode(nodes[i]);
+		}
+	}
+}
+
+// this method is recursive, for simplicity
+void Node::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
+{
+	if(IsDivided())
+	{
+		// Loop through all of the sub nodes
+		for(unsigned int i = 0; i < MAX_NODES; ++i)
+		{
+			Node* pSubNode = m_Nodes[i];
+
+			if(pSubNode->IsWithin(pObj)) // If the point is within the sub node  
+			{
+				// find the near nodes from this node
+				pSubNode->FindNearNodes(pObj,out);
+			}
+		}
+	}
+	else
+	{
+		// At the bottom of the tree, pObj collides with the node
+		out.push_back(this);
+	}
+}
+
+void Node::Update()
+{
+	for(NodeIterator iter = this; iter != nullptr; ++iter)
+	{
+		if((*iter)->HasPoint())
+		{
+			Update(*iter);
+		}
+	}
+}
+
+void Node::Update(Node* pNode)
+{
+	Node::LIST_DTYPE::iterator iter = pNode->m_pObjects->begin();
+	Node::LIST_DTYPE::iterator end = pNode->m_pObjects->end();
+	while(iter != end)
+	{
+		std::vector<Node*> nodes;
+		FindNearNodes(*iter,nodes);
+
+		bool bErase = true;
+
+		if(nodes.empty())
+		{
+			//bErase = true;
+			iter = pNode->m_pObjects->erase(iter);
+			continue;
+		}
+
+		for(unsigned int i = 0; i < nodes.size(); ++i)
+		{
+			bErase = nodes[i] != pNode;
+			if(nodes[i] != pNode)
+			{
+				nodes[i]->Insert(*iter);
+				//bErase = true;
+			}
+		}
+
+		if(bErase)
+		{
+			//(*iter)->ClearNodes();
+			iter = pNode->m_pObjects->erase(iter);
+		}
+		else
+		{
+			++iter;
+		}
+
+	}
 }
 
 void Node::ExpandLeft()
@@ -181,6 +301,32 @@ Node* NodeIterator::operator*()
 Node* NodeIterator::operator->()
 {
 	return this->operator*();
+}
+
+NodeIterator& NodeIterator::operator=(Node* pNode)
+{
+	m_pNode = pNode;
+	return *this;
+}
+
+bool NodeIterator::operator==(Node* pNode)
+{
+	return m_pNode == pNode;
+}
+
+bool NodeIterator::operator!=(Node* pNode)
+{
+	return !this->operator==(pNode);
+}
+
+bool NodeIterator::operator==(const NodeIterator& node)
+{
+	return m_pNode == node.m_pNode;
+}
+
+bool NodeIterator::operator!=(const NodeIterator& node)
+{
+	return !this->operator==(node);
 }
 
 unsigned int NodeIterator::GetIndex() const
@@ -218,200 +364,178 @@ void NodeIterator::LoopUp()
 
 void NodeIterator::Increment()
 {
-	if(m_pNode->IsDivided())
+	if(m_pNode != nullptr)
 	{
-		LoopDown(0);
+		if(m_pNode->IsDivided())
+		{
+			LoopDown(0);
+		}
+		else
+		{
+			LoopUp();
+		}
 	}
-	else
-	{
-		LoopUp();
-	}
 }
-  
-PointIterator::PointIterator(Node* pNode) : NodeIterator(pNode)
-{
-	// todo: need to fix
-	Increment();
-}
-
-void PointIterator::Increment()
-{
-	do
-	{
-		NodeIterator::Increment();
-
-	} while((m_pNode != nullptr) && !m_pNode->HasPoint());
-}
-
 
 // constructor
-QuadTree::QuadTree(const RECT& R) : m_iDepth(0)
+QuadTree::QuadTree(const FRECT& R) : m_iDepth(0)
 {
-
 	m_pRoot = new Node(R);
-	m_pRoot->SubDivide();
-
-	/*for(unsigned int i = 0; i < 4; ++i)
-	{
-		m_pRoot->m_Nodes[i]->SubDivide();
-	}*/
-
 	CalculateMaxSubDivisions();
 }
 
 // Destructor
 QuadTree::~QuadTree()
 {
-	DeleteTree(m_pRoot);
-
 	delete m_pRoot;
 	m_pRoot = nullptr;
 }
 
 void QuadTree::CalculateMaxSubDivisions()
 {
-	unsigned int logH = LOG2(m_pRoot->R.bottom - m_pRoot->R.top);
-	unsigned int logW = LOG2(m_pRoot->R.right - m_pRoot->R.left);
+	//unsigned int logH = LOG2(m_pRoot->R.GetRect(). - m_pRoot->R.top);
+	//unsigned int logW = LOG2(m_pRoot->R.right - m_pRoot->R.left);
 
-	m_iMaxSubDivisions = (logW < logH ? logW : logH) / 2;
+	//m_iMaxSubDivisions = (logW < logH ? logW : logH) / 2;
+	m_iMaxSubDivisions = 4;
 }
 
 bool QuadTree::Insert(ISpatialObject* pObj)
 {
-	return Insert(pObj,m_pRoot);
+	return m_pRoot->Insert(pObj);
 }
 
-bool QuadTree::Insert(ISpatialObject* pObj, Node* pWhere)
-{
-	const KEY& P = pObj->GetPos();
-	bool success = false;
-
-	// reset depth counter
-	m_iDepth = 0;
-
-	// If the point is within the the root
-	if(m_pRoot->IsPointWithin(P))
-	{
-		success = true;
-
-		do
-		{
-			// Find node to insert point into
-			pWhere = FindNearNode(P,pWhere);
-
-			if(m_iDepth > m_iMaxSubDivisions)
-			{
-				success = false;
-				break;
-			}
-
-			// check if the point has already been inserted
-			/*auto iter = find_if(pWhere->m_pObjects->begin(),pWhere->m_pObjects->end(),[&](const ISpatialObject* p) -> bool
-			{
-				return p->GetPos() == P;
-			});
-
-			// If point is in list, it means that we are at the lowest level, so the
-			//  break statement here is redundant 
-			if(iter != pWhere->m_pObjects->end())
-			{
-				// todo: break here is not needed?
-				// failure
-				success = false;
-				break;
-			}*/
-
-			// insert point
-
-			// If the node is full, subdivide it
-			if(pWhere->IsFull())
-			{
-				pWhere->SubDivide();
-			}
-
-		} while(pWhere->IsDivided());
-
-		if(success)
-		{
-			// Insert point into the current node's list
-			auto iterPair = pWhere->m_pObjects->insert(pObj);
-			if(iterPair.second)
-			{
-				pObj->SetNode(pWhere);
-			}
-			else
-			{
-				success = false;
-			}
-		}
-	}
-
-	return success;
-}
 void QuadTree::Erase(ISpatialObject* pObj)
 {
-	Node* pNode = FindNearNode(pObj);
-	pNode->Erase(pObj);
-}
-
-Node* QuadTree::FindNearNode(const KEY& P, Node* pNode) const
-{
-	if(!m_pRoot->IsPointWithin(P))
-		return nullptr;
-
-	// Loop while the current node has sub nodes
-	while(pNode->IsDivided())
+	std::vector<Node*> nodes;
+	m_pRoot->FindNearNodes(pObj,nodes);
+	for(unsigned int i = 0; i < nodes.size(); ++i)
 	{
-		// Loop through all of the sub nodes
-		for(int i = 0; i < MAX_NODES; ++i)
-		{
-			Node* pSubNode = pNode->m_Nodes[i];
-			if(pSubNode->IsPointWithin(P)) // If the point is within the sub node  
-			{
-				m_iDepth++;
-
-				// iterate to this sub node 
-				pNode = pSubNode;
-
-				// and then start the process all over again
-				break;
-			}
-		}
+		nodes[i]->Erase(pObj);
 	}
-
-	return pNode;
-}
-
-Node* QuadTree::FindNearNode(const KEY& P) const
-{
-	return FindNearNode(P,m_pRoot);
-}
-
-Node* QuadTree::FindNearNode(ISpatialObject* pObj) const
-{
-	return FindNearNode(pObj->GetPos(),m_pRoot);
 }
 
 void QuadTree::Update()
 {
+	m_pRoot->Update();
+	//std::vector<Node*> emptyVector;
+
 	// Loop through all the nodes
-	for(NodeIterator iter = m_pRoot; (*iter) != nullptr; ++iter)
+	/*NodeIterator iter = m_pRoot;
+	while((*iter) != nullptr)
 	{
+		bool bTest = true;
+
 		Node* pNode = *iter;
 
 		if(pNode->HasPoint())
 		{
 			Update(pNode);
-			// todo: need to fix
-			//CheckNodeForDeletion(pNode,++i);
+
+			/*if(!pNode->HasPoint())
+			{
+				if(pNode->m_Previous != nullptr && pNode->m_Previous->m_Previous != nullptr)
+				{
+					pNode->m_bDelete = true;
+					emptyVector.push_back(pNode);
+				}
+			}
 		}
-	}
+
+		++iter;
+
+		/*unsigned int index = GET_INDEX(pNode);
+
+		if(index == MAX_NODES && (pNode->m_Previous->m_Previous != nullptr))
+		{
+			int count = 0;
+
+			for(unsigned int i = 0; i < MAX_NODES; ++i)
+			{
+				if(pNode->m_Previous->m_Nodes[i]->m_bDelete)
+				{
+					++count;
+				}
+			}
+
+			if(count == MAX_NODES)
+			{
+				m_Empty.
+
+				bTest = false;
+
+				++iter;
+					
+ 				//iter = pNode->m_Previous;
+				CheckNodeForDeletion(pNode,0);
+			}
+		}
+
+		if(bTest)
+		{
+			++iter;
+		}*/
+		/*if(pNode->m_pObjects)
+		{
+			unsigned int index = GET_INDEX(pNode);
+			if((index == MAX_NODES) && (pNode->m_Previous != nullptr) && (pNode->m_Previous->m_Previous != nullptr))
+			{
+				bool bHasPoint = false;
+
+				for(unsigned int i = 0; i < MAX_NODES; ++i)
+				{
+					if(pNode->m_Previous->m_Nodes[i]->HasPoint())
+					{
+						bHasPoint = true;
+					}
+				}
+
+				if(!bHasPoint)
+				{
+					iter = pNode->m_Previous;
+					
+ 					//iter = pNode->m_Previous;
+					CheckNodeForDeletion(pNode,0);
+				}
+
+			}
+		}*/
+	//}*/
+
+	/*std::for_each(emptyVector.begin(),emptyVector.end(),[&](Node* pNode)
+	{
+		if(!pNode->IsDivided())
+		{
+			bool bHasNoPoint = true;
+
+			for(unsigned int i = 0; i < MAX_NODES; ++i)
+			{
+				if(pNode->m_Previous->m_Nodes[i]->HasPoint())
+				{
+					bHasNoPoint = false;
+				}
+			}
+
+			if(bHasNoPoint)
+			{
+				//CheckNodeForDeletion(pNode,0);
+			}
+		}
+		//emptyVector[i]->m_Previous->m_Nodes
+	});*/
 }
 
-void QuadTree::CheckNodeForDeletion(Node* pNode, int n)
+/*void QuadTree::CheckNodeForDeletion(Node* pNode, int n)
 {
+	Node** pArray = pNode->m_Previous->m_Nodes;
+
+	pNode->m_Previous->m_pObjects = nullptr;
+
+	delete[] pArray[0];
+	memset(pArray,0,sizeof(Node*)*MAX_NODES);
+
 	// todo: check this function
-	if(n == MAX_NODES)
+	/*if(n == (MAX_NODES - 1))
 	{
 		bool bDelete = false;
 		for(int i = 0; i < MAX_NODES; ++i)
@@ -429,18 +553,45 @@ void QuadTree::CheckNodeForDeletion(Node* pNode, int n)
 			memset(pNode->m_Nodes,0,sizeof(Node*)*MAX_NODES);
 		}
 	}
-}
+}*/
 
 void QuadTree::Update(Node* pNode)
 {
-	Node::LIST_DTYPE::iterator iter = pNode->m_pObjects->begin();
+	/*Node::LIST_DTYPE::iterator iter = pNode->m_pObjects->begin();
 	Node::LIST_DTYPE::iterator end = pNode->m_pObjects->end();
 	while(iter != end)
 	{
-		if(!pNode->IsPointWithin(*iter))
+		std::vector<Node*> nodes;
+		FindNearNodes(*iter,nodes);
+
+		bool bErase = nodes.empty();
+
+		if(!bErase)
+		{
+			for(unsigned int i = 0; i < nodes.size(); ++i)
+			{
+				bErase = nodes[i] != pNode; 
+				//if(bErase)
+				{
+					Insert(*iter,nodes[i]);
+				}
+			}
+		}
+
+		if(bErase)
+		{
+			//(*iter)->ClearNodes();
+			iter = pNode->m_pObjects->erase(iter);
+		}
+		else
+		{
+			++iter;
+		}
+
+		/*if(!pNode->IsWithin(*iter))
 		{
 			// Search up to find which Node the point is in
-			Node* pNewNode = SearchNodeUp((*iter)->GetPos(),pNode);
+			Node* pNewNode = SearchNodeUp((*iter),pNode);
 
 			// If the point is within the root node
 			if(pNewNode)
@@ -451,7 +602,7 @@ void QuadTree::Update(Node* pNode)
 			else
 			{
 				// the object left the area
-				(*iter)->SetNode(nullptr);
+				//(*iter)->SetNode(nullptr);
 			}
 
 			// erase the object from the list
@@ -466,33 +617,13 @@ void QuadTree::Update(Node* pNode)
 				{
 					pNode->m_Previous->m_Nodes[index];
 				}
-			}*/
+			}
 		}
 		else
 		{
 			++iter;
 		}
-	}
-}
-
-Node* QuadTree::SearchNodeUp(KEY P, Node* pNode) const
-{
-	Node* pIter = nullptr;
-
-	// quick solution check
-	if(m_pRoot->IsPointWithin(P))
-	{
-		pIter = pNode;
-
-		do
-		{
-			pIter = pIter->m_Previous;
-
-		// Loop while 
-		} while(!pIter->IsPointWithin(P));
-	}
-	
-	return pIter;
+	}*/
 }
 
 void QuadTree::SaveToFile(std::string& file)
@@ -528,32 +659,9 @@ void QuadTree::SaveToFile(std::string& file)
 	}*/
 }
 
-void QuadTree::DeleteTree(Node*& pNode)
-{
-	// Loop through all nodes
-	if(pNode->IsDivided())
-	{
-		for(int i = 0; i < MAX_NODES; ++i)
-		{
-			DeleteTree(pNode->m_Nodes[i]);
-		}
-
-		delete[] pNode->m_Nodes[0];
-	}
-
-}
-
 void QuadTree::Render(IRenderer* pRenderer)
 {
-	DxSquare square;
-
-	// loop over all nodes and render them
-	for(NodeIterator iter = m_pRoot; (*iter) != nullptr; ++iter)
-	{
-		square.ConstructFromRect(iter->R);
-		square.Render(pRenderer);
-	}
-
+	m_pRoot->Render(pRenderer);
 }
 
 

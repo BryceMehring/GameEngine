@@ -7,10 +7,6 @@
 #define _MEMPOOL_
 
 
-// global pool new and delete that use the MemoryPool
-/*void* operator new(size_t size);
-void operator delete(void* p);*/
-
 class MemoryPool
 {
 public:

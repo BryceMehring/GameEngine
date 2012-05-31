@@ -7,19 +7,17 @@
 
 #include <Windows.h>
 #include <set>
-#include <hash_map>
+#include <vector>
 #include <assert.h>
 #include "IRender.h"
 #include "RTTI.h"
+#include "VecMath.h"
 
-const int MAX_NODES = 4;
-const int MAX_OBJ_PERNODE = 10;
+const unsigned int MAX_NODES = 4;
+const unsigned int MAX_OBJ_PERNODE = 10;
 
 class NodeIterator;
 class ISpatialObject;
-typedef POINT KEY;
-
-
 
 class Node
 {
@@ -27,37 +25,30 @@ public:
 
 	typedef std::set<ISpatialObject*> LIST_DTYPE;
 
-	// friends
-	//template< class N>
-	//friend class QuadTree<N>;
-	friend class QuadTree;
 	friend class NodeIterator;
 
 	// constructors
 	Node();
-	Node(const RECT& R);
+	Node(const FRECT& R);
 	~Node();
 
-	void SetRect(const RECT& R); 
-
-	const RECT& GetRect() const { return R; }
+	void SetRect(const CRectangle& R); 
 
 	void Erase(ISpatialObject* pObj)
 	{ 
 		m_pObjects->erase(pObj);
-		
 	}
 	const LIST_DTYPE* GetNearObjects() const { return m_pObjects; }
 
-	// returns true if P lies within the rectangle
-	bool IsPointWithin(KEY P) const;
-	bool IsPointWithin(const ISpatialObject* pObj) const;
+	// operations
+	bool Insert(ISpatialObject* pObj);
 
-	// Returns true if this node is divided. 
-	bool IsDivided() const;
+	// recursive algorithm
+	void FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out);
 
-	bool HasPoint() const;
-	bool IsFull() const;
+	void Render(IRenderer* pRenderer);
+
+	void Update();
 
 	// todo: need to implement
 	//void AddObject(Object* pObject);
@@ -65,7 +56,7 @@ public:
 private:
 
 	// The rectangle of the current node
-	RECT R;
+	CRectangle R;
 	//std::list<obj*>* m_pObjects;
 	// obj
 	LIST_DTYPE* m_pObjects;
@@ -75,8 +66,21 @@ private:
 	Node* m_Nodes[MAX_NODES];
 	Node* m_Previous;
 
-	// Helper functions
-	void AssignRect(const RECT& R);
+	// --- helper functions ---
+
+	// recursive insertion algorithm
+	void RInsert(ISpatialObject* pObj);
+
+	void Update(Node* pNode);
+
+		// returns true if P lies within the rectangle
+	bool IsWithin(const ISpatialObject* pObj) const;
+
+	// Returns true if this node is divided. 
+	bool IsDivided() const;
+
+	bool HasPoint() const;
+	bool IsFull() const;
 
 	// Subdivides the current node/R into 4 sub nodes
 	void SubDivide();
@@ -94,27 +98,52 @@ public:
 		AnotherUnit,
 	};
 
-	ISpatialObject() : m_pNode(nullptr) {}
+	ISpatialObject() : m_pCollisionPolygon(nullptr) {}
 
 	// todo: need some rtti info here for casting
 	virtual ~ISpatialObject()
 	{
-		if(m_pNode)
+		for(unsigned int i = 0; i < m_nodes.size(); ++i)
 		{
-			m_pNode->Erase(this);
+			m_nodes[i]->Erase(this);
+			//m_pNode->Erase(this);
 		}
+		delete m_pCollisionPolygon;
 	}
 
 	// todo: need to change the KEY structure to D3dxvector?
-	virtual KEY GetPos() const = 0;
+	virtual D3DXVECTOR2 GetPos() const = 0;
 	virtual Type GetType() const = 0;
-	virtual void Update(float dt) = 0;
 
-	void SetNode(Node* pNode) { m_pNode = pNode; }
+	// todo: create a better interface
+
+	bool HasNode() const
+	{ 
+		return (!m_nodes.empty());
+	}
+	void SetNodes(const std::vector<Node*>& nodes)
+	{
+		m_nodes = nodes;
+	}
+	void AddNode(Node* pNode) { m_nodes.push_back(pNode); }
+	void ClearNodes()
+	{
+		for(unsigned int i = 0; i < m_nodes.size(); ++i)
+		{
+			m_nodes[i]->Erase(this);
+			//m_pNode->Erase(this);
+		}
+		m_nodes.clear();
+	}
+	void SetCollisionPolygon(ICollisionPolygon* pPolygon) { m_pCollisionPolygon = pPolygon; }
+	const ICollisionPolygon* GetCollisionPolygon() const { return m_pCollisionPolygon; }
+
+	const std::vector<Node*>& GetNode() const { return m_nodes; }
 
 protected:
 
-	Node* m_pNode; 
+	std::vector<Node*> m_nodes;
+	ICollisionPolygon* m_pCollisionPolygon;
 };
 
 /*class CollidableObject : public ISpatialObject
@@ -137,24 +166,6 @@ protected:
 	KEY m_pos; // current position of the object
 };*/
 
-class BaseIterator
-{
-public:
-
-	BaseIterator& operator=(const Node* pNode);
-	BaseIterator& operator++();
-	BaseIterator& operator++(int unused);
-
-	Node* operator*();
-	Node* operator->();
-
-protected:
-
-	Node* m_pNode;
-
-	void LoopDown(unsigned int index);
-
-};
 
 // todo: need to create a better public/protected/private interface
 class NodeIterator
@@ -163,9 +174,15 @@ public:
 
 	NodeIterator(Node* pNode = nullptr);
 		
-	NodeIterator& operator=(const Node* pNode);
+	NodeIterator& operator=(Node* pNode);
 	NodeIterator& operator++();
 	NodeIterator& operator++(int unused);
+
+	bool operator ==(Node* pNode);
+	bool operator !=(Node* pNode);
+
+	bool operator ==(const NodeIterator&);
+	bool operator !=(const NodeIterator&);
 
 	Node* operator*();
 	Node* operator->();
@@ -180,18 +197,6 @@ protected:
 	void LoopUp();
 };
 
-class PointIterator : public NodeIterator
-{
-public:
-
-	PointIterator(Node* pNode = nullptr);
-
-protected:
-
-	void Increment();
-
-};
-
 class QuadTree : public IRender
 {
 public:
@@ -199,7 +204,7 @@ public:
 	//typedef typename N::OBJ_TYPE OBJ_TYPE;
 
 	// constructor/destructor
-	QuadTree(const RECT& R);
+	QuadTree(const FRECT& R);
 	virtual ~QuadTree();
 
 	// adds a point to the quadtree
@@ -209,7 +214,9 @@ public:
 
 	// returns a nearest point in the tree to P
 	// non-recursive
-	Node* FindNearNode(const KEY& P) const;
+	void FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out);
+	void FindNearNode(const D3DXVECTOR2& topLeft, const D3DXVECTOR2& bottomRight, std::vector<Node*>& out);
+
 	Node* FindNearNode(ISpatialObject* pObj) const;
 
 	// This function will update the nodes in the quadtree if any of the
@@ -230,20 +237,8 @@ private:
 	unsigned int m_iMaxSubDivisions;
 	mutable unsigned int m_iDepth;
 
-	Node* FindNearNode(const KEY& P, Node* pNode) const;
-
-	bool Insert(ISpatialObject* pObj, Node* pWhere);
-
-	//non-recursive
-	Node* SearchNodeUp(KEY P, Node* pNode) const;
-	
-	// recursive
-	void DeleteTree(Node*& pNode);
-
 	// todo: need to implement 
 	void CalculateMaxSubDivisions();
-
-	void CheckNodeForDeletion(Node* pNode, int i);
 };
 
 /*class Unit : public CollidableObject
