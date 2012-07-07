@@ -1,6 +1,7 @@
 // Programmed by Bryce Mehring
 
 #include "VecMath.h"
+#include "asVM.h"
 
 // function declarations 
 bool Intersects(const Circle& c1, const FRECT& R1);
@@ -62,6 +63,12 @@ bool CCircle::Intersects(const ICollisionPolygon* pOther) const
 	return bSuccess;
 }
 
+void CCircle::GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const
+{
+	out = pos - m_circle.center;
+	D3DXVec2Normalize(&out,&out);
+}
+
 // ----- CCircle -----
 
 CRectangle::CRectangle(const FRECT& rect) : m_rect(rect)
@@ -93,6 +100,34 @@ bool CRectangle::Intersects(const ICollisionPolygon* pOther) const
 	}
 
 	return bSuccess;
+}
+
+void CRectangle::GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const
+{
+	//D3DXVECTOR2 tempPos = pos;
+	//tempPos.x = m_rect.topLeft.x;
+	//if(pos.x < this->m_rect.bottomRight.x)
+	// todo: rename this class as a paddleCollisionRect and also
+	// todo: keep this current class for basic rectangle collision
+	{
+		D3DXVECTOR2 middle = m_rect.Middle();
+		// todo: use the && operator to fix this logic
+		if(pos.x <= m_rect.topLeft.x)
+		{
+			middle.x += 200;
+		}
+		else if(pos.x >= m_rect.bottomRight.x)
+		{
+			middle.x -= 200;
+		}
+		else
+		{
+			middle.y = 0;
+		}
+		out = pos - middle;
+		D3DXVec2Normalize(&out,&out);
+	}
+	
 }
 
 
@@ -162,12 +197,6 @@ bool Intersects(const Circle& c1, const FRECT& R1)
 	// If the distance is less than the circle's radius, an intersection occurs
 	float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
 	return distanceSquared < (c1.r * c1.r);
-
-	/*return R1.IsPointWithin(c1.center) || 
-		c1.IsPointWithin(R1.topLeft) ||
-		c1.IsPointWithin(R1.bottomRight) ||
-		c1.IsPointWithin(D3DXVECTOR2(R1.topLeft.y,R1.bottomRight.x)) ||
-		c1.IsPointWithin(D3DXVECTOR2(R1.bottomRight.y,R1.topLeft.x));*/
 }
 
 //Returns true if the circles are touching, or false if they are not
@@ -182,10 +211,13 @@ bool Intersects(const Circle& c1, const Circle& c2)
 
 bool Intersects(const FRECT& rect1, const FRECT& rect2)
 {
-	return rect2.IsPointWithin(rect1.topLeft) || 
-		rect2.IsPointWithin(rect1.bottomRight) ||
-		rect2.IsPointWithin(D3DXVECTOR2(rect1.topLeft.x,rect1.bottomRight.y)) ||
-		rect2.IsPointWithin(D3DXVECTOR2(rect1.bottomRight.x,rect1.topLeft.y));
+	/*return rect1.IsPointWithin(rect2.bottomRight) ||
+		rect1.IsPointWithin(rect2.topLeft) ||
+		rect1.IsPointWithin(D3DXVECTOR2(rect2.topLeft.x,rect2.bottomRight.y)) ||
+		rect1.IsPointWithin(D3DXVECTOR2(rect2.bottomRight.x,rect2.bottomRight.y));*/
+
+	return (rect1.topLeft.x <= rect2.bottomRight.x && rect1.bottomRight.x >= rect2.topLeft.x &&
+    rect1.topLeft.y <= rect2.bottomRight.y && rect1.bottomRight.y >= rect2.topLeft.y);
 }
 
 bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P)
@@ -205,6 +237,61 @@ bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P)
 	return oddNodes; 
 }
 
+float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound)
+{
+	// Bounds
+	RECT R;
+	::GetWindowRect(::GetActiveWindow(),&R);
+
+	const int Y = R.bottom - R.top;
+	const int X = R.right - R.left;
+
+	float b = 0.0f;
+	float m = 0.0f;
+	float x = 0.0f;
+
+	// Loop while pos is within the window
+	while(InRange(pos.x,fLeftBound,(float)X))
+	{
+		float c = 0.0f;
+		float n = 1.0f; // normal vector
+
+		// If the object is heading down
+		if(dir.y > 0.0f)
+		{
+			// Set the constant to solve for
+			c = (float)Y;
+
+			// set the normal vector
+			n = -n;
+		}
+
+		// calculate the slope
+		m = dir.y / dir.x;
+
+		// calculate y-intercept
+		b = -m*pos.x + pos.y;
+
+		// calculate where the object will hit
+		x = ((c - b)) / m;
+
+		// update pos
+		pos = D3DXVECTOR2(x,m*x + b);
+
+		// reflect dir
+		dir = ::Reflect(-dir,D3DXVECTOR2(0.0f,n));
+	}
+
+	// y = mx + b
+
+	// when the object out of the bound
+	// we need to return the y pos when x = 50, 
+	// just plug 50 into the equation above and return the result
+
+	return m*fLeftBound + b;
+	//return b;
+}
+
 float GetRandFloat(float a, float b)
 {
 	// todo: need to check this
@@ -212,7 +299,45 @@ float GetRandFloat(float a, float b)
 	return fRand*(b - a) + a;
 }
 
-float Clamp(float x, float a, float b)
+bool InRange(float value, float min, float max)
 {
-	return x < a ? a : (x > b ? b : x);
+	return ((value >= min) && (value <= max));
+}
+
+bool Equals(float a, float b, float diff)
+{
+	return fabsf(a - b) < diff;
+}
+
+void RegisterScriptVecMath(asIScriptEngine* pEngine)
+{
+	//D3DXVECTOR2
+
+	// todo finish registering the vector interface to script
+	DBAS(pEngine->RegisterObjectType("Vector2",sizeof(D3DXVECTOR2),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
+	DBAS(pEngine->RegisterObjectProperty("Vector2","float x",offsetof(D3DXVECTOR2,x)));
+	DBAS(pEngine->RegisterObjectProperty("Vector2","float y",offsetof(D3DXVECTOR2,x)));
+
+	DBAS(pEngine->RegisterGlobalFunction("uint log2(uint)",asFUNCTION(LOG2),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("bool InRange(float,float,float)",asFUNCTION(InRange),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("float rand(float,float)",asFUNCTION(GetRandFloat),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("float clamp(float,float,float)",asFUNCTION(Clamp<float>),asCALL_CDECL));
+}
+
+unsigned int LOG2(unsigned int v)
+{
+	const unsigned int b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
+	const unsigned int S[] = {1, 2, 4, 8, 16};
+	
+	unsigned int r = 0; // result of log2(v) will go here
+	for (int i = 4; i >= 0; i--) // unroll for speed...
+	{
+		if (v & b[i])
+		{
+			v >>= S[i];
+			r |= S[i];
+		} 
+	}
+
+	return r;
 }

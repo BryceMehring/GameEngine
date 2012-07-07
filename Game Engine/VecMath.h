@@ -20,11 +20,21 @@ struct FRECT
 	{
 		return ((pos.x >= topLeft.x) && (pos.x <= bottomRight.x)) && ((pos.y >= topLeft.y) && (pos.y <= bottomRight.y));
 	}
-
+	
 	RECT Rect() const
 	{
 		RECT R = {(long)topLeft.x,(long)topLeft.y,(long)bottomRight.x,(long)bottomRight.y};
 		return R;
+	}
+
+	// sets new center
+	FRECT& operator =(const D3DXVECTOR2& pos)
+	{
+		D3DXVECTOR2 diff = (bottomRight - topLeft)*0.5f;
+		topLeft = pos - diff;
+		bottomRight = pos + diff;
+
+		return *this;
 	}
 
 	// todo: rename to leftTop, rightBottom;
@@ -45,6 +55,12 @@ struct Circle
 		 return (D3DXVec2LengthSq(&(pos - center)) < (r*r));
 	}
 
+	Circle& operator =(const D3DXVECTOR2& c)
+	{
+		center = c;
+		return *this;
+	}
+
 	D3DXVECTOR2 center;
 	float r;
 
@@ -58,7 +74,17 @@ D3DXVECTOR3 Reflect(const D3DXVECTOR3& dir, const D3DXVECTOR3& normal);
 float GetRandFloat(float a, float b);
 
 // clamps x into the range of [a,b]
-float Clamp(float x, float a, float b);
+template< class T >
+T Clamp(T x, T a, T b)
+{
+	return x < a ? a : (x > b ? b : x);
+}
+
+bool InRange(float value, float min, float max);
+
+bool Equals(float a, float b, float diff = 0.0001f);
+
+unsigned int LOG2(unsigned int v);
 
 // todo: I could put these collision functions in the cpp file
 
@@ -70,6 +96,10 @@ bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P);
 
 // todo: need to implement
 bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P);
+
+float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound); 
+
+void RegisterScriptVecMath(class asIScriptEngine* pEngine);
 
 // collision interface
 
@@ -87,6 +117,7 @@ public:
 
 	// returns true if pOther interests this, else false
 	virtual bool Intersects(const ICollisionPolygon* pOther) const = 0;
+	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const = 0;
 
 	// returns the type of the collision object
 	virtual Type GetType() const = 0;
@@ -105,6 +136,7 @@ public:
 
 	virtual Type GetType() const { return ICollisionPolygon::CircleType; }
 	virtual bool Intersects(const ICollisionPolygon* pOther) const;
+	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const;
 	
 	// circle access
 	const Circle& GetCircle() const { return m_circle; }
@@ -127,6 +159,7 @@ public:
 
 	virtual Type GetType() const { return ICollisionPolygon::RectangleType; }
 	virtual bool Intersects(const ICollisionPolygon* pOther) const;
+	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const;
 
 	// rect access
 	const FRECT& GetRect() const { return m_rect; }

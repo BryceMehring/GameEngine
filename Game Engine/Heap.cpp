@@ -1,4 +1,5 @@
 #include "Heap.h"
+#include "VecMath.h"
 
 using namespace std;
 using namespace stdext;
@@ -57,6 +58,7 @@ void Heap::GetMemoryInfo(char* pStr, unsigned int uiLength) const
 	sprintf_s(pStr,uiLength,"\nTotal memory pool usage: %f(kb)\n",GetMemoryUsageInKb());
 }
 
+
 MemoryPool& Heap::GetPool(unsigned int size)
 {
 	const unsigned int uiNewSize = ((size+7)&~7);
@@ -69,8 +71,12 @@ MemoryPool& Heap::GetPool(unsigned int size)
 	if(iter == m_pool.end())
 	{
 		// insert pool into hash map
-		// todo: could make size dynamic
-		auto pair = m_pool.insert(make_pair(uiNewSize,new MemoryPool(uiNewSize,512)));
+		//xtodo: could make size dynamic
+		unsigned int uiBlocks = 512 - 2*uiNewSize;
+		uiBlocks = Clamp(uiBlocks,16u,512u);
+
+
+		auto pair = m_pool.insert(make_pair(uiNewSize,new MemoryPool(uiNewSize,uiBlocks)));
 		iter = pair.first;
 	}
 

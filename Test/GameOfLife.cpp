@@ -293,7 +293,7 @@ void GameOfLife::Update(Game* pGame)
 			DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
 			float angle = (float)(rand() % 180) * 0.01745329f;
 			float v = GetRandFloat(50.0f,250.0f);
-			float s = ::GetRandFloat(15.0f,20.0f);
+			float s = ::GetRandFloat(10.0f,60.0f);
 			D3DXVECTOR2 dir(cosf(angle),-sinf(angle));
 			Unit* pUnit = new Unit(D3DXVECTOR2(m_pos.x,m_pos.y),s,color,v);
 			pUnit->SetDir(dir);
@@ -317,7 +317,7 @@ void GameOfLife::Update(Game* pGame)
 		m_units[i]->Update(dt);
 
 		// if it the unit is a ball, and is left the screen
-		if((m_units[i]->GetType() == ISpatialObject::Unit) && (!m_units[i]->HasNode()))
+		if((m_units[i]->GetType() == ISpatialObject::Unit) && (!m_pQuadTree->IsWithin(m_units[i])))
 		{
 			// remove it
 			delete m_units[i];
@@ -329,8 +329,6 @@ void GameOfLife::Update(Game* pGame)
 			++i;
 		}
 	}
-
-	m_pQuadTree->Update();
 }
 void GameOfLife::Draw(Game* pGame)
 {

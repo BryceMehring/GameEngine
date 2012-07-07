@@ -6,6 +6,8 @@
 #include "FileManager.h"
 #include "asVM.h"
 #include "VecMath.h"
+#include "TextureManager.h"
+#include "D3d9types.h"
 
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
@@ -42,76 +44,6 @@ struct DrawTextInfo
 	DWORD format;
 };
 
-TextureManager::TextureManager(IDirect3DDevice9* pDevice) : m_pDevice(pDevice)
-{
-}
-
-TextureManager::~TextureManager()
-{
-	RemoveAllTextures();
-	m_pDevice->Release();
-}
-
-void TextureManager::AddTexture(const std::string& name, const Texture& tex)
-{
-	m_textures.insert(make_pair(name,tex));
-}
-
-void TextureManager::LoadAllTexturesFromFolder(const std::string& folder)
-{
-	std::vector<string> textureFileNames;
-	FileManager::Instance().LoadAllFilesFromDictionary(textureFileNames,folder,".png");
-
-	// loop through each file, and create the texture
-	for_each(textureFileNames.begin(),textureFileNames.end(),[&](string& file)
-	{
-		IDirect3DTexture9* pTexture = nullptr;
-		assert(D3DXCreateTextureFromFile(m_pDevice,file.c_str(),&pTexture) == D3D_OK);
-
-		// Get texture info
-		D3DSURFACE_DESC format;
-		pTexture->GetLevelDesc(0,&format);
-
-		Texture tex = {pTexture,format.Width,format.Height,D3DXVECTOR3(format.Width / 2, format.Height / 2, 0)};
-
-		size_t start = file.find_last_of("/\\") + 1;
-		size_t n = file.find_last_of('.') - start;
-
-		AddTexture(file.substr(start,n),tex);
-		//m_textures.insert(make_pair(file.substr(0,pos),pTexture));
-	});
-}
-
-const Texture* TextureManager::GetTexture(const std::string& name)
-{
-	auto iter = m_textures.find(name);
-
-	if(iter != m_textures.end())
-	{
-		return &iter->second;
-	}
-
-	return nullptr;
-}
-
-void TextureManager::RemoveTexture(const std::string& name)
-{
-	auto iter = m_textures.find(name);
-
-	if(iter != m_textures.end())
-	{
-		iter->second.pTexture->Release();
-		m_textures.erase(iter);
-	}
-}
-
-void TextureManager::RemoveAllTextures()
-{
-	for_each(m_textures.begin(),m_textures.end(),[&](TextureMap::value_type& data)
-	{
-		data.second.pTexture->Release();
-	});
-}
 
 
 DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref), m_p3Device(nullptr),
@@ -151,6 +83,8 @@ m_pTextureManager(nullptr)
 	m_p3Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_LINEAR);
 
 	EnumerateDisplayAdaptors();
+
+	RegisterScript();
 	//SetDisplayMode(0);
 }
 DX9Render::~DX9Render()
@@ -220,6 +154,8 @@ void DX9Render::InitializeDirectX()
 		D3DCREATE_HARDWARE_VERTEXPROCESSING,   // vertex processing
 		&m_D3DParameters,            // present parameters
 		&m_p3Device);      // return created device
+
+	//::ShowCursor(TRUE);
 }
 
 void DX9Render::Reset()
@@ -247,7 +183,7 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 		GetStringRec(str,R);
 	}
 
-	m_text.push_back(DrawTextInfo(str,R,color,DT_LEFT | DT_WORDBREAK));
+	m_text.push_back(DrawTextInfo(str,R,color,DT_LEFT | DT_TOP | DT_WORDBREAK));
 	//int Height = this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
 	//DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
 	//DrawTextInfo info = {str,R,color,DT_NOCLIP};
@@ -267,6 +203,12 @@ void DX9Render::DrawSprite(const D3DXMATRIX& transformation, const std::string& 
 {
 	m_sprites.push(Sprite(transformation,texture,color,iPriority));
 }
+
+TextureManager* DX9Render::GetTextureManager()
+{
+	return m_pTextureManager;
+}
+
 /*void DX9Render::DrawSprite()
 {
 	m_pSprite->Begin(0);
@@ -576,14 +518,14 @@ UINT DX9Render::CreateVertexDecl(const VertexDeclaration& decl)
 	return m_VertexDecl.size() - 1;
 }
 
-void DX9Render::_RegisterScript()
+void DX9Render::RegisterScript()
 {
-	DBAS(s_pScriptEngine->RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
+	/*DBAS(s_pScriptEngine->RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors),asCALL_THISCALL));
 	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void GetNumDisplayAdaptors()",asMETHOD(DX9Render,GetNumDisplayAdaptors),asCALL_THISCALL));
 	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void SetDisplayMode(uint)",asMETHOD(DX9Render,SetDisplayMode),asCALL_THISCALL));
 	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","const string& GetDisplayModeStr(uint) const",asMETHOD(DX9Render,GetDisplayModeStr),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterGlobalProperty("DX9Render renderer",s_pThis));
+	DBAS(s_pScriptEngine->RegisterGlobalProperty("DX9Render renderer",s_pThis));*/
 }
 
 /*bool WindowManager::LoadEffect(UINT iID,const char* pFile)

@@ -85,7 +85,7 @@ public:
 
 	typedef Delegate<void,const MsgProcData&> MsgDelegate;
 
-	WindowManager(HINSTANCE hInstance,const std::string& winCaption);
+	WindowManager(HINSTANCE hInstance);
 	~WindowManager();
 
 	int AddMsgListener(const MsgDelegate&);
@@ -97,7 +97,9 @@ public:
 
 	HINSTANCE GetHINSTANCE() const { return m_hInstance; }
 	HWND GetWindowHandle() const { return m_hWindowHandle; }
-	const RECT& GetRECT() const { return m_rect; }
+	//void GetWindowRect(RECT& R);
+
+	void SetWinCaption(const std::string&);
 
 	// todo: need to implement these functions
 	void RegisterScript();
@@ -124,7 +126,7 @@ private: //todo: I should make some of these members private
 
 	// ====== helper functions ======
 
-	void InitializeWindows(HINSTANCE hInstance, const std::string& winCaption);
+	void InitializeWindows(HINSTANCE hInstance);
 	void Quit();
 };
 

@@ -1,7 +1,7 @@
 #ifndef _MENU_
 #define _MENU_
 
-
+// todo: split this header file down
 
 #include "Delegates.h"
 #include "DxPolygon.h"
@@ -344,8 +344,50 @@ private:
 	void UpdateInput(class IKMInput* pInput);
 	void UpdateTextInput(class IKMInput* pInput);
 
-	unsigned int GetNumberOfRowsInLine() const;
+	unsigned int GetNumberOfRowsInLine(const std::string&) const;
 
 };
+
+class ScriptingConsole : public TextBox
+{
+public:
+
+	ScriptingConsole(asVM* pVM, const std::string& name, const RECT& R);
+
+	virtual void Enter();
+	virtual void Backspace();
+
+	void MessageCallback(const asSMessageInfo *msg);
+
+	void RegisterScript();
+
+protected:
+
+	asVM* m_pVM;
+
+	unsigned int m_uiStartIndex;
+
+	// helper functions
+	template< class T >
+	void _Grab(const T& p)
+	{
+		stringstream stream;
+		stream << p;
+
+		Write(stream.str());
+	}
+
+	// These are registered with AngelScript
+	void Grab();
+	void Grab(const std::string&);
+	void Grab(int);
+	void Grab(float);
+	void Grab(double);
+	void Grab(unsigned int);
+	void Grab(bool);
+
+};
+
+
 
 #endif

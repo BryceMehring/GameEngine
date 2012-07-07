@@ -1,6 +1,9 @@
 // Programmed by Bryce Mehring
 // 1/2/2012
 
+// todo: need to clean up the interfaces.
+// todo: need to update the quadtree so that it grows upwards when no objects are in the node.
+
 #ifndef _QUADTREE_
 #define _QUADTREE_
 #pragma once
@@ -34,24 +37,21 @@ public:
 
 	void SetRect(const CRectangle& R); 
 
-	void Erase(ISpatialObject* pObj)
-	{ 
-		m_pObjects->erase(pObj);
-	}
+	void Erase(ISpatialObject* pObj);
+	void EraseFromPreviousPos(ISpatialObject* pObj);
+
 	const LIST_DTYPE* GetNearObjects() const { return m_pObjects; }
+
+	// returns true if P lies within the rectangle
+	bool IsWithin(const ISpatialObject* pObj) const;
 
 	// operations
 	bool Insert(ISpatialObject* pObj);
 
 	// recursive algorithm
-	void FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out);
+	void FindNearNodes(const ICollisionPolygon* pObj, std::vector<Node*>& out);
 
 	void Render(IRenderer* pRenderer);
-
-	void Update();
-
-	// todo: need to implement
-	//void AddObject(Object* pObject);
 	 
 private:
 
@@ -66,15 +66,12 @@ private:
 	Node* m_Nodes[MAX_NODES];
 	Node* m_Previous;
 
+	bool m_bUseable;
+
 	// --- helper functions ---
 
 	// recursive insertion algorithm
 	void RInsert(ISpatialObject* pObj);
-
-	void Update(Node* pNode);
-
-		// returns true if P lies within the rectangle
-	bool IsWithin(const ISpatialObject* pObj) const;
 
 	// Returns true if this node is divided. 
 	bool IsDivided() const;
@@ -92,6 +89,8 @@ class ISpatialObject : public IRender
 {
 public:
 
+	friend class Node;
+
 	enum Type
 	{
 		Unit,
@@ -103,47 +102,26 @@ public:
 	// todo: need some rtti info here for casting
 	virtual ~ISpatialObject()
 	{
-		for(unsigned int i = 0; i < m_nodes.size(); ++i)
-		{
-			m_nodes[i]->Erase(this);
-			//m_pNode->Erase(this);
-		}
 		delete m_pCollisionPolygon;
 	}
 
-	// todo: need to change the KEY structure to D3dxvector?
+	//-todo: need to change the KEY structure to D3dxvector?
 	virtual D3DXVECTOR2 GetPos() const = 0;
 	virtual Type GetType() const = 0;
 
-	// todo: create a better interface
+	void EraseFromQuadtree(class QuadTree* pTree);
 
-	bool HasNode() const
-	{ 
-		return (!m_nodes.empty());
-	}
-	void SetNodes(const std::vector<Node*>& nodes)
-	{
-		m_nodes = nodes;
-	}
-	void AddNode(Node* pNode) { m_nodes.push_back(pNode); }
-	void ClearNodes()
-	{
-		for(unsigned int i = 0; i < m_nodes.size(); ++i)
-		{
-			m_nodes[i]->Erase(this);
-			//m_pNode->Erase(this);
-		}
-		m_nodes.clear();
-	}
+	// todo: create a better interface
 	void SetCollisionPolygon(ICollisionPolygon* pPolygon) { m_pCollisionPolygon = pPolygon; }
 	const ICollisionPolygon* GetCollisionPolygon() const { return m_pCollisionPolygon; }
 
-	const std::vector<Node*>& GetNode() const { return m_nodes; }
+
 
 protected:
 
-	std::vector<Node*> m_nodes;
 	ICollisionPolygon* m_pCollisionPolygon;
+
+	std::vector<Node*> m_nodes;
 };
 
 /*class CollidableObject : public ISpatialObject
@@ -201,29 +179,26 @@ class QuadTree : public IRender
 {
 public:
 
-	//typedef typename N::OBJ_TYPE OBJ_TYPE;
-
 	// constructor/destructor
 	QuadTree(const FRECT& R);
 	virtual ~QuadTree();
 
 	// adds a point to the quadtree
-	// non-recursive
+	// recursive
 	bool Insert(ISpatialObject* pObj);
 	void Erase(ISpatialObject* pObj);
 
-	// returns a nearest point in the tree to P
-	// non-recursive
+	bool IsWithin(ISpatialObject* pObj) const;
+
+	// todo: are these methods needed? I guess so, if you want to check for near nodes
+	// in different areas
+	void FindNearNodes(ICollisionPolygon* pPoly, std::vector<Node*>& out);
 	void FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out);
-	void FindNearNode(const D3DXVECTOR2& topLeft, const D3DXVECTOR2& bottomRight, std::vector<Node*>& out);
+	//void FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out);
 
-	Node* FindNearNode(ISpatialObject* pObj) const;
-
-	// This function will update the nodes in the quadtree if any of the
-	// nodes have left their rectangles.
-	// non-recursive
-	void Update();
-	void Update(Node* pNode);
+	// todo: need to implement
+	// try to get rid of having the vector in every ISpacialObject
+	void Update(ISpatialObject* pObj);
 	//Node* Update(Node* pNode);
 
 	void SaveToFile(std::string& file);
@@ -232,14 +207,70 @@ public:
 	virtual void Render(class IRenderer* pRenderer);
 
 private:
-
 	Node* m_pRoot;
-	unsigned int m_iMaxSubDivisions;
-	mutable unsigned int m_iDepth;
-
-	// todo: need to implement 
-	void CalculateMaxSubDivisions();
 };
+
+// helper functions
+template< class T >
+void ProccessNearNodes(const std::vector<Node*>& nodes, const T& functor)
+{
+	// this set is used to only process each object once
+	std::set<const ISpatialObject*> outSet;
+
+	// loop over all of the nodes the object collides with 
+	for(unsigned int i = 0; i < nodes.size(); ++i)
+	{
+		Node* pNode = nodes[i];
+
+		// Find the near objects to the node
+		auto theList = pNode->GetNearObjects();
+
+		// Loop over all the objects in the node
+		for(auto iter = theList->begin(); iter != theList->end(); ++iter)
+		{
+			const ISpatialObject* pObj = *iter;
+			// If this is the first pObj being processed 
+			auto pair = outSet.insert(pObj);
+			if(pair.second == true)
+			{
+				// process this object
+				if(functor(pObj)) { return; }
+			}
+		}
+	}
+}
+
+/*template< class T >
+void ProccessNearNodes(Node* pNode, const T& functor)
+{
+	// this set is used to only process each object once
+	std::set<const ISpatialObject*> outSet;
+
+	// loop over all of the nodes the object collides with 
+	for(unsigned int i = 0; i < nodes.size(); ++i)
+	{
+		Node* pNode = nodes[i];
+
+		// Find the near objects to the node
+		auto theList = pNode->GetNearObjects();
+
+		// Loop over all the objects in the node
+		for(auto iter = theList->begin(); iter != theList->end(); ++iter)
+		{
+			const ISpatialObject* pObj = *iter;
+			// If this is the first pObj being processed 
+			auto pair = outSet.insert(pObj);
+			if(pair.second == true)
+			{
+				// process this object
+				if(functor(pObj)) { return; }
+			}
+		}
+	}
+}*/
+
+
+
 
 /*class Unit : public CollidableObject
 {

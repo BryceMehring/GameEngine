@@ -9,24 +9,6 @@
 
 using namespace std;
 
-unsigned int LOG2(unsigned int v)
-{
-	const unsigned int b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
-	const unsigned int S[] = {1, 2, 4, 8, 16};
-	
-	unsigned int r = 0; // result of log2(v) will go here
-	for (int i = 4; i >= 0; i--) // unroll for speed...
-	{
-		if (v & b[i])
-		{
-			v >>= S[i];
-			r |= S[i];
-		} 
-	}
-
-	return r;
-}
-
 bool operator == (const POINT& a, const POINT& b)
 {
 	return ((a.x == b.x) && (a.y == b.y));
@@ -36,12 +18,12 @@ bool operator != (const POINT& a, const POINT& b)
 	return !::operator==(a,b);
 }
 
-Node::Node() : m_Previous(nullptr), m_pObjects(nullptr)
+Node::Node() : m_Previous(nullptr), m_pObjects(nullptr), m_bUseable(true)
 {
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
 }
 
-Node::Node(const FRECT& R) : m_Previous(nullptr), m_pObjects(nullptr), R(R)
+Node::Node(const FRECT& R) : m_Previous(nullptr), m_pObjects(nullptr), R(R), m_bUseable(true)
 {
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
 	SubDivide();
@@ -51,12 +33,6 @@ Node::~Node()
 	// If m_pObjects points to an object
 	if(m_pObjects != nullptr)
 	{
-		// Notify each object in the node about deletion
-		for_each(m_pObjects->begin(),m_pObjects->end(),[](ISpatialObject* pObj)
-		{
-			pObj->ClearNodes();
-		});
-
 		// The delete operator already checks if m_pObjects is null, but because of the 
 		// for_each loop, this is needed.
 		delete m_pObjects; 
@@ -66,13 +42,14 @@ Node::~Node()
 	}
 }
 
+
 void Node::SetRect(const CRectangle& R)
 {
 	this->R = R;
 }
 bool Node::IsWithin(const ISpatialObject* pObj) const
 {
-	return pObj->GetCollisionPolygon()->Intersects(&R);
+	return R.Intersects(pObj->GetCollisionPolygon());
 }
 
 
@@ -83,19 +60,12 @@ bool Node::IsDivided() const
 
 bool Node::HasPoint() const
 {
-	bool success = false;
-
-	if(m_pObjects != nullptr)
-	{
-		success = !m_pObjects->empty();
-	}
-
-	return success;
+	return ((m_pObjects != nullptr) && (!m_pObjects->empty()));
 }
 
 bool Node::IsFull() const
 {
-	return (m_pObjects->size()) >= 4;
+	return (m_pObjects->size()) >= 3;
 }
 
 
@@ -136,11 +106,12 @@ void Node::SubDivide()
 				if(pSubNode->IsWithin(*iter))
 				{
 					pSubNode->m_pObjects->insert(*iter);
-					(*iter)->AddNode(pSubNode);
 				}
 			}
 		}
 	}
+
+	m_bUseable = false;
 
 	// free memory, this node will no longer store points.
 	delete m_pObjects;
@@ -162,6 +133,44 @@ void Node::Render(IRenderer* pRenderer)
 	}
 }
 
+void Node::Erase(ISpatialObject* pObj)
+{
+	if(m_pObjects != nullptr)
+	{
+		m_pObjects->erase(pObj);
+
+		/*if(m_pObjects->empty())
+		{
+			m_bUseable = false;
+
+			bool success = false;
+
+			for(unsigned int i = 0; i < MAX_NODES; ++i)
+			{
+				success |= m_Previous->m_Nodes[i]->m_bUseable;
+			}
+
+			if(!success)
+			{
+				if(m_Previous->m_Previous != nullptr)
+				{
+					m_Previous->m_bUseable = true;
+				}
+			}
+		}*/
+	}
+}
+
+void Node::EraseFromPreviousPos(ISpatialObject* pObj)
+{
+	std::vector<Node*>& nodes = pObj->m_nodes;
+
+	for(unsigned int i = 0; i < nodes.size(); ++i)
+	{
+		nodes[i]->Erase(pObj);
+	}
+}
+
 bool Node::Insert(ISpatialObject* pObj)
 {
 	// If the point is within the the root
@@ -176,36 +185,39 @@ bool Node::Insert(ISpatialObject* pObj)
 void Node::RInsert(ISpatialObject* pObj)
 {
 	// find the near nodes to pObj
-	std::vector<Node*> nodes;
-	FindNearNodes(pObj,nodes);
+	std::vector<Node*>& nodes = pObj->m_nodes;
+	nodes.clear();
+
+	FindNearNodes(pObj->GetCollisionPolygon(),nodes);
 
 	// as we iterate over the near nodes
 	for(unsigned int i = 0; i < nodes.size(); ++i)
 	{
+		Node* pNode = nodes[i];
+
+		const FRECT& subR = nodes[i]->R.GetRect();
+
 		// if the current node is full
-		if(nodes[i]->IsFull())
+		if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 100.0f)
 		{
 			// subdivide the node
-			nodes[i]->SubDivide();
-
+			pNode->SubDivide();
 			// Try to insert pObj into this sub node
-			nodes[i]->Insert(pObj);
+			pNode->RInsert(pObj);
 		}
 		// node is not yet full
 		else
 		{
 			// Add pObj to node
-			nodes[i]->m_pObjects->insert(pObj);
-
-			// Add node to pObj
-			pObj->AddNode(nodes[i]);
+			pNode->m_pObjects->insert(pObj);
 		}
 	}
 }
 
 // this method is recursive, for simplicity
-void Node::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
+void Node::FindNearNodes(const ICollisionPolygon* pPolygon, std::vector<Node*>& out)
 {
+	// recursive version
 	if(IsDivided())
 	{
 		// Loop through all of the sub nodes
@@ -213,10 +225,10 @@ void Node::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
 		{
 			Node* pSubNode = m_Nodes[i];
 
-			if(pSubNode->IsWithin(pObj)) // If the point is within the sub node  
+			if(pSubNode->R.Intersects(pPolygon))
 			{
 				// find the near nodes from this node
-				pSubNode->FindNearNodes(pObj,out);
+				pSubNode->FindNearNodes(pPolygon,out);
 			}
 		}
 	}
@@ -225,58 +237,37 @@ void Node::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
 		// At the bottom of the tree, pObj collides with the node
 		out.push_back(this);
 	}
-}
+	
+	// non recursive version
+	/*std::stack<Node*> theStack;
+	theStack.push(this);
 
-void Node::Update()
-{
-	for(NodeIterator iter = this; iter != nullptr; ++iter)
+	do
 	{
-		if((*iter)->HasPoint())
+		Node* pTop = theStack.top();
+		theStack.pop();
+
+		if(pTop->IsDivided())
 		{
-			Update(*iter);
-		}
-	}
-}
-
-void Node::Update(Node* pNode)
-{
-	Node::LIST_DTYPE::iterator iter = pNode->m_pObjects->begin();
-	Node::LIST_DTYPE::iterator end = pNode->m_pObjects->end();
-	while(iter != end)
-	{
-		std::vector<Node*> nodes;
-		FindNearNodes(*iter,nodes);
-
-		bool bErase = true;
-
-		if(nodes.empty())
-		{
-			//bErase = true;
-			iter = pNode->m_pObjects->erase(iter);
-			continue;
-		}
-
-		for(unsigned int i = 0; i < nodes.size(); ++i)
-		{
-			bErase = nodes[i] != pNode;
-			if(nodes[i] != pNode)
+			// Loop through all of the sub nodes
+			for(unsigned int i = 0; i < MAX_NODES; ++i)
 			{
-				nodes[i]->Insert(*iter);
-				//bErase = true;
-			}
-		}
+				Node* pSubNode = pTop->m_Nodes[i];
 
-		if(bErase)
-		{
-			//(*iter)->ClearNodes();
-			iter = pNode->m_pObjects->erase(iter);
+				if(pSubNode->R.Intersects(pPolygon))  
+				{
+					theStack.push(pSubNode);
+					// find the near nodes from this node
+					//pSubNode->FindNearNodes(pObj,out);
+				}
+			}
 		}
 		else
 		{
-			++iter;
+			out.push_back(pTop);
 		}
 
-	}
+	} while(!theStack.empty());*/
 }
 
 void Node::ExpandLeft()
@@ -377,11 +368,15 @@ void NodeIterator::Increment()
 	}
 }
 
+void ISpatialObject::EraseFromQuadtree(QuadTree* pTree)
+{
+	pTree->Erase(this);
+}
+
 // constructor
-QuadTree::QuadTree(const FRECT& R) : m_iDepth(0)
+QuadTree::QuadTree(const FRECT& R)
 {
 	m_pRoot = new Node(R);
-	CalculateMaxSubDivisions();
 }
 
 // Destructor
@@ -391,13 +386,9 @@ QuadTree::~QuadTree()
 	m_pRoot = nullptr;
 }
 
-void QuadTree::CalculateMaxSubDivisions()
+bool QuadTree::IsWithin(ISpatialObject* pObj) const
 {
-	//unsigned int logH = LOG2(m_pRoot->R.GetRect(). - m_pRoot->R.top);
-	//unsigned int logW = LOG2(m_pRoot->R.right - m_pRoot->R.left);
-
-	//m_iMaxSubDivisions = (logW < logH ? logW : logH) / 2;
-	m_iMaxSubDivisions = 4;
+	return m_pRoot->IsWithin(pObj);
 }
 
 bool QuadTree::Insert(ISpatialObject* pObj)
@@ -408,121 +399,32 @@ bool QuadTree::Insert(ISpatialObject* pObj)
 void QuadTree::Erase(ISpatialObject* pObj)
 {
 	std::vector<Node*> nodes;
-	m_pRoot->FindNearNodes(pObj,nodes);
+	FindNearNodes(pObj,nodes);
 	for(unsigned int i = 0; i < nodes.size(); ++i)
 	{
 		nodes[i]->Erase(pObj);
 	}
 }
 
-void QuadTree::Update()
+void QuadTree::FindNearNodes(ICollisionPolygon* pPoly, std::vector<Node*>& out)
 {
-	m_pRoot->Update();
-	//std::vector<Node*> emptyVector;
+	m_pRoot->FindNearNodes(pPoly,out);
+}
 
-	// Loop through all the nodes
-	/*NodeIterator iter = m_pRoot;
-	while((*iter) != nullptr)
-	{
-		bool bTest = true;
+void QuadTree::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
+{
+	m_pRoot->FindNearNodes(pObj->GetCollisionPolygon(),out);
+}
 
-		Node* pNode = *iter;
-
-		if(pNode->HasPoint())
-		{
-			Update(pNode);
-
-			/*if(!pNode->HasPoint())
-			{
-				if(pNode->m_Previous != nullptr && pNode->m_Previous->m_Previous != nullptr)
-				{
-					pNode->m_bDelete = true;
-					emptyVector.push_back(pNode);
-				}
-			}
-		}
-
-		++iter;
-
-		/*unsigned int index = GET_INDEX(pNode);
-
-		if(index == MAX_NODES && (pNode->m_Previous->m_Previous != nullptr))
-		{
-			int count = 0;
-
-			for(unsigned int i = 0; i < MAX_NODES; ++i)
-			{
-				if(pNode->m_Previous->m_Nodes[i]->m_bDelete)
-				{
-					++count;
-				}
-			}
-
-			if(count == MAX_NODES)
-			{
-				m_Empty.
-
-				bTest = false;
-
-				++iter;
-					
- 				//iter = pNode->m_Previous;
-				CheckNodeForDeletion(pNode,0);
-			}
-		}
-
-		if(bTest)
-		{
-			++iter;
-		}*/
-		/*if(pNode->m_pObjects)
-		{
-			unsigned int index = GET_INDEX(pNode);
-			if((index == MAX_NODES) && (pNode->m_Previous != nullptr) && (pNode->m_Previous->m_Previous != nullptr))
-			{
-				bool bHasPoint = false;
-
-				for(unsigned int i = 0; i < MAX_NODES; ++i)
-				{
-					if(pNode->m_Previous->m_Nodes[i]->HasPoint())
-					{
-						bHasPoint = true;
-					}
-				}
-
-				if(!bHasPoint)
-				{
-					iter = pNode->m_Previous;
-					
- 					//iter = pNode->m_Previous;
-					CheckNodeForDeletion(pNode,0);
-				}
-
-			}
-		}*/
-	//}*/
-
-	/*std::for_each(emptyVector.begin(),emptyVector.end(),[&](Node* pNode)
-	{
-		if(!pNode->IsDivided())
-		{
-			bool bHasNoPoint = true;
-
-			for(unsigned int i = 0; i < MAX_NODES; ++i)
-			{
-				if(pNode->m_Previous->m_Nodes[i]->HasPoint())
-				{
-					bHasNoPoint = false;
-				}
-			}
-
-			if(bHasNoPoint)
-			{
-				//CheckNodeForDeletion(pNode,0);
-			}
-		}
-		//emptyVector[i]->m_Previous->m_Nodes
-	});*/
+void QuadTree::Update(ISpatialObject* pObj)
+{
+	// todo: add this
+	//note: this is how the algorithm should work:
+	// erase the nodes from pObj
+	// then, reinsert them
+	this->m_pRoot->EraseFromPreviousPos(pObj);
+	Insert(pObj);
+	//pObj->
 }
 
 /*void QuadTree::CheckNodeForDeletion(Node* pNode, int n)
@@ -554,78 +456,6 @@ void QuadTree::Update()
 		}
 	}
 }*/
-
-void QuadTree::Update(Node* pNode)
-{
-	/*Node::LIST_DTYPE::iterator iter = pNode->m_pObjects->begin();
-	Node::LIST_DTYPE::iterator end = pNode->m_pObjects->end();
-	while(iter != end)
-	{
-		std::vector<Node*> nodes;
-		FindNearNodes(*iter,nodes);
-
-		bool bErase = nodes.empty();
-
-		if(!bErase)
-		{
-			for(unsigned int i = 0; i < nodes.size(); ++i)
-			{
-				bErase = nodes[i] != pNode; 
-				//if(bErase)
-				{
-					Insert(*iter,nodes[i]);
-				}
-			}
-		}
-
-		if(bErase)
-		{
-			//(*iter)->ClearNodes();
-			iter = pNode->m_pObjects->erase(iter);
-		}
-		else
-		{
-			++iter;
-		}
-
-		/*if(!pNode->IsWithin(*iter))
-		{
-			// Search up to find which Node the point is in
-			Node* pNewNode = SearchNodeUp((*iter),pNode);
-
-			// If the point is within the root node
-			if(pNewNode)
-			{
-				// add the point to the new node
-				(Insert(*iter,pNewNode));
-			}
-			else
-			{
-				// the object left the area
-				//(*iter)->SetNode(nullptr);
-			}
-
-			// erase the object from the list
-			iter = pNode->m_pObjects->erase(iter);
-
-			// todo: delete node
-			/*if(pNode->m_pObjects->empty())
-			{
-				unsigned int index = GET_INDEX(pNode);
-
-				if(index != -1)
-				{
-					pNode->m_Previous->m_Nodes[index];
-				}
-			}
-		}
-		else
-		{
-			++iter;
-		}
-	}*/
-}
-
 void QuadTree::SaveToFile(std::string& file)
 {
 	/*file.append(".quad");

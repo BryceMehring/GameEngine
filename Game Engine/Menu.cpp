@@ -3,6 +3,8 @@
 #include "IRenderer.h"
 #include "Game.h"
 
+#include <sstream>
+
 
 using namespace std;
 
@@ -85,7 +87,10 @@ void Menu::Update(GUI* pGUI, IKMInput* pInput, double dt)
 	}
 	else if(pInput->KeyDown(ENTER))
 	{
-		m_elements[pGUI->m_uiCurrentIndex]->Enter();
+		if(pGUI->m_uiCurrentIndex < m_elements.size())
+		{
+			m_elements[pGUI->m_uiCurrentIndex]->Enter();
+		}
 	}
 	else
 	{
@@ -142,6 +147,8 @@ void GUI::SetMenu(Menu* pMenu)
 	{
 		m_pMenu = pMenu;
 	}
+
+	m_uiCurrentIndex = 0;
 }
 
 ButtonBase::ButtonBase(const Text& name, DxPolygon* pPolygon) :
@@ -198,14 +205,18 @@ TextBox::TextBox(const std::string& name, const RECT& R)
 
 void TextBox::Write(const std::string& line, DWORD color)
 {
+	
+
 	// calculate the rect of the line
 	RECT R;
 	if(!m_text.empty())
 	{
 		R =  m_text.back().R;
-
+		//R.top += 15;
+		//R.bottom += 15;
+		//R.right += 500;
 		// calculate the # of rows in the textbox
-		R.top += 15*GetNumberOfRowsInLine();
+		R.top += 15*GetNumberOfRowsInLine(m_text.back().line);
 	}
 	else
 	{
@@ -240,6 +251,8 @@ void TextBox::AddKey(char Key)
 	// Add key to the last line
 	std::string& text = m_text.back().line;
 	text += Key;
+
+	//m_text.back().R.right += 6;
 }
 
 void TextBox::Enter()
@@ -255,19 +268,17 @@ void TextBox::Update(IKMInput* pInput, double dt)
 		Backspace();
 	}
 
+	if(pInput->KeyDown(ENTER))
+	{
+		Enter();
+	}
+
 	if(pInput->IsKeyDown())
 	{
 		char key = pInput->GetKeyDown();
-
-		if(key == ENTER)
-		{
-			Enter();
-		}
-		else
-		{
-			AddKey(key);
-		}
+		AddKey(key);
 	}
+	
 
 	UpdateScrolling(pInput,dt);
 }
@@ -286,16 +297,22 @@ void TextBox::Render(IRenderer* pRenderer)
 	{
 		LineData& data = *iter;
 
-		// scroll lines
-		data.R.top += m_scrollSpeed;
-
 		// cull lines that are not on the screen
 		const RECT& R = m_square.GetRect();
+
+		/*pRenderer->GetStringRec(data.line.c_str(),data.R);
+		if(data.R.right < R.right - 10)
+		{
+			data.R.right += 20;
+		}*/
+
+		// scroll lines
+		data.R.top += m_scrollSpeed;
 
 		// If the line is on the screen
 		if(data.R.top >= R.top)
 		{
-			if(data.R.top <= R.bottom)
+			if(data.R.top <= R.bottom) 
 			{
 				// draw it
 				pRenderer->DrawString(data.line.c_str(),data.R,data.color,false);
@@ -307,7 +324,7 @@ void TextBox::Render(IRenderer* pRenderer)
 void TextBox::UpdateScrolling(IKMInput* pInput, double dt)
 {
 	// Use the scroll on the mouse to scroll the textbox
-	m_scrollSpeed = -pInput->MouseZ()*8;
+	m_scrollSpeed = pInput->MouseZ()*8;
 
 	// Scroll Text Box using MouseY
 	/*if(IsClicked(pInput,&m_square))
@@ -342,15 +359,144 @@ void TextBox::UpdateScrolling(IKMInput* pInput, double dt)
 
 }
 
-unsigned int TextBox::GetNumberOfRowsInLine() const
+unsigned int TextBox::GetNumberOfRowsInLine(const std::string& line) const
 {
-	// Get the last line of the textbox
-	const LineData& lastLineData = m_text.back();
+	unsigned int uiStrLength = line.length();
+
+	if(uiStrLength == 0)
+	{
+		uiStrLength = 1;
+	}
 
 	// Get the rectangle for the textbox
 	const RECT& squareRect = m_square.GetRect();
 
+	unsigned int n = count(line.begin(),line.end(),'\n') / 1.2f;
+
 	// todo: the value '6' here should be modifiable in the ctor, because there could be different size font
 	// which is not yet implemented yet.
-	return (unsigned int)ceil((float)(6*lastLineData.line.length()) / (squareRect.right - squareRect.left));
+	unsigned int r = (unsigned int)ceil((float)(6*uiStrLength) / ((squareRect.right - squareRect.left)));
+
+	return (r + n);
+}
+
+void TextBox::CLS()
+{
+	m_text.clear();
+	//TextBox::Enter();
+}
+
+
+ScriptingConsole::ScriptingConsole(asVM* pVM, const std::string& name, const RECT& R)
+: TextBox(name,R), m_pVM(pVM), m_uiStartIndex(-1)
+{
+
+}
+
+void ScriptingConsole::Enter()
+{
+	string line = this->m_text.back().line;
+	line.erase(line.begin());
+	line.erase(line.begin());
+
+	if(line == "start")
+	{
+		m_uiStartIndex = m_text.size();
+	}
+	else if(line == "end")
+	{
+		string sum;
+
+		for(unsigned int i = m_uiStartIndex; i < m_text.size() - 1; ++i)
+		{
+			string temp = m_text[i].line;
+			temp.erase(temp.begin());
+
+			sum += temp;
+		}
+
+		m_pVM->ExecuteScript(sum,0xffffffff);
+
+		// reset the index
+		m_uiStartIndex = -1;
+	}
+	else if(m_uiStartIndex == -1)
+	{
+		line = "console.grab(" + line + ")";
+
+		m_pVM->ExecuteScript(line,0xffffffff);
+	}
+	TextBox::Enter();
+}
+
+void ScriptingConsole::Backspace()
+{
+	if(m_text.back().line.size() > 2)
+	{
+		TextBox::Backspace();
+	}
+}
+
+void ScriptingConsole::MessageCallback(const asSMessageInfo *msg)
+{
+	// asMSGTYPE_ERROR, asMSGTYPE_WARNING, asMSGTYPE_INFORMATION
+	const unsigned int COLOR[3] = {0xffff0000,0xffffff00,0xffffffff};
+
+	Write(std::string(msg->message),COLOR[msg->type]);
+}
+
+void ScriptingConsole::Grab()
+{
+}
+
+void ScriptingConsole::Grab(const std::string& str)
+{
+	_Grab(str);
+}
+
+void ScriptingConsole::Grab(int i)
+{
+	_Grab(i);
+}
+
+void ScriptingConsole::Grab(float f)
+{
+	_Grab(f);
+}
+
+void ScriptingConsole::Grab(double d)
+{
+	_Grab(d);
+}
+
+void ScriptingConsole::Grab(unsigned int ui)
+{
+	_Grab(ui);
+}
+
+void ScriptingConsole::Grab(bool b)
+{
+	_Grab(b);
+}
+
+void ScriptingConsole::RegisterScript()
+{
+	auto asEngine = m_pVM->GetScriptEngine();
+
+	//asEngine->SetDefaultAccessMask(0xffffffff);
+	DBAS(asEngine->RegisterObjectType("Console",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(asEngine->RegisterObjectMethod("Console","void write(const string& in, uint color = 0xffffffff)",asMETHOD(ScriptingConsole,Write),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void clear()",asMETHOD(ScriptingConsole,CLS),asCALL_THISCALL));
+
+	DBAS(asEngine->RegisterObjectMethod("Console","void grab(void)",asMETHODPR(ScriptingConsole,Grab,(void),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void grab(const string& in)",asMETHODPR(ScriptingConsole,Grab,(const std::string&),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void grab(int)",asMETHODPR(ScriptingConsole,Grab,(int),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void grab(float)",asMETHODPR(ScriptingConsole,Grab,(float),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void grab(double)",asMETHODPR(ScriptingConsole,Grab,(double),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void grab(uint)",asMETHODPR(ScriptingConsole,Grab,(unsigned int),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void grab(bool)",asMETHODPR(ScriptingConsole,Grab,(bool),void),asCALL_THISCALL));
+	
+	DBAS(asEngine->RegisterGlobalProperty("Console console",this));
+
+	asEngine->Release();
 }

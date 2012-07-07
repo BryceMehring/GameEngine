@@ -60,7 +60,7 @@
     </Link>
     <Lib />
     <Lib>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\boost\boost_1_47\lib;C:\Users\Bryce\Documents\C++\angelscript sdk\angelscript\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\boost\boost_1_47\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -107,6 +107,8 @@
     <ClInclude Include="RefCounting.h" />
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="Singleton.h" />
+    <ClInclude Include="StringAlgorithms.h" />
+    <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="VecMath.h" />
     <ClInclude Include="WindowManager.h" />
@@ -127,6 +129,8 @@
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RefCounting.cpp" />
+    <ClCompile Include="StringAlgorithms.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="VecMath.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>

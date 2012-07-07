@@ -26,39 +26,11 @@ struct DrawTextInfo;
 //http://www.ogre3d.org/tikiwiki/Deferred+Shading
 //http://www.catalinzima.com/tutorials/deferred-rendering-in-xna/
 
-struct Texture
-{
-	IDirect3DTexture9* pTexture;
-	unsigned int uiWidth;
-	unsigned int uiHeight;
-	D3DXVECTOR3 center;
-};
-
-class TextureManager
-{
-public:
 
 
-	TextureManager(IDirect3DDevice9* pDevice);
-	~TextureManager();
-
-	void AddTexture(const std::string& name, const Texture& tex);
-	void LoadAllTexturesFromFolder(const std::string& folder);
-
-	const Texture* GetTexture(const std::string& name);
-	void RemoveTexture(const std::string& name);
-	void RemoveAllTextures();
-
-private:
-
-	typedef std::map<std::string,Texture> TextureMap;
-	TextureMap m_textures;
-	IDirect3DDevice9* m_pDevice;
-
-};
 
 // I should subclass this class
-class DX9Render : public IRenderer, public IScripted<DX9Render>
+class DX9Render : public IRenderer
 {
 public:
 
@@ -110,6 +82,8 @@ public:
 	// sprites
 	//virtual void SetSpriteTransformation(float s, float r);
 	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
+
+	virtual class TextureManager* GetTextureManager();
 
 	// effects
 	// todo: need to implement
@@ -229,7 +203,7 @@ protected:
 	void InitializeSprite();
 	void InitializeDirectX();
 
-	static void _RegisterScript();
+	void RegisterScript();
 
 	// this method renders everything that was cached in the end function
 	void RenderScene();

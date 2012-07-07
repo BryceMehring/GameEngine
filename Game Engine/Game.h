@@ -9,6 +9,7 @@
 #include "GameStateMachine.h"
 #include "IKMInput.h"
 #include "IRenderer.h"
+#include "asVM.h"
 #include <string>
 
 class GameInfo
@@ -37,15 +38,18 @@ public:
 	Game(HINSTANCE hInstance);
 	virtual ~Game();
 
+	const std::string& GetCurrentState() const;
 	void SetNextState(const std::string& name);
 	
 	void ReloadPlugins();
 	void ReloadPluginsFromUserFolder();
 
 	// Get Functions
+	// todo: provide const overloaded versions
 	IRenderer* GetRenderer();
 	IKMInput* GetInput();
 	WindowManager* GetWindow();
+	asVM* GetAs();
 	const PluginManager* GetPluginManager() const;
 	double GetDt() const;
 	unsigned int GetFps() const;
@@ -55,8 +59,12 @@ public:
 protected:
 
 	// Data members
+	asVM m_vm;
 	WindowManager m_window;
 	PluginManager m_plugins;
+
+	class ScriptingConsole* m_pConsole;
+	bool m_bConsoleEnabled;
 
 	GameStateMachine m_StateMachine;
 
@@ -82,6 +90,8 @@ private:
 
 	// helper functions
 	void LoadAllDLL();
+
+	void RegisterScript();
 
 	void MsgProc(const struct MsgProcData& data);
 

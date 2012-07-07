@@ -52,11 +52,9 @@ class Delegate;
 
 // ===== forward class declarations =====
 
-class asVM : public IScripted<asVM>
+class asVM
 {
 public:
-
-	friend class IScripted<asVM>;
 
 	// in the constructor, the engine is created and is registered with the std::string type
 	// the message callback function is also registered along with a global print function
@@ -68,6 +66,7 @@ public:
 
 	// Returned int is the id to the script
 	// Build script and then add to vector
+
 	unsigned int BuildScriptFromFile(const std::string& file);
 
 	/* m_iExeScript is assigned the value of scriptId. Then the script is:
@@ -76,7 +75,7 @@ public:
 		3. Unprepared (destroy stack)
 	*/
 	void ExecuteScript(unsigned int scriptId);
-	void ExecuteScript(const std::string& script); // the script code is inserted within a function
+	void ExecuteScript(const std::string& script, asDWORD mask); // the script code is inserted within a function
 
 	void ExecuteScriptFunction(const ScriptFunctionStruct& func);
 	void ExecuteScriptFunction(unsigned int scriptId, int funcId, char param);
@@ -85,12 +84,13 @@ public:
 
 	// returns a token from the input string from the script engine
 	//asETokenClass GetToken(std::string& token, const std::string& text, unsigned int& pos);
-	
+
+	void RegisterScript();
+
+	void SetTextBox(class ScriptingConsole* pTextBox);
+
 	// access to the asIScriptEngine
 	asIScriptEngine* GetScriptEngine() const;
-
-	// This is where all the text out goes
-	void SetTextBox(class TextBox* pTextBox);
 
 private:
 
@@ -107,7 +107,8 @@ private:
 	typedef std::vector<Script> ScriptElementType;
 	ScriptElementType m_scripts;
 
-	class TextBox* m_pTextBox;
+	// todo: this member does not need to be stored
+	class ScriptingConsole* m_pTextBox;
 
 	CScriptBuilder m_builder;
 
@@ -121,9 +122,6 @@ private:
 	asDelegate GetFunc(asIScriptFunction* func);
 
 	//class VoidDelegate CreateDelegate(ScriptFunction func) const;
-
-	static asVM* s_pThis;
-	static void _RegisterScript();
 	
 };
 

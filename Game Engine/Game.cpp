@@ -4,17 +4,27 @@
 #include "Heap.h"
 #include "CreatorId.h"
 #include "RTTI.h"
+#include "Menu.h"
 #include <ctime>
 //#include "MenuCreator.h"
 
 using namespace std;
 
-Game::Game(HINSTANCE hInstance) : m_window(hInstance,"Game"), m_fDT(0.0f), 
-m_pRenderer(nullptr), m_pInput(nullptr), m_pNextState(nullptr)
+Game::Game(HINSTANCE hInstance) : m_window(hInstance), m_fDT(0.0f), 
+m_pRenderer(nullptr), m_pInput(nullptr), m_pNextState(nullptr), m_bConsoleEnabled(false)
 {
-	srand(time(0));
-
 	LoadAllDLL();
+
+	RECT R = {50,50,750,550};
+	//GetWindowRect(m_window.GetWindowHandle(),&R);
+	m_pConsole = new ScriptingConsole(&m_vm,"Scripting Console",R);
+
+	m_vm.SetTextBox(m_pConsole);
+	m_vm.RegisterScript();
+
+	m_pConsole->RegisterScript();
+
+	RegisterScript();
 
 	m_iEventId = m_window.AddMsgListener(WindowManager::MsgDelegate(this,&Game::MsgProc));
 
@@ -23,26 +33,35 @@ m_pRenderer(nullptr), m_pInput(nullptr), m_pNextState(nullptr)
 
 Game::~Game()
 {
+	delete m_pNextState;
+	delete m_pConsole;
+
 	m_StateMachine.RemoveState(this);
 	m_window.RemoveListener(m_iEventId);
 }
 
+const std::string& Game::GetCurrentState() const
+{
+	return m_StateMachine.GetState()->GetType()->GetName();
+}
+
 void Game::SetNextState(const std::string& name)
 {
-	// get the current state
-	IGameState* pState = m_StateMachine.GetState();
-
-	// If the current state is null, or if the new state is different than the current
-	if((pState == nullptr) || (pState->GetType()->GetName() != name))
+	// todo: fix this so that 
+	if(m_pNextState == nullptr)
 	{
-		// If this is the first SetNextState call in this update loop
-		if(m_pNextState == nullptr)
+		// get the current state
+		IGameState* pState = m_StateMachine.GetState();
+
+		// If the current state is null, or if the new state is different than the current
+		if((pState == nullptr) || (pState->GetType()->GetName() != name))
 		{
+			
 			// Create new state, but do not use it until we are out of the update/render phase
 			m_pNextState = GameStateFactory::Instance().CreateState(name);
+			
 		}
 	}
-	
 }
 
 int Game::PlayGame()
@@ -78,6 +97,8 @@ void Game::Update()
 		// switch states
 		m_StateMachine.SetState(m_pNextState,this);
 
+		m_window.SetWinCaption(m_pNextState->GetType()->GetName());
+
 		// Reset next state
 		m_pNextState = nullptr;
 	}
@@ -86,7 +107,25 @@ void Game::Update()
 		m_StateMachine.LoadPreviousState(this);
 	}
 
-	m_StateMachine.GetState()->Update(this);
+
+	if(m_pInput->GetKeyDown() == 96)
+	{
+		m_bConsoleEnabled = !m_bConsoleEnabled;
+	}
+
+	if(m_bConsoleEnabled)
+	{
+		m_pConsole->Update(m_pInput,m_fDT);
+
+		// update garbage collection
+		asIScriptEngine* pEngine = m_vm.GetScriptEngine();
+		DBAS(pEngine->GarbageCollect(asGC_ONE_STEP));
+		pEngine->Release();
+	}
+	else
+	{
+		m_StateMachine.GetState()->Update(this);
+	}
 }
 
 void Game::Draw()
@@ -97,8 +136,15 @@ void Game::Draw()
 	// render fps overlay
 	DrawFPS();
 
-	// render the current state
-	m_StateMachine.GetState()->Draw(this);
+	if(m_bConsoleEnabled)
+	{
+		m_pConsole->Render(m_pRenderer);
+	}
+	else
+	{
+		// render the current state
+		m_StateMachine.GetState()->Draw(this);
+	}
 
 	// end rendering
 	m_pRenderer->End();
@@ -116,9 +162,7 @@ void Game::DrawFPS()
 	POINT P = {700,0};
 
 	::std::ostringstream out;
-	::POINT pos = m_pInput->MousePos();
-	out<<"FPS: " << GetFps() << endl << "Dt: " << GetDt() << "\nx: " << pos.x <<
-	"\ny: " << pos.y << endl;
+	out<<"FPS: " << GetFps() << endl << "Dt: " << GetDt();
 	//sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
 	
 	m_pRenderer->DrawString(out.str().c_str(),P,0xffffffff);
@@ -135,6 +179,10 @@ IKMInput* Game::GetInput()
 WindowManager* Game::GetWindow()
 {
 	return &m_window;
+}
+asVM* Game::GetAs()
+{
+	return &m_vm;
 }
 const PluginManager* Game::GetPluginManager() const
 {
@@ -204,6 +252,18 @@ void Game::EndTimer()
 {
 	m_timer.Stop();
 	m_fDT =  m_timer.GetTime();
+}
+
+void Game::RegisterScript()
+{
+	auto pEngine = m_vm.GetScriptEngine();
+
+	DBAS(pEngine->RegisterObjectType("Game",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(pEngine->RegisterObjectMethod("Game","void SetNextState(const string& in)",asMETHOD(Game,SetNextState),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("Game","const string& GetCurrentState() const",asMETHOD(Game,GetCurrentState),asCALL_THISCALL));
+	DBAS(pEngine->RegisterGlobalProperty("Game game",(void*)this));
+
+	pEngine->Release();
 }
 
 void Game::MsgProc(const MsgProcData& data)

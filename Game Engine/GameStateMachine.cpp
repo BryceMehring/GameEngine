@@ -2,6 +2,7 @@
 #include "GameStateFactory.h"
 #include "FileManager.h"
 #include "RTTI.h"
+#include "Game.h"
 #include <assert.h>
 
 void GameStateMachine::SetState(IGameState* pState, Game* pGame)
@@ -10,6 +11,8 @@ void GameStateMachine::SetState(IGameState* pState, Game* pGame)
 	char buffer[64];
 	sprintf_s(buffer,"Changing state to: %s",pState->GetType()->GetName().c_str());
 	FileManager::Instance().WriteToLog(buffer);
+
+	pGame->GetWindow()->SetWinCaption(pState->GetType()->GetName());
 
 	RemoveState(pGame);
 

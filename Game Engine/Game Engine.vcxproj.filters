@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Quadtree">
-      <UniqueIdentifier>{1f4953f4-1657-4cb9-b360-81f1ac50be41}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scripting">
       <UniqueIdentifier>{5a99c9f7-c342-4277-94c5-b4cb00f8ce13}</UniqueIdentifier>
     </Filter>
@@ -33,6 +30,9 @@
     </Filter>
     <Filter Include="Managers">
       <UniqueIdentifier>{c62b9548-e921-4120-8d9d-a4c52282a637}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quadtree">
+      <UniqueIdentifier>{1f4953f4-1657-4cb9-b360-81f1ac50be41}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -118,6 +118,10 @@
     </ClInclude>
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="VecMath.h" />
+    <ClInclude Include="TextureManager.h">
+      <Filter>Rendering Addons</Filter>
+    </ClInclude>
+    <ClInclude Include="StringAlgorithms.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileManager.cpp">
@@ -167,5 +171,9 @@
       <Filter>State</Filter>
     </ClCompile>
     <ClCompile Include="VecMath.cpp" />
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>Rendering Addons</Filter>
+    </ClCompile>
+    <ClCompile Include="StringAlgorithms.cpp" />
   </ItemGroup>
 </Project>

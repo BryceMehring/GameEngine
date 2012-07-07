@@ -30,13 +30,13 @@ private:
 // static variables
 WindowManager* WindowManager::s_pThis = nullptr;
 
-WindowManager::WindowManager(HINSTANCE hInstance,const string& winCaption) :
+WindowManager::WindowManager(HINSTANCE hInstance) :
 m_hInstance(hInstance), m_hWindowHandle(NULL), m_bPaused(false)
 {
 	// Initialize
 	try
 	{
-		InitializeWindows(hInstance,winCaption);
+		InitializeWindows(hInstance);
 		//RedirectIOToConsole();
 		RegisterScript();
 	}
@@ -69,6 +69,12 @@ m_hInstance(hInstance), m_hWindowHandle(NULL), m_bPaused(false)
 WindowManager::~WindowManager()
 {
 }
+
+void WindowManager::SetWinCaption(const std::string& str)
+{
+	SetWindowText(m_hWindowHandle,str.c_str());
+}
+
 
 int WindowManager::AddMsgListener(const MsgDelegate& d)
 {
@@ -107,7 +113,7 @@ bool WindowManager::Update()
 
 	return true;
 }
-void WindowManager::InitializeWindows(HINSTANCE hInstance, const string& winCaption)
+void WindowManager::InitializeWindows(HINSTANCE hInstance)
 {
 	WNDCLASS wc;
 	wc.style         = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
@@ -129,7 +135,7 @@ void WindowManager::InitializeWindows(HINSTANCE hInstance, const string& winCapt
 	m_rect.right = 800;
 	m_rect.bottom = 600;
 	AdjustWindowRect(&m_rect, WS_OVERLAPPEDWINDOW, false);
-	m_hWindowHandle = CreateWindow("D3DWndClassName", winCaption.c_str(), 
+	m_hWindowHandle = CreateWindow("D3DWndClassName", 0, 
 		(WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX) , 100, 100, m_rect.right, m_rect.bottom, 
 		0, 0, hInstance, 0); 
 
@@ -178,6 +184,11 @@ LRESULT CALLBACK WindowManager::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
+
+/*void WindowManager::GetWindowRect(RECT& R)
+{
+	GetClientRect(m_hWindowHandle,&R);
+}*/
 
 void WindowManager::Quit()
 {

@@ -26,6 +26,7 @@ public:
 	void LoadPreviousState(class Game* pGame);
 
 	IGameState* GetState() { return m_pState; }
+	const IGameState* GetState() const { return m_pState; }
 
 private:
 

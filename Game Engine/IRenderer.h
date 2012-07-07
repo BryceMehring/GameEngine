@@ -101,6 +101,10 @@ public:
 	// sprites
 	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
 
+	// textures
+	virtual class TextureManager* GetTextureManager() = 0;
+
+
 	// todo: need to create an abstract form of vertex declarations
 
 	// Effects, todo: need to abstract this

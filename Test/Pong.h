@@ -2,16 +2,18 @@
 #include "RTTI.h"
 #include "VecMath.h"
 #include "QuadTree.h"
+#include "BNew.h"
+#include "Menu.h"
 #include <vector>
 #include <list>
 
-class Ball : public ISpatialObject
+class Ball : public ISpatialObject, public Pooled
 {
 public:
 
 	Ball(const D3DXVECTOR2& pos, const D3DXVECTOR2& dir, float V, float R);
 
-	virtual void Update(double dt);
+	virtual void Update(QuadTree* pTree, double dt);
 	virtual void Render(class IRenderer* pRenderer);
 
 	virtual Type GetType() const { return ISpatialObject::Unit; }
@@ -20,6 +22,8 @@ public:
 	{
 		return m_pos;
 	}
+	
+	const D3DXVECTOR2& GetDir() const { return m_dir; }
 
 protected:
 
@@ -28,15 +32,21 @@ protected:
 	float m_fSpeed;
 	float m_fR;
 
+	bool m_bChangeColor;
+	double m_fTime;
+
+	bool m_bCollision;
+	double m_fCTime;
+
 };
 
 class Paddle : public ISpatialObject
 {
 public:
 
-	Paddle(const D3DXVECTOR2& pos);
+	Paddle(const FRECT& pos);
 	virtual ~Paddle() {}
-	virtual void Update(class IKMInput* pInput, double dt) = 0;
+	virtual void Update(class IKMInput* pInput, QuadTree* pTree, double dt) = 0;
 	virtual void Render(class IRenderer* pRenderer);
 
 	void IncreaseScore() { ++m_iScore; }
@@ -53,18 +63,15 @@ protected:
 
 	D3DXVECTOR2 m_pos;
 	int m_iScore;
-
-	void GetRect(D3DXVECTOR2& topLeft, D3DXVECTOR2& bottomRight);
-
 };
 
 class PlayerPaddle : public Paddle
 {
 public:
 
-	PlayerPaddle(const D3DXVECTOR2& pos);
+	PlayerPaddle(const FRECT& pos);
 
-	virtual void Update(IKMInput* pInput, double dt);
+	virtual void Update(IKMInput* pInput, QuadTree* pTree, double dt);
 	
 };
 
@@ -72,7 +79,16 @@ class ComputerPaddle : public Paddle
 {
 public:
 
-	virtual void Update(IKMInput* pInput, double dt);
+	ComputerPaddle(const FRECT& pos);
+
+	virtual void Update(IKMInput* pInput, QuadTree* pTree, double dt);
+
+protected:
+
+	float m_fVelocity;
+	double m_fTime;
+
+	float m_fFinalPosY;
 
 };
 
@@ -94,20 +110,33 @@ private:
 
 	// data members
 
-	std::vector<Paddle*> m_LeftPaddles;
-	std::vector<Paddle*> m_RightPaddles;
+	Paddle* m_pLeftPaddle;
+	Paddle* m_pRightPaddle;
 	std::list<Ball*> m_balls;
 
 	QuadTree* m_pQuadTree;
+
+	GUI m_gui;
+
+	bool m_bDrawQuadTree;
+
+	::D3DXVECTOR2 m_MouseClick;
+	D3DXVECTOR2 m_MousePos;
 
 	int m_iLeftScore;
 	int m_iRightScore;
 
 	// helper functions
 
+	void BuildMenu();
+
+	void RegisterScript(class Game*);
+
 	void UpdateBalls(Game* pGame);
 	void UpdatePaddles(Game* pGame);
 	void DrawScore(Game* pGame);
+
+	void ResetScores();
 
 	void IncreasePaddlePoints(const std::vector<Paddle*>& ref);
 

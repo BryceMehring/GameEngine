@@ -72,7 +72,7 @@ void GameOfLifeMenu::Init(Game* pGame)
 	pButton->SetArg(pOptions);
 
 	GenericButton<Menu*>* pButton2 = new GenericButton<Menu*>(text3,dPush,pMenu,pTriangle);
-	GenericButton<const std::string&>* pStateButton = new GenericButton<const std::string&>(text2,dState,"GameOfLife",pStateButtonSquare);
+	GenericButton<const std::string&>* pStateButton = new GenericButton<const std::string&>(text2,dState,"Pong",pStateButtonSquare);
 
 	// Associate square with menu
 	pMenu->SetPolygon(pSquare);
