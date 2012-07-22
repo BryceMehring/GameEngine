@@ -13,8 +13,8 @@
 #include <queue>
 
 #include "IRenderer.h"
-#include "IScripted.h"
 #include "PluginManager.h"
+#include "TextureManager.h"
 
 struct DisplayMode;
 
@@ -26,6 +26,16 @@ struct DrawTextInfo;
 //http://www.ogre3d.org/tikiwiki/Deferred+Shading
 //http://www.catalinzima.com/tutorials/deferred-rendering-in-xna/
 
+struct UPOINT
+{
+	bool operator <(const UPOINT& other)
+	{
+		return this->width < other.width && this->height < other.height;
+	}
+
+	UINT width;
+	UINT height;
+};
 
 
 
@@ -83,7 +93,7 @@ public:
 	//virtual void SetSpriteTransformation(float s, float r);
 	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
 
-	virtual class TextureManager* GetTextureManager();
+	virtual ITextureManager& GetTextureManager();
 
 	// effects
 	// todo: need to implement
@@ -142,8 +152,6 @@ protected:
 	ID3DXSprite* m_pSprite;
 	ID3DXLine* m_pLine;
 
-	IDirect3DTexture9* m_pTexture;
-
 	// fonts
 
 	ID3DXFont* m_pFont; // todo: I need to match these with sprites!!! this will solve the problem of scrolling
@@ -191,6 +199,7 @@ protected:
 	// Vertex Buffers
 	std::vector<IDirect3DVertexBuffer9*> m_VertexBuffers;
 
+	//std::map<UPOINT,DisplayMode> m_DisplayModes;
 	std::vector<DisplayMode> m_DisplayModes;
 
 	DWORD m_ClearBuffers;
@@ -240,6 +249,9 @@ private:
 
 	void RenderText();
 	void RenderSprites();
+
+	// todo: move this method into the window manager class.
+	void SetWindowStyle();
 
 
 };

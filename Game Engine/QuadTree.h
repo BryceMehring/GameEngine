@@ -52,6 +52,8 @@ public:
 	void FindNearNodes(const ICollisionPolygon* pObj, std::vector<Node*>& out);
 
 	void Render(IRenderer* pRenderer);
+
+	const FRECT& GetRect() const { return R.GetRect(); }
 	 
 private:
 
@@ -77,10 +79,12 @@ private:
 	bool IsDivided() const;
 
 	bool HasPoint() const;
+	bool RHasPoint() const;
 	bool IsFull() const;
 
 	// Subdivides the current node/R into 4 sub nodes
-	void SubDivide();
+	void SubDivide(bool bAlloc);
+	void SubDivideObjects(Node* pSubNode);
 	void ExpandLeft();
 	void ExpandRight();
 };
@@ -109,6 +113,7 @@ public:
 	virtual D3DXVECTOR2 GetPos() const = 0;
 	virtual Type GetType() const = 0;
 
+	// todo: this method is not needed
 	void EraseFromQuadtree(class QuadTree* pTree);
 
 	// todo: create a better interface
@@ -187,6 +192,7 @@ public:
 	// recursive
 	bool Insert(ISpatialObject* pObj);
 	void Erase(ISpatialObject* pObj);
+	void EraseFromPrev(ISpatialObject*);
 
 	bool IsWithin(ISpatialObject* pObj) const;
 
@@ -196,15 +202,14 @@ public:
 	void FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out);
 	//void FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out);
 
-	// todo: need to implement
-	// try to get rid of having the vector in every ISpacialObject
 	void Update(ISpatialObject* pObj);
-	//Node* Update(Node* pNode);
 
 	void SaveToFile(std::string& file);
 	void LoadFile(const std::string& file);
 
 	virtual void Render(class IRenderer* pRenderer);
+
+	const FRECT& GetRect() const { return m_pRoot->GetRect(); }
 
 private:
 	Node* m_pRoot;
@@ -220,21 +225,22 @@ void ProccessNearNodes(const std::vector<Node*>& nodes, const T& functor)
 	// loop over all of the nodes the object collides with 
 	for(unsigned int i = 0; i < nodes.size(); ++i)
 	{
-		Node* pNode = nodes[i];
-
 		// Find the near objects to the node
-		auto theList = pNode->GetNearObjects();
+		auto theList = nodes[i]->GetNearObjects();
 
-		// Loop over all the objects in the node
-		for(auto iter = theList->begin(); iter != theList->end(); ++iter)
+		//if(theList->size() > 1)
 		{
-			const ISpatialObject* pObj = *iter;
-			// If this is the first pObj being processed 
-			auto pair = outSet.insert(pObj);
-			if(pair.second == true)
+			// Loop over all the objects in the node
+			for(auto iter = theList->begin(); iter != theList->end(); ++iter)
 			{
-				// process this object
-				if(functor(pObj)) { return; }
+				const ISpatialObject* pObj = *iter;
+
+				// If this is the first pObj being processed 
+				if(outSet.insert(pObj).second == true)
+				{
+					// process this object
+					if(functor(pObj)) { return; }
+				}
 			}
 		}
 	}

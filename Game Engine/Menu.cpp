@@ -2,6 +2,7 @@
 #include "Menu.h"
 #include "IRenderer.h"
 #include "Game.h"
+#include "FileManager.h"
 
 #include <sstream>
 
@@ -117,7 +118,7 @@ void Menu::Render(IRenderer* pRenderer)
 	}
 }
 
-GUI::GUI(Menu* pMenu) : m_pMenu(pMenu), m_uiCurrentIndex(0)
+GUI::GUI(Menu* pMenu) : m_pMenu(pMenu), m_uiCurrentIndex(0), m_bSetMenu(false)
 {
 }
 
@@ -133,6 +134,13 @@ GUI::ChangeMenuCallback GUI::CreateCallback()
 
 void GUI::Update(IKMInput* pInput, double dt)
 {
+	if(m_bSetMenu)
+	{
+		pInput->SetMouseState(Default);
+
+		m_bSetMenu = false;
+	}
+
 	m_pMenu->Update(this,pInput,dt);
 }
 
@@ -146,13 +154,13 @@ void GUI::SetMenu(Menu* pMenu)
 	if(pMenu != nullptr)
 	{
 		m_pMenu = pMenu;
+		m_bSetMenu = true;
+		m_uiCurrentIndex = 0;
 	}
-
-	m_uiCurrentIndex = 0;
 }
 
 ButtonBase::ButtonBase(const Text& name, DxPolygon* pPolygon) :
-m_name(name), m_pPolygon(pPolygon), m_color(-1)
+m_name(name), m_pPolygon(pPolygon), m_color(-1), m_bMouseHover(false)
 {
 }
 
@@ -163,13 +171,22 @@ ButtonBase::~ButtonBase()
 
 void ButtonBase::Update(IKMInput* pInput)
 {
+	// todo: I could optimize this by checking first if the mouse is moving
+	// then move on to check if the mouse is colliding with the button
 	if(m_pPolygon->IsPointInPolygon(pInput->MousePos()))
 	{
 		m_color = 0xffffff00;
+		pInput->SetMouseState(::MouseCursorState::Hand);
+
+		m_bMouseHover = true;
 	}
-	else
+	else if(m_bMouseHover)
 	{
 		m_color = 0xffffffff;
+
+		pInput->SetMouseState(::MouseCursorState::Default);
+
+		m_bMouseHover = false;
 	}
 }
 
@@ -203,28 +220,39 @@ TextBox::TextBox(const std::string& name, const RECT& R)
 	m_carrotPos.x = m_carrotPos.y = 0;
 }
 
-void TextBox::Write(const std::string& line, DWORD color)
+void TextBox::Write(const std::string& line, DWORD color, bool c)
 {
+	// todo: everything must go on its own line
+	// The renderer does not cull the way I want it to.
+	/*unsigned int pos = line.find('\n');
+	unsigned int start = 0;
+	while(pos != string::npos)
+	{
+		Write(line.substr(start,pos - start),color,c);
+
+		start = pos + 1;
+		pos = line.find('\n',pos + 1);
 	
+	}*/
+
+
 
 	// calculate the rect of the line
-	RECT R;
+	POINT P;
 	if(!m_text.empty())
 	{
-		R =  m_text.back().R;
-		//R.top += 15;
-		//R.bottom += 15;
-		//R.right += 500;
-		// calculate the # of rows in the textbox
-		R.top += 15*GetNumberOfRowsInLine(m_text.back().line);
+		P =  m_text.back().P;
+		P.y += 15;
 	}
 	else
 	{
-		R = m_square.GetRect();
+		RECT R = m_square.GetRect();
+		P.x = R.left;
+		P.y = R.top;
 	}
 	
 	// Add line to vector
-	m_text.push_back(LineData(string("> ") + line,color,R));
+	m_text.push_back(LineData(line,color,P,c));
 }
 
 void TextBox::Backspace()
@@ -234,13 +262,13 @@ void TextBox::Backspace()
 	size_t size = text.size(); 
 
 	// if the current line has text to remove(excluding the '>')
-	if(size > 2)
+	if(size > 0)
 	{
 		// remove last character
 		text.resize(size - 1);
 	}
 	// If there is no text to remove, try to pop the line in the vector
-	else if(m_text.size() > 1)
+	else if(size > 1)
 	{
 		m_text.pop_back();
 	}
@@ -278,7 +306,9 @@ void TextBox::Update(IKMInput* pInput, double dt)
 		char key = pInput->GetKeyDown();
 		AddKey(key);
 	}
-	
+
+	//m_carrotPos = this->m_text.back().P;
+	//m_carrotPos.x += m_text.back().line.size() * 8;
 
 	UpdateScrolling(pInput,dt);
 }
@@ -292,30 +322,48 @@ void TextBox::Render(IRenderer* pRenderer)
 		pRenderer->DrawString("|",m_carrotPos,0xffffffff);
 	}
 
+	// todo: put this into another function
+	{
+		TextBox::LineData& theBack = m_text.back();
+		RECT myR = {theBack.P.x,theBack.P.y,0,0};
+		pRenderer->GetStringRec(theBack.line.c_str(),myR);
+
+		if(myR.right >= (this->m_square.GetRect().right - 10))
+		{
+			TextBox::Write("",0xffffffff,true);
+		}
+	}
+
 	// Iterate across all lines
 	for(TextDataType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		LineData& data = *iter;
+		std::string line = data.line;
+
+		// Render the '>'
+		if(!data.bContinue)
+		{
+			line = "> " + data.line;
+		}
 
 		// cull lines that are not on the screen
 		const RECT& R = m_square.GetRect();
 
-		/*pRenderer->GetStringRec(data.line.c_str(),data.R);
-		if(data.R.right < R.right - 10)
-		{
-			data.R.right += 20;
-		}*/
-
 		// scroll lines
-		data.R.top += m_scrollSpeed;
+		data.P.y += m_scrollSpeed;
+
+		RECT myR = {data.P.x,data.P.y,0,0};
+		pRenderer->GetStringRec(line.c_str(),myR);
 
 		// If the line is on the screen
-		if(data.R.top >= R.top)
+		if(myR.top >= R.top)
 		{
-			if(data.R.top <= R.bottom) 
+			if(myR.bottom <= R.bottom) 
 			{
+				RECT temp = {myR.left,myR.top,R.right,R.bottom};
+
 				// draw it
-				pRenderer->DrawString(data.line.c_str(),data.R,data.color,false);
+				pRenderer->DrawString(line.c_str(),temp,data.color,false);
 			}
 		}
 	}
@@ -359,10 +407,11 @@ void TextBox::UpdateScrolling(IKMInput* pInput, double dt)
 
 }
 
+//note: this method is not used anymore
 unsigned int TextBox::GetNumberOfRowsInLine(const std::string& line) const
 {
 	unsigned int uiStrLength = line.length();
-
+	
 	if(uiStrLength == 0)
 	{
 		uiStrLength = 1;
@@ -371,13 +420,13 @@ unsigned int TextBox::GetNumberOfRowsInLine(const std::string& line) const
 	// Get the rectangle for the textbox
 	const RECT& squareRect = m_square.GetRect();
 
-	unsigned int n = count(line.begin(),line.end(),'\n') / 1.2f;
+	//unsigned int n = count(line.begin(),line.end(),'\n') / 1.4f;
 
 	// todo: the value '6' here should be modifiable in the ctor, because there could be different size font
 	// which is not yet implemented yet.
-	unsigned int r = (unsigned int)ceil((float)(6*uiStrLength) / ((squareRect.right - squareRect.left)));
+	unsigned int r = (unsigned int)ceil((float)(8*uiStrLength) / ((squareRect.right - squareRect.left)));
 
-	return (r + n);
+	return (r);
 }
 
 void TextBox::CLS()
@@ -393,26 +442,27 @@ ScriptingConsole::ScriptingConsole(asVM* pVM, const std::string& name, const REC
 
 }
 
+bool ScriptingConsole::IsBlocked() const
+{
+	return m_uiStartIndex != -1;
+}
+
 void ScriptingConsole::Enter()
 {
-	string line = this->m_text.back().line;
-	line.erase(line.begin());
-	line.erase(line.begin());
+	const string& backLine = m_text.back().line;
 
-	if(line == "start")
+	if(backLine == "start")
 	{
 		m_uiStartIndex = m_text.size();
 	}
-	else if(line == "end")
+	else if((backLine == "end") && IsBlocked())
 	{
 		string sum;
 
-		for(unsigned int i = m_uiStartIndex; i < m_text.size() - 1; ++i)
+		const unsigned int uiMax = m_text.size() - 1;
+		for(unsigned int i = m_uiStartIndex; i < uiMax; ++i)
 		{
-			string temp = m_text[i].line;
-			temp.erase(temp.begin());
-
-			sum += temp;
+			sum += m_text[i].line;
 		}
 
 		m_pVM->ExecuteScript(sum,0xffffffff);
@@ -420,18 +470,21 @@ void ScriptingConsole::Enter()
 		// reset the index
 		m_uiStartIndex = -1;
 	}
-	else if(m_uiStartIndex == -1)
+	else if(!IsBlocked())
 	{
-		line = "console.grab(" + line + ")";
+		string line = "console.grab(" + backLine + ")";
 
 		m_pVM->ExecuteScript(line,0xffffffff);
 	}
-	TextBox::Enter();
+
+	TextBox::Write("",0xffffffff,IsBlocked());
 }
 
 void ScriptingConsole::Backspace()
 {
-	if(m_text.back().line.size() > 2)
+	LineData& line = m_text.back();
+
+	if((IsBlocked() && (m_text.size() - 1 > m_uiStartIndex)) || line.line.size() > 0)
 	{
 		TextBox::Backspace();
 	}
@@ -485,7 +538,7 @@ void ScriptingConsole::RegisterScript()
 
 	//asEngine->SetDefaultAccessMask(0xffffffff);
 	DBAS(asEngine->RegisterObjectType("Console",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(asEngine->RegisterObjectMethod("Console","void write(const string& in, uint color = 0xffffffff)",asMETHOD(ScriptingConsole,Write),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void write(const string& in, uint color = 0xffffffff, bool c = false)",asMETHOD(ScriptingConsole,Write),asCALL_THISCALL));
 	DBAS(asEngine->RegisterObjectMethod("Console","void clear()",asMETHOD(ScriptingConsole,CLS),asCALL_THISCALL));
 
 	DBAS(asEngine->RegisterObjectMethod("Console","void grab(void)",asMETHODPR(ScriptingConsole,Grab,(void),void),asCALL_THISCALL));

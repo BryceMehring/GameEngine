@@ -1,6 +1,6 @@
 // programmed by Bryce Mehring
 // Start Date: 8/20/2011
-// Last edit: 9/10/2011
+// Last edit: summer 2012
 
 // Note: These delegates only support 1 argument 
 // todo: I could add support for n amount of arguments with Variadic templates when MSVS updates to the new

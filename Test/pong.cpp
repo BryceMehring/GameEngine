@@ -1,7 +1,8 @@
 #include "Pong.h"
 #include "Game.h"
-#include "TextureManager.h"
+#include "ITextureManager.h"
 #include "asVM.h"
+#include "FileManager.h"
 #include <ctime>
 #include <sstream>
 
@@ -9,7 +10,7 @@ using namespace std;
 
 void GetWindowRect(RECT& R)
 {
-	GetClientRect(GetActiveWindow(),&R);
+	GetClientRect(::GetActiveWindow(),&R);
 }
 
 // Ball class
@@ -52,8 +53,7 @@ void Ball::Update(QuadTree* pTree, double dt)
 		}
 	}*/
 
-	RECT R;
-	GetWindowRect(R);
+	const FRECT& R = pTree->GetRect();
 
 	unsigned int index = -1;
 
@@ -62,7 +62,7 @@ void Ball::Update(QuadTree* pTree, double dt)
 		//m_pos.y = 600.0f;
 		index = 2;
 	}
-	else if(m_pos.y >= R.bottom)
+	else if(m_pos.y >= R.bottomRight.y)
 	{
 		//m_pos.y = 0.0f;
 		index = 3;
@@ -75,9 +75,6 @@ void Ball::Update(QuadTree* pTree, double dt)
 	}
 
 	pTree->Update(this);
-
-	//std::vector<Node*> nodes;
-	//pTree->Erase(this,&nodes);
 
 	if(!m_bChangeColor)
 	{
@@ -119,8 +116,6 @@ void Ball::Render(IRenderer* pRenderer)
 	::D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,0.0f);
 	::D3DXMatrixScaling(&S,m_fR / 16.0f,m_fR/16.0f,1.0f);
 
-	DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
-
 	pRenderer->DrawSprite(S*T,"point",2,m_bChangeColor ? 0xffff0000 : 0xffffffff);
 }
 
@@ -142,8 +137,7 @@ PlayerPaddle::PlayerPaddle(const FRECT& pos) : Paddle(pos) {}
 
 void PlayerPaddle::Update(IKMInput* pInput, QuadTree* pTree, double dt)
 {
-	RECT R;
-	GetWindowRect(R);
+	const FRECT& R = pTree->GetRect();
 
 	m_pos.y = pInput->MousePos().y;
 
@@ -160,7 +154,7 @@ void PlayerPaddle::Update(IKMInput* pInput, QuadTree* pTree, double dt)
 		m_pos.y += -500.0f * pInput->MouseY() * dt;
 	}*/
 
-	m_pos.y = Clamp(m_pos.y,(float)R.top,(float)R.bottom);
+	m_pos.y = Clamp(m_pos.y,(float)R.topLeft.y,(float)R.bottomRight.y);
 
 	//std::vector<Node*> nodes;
 	//pTree->Erase(this,&nodes);
@@ -177,13 +171,10 @@ ComputerPaddle::ComputerPaddle(const FRECT& pos) : Paddle(pos), m_fTime(0.0), m_
 
 void ComputerPaddle::Update(IKMInput* pInput, QuadTree* pTree, double dt)
 {
-	pTree->Update(this);
-
-	RECT R;
-	GetWindowRect(R);
+	const FRECT& R = pTree->GetRect();
 
 	// Get rect of area to poll for balls
-	CRectangle cRect(FRECT(::D3DXVECTOR2(0.0f,0.0f),D3DXVECTOR2(R.right/2.0f-10.0f,R.bottom)));
+	CRectangle cRect(FRECT(::D3DXVECTOR2(0.0f,0.0f),D3DXVECTOR2(R.bottomRight.x/2.0f-10.0f,R.bottomRight.y)));
 
 	// poll every 1 seconds
 	m_fTime += dt;
@@ -194,7 +185,6 @@ void ComputerPaddle::Update(IKMInput* pInput, QuadTree* pTree, double dt)
 		// find near nodes in the area
 		std::vector<Node*> nodes;
 		pTree->FindNearNodes(&cRect,nodes);
-
 
 		// loop over ISpatialObject in the area 
 		ProccessNearNodes(nodes,[&](const ::ISpatialObject* pObj) -> bool
@@ -235,6 +225,8 @@ void ComputerPaddle::Update(IKMInput* pInput, QuadTree* pTree, double dt)
 
 	static_cast<CRectangle*>(m_pCollisionPolygon)->GetRect() = m_pos;
 
+	pTree->Update(this);
+
 }
 
 
@@ -252,10 +244,7 @@ Pong::~Pong()
 	delete m_pLeftPaddle;
 	delete m_pRightPaddle;
 
-	for_each(m_balls.begin(),m_balls.end(),[](Ball* pBall)
-	{
-		delete pBall;
-	});
+	ClearObjects();
 
 	delete m_pQuadTree;
 }
@@ -265,17 +254,26 @@ void Pong::Init(Game* pGame)
 	// first register the game with script
 	RegisterScript(pGame);
 
+	IRenderer* pRenderer = pGame->GetRenderer();
+
 	// Build the rect of the window
 	RECT R;
 	GetWindowRect(R);
+
+	/*R.right -= R.left;
+	R.bottom -= R.top;
+	R.top = R.left = 0;*/
+
 	FRECT fRect(D3DXVECTOR2(R.left,R.top),D3DXVECTOR2(R.right,R.bottom));
 
 	// build the quadtree
 	m_pQuadTree = new QuadTree(fRect);
 
 	// Get the size of the texture we are using
-	const Texture* pTex = pGame->GetRenderer()->GetTextureManager()->GetTexture("paddle");
-	FRECT rect(D3DXVECTOR2(0.0f,0.0f),D3DXVECTOR2(pTex->uiWidth,pTex->uiHeight));
+	TextureInfo textureInfo;
+	
+	pRenderer->GetTextureManager().GetTextureInfo("paddle",textureInfo);
+	FRECT rect(D3DXVECTOR2(0.0f,0.0f),D3DXVECTOR2(textureInfo.uiWidth,textureInfo.uiHeight));
 	rect = D3DXVECTOR2(D3DXVECTOR2(R.right - 50.0f,(R.bottom + R.top) / 2.0f));
 
 	// build paddles and add them to the quadtree
@@ -320,13 +318,16 @@ void Pong::Update(Game* pGame)
 
 	if(pInput->KeyDown(ENTER) || pInput->MouseClick(0))
 	{
-		RECT R;
-		GetWindowRect(R);
+		const FRECT& R = this->m_pQuadTree->GetRect();
 
 		// add new ball
 		POINT P = pInput->MousePos();
 		float a = ::GetRandFloat(135.0f,225.0f) * 0.01745329f;
-		Ball* pBall = new Ball(D3DXVECTOR2(R.right/2.0f,R.bottom/8.0f),D3DXVECTOR2(-cosf(a),sinf(a)),700.0f,10.0f);
+		float s = ::GetRandFloat(5.0f,8.0f);
+		float v = ::GetRandFloat(500.0f,600.0f);
+
+		//Ball* pBall = new Ball(D3DXVECTOR2(P.x,P.y),D3DXVECTOR2(-cosf(a),sinf(a)),v,s);
+		Ball* pBall = new Ball(D3DXVECTOR2(R.bottomRight.x/2.0f,R.bottomRight.y/8.0f),D3DXVECTOR2(-cosf(a),sinf(a)),v,s);
 		m_balls.push_back(pBall);
 		m_pQuadTree->Insert(pBall);
 	}
@@ -345,7 +346,7 @@ void Pong::BuildMenu()
 {
 	// todo: need to finish implementing
 
-	Menu* pMenu = new Menu();
+	/*Menu* pMenu = new Menu();
 
 	RECT R;
 	GetWindowRect(R);
@@ -358,7 +359,7 @@ void Pong::BuildMenu()
 
 	pMenu->AddElement(pButton);
 
-	m_gui.SetMenu(pMenu);
+	m_gui.SetMenu(pMenu);*/
 	
 }
 
@@ -375,7 +376,8 @@ void Pong::RegisterScript(Game* pGame)
 
 	DBAS(pScriptEngine->RegisterObjectType(pName,0,asOBJ_REF | asOBJ_NOHANDLE));
 
-	DBAS(pScriptEngine->RegisterObjectMethod(pName,"void ResetScores()",asMETHOD(Pong,ResetScores),asCALL_THISCALL))
+	DBAS(pScriptEngine->RegisterObjectMethod(pName,"void ResetScores()",asMETHOD(Pong,ResetScores),asCALL_THISCALL));
+	DBAS(pScriptEngine->RegisterObjectMethod(pName,"void ResetObjects(void)",asMETHOD(Pong,ClearObjects),asCALL_THISCALL));
 
 	DBAS(pScriptEngine->RegisterGlobalProperty("Pong pong",(void*)this));
 
@@ -409,8 +411,7 @@ void Pong::UpdateBalls(Game* pGame)
 
 	// Update balls
 	auto iter = m_balls.begin();
-	RECT R;
-	GetWindowRect(R);
+	const FRECT& R = m_pQuadTree->GetRect();
 
 	// Loop over all of the balls
 	while(iter != m_balls.end())
@@ -419,18 +420,18 @@ void Pong::UpdateBalls(Game* pGame)
 
 		pBall->Update(this->m_pQuadTree,pGame->GetDt());
 
-		if(pBall->GetPos().x < (float)R.left || pBall->GetPos().x > (float)R.right)
+		if(pBall->GetPos().x < (float)R.topLeft.x || pBall->GetPos().x > (float)R.bottomRight.x)
 		{
-			if(pBall->GetPos().x < (float)R.left)
+			if(pBall->GetPos().x < (float)R.topLeft.x)
 			{
 				m_iRightScore++;
 			}
-			else if(pBall->GetPos().x > (float)R.right)
+			else if(pBall->GetPos().x > (float)R.bottomRight.x)
 			{
 				m_iLeftScore++;
 			}
 
-			pBall->EraseFromQuadtree(m_pQuadTree);
+			pBall->EraseFromQuadtree(this->m_pQuadTree);
 
 			delete pBall;
 			iter = m_balls.erase(iter);
@@ -444,6 +445,7 @@ void Pong::UpdateBalls(Game* pGame)
 
 void Pong::UpdatePaddles(Game* pGame)
 {
+	//const IKMInput* pInput = pGame->GetPluginManager()->GetPlugin(Input);
 	IKMInput* pInput = pGame->GetInput();
 	double dt = pGame->GetDt();
 
@@ -503,13 +505,12 @@ void Pong::Draw(Game* pGame)
 void Pong::DrawScore(Game* pGame)
 {
 	IRenderer* pRenderer = pGame->GetRenderer();
-	RECT R;
-	GetWindowRect(R);
+	const FRECT& R = m_pQuadTree->GetRect();
 
 	const POINT POS[2] = 
 	{
-		{R.left + 200,R.top + 50},
-		{R.right - 200,R.top + 50}
+		{R.topLeft.x + 200,R.topLeft.y + 50},
+		{R.bottomRight.x - 200,R.topLeft.y + 50}
 	};
 
 	std::stringstream stream;
@@ -528,4 +529,16 @@ void Pong::DrawScore(Game* pGame)
 void Pong::ResetScores()
 {
 	m_iLeftScore = m_iRightScore = 0;
+}
+
+void Pong::ClearObjects()
+{
+	for_each(m_balls.begin(),m_balls.end(),[&](Ball* pBall)
+	{
+		pBall->EraseFromQuadtree(m_pQuadTree);
+		m_pQuadTree->Erase(pBall);
+		delete pBall;
+	});
+
+	m_balls.clear();
 }

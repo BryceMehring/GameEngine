@@ -116,17 +116,42 @@ void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
 	pMenu->AddElement(pResMenuButton);
 	pMenu->AddMenu(pResMenu);
 
+	// build toggle fullscreen button
+	RECT tfR = {400,400,0,0};
+	pRenderer->GetStringRec("Toggle Fullscreen",tfR);
+	GenericButton<void>* pTFButton = new SquareButton<void>(R2,"Toggle Fullscreen");
+	pTFButton->SetCallback(GenericButton<void>::DELEGATE(pRenderer,&IRenderer::ToggleFullscreen));
+
+	pResMenu->AddElement(pTFButton);
+
 	UINT uiDisplayModes = pRenderer->GetNumDisplayAdaptors();
+	UINT j = 0;
+	UINT k = 0;
 	for(UINT i = 0; i < uiDisplayModes; ++i)
 	{
-		RECT R3 = {100,100 + 50*i,0,0};
+		// the problem, here is that % resets to 0, not what I want it to do
+		RECT R3 = {50 + 150 * j,(50 + 50 * k),0,0};
+
 		pRenderer->GetStringRec(pRenderer->GetDisplayModeStr(i).c_str(),R3);
 
 		GenericButton<UINT>* pStateButton = new SquareButton<UINT>(R3,pRenderer->GetDisplayModeStr(i));
 		pStateButton->SetCallback(setDisplayModeCallback);
+		//pStateButton->s
 		pStateButton->SetArg(i);
 
 		pResMenu->AddElement(pStateButton);
+
+		if(R3.bottom >= R.bottom)
+		{
+			 //i = 0;
+			 ++j;
+			 k = 0;
+		}
+		else
+		{
+			++k;
+		}
+
 	}
 }
 
@@ -136,7 +161,7 @@ void GameOfLifeMenu::BuildQuitButton(Game* pGame, Menu* pMenu)
 
 	GenericButton<void>::DELEGATE callback(Quit);
 
-	::RECT R = { 400,400,0,0};
+	::RECT R = { 400,100,0,0};
 	pGame->GetRenderer()->GetStringRec(pStr,R);
 
 	SquareButton<void>* pButton = new SquareButton<void>(R,pStr);

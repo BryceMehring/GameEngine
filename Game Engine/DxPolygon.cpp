@@ -1,8 +1,9 @@
-#include <assert.h>
+#include "gassert.h"
 #include "DxPolygon.h"
 #include "IRenderer.h"
 #include "PluginManager.h"
 #include "VecMath.h"
+#include "FileManager.h"
 
 using namespace std;
 
@@ -24,8 +25,8 @@ void DxPolygon::SetColor(DWORD color) { m_color = color; }
 
 void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
 {
-	assert(pArray != nullptr);
-	assert(pArray[0] == pArray[size-1]);
+	gassert(pArray != nullptr,"Null pointer");
+	gassert(pArray[0] == pArray[size-1],"DxPolygon is not configured correctly");
 
 	// todo: is this line below needed?
 	// If one is constructing a polygon again, most of the time
@@ -63,7 +64,7 @@ DxSquare::DxSquare(const RECT& R)
 }
 DxSquare::DxSquare(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon(pArray,size)
 {
-	assert(size != SIZE);
+	gassert(size != SIZE,"Incorrect size");
 }
 
 void DxSquare::ConstructFromRect(const RECT& R)
@@ -96,7 +97,6 @@ bool DxSquare::IsPointInPolygon(POINT P) const
 DxTriangle::DxTriangle() {}
 DxTriangle::DxTriangle(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon(pArray,size) 
 {
-	assert(size != SIZE);
 }
 
 // algorithm from: http://www.blackpawn.com/texts/pointinpoly/default.html

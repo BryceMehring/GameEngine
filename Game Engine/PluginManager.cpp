@@ -5,12 +5,13 @@
 #include "WindowManager.h"
 #include "PluginManager.h"
 #include "FileManager.h"
+#include "Game.h"
 //#include "EngineHelper.h"
 
 using namespace std;
 using namespace stdext;
 
-PluginManager::PluginManager() : m_pEngine(nullptr)
+PluginManager::PluginManager() : m_pGame(nullptr)
 {
 }
 
@@ -18,7 +19,7 @@ PluginManager::PluginManager() : m_pEngine(nullptr)
 PluginManager::~PluginManager()
 {
 	FreeAllPlugins();
-	m_pEngine = nullptr;
+	this->m_pGame = nullptr;
 }
 
 void PluginManager::FreeAllPlugins()
@@ -32,20 +33,10 @@ void PluginManager::FreeAllPlugins()
 	m_plugins.clear();
 }
 
-//  ===== interface with dlls =====
-HINSTANCE PluginManager::GetHINSTANCE() const
-{
-	return m_pEngine->GetHINSTANCE();
-}
+WindowManager* PluginManager::GetWindowManager() { return this->m_pGame->GetWindow(); }
+asVM* PluginManager::GetAngelScript() { return m_pGame->GetAs(); }
 
-HWND PluginManager::GetWindowHandle() const
-{
-	return m_pEngine->GetWindowHandle();
-}
-/*asVM& PluginManager::GetScriptVM() const
-{
-	//return m_pEngine->GetScriptVM();
-}*/
+//  ===== interface with dlls =====
 
 const IPlugin* PluginManager::GetPlugin(DLLType type) const
 {

@@ -57,9 +57,6 @@
     <ClInclude Include="IRenderer.h">
       <Filter>Base Classes</Filter>
     </ClInclude>
-    <ClInclude Include="IScripted.h">
-      <Filter>Base Classes</Filter>
-    </ClInclude>
     <ClInclude Include="asVM.h">
       <Filter>Scripting</Filter>
     </ClInclude>
@@ -118,10 +115,11 @@
     </ClInclude>
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="VecMath.h" />
-    <ClInclude Include="TextureManager.h">
+    <ClInclude Include="StringAlgorithms.h" />
+    <ClInclude Include="gassert.h" />
+    <ClInclude Include="ITextureManager.h">
       <Filter>Rendering Addons</Filter>
     </ClInclude>
-    <ClInclude Include="StringAlgorithms.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileManager.cpp">
@@ -171,9 +169,9 @@
       <Filter>State</Filter>
     </ClCompile>
     <ClCompile Include="VecMath.cpp" />
-    <ClCompile Include="TextureManager.cpp">
+    <ClCompile Include="StringAlgorithms.cpp" />
+    <ClCompile Include="ITextureManager.cpp">
       <Filter>Rendering Addons</Filter>
     </ClCompile>
-    <ClCompile Include="StringAlgorithms.cpp" />
   </ItemGroup>
 </Project>

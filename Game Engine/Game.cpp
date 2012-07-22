@@ -5,6 +5,8 @@
 #include "CreatorId.h"
 #include "RTTI.h"
 #include "Menu.h"
+#include <string>
+#include "gassert.h"
 #include <ctime>
 //#include "MenuCreator.h"
 
@@ -36,7 +38,15 @@ Game::~Game()
 	delete m_pNextState;
 	delete m_pConsole;
 
-	m_StateMachine.RemoveState(this);
+	// run the garbage collector before we destroy
+	asIScriptEngine* pEngine = m_vm.GetScriptEngine();
+	pEngine->GarbageCollect();
+	pEngine->Release();
+
+	// destroy the current state
+	m_StateMachine.GetState()->Destroy(this);
+
+	// remove the listener from the window
 	m_window.RemoveListener(m_iEventId);
 }
 
@@ -97,12 +107,12 @@ void Game::Update()
 		// switch states
 		m_StateMachine.SetState(m_pNextState,this);
 
-		m_window.SetWinCaption(m_pNextState->GetType()->GetName());
+		//m_window.SetWinCaption(m_pNextState->GetType()->GetName());
 
 		// Reset next state
 		m_pNextState = nullptr;
 	}
-	else if(m_pInput->KeyDown(B))
+	else if(!m_bConsoleEnabled && m_pInput->KeyDown(B))
 	{
 		m_StateMachine.LoadPreviousState(this);
 	}
@@ -111,6 +121,7 @@ void Game::Update()
 	if(m_pInput->GetKeyDown() == 96)
 	{
 		m_bConsoleEnabled = !m_bConsoleEnabled;
+		m_pInput->Reset();
 	}
 
 	if(m_bConsoleEnabled)
@@ -118,9 +129,9 @@ void Game::Update()
 		m_pConsole->Update(m_pInput,m_fDT);
 
 		// update garbage collection
-		asIScriptEngine* pEngine = m_vm.GetScriptEngine();
-		DBAS(pEngine->GarbageCollect(asGC_ONE_STEP));
-		pEngine->Release();
+		////asIScriptEngine* pEngine = m_vm.GetScriptEngine();
+		//DBAS(pEngine->GarbageCollect(asGC_ONE_STEP));
+		//pEngine->Release();
 	}
 	else
 	{
@@ -209,20 +220,11 @@ void Game::ReloadPlugins(const std::string& file)
 
 	if(m_plugins.LoadAllPlugins(file,".dll"))
 	{
-		const auto& keys = m_plugins.GetPluginKeys();
+		m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering));
+		gassert(m_pRenderer != nullptr,"No Rendering plugin was found");
 
-		for(auto iter = keys.begin(); iter != keys.end(); ++iter)
-		{
-			switch(*iter)
-			{
-			case Rendering:
-				m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering));
-				break;
-			case Input:
-				m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input));
-				break;
-			}
-		}
+		m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input));
+		gassert(m_pRenderer != nullptr,"No Input plugin was found");
 	}
 }
 
@@ -238,7 +240,7 @@ void Game::ReloadPluginsFromUserFolder()
 
 void Game::LoadAllDLL()
 {
-	m_plugins.SetEngine(&m_window);
+	m_plugins.SetGame(this);
 	ReloadPlugins();
 }
 
@@ -273,8 +275,8 @@ void Game::MsgProc(const MsgProcData& data)
 	case WM_ACTIVATE:
 		if( LOWORD(data.wParam) == WA_INACTIVE )
 		{
-			m_pRenderer->OnLostDevice();
 			m_timer.Stop();
+			m_pRenderer->OnLostDevice();
 		}
 		else
 		{

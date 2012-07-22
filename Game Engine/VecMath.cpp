@@ -2,6 +2,7 @@
 
 #include "VecMath.h"
 #include "asVM.h"
+#include "FileManager.h"
 
 // function declarations 
 bool Intersects(const Circle& c1, const FRECT& R1);
@@ -292,11 +293,30 @@ float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound)
 	//return b;
 }
 
+unsigned int xor128()
+{
+	static unsigned int x = 123456789;
+	static unsigned int y = 362436069;
+	static unsigned int z = 521288629;
+	static unsigned int w = 88675123;
+	unsigned int t;
+ 
+	t = x ^ (x << 11);
+	x = y; y = z; z = w;
+	return w = w ^ (w >> 19) ^ (t ^ (t >> 8));
+}
+
 float GetRandFloat(float a, float b)
 {
 	// todo: need to check this
-	float fRand = (rand() % 10001) * 0.0001f;
+	float fRand = rand() / (RAND_MAX + 1.0f);
 	return fRand*(b - a) + a;
+}
+
+unsigned int GetRandInt(unsigned int a, unsigned int b)
+{
+	// todo: need to check this
+	return a + (xor128() % b);
 }
 
 bool InRange(float value, float min, float max)
@@ -321,6 +341,7 @@ void RegisterScriptVecMath(asIScriptEngine* pEngine)
 	DBAS(pEngine->RegisterGlobalFunction("uint log2(uint)",asFUNCTION(LOG2),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("bool InRange(float,float,float)",asFUNCTION(InRange),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("float rand(float,float)",asFUNCTION(GetRandFloat),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("uint rand(uint,uint)",asFUNCTION(GetRandInt),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("float clamp(float,float,float)",asFUNCTION(Clamp<float>),asCALL_CDECL));
 }
 

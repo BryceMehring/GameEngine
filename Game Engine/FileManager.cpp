@@ -7,11 +7,13 @@
 
 using namespace std;
 
+const char* FILENAME = "..//Log.txt";
+
 
 FileManager::FileManager() {}
 FileManager::~FileManager()
 {
-	::fstream out("..//Log.txt",ios::out);
+	::fstream out(FILENAME,ios::out);
 
 	if(out.is_open())
 	{
@@ -100,6 +102,32 @@ bool FileManager::OpenFileName(std::string& file) const
 	}
 
 	return false;
+}
+
+unsigned int FileManager::GetSeedFromLog() const
+{
+	unsigned int seed = 0;
+	std::fstream in(FILENAME,ios::in);
+
+	if(in.is_open())
+	{
+		string line;
+		getline(in,line);
+
+		unsigned int pos = line.find_last_of(':');
+
+		if(pos != string::npos)
+		{
+			stringstream oss(line.substr(pos+1));
+			oss >> seed;
+		}
+
+		in.close();
+	}
+
+	seed += (unsigned int)time(NULL);
+
+	return seed;
 }
 
 void FileManager::WriteTime()

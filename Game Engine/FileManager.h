@@ -24,6 +24,8 @@ public:
 
 	bool GetFolder(std::string& folderpath);
 
+	unsigned int GetSeedFromLog() const;
+
 	// replaced all of the overloaded versions of WriteToLog with
 	// a template version
 	template< class T >

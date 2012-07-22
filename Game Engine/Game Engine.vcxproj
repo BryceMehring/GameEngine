@@ -42,7 +42,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
-    <ExtensionsToDeleteOnClean />
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -91,13 +90,13 @@
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GameStateFactory.h" />
     <ClInclude Include="GameStateMachine.h" />
+    <ClInclude Include="gassert.h" />
     <ClInclude Include="Heap.h" />
     <ClInclude Include="IInput.h" />
     <ClInclude Include="IKMInput.h" />
     <ClInclude Include="IPlugin.h" />
     <ClInclude Include="IRender.h" />
     <ClInclude Include="IRenderer.h" />
-    <ClInclude Include="IScripted.h" />
     <ClInclude Include="IStateCreator.h" />
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="Menu.h" />
@@ -108,7 +107,7 @@
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StringAlgorithms.h" />
-    <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="ITextureManager.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="VecMath.h" />
     <ClInclude Include="WindowManager.h" />
@@ -130,7 +129,7 @@
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RefCounting.cpp" />
     <ClCompile Include="StringAlgorithms.cpp" />
-    <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="ITextureManager.cpp" />
     <ClCompile Include="VecMath.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>

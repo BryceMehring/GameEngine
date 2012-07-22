@@ -137,6 +137,7 @@ private:
 	void DrawScore(Game* pGame);
 
 	void ResetScores();
+	void ClearObjects();
 
 	void IncreasePaddlePoints(const std::vector<Paddle*>& ref);
 

@@ -12,10 +12,10 @@
 #pragma once
 
 
-#include "IScripted.h"
 #include "DxPolygon.h"
 #include <scriptstdstring\scriptstdstring.h>
 #include <scriptbuilder\scriptbuilder.h>
+#include "gassert.h"
 
 // debug AngelScript macro
 #ifdef _DEBUG
@@ -23,7 +23,7 @@
 #define DBAS(f) \
 { \
 	int r = f; \
-	assert( r >= 0 ); \
+	gassert( r >= 0,"AngelScript error"); \
 }
 #endif // DBAS
 
@@ -87,6 +87,7 @@ public:
 
 	void RegisterScript();
 
+	// todo: need to remove this
 	void SetTextBox(class ScriptingConsole* pTextBox);
 
 	// access to the asIScriptEngine

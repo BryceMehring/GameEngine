@@ -16,6 +16,12 @@ enum KeyCode
 	DEL = 127,
 };
 
+enum MouseCursorState
+{
+	Default,
+	Hand,
+};
+
 // Keyboard mouse
 class __declspec(novtable) IKMInput : public IInputPlugin
 {
@@ -32,6 +38,9 @@ public:
 	virtual int MouseX() = 0;
 	virtual int MouseY() = 0;
 	virtual int MouseZ() = 0;
+
+	// mouse cursor states
+	virtual void SetMouseState(MouseCursorState state) = 0; 
 
 protected:
 

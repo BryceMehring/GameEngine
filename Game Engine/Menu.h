@@ -95,6 +95,7 @@ private:
 
 	Menu* m_pMenu;
 	unsigned int m_uiCurrentIndex;
+	bool m_bSetMenu;
 
 };
 
@@ -129,6 +130,9 @@ protected:
 	Text m_name;
 	DWORD m_color;
 	DxPolygon* m_pPolygon;
+
+
+	bool m_bMouseHover;
 
 };
 
@@ -276,7 +280,7 @@ public:
 	TextBox(const std::string& name, const RECT& R);
 
 	// Enters a new line
-	void Write(const std::string& line, DWORD color = 0xffffffff);
+	void Write(const std::string& line, DWORD color = 0xffffffff, bool bContinue = false);
 
 	virtual void Update(IKMInput* pInput, double dt);
 	virtual void Render(IRenderer* pRenderer);
@@ -296,15 +300,16 @@ protected:
 	struct LineData
 	{
 		LineData() {}
-		LineData(const std::string& str, D3DCOLOR color, const RECT& rect)
-		: line(str), color(color), R(rect)
+		LineData(const std::string& str, D3DCOLOR color, const POINT& P,bool c)
+		: line(str), color(color), P(P), bContinue(c)
 		{
 
 		}
 
 		std::string line;
 		D3DCOLOR color;
-		RECT R;
+		POINT P;
+		bool bContinue;
 	};
 
 //private:
@@ -368,13 +373,16 @@ protected:
 	unsigned int m_uiStartIndex;
 
 	// helper functions
+
+	bool IsBlocked() const; 
+
 	template< class T >
 	void _Grab(const T& p)
 	{
 		stringstream stream;
 		stream << p;
 
-		Write(stream.str());
+		Write(stream.str(),0xff00ffff);
 	}
 
 	// These are registered with AngelScript

@@ -8,6 +8,7 @@
 #include "VecMath.h"
 #include "TextureManager.h"
 #include "D3d9types.h"
+#include "WindowManager.h"
 
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
@@ -49,7 +50,6 @@ struct DrawTextInfo
 DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref), m_p3Device(nullptr),
 m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr),
 m_pTextureManager(nullptr)
-
 {
 	// todo: need to organize constructor
 	ZeroMemory(&m_D3DParameters,sizeof(D3DPRESENT_PARAMETERS));
@@ -85,11 +85,18 @@ m_pTextureManager(nullptr)
 	EnumerateDisplayAdaptors();
 
 	RegisterScript();
+
+	//SetWindowStyle();
 	//SetDisplayMode(0);
 }
 DX9Render::~DX9Render()
 {
 	delete m_pTextureManager;
+
+	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript()->GetScriptEngine();
+	
+	DBAS(pEngine->RemoveConfigGroup("Renderer"));
+	pEngine->Release();
 
 	m_pSprite->Release();
 	m_pFont->Release();
@@ -105,7 +112,7 @@ int DX9Render::GetVersion() const
 
 void DX9Render::About() const
 {
-	MessageBox(m_mgr.GetWindowHandle(),"DX9 DLL\nProgrammed By Bryce Mehring","About",MB_OK);
+	MessageBox(nullptr,"DX9 DLL\nProgrammed By Bryce Mehring","About",MB_OK);
 }
 
 DLLType DX9Render::GetType() const
@@ -120,7 +127,7 @@ void DX9Render::InitializeDirectX()
 	if( !m_pDirect3D ) { throw std::string("Direct3DCreate9 Failed"); }
 
 	//EnumerateDisplayAdaptors();
-	HWND windowHandle = m_mgr.GetWindowHandle();
+	HWND windowHandle = m_mgr.GetWindowManager()->GetWindowHandle();
 
 	// todo: need to check device caps 
 
@@ -183,7 +190,7 @@ void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
 		GetStringRec(str,R);
 	}
 
-	m_text.push_back(DrawTextInfo(str,R,color,DT_LEFT | DT_TOP | DT_WORDBREAK));
+	m_text.push_back(DrawTextInfo(str,R,color,DT_NOCLIP));
 	//int Height = this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
 	//DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
 	//DrawTextInfo info = {str,R,color,DT_NOCLIP};
@@ -204,9 +211,9 @@ void DX9Render::DrawSprite(const D3DXMATRIX& transformation, const std::string& 
 	m_sprites.push(Sprite(transformation,texture,color,iPriority));
 }
 
-TextureManager* DX9Render::GetTextureManager()
+ITextureManager& DX9Render::GetTextureManager()
 {
-	return m_pTextureManager;
+	return *m_pTextureManager;
 }
 
 /*void DX9Render::DrawSprite()
@@ -251,16 +258,16 @@ bool DX9Render::IsDeviceLost()
 
 void DX9Render::OnLostDevice()
 {
-	m_pFont->OnLostDevice();
 	m_pSprite->OnLostDevice();
 	m_pLine->OnLostDevice();
+	m_pFont->OnLostDevice();
 }
 
 void DX9Render::OnResetDevice()
 {
-	m_pFont->OnResetDevice();
 	m_pSprite->OnResetDevice();
 	m_pLine->OnResetDevice();
+	m_pFont->OnResetDevice();
 }
 
 void DX9Render::ClearScreen()
@@ -317,7 +324,7 @@ void DX9Render::EnumerateDisplayAdaptors()
 			UINT height = mode.mode.Height;
 			float ratio = (float)width / height;
 
-			if(fabsf(ratio - fBaseRatio) < 0.000001f)
+			//if(fabsf(ratio - fBaseRatio) < 0.000001f)
 			{
 				UINT hz = mode.mode.RefreshRate;
 
@@ -328,6 +335,8 @@ void DX9Render::EnumerateDisplayAdaptors()
 
 				mode.str = oss.str();
 
+				//UPOINT P = { width, height };
+				//m_DisplayModes.insert(make_pair(P,mode));
 				m_DisplayModes.push_back(mode);
 			}
 		}
@@ -337,10 +346,34 @@ UINT DX9Render::GetNumDisplayAdaptors() const
 {
 	return m_DisplayModes.size();
 }
+
+void DX9Render::SetWindowStyle()
+{
+	HWND h = m_mgr.GetWindowManager()->GetWindowHandle();
+
+	if(m_D3DParameters.Windowed)
+	{
+		RECT R = {0,0,800,600}; 
+		AdjustWindowRect(&R,WS_OVERLAPPEDWINDOW,false);
+
+		SetWindowLong(h, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+		SetWindowPos(h, HWND_TOP, 100, 100, R.right, R.bottom,
+			SWP_SHOWWINDOW | SWP_NOZORDER);
+	}
+	else
+	{
+		SetWindowLong(h, GWL_STYLE, WS_POPUPWINDOW);
+		SetWindowPos(h, HWND_TOP, 0, 0, 0, 0,
+		SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOZORDER);
+	}
+}
+
 void DX9Render::SetDisplayMode(UINT i)
 {
 	if( i > m_DisplayModes.size() )
 		return;
+
+	HWND h = m_mgr.GetWindowManager()->GetWindowHandle();
 
 	UINT Width = m_DisplayModes[i].mode.Width;
 	UINT Height = m_DisplayModes[i].mode.Height;
@@ -354,27 +387,41 @@ void DX9Render::SetDisplayMode(UINT i)
 	// todo: look at this:
 	//HWND h1 = SetActiveWindow(h);
 	//HWND h2 = SetFocus(h);
+	//::GetActiveWindow();
 
-	HWND h = m_mgr.GetWindowHandle();
-
-	// Change the window style to a more fullscreen friendly style.
-	SetWindowLongPtr(h, GWL_STYLE, WS_POPUP | WS_MAXIMIZE);
-
-	// If we call SetWindowLongPtr, MSDN states that we need to call
-	// SetWindowPos for the change to take effect.  In addition, we 
-	// need to call this function anyway to update the window dimensions.
-	SetWindowPos(h, HWND_TOP, 0, 0, Width, Height, SWP_NOZORDER | SWP_SHOWWINDOW);
+	SetWindowStyle();
 	
 	Reset();
+	//Reset();
 }
 
 void DX9Render::ToggleFullscreen()
 {
 	m_D3DParameters.Windowed = !m_D3DParameters.Windowed;
 
-	HWND h = m_mgr.GetWindowHandle();
-	SetWindowLongPtr(h,GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
-	SetWindowPos(h,HWND_TOP,100,100,800,600,SWP_NOZORDER | SWP_SHOWWINDOW);
+	if(m_D3DParameters.Windowed)
+	{
+		m_D3DParameters.BackBufferWidth            = 0;
+		m_D3DParameters.BackBufferHeight           = 0;
+		m_D3DParameters.BackBufferFormat           = D3DFMT_UNKNOWN;
+		m_D3DParameters.BackBufferCount            = 1;
+		m_D3DParameters.MultiSampleType            = D3DMULTISAMPLE_NONE;
+		m_D3DParameters.MultiSampleQuality         = 0;
+		m_D3DParameters.SwapEffect                 = D3DSWAPEFFECT_DISCARD; 
+		m_D3DParameters.FullScreen_RefreshRateInHz = 0;
+	}
+	else
+	{
+		UINT Width = m_DisplayModes[0].mode.Width;
+		UINT Height = m_DisplayModes[0].mode.Height;
+
+		m_D3DParameters.BackBufferFormat = D3DFMT_X8R8G8B8;
+		m_D3DParameters.BackBufferWidth  = Width;
+		m_D3DParameters.BackBufferHeight = Height;
+		m_D3DParameters.FullScreen_RefreshRateInHz = m_DisplayModes[0].mode.RefreshRate;
+	}
+
+	SetWindowStyle();
 
 	Reset();
 }
@@ -460,21 +507,23 @@ void DX9Render::RenderSprites()
 		const Sprite& top = m_sprites.top();
 
 		// Get texture for the sprite
-		const Texture* pTex = m_pTextureManager->GetTexture(top.texture);
+		TextureManager::Texture texture;
+		m_pTextureManager->GetTexture(top.texture,texture);
 
 		//m_pSprite->SetWorldViewLH(&m_T,0);
 		m_pSprite->SetTransform(&(top.T));
-		m_pSprite->Draw(pTex->pTexture,0,&(pTex->center),0,top.Color);
+		m_pSprite->Draw(texture.pTexture,0,&(texture.center),0,top.Color);
 
 		m_sprites.pop();
 	}
 
 	m_pSprite->Flush();
 
-	::D3DXMATRIX T;
-
 	// reset to normal transform matrix after rendering
+
+	D3DXMATRIX T;
 	D3DXMatrixIdentity(&T);
+	
 	m_pSprite->SetTransform(&T);
 	
 }
@@ -520,12 +569,21 @@ UINT DX9Render::CreateVertexDecl(const VertexDeclaration& decl)
 
 void DX9Render::RegisterScript()
 {
-	/*DBAS(s_pScriptEngine->RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void GetNumDisplayAdaptors()",asMETHOD(DX9Render,GetNumDisplayAdaptors),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","void SetDisplayMode(uint)",asMETHOD(DX9Render,SetDisplayMode),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("DX9Render","const string& GetDisplayModeStr(uint) const",asMETHOD(DX9Render,GetDisplayModeStr),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterGlobalProperty("DX9Render renderer",s_pThis));*/
+	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript()->GetScriptEngine();
+
+	pEngine->BeginConfigGroup("Renderer");
+
+	DBAS(pEngine->RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(pEngine->RegisterObjectMethod("DX9Render","void EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("DX9Render","void GetNumDisplayAdaptors()",asMETHOD(DX9Render,GetNumDisplayAdaptors),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("DX9Render","void SetDisplayMode(uint)",asMETHOD(DX9Render,SetDisplayMode),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("DX9Render","const string& GetDisplayModeStr(uint) const",asMETHOD(DX9Render,GetDisplayModeStr),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("DX9Render","void tf()",asMETHOD(DX9Render,ToggleFullscreen),asCALL_THISCALL));
+	DBAS(pEngine->RegisterGlobalProperty("DX9Render renderer",this));
+
+	pEngine->EndConfigGroup();
+
+	pEngine->Release();
 }
 
 /*bool WindowManager::LoadEffect(UINT iID,const char* pFile)

@@ -5,11 +5,13 @@
 
 #include "MemoryPool.h"
 #include "Heap.h"
+#include "gassert.h"
 #include <Windows.h>
 #include <assert.h>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include "FileManager.h"
 
 
 using namespace std;
@@ -106,7 +108,7 @@ char* MemoryPool::AllocMemoryBlock()
 
 	// Alloc memory from the system
 	void* pMem = malloc(iBlockArraySize);
-	assert(pMem != nullptr);
+	gassert(pMem != nullptr,"No more memory!");
 
 	//memset(pMem,0,iBlockArraySize);
 

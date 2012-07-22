@@ -13,6 +13,7 @@ class GameStateMachine
 public:
 
 	GameStateMachine() : m_pState(nullptr) {}
+	~GameStateMachine() { delete m_pState; }
 
 	// Removes current state if there is one
 	// And then initializes the new state

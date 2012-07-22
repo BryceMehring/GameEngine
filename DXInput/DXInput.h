@@ -8,7 +8,6 @@
 // This is the DirectX Input Plug-in class
 // All that's needed is too implement the functions provided in the abstract interface
 #define PLUGIN_EXPORTS
-#include "IScripted.h"
 #include "IKMInput.h"
 #include "PluginManager.h"
 #include <dinput.h>
@@ -16,9 +15,6 @@
 class DirectInput : public IKMInput//, public IScripted<DirectInput>
 {
 public:
-
-	friend class IScripted<DirectInput>;
-
 
 	// IRender
 	virtual DLLType GetType() const;
@@ -41,6 +37,8 @@ public:
 	virtual int MouseX();
 	virtual int MouseY();
 	virtual int MouseZ();
+
+	virtual void SetMouseState(MouseCursorState state);
 
 private:
 
@@ -66,6 +64,11 @@ private:
 
 	bool m_bMouseClick[2];
 
+	bool m_bMouseMove;
+
+	std::vector<HCURSOR> m_cursors;
+	unsigned int m_uiCurrentCursor;
+
 	int m_eventId;
 
 	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager&);
@@ -74,9 +77,11 @@ private:
 	void Reset();
 	void ReadMouse(const RAWMOUSE& mouse);
 	void ReadKeyboard();
-	void InitRawInput();
 
-	static void _RegisterScript();
+	void InitRawInput();
+	void LoadCursors();
+
+	void RegisterScript();
 };
 
 #endif

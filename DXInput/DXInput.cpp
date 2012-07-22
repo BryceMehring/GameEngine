@@ -1,11 +1,16 @@
 
 #include "DXInput.h"
+
+// todo: why are we including FileManager?
+#include "FileManager.h"
 #include "WindowManager.h"
-#include <Windowsx.h>
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"Game Engine.lib")
+
+// todo: this should not be needed
+#pragma comment(lib,"d3dx9.lib")
 
 
 // Input plug-in implementation
@@ -15,12 +20,16 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 }
 
 DirectInput::DirectInput(PluginManager& mgr)
-: m_mgr(mgr), m_iMouseX(0), m_iMouseY(0)
+: m_mgr(mgr), m_iMouseX(0), m_iMouseY(0), m_uiCurrentCursor(0), m_bMouseMove(false)
 {
 	WindowManager* pWinMgr = m_mgr.GetWindowManager();
 	m_eventId = pWinMgr->AddMsgListener(WindowManager::MsgDelegate(this,&DirectInput::Poll));
 
+	RegisterScript();
+
 	InitRawInput();
+
+	LoadCursors();
 
 	Reset();
 }
@@ -30,6 +39,10 @@ DirectInput::~DirectInput()
 {
 	WindowManager* pWinMgr = m_mgr.GetWindowManager();
 	pWinMgr->RemoveListener(m_eventId);
+
+	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript()->GetScriptEngine();
+	pEngine->RemoveConfigGroup("Input");
+	pEngine->Release();
 	//m_mgr.GetMsgProcEvent().Detach(m_id);
 }
 
@@ -40,7 +53,7 @@ void DirectInput::InitRawInput()
 	Rid.usUsagePage = 0x01; 
 	Rid.usUsage = 0x02; 
 	Rid.dwFlags = 0;   // adds HID mouse and also ignores legacy mouse messages
-	Rid.hwndTarget = m_mgr.GetWindowHandle();
+	Rid.hwndTarget = m_mgr.GetWindowManager()->GetWindowHandle();
 
 	/*Rid[1].usUsagePage = 0x01; 
 	Rid[1].usUsage = 0x06; 
@@ -50,6 +63,12 @@ void DirectInput::InitRawInput()
 	if (RegisterRawInputDevices(&Rid, 1, sizeof(Rid)) == FALSE) {
 	//registration failed. Call GetLastError for the cause of the error.
 	}
+}
+
+void DirectInput::LoadCursors()
+{
+	m_cursors.push_back(LoadCursor(NULL,IDC_ARROW));
+	m_cursors.push_back(LoadCursor(NULL,IDC_HAND));
 }
 
 /*void DirectInput::Notify(const MsgProcData& data)
@@ -71,6 +90,8 @@ void DirectInput::Reset()
 {
 	m_cKeyDown = m_cCharDown = -1;
 	m_iMouseX = m_iMouseY = m_iMouseZ = 0;
+
+	m_bMouseMove = false;
 
 	memset(m_bMouseClick,0,sizeof(m_bMouseClick));
 }
@@ -95,9 +116,12 @@ void DirectInput::Poll(const MsgProcData& data)
 			ReadMouse(raw->data.mouse);
 
 			break;
-		} 
-
+		}
+		case WM_SETCURSOR:
+			SetCursor(m_cursors[m_uiCurrentCursor]);
+			break;
 		case WM_MOUSEMOVE:
+			m_bMouseMove = true;
 			m_MousePos.x  = LOWORD(data.lparam);
 			m_MousePos.y = HIWORD(data.lparam);
 			break;
@@ -185,22 +209,30 @@ int DirectInput::MouseZ()
 	return m_iMouseZ;
 }
 
-void DirectInput::About() const
+void DirectInput::SetMouseState(MouseCursorState state)
 {
-	MessageBox(m_mgr.GetWindowHandle(),"DirectInput DLL\nProgrammed By Bryce Mehring","About",MB_OK);
+	m_uiCurrentCursor = state;
 }
 
-/*void DirectInput::_RegisterScript()
-{	
-	DBAS(s_pScriptEngine->RegisterObjectType("IKMInput",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("IKMInput","void about()",asMETHOD(DirectInput,About),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("IKMInput","void poll()",asMETHOD(DirectInput,Poll),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("IKMInput","bool mouseClick(int)",asMETHOD(DirectInput,MouseClick),asCALL_THISCALL));
-	//DBAS(pEngine->RegisterObjectMethod("DirectInput","bool KeyDown(char)",asMETHOD(DirectInput,KeyDown),asCALL_THISCALL));
-	
-	DBAS(s_pScriptEngine->RegisterObjectMethod("IKMInput","void mousePos(POINT& out)",asMETHOD(DirectInput,MousePos),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
-	DBAS(s_pScriptEngine->RegisterGlobalProperty("IKMInput input",s_pThis));
-}*/
+void DirectInput::About() const
+{
+	MessageBox(nullptr,"DirectInput DLL\nProgrammed By Bryce Mehring","About",MB_OK);
+}
+
+void DirectInput::RegisterScript()
+{
+	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript()->GetScriptEngine();
+
+	pEngine->BeginConfigGroup("Input");
+
+	DBAS(pEngine->RegisterObjectType("IKMInput",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(pEngine->RegisterObjectMethod("IKMInput","void about()",asMETHOD(DirectInput,About),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
+	DBAS(pEngine->RegisterGlobalProperty("IKMInput input",this));
+
+	pEngine->EndConfigGroup();
+
+	pEngine->Release();
+}

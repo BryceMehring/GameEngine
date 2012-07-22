@@ -72,6 +72,7 @@ D3DXVECTOR3 Reflect(const D3DXVECTOR3& dir, const D3DXVECTOR3& normal);
 
 // returns a random float in the range of [a,b]
 float GetRandFloat(float a, float b);
+unsigned int GetRandInt(unsigned int a, unsigned int b);
 
 // clamps x into the range of [a,b]
 template< class T >

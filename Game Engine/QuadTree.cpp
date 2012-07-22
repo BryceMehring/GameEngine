@@ -18,15 +18,15 @@ bool operator != (const POINT& a, const POINT& b)
 	return !::operator==(a,b);
 }
 
-Node::Node() : m_Previous(nullptr), m_pObjects(nullptr), m_bUseable(true)
+Node::Node() : m_Previous(nullptr), m_pObjects(nullptr), m_bUseable(false)
 {
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
 }
 
-Node::Node(const FRECT& R) : m_Previous(nullptr), m_pObjects(nullptr), R(R), m_bUseable(true)
+Node::Node(const FRECT& R) : m_Previous(nullptr), m_pObjects(nullptr), R(R), m_bUseable(false)
 {
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
-	SubDivide();
+	SubDivide(true);
 }
 Node::~Node()
 {
@@ -60,7 +60,29 @@ bool Node::IsDivided() const
 
 bool Node::HasPoint() const
 {
-	return ((m_pObjects != nullptr) && (!m_pObjects->empty()));
+	return (m_pObjects != nullptr) && (!m_pObjects->empty());
+}
+
+bool Node::RHasPoint() const
+{
+	if(IsDivided())
+	{
+		for(unsigned int i = 0; i < MAX_NODES; ++i)
+		{
+			Node* pSubNode = m_Nodes[i];
+
+			if(pSubNode->HasPoint())
+			{
+				return true;
+			}
+			else
+			{
+				return pSubNode->RHasPoint();
+			}
+		}
+	}
+
+	return HasPoint();
 }
 
 bool Node::IsFull() const
@@ -69,7 +91,7 @@ bool Node::IsFull() const
 }
 
 
-void Node::SubDivide()
+void Node::SubDivide(bool bAlloc)
 {
 	//const GetRect& this->m
 	const FRECT& rect = R.GetRect();
@@ -96,26 +118,37 @@ void Node::SubDivide()
 		pSubNode->SetRect(subRects[i]);
 		pSubNode->m_pObjects = new LIST_DTYPE();
 		pSubNode->m_Previous = this;
+		pSubNode->m_bUseable = true;
 
-		// If the current node has points, subdivide them
-		if(m_pObjects)
-		{
-			LIST_DTYPE::iterator iter = m_pObjects->begin();
-			for(; iter != m_pObjects->end(); ++iter)
-			{
-				if(pSubNode->IsWithin(*iter))
-				{
-					pSubNode->m_pObjects->insert(*iter);
-				}
-			}
-		}
+		SubDivideObjects(pSubNode);
 	}
 
 	m_bUseable = false;
 
+	if(m_pObjects)
+	{
+		m_pObjects->clear();
+	}
+
 	// free memory, this node will no longer store points.
-	delete m_pObjects;
-	m_pObjects = nullptr;
+	//delete m_pObjects;
+	//m_pObjects = nullptr;
+}
+
+void Node::SubDivideObjects(Node* pSubNode)
+{
+	if(m_pObjects)
+	{
+		LIST_DTYPE::iterator iter = m_pObjects->begin();
+		LIST_DTYPE::iterator end = m_pObjects->end();
+		for(; iter != end; ++iter)
+		{
+			if(pSubNode->IsWithin(*iter))
+			{
+				pSubNode->m_pObjects->insert(*iter);
+			}
+		}
+	}
 }
 
 void Node::Render(IRenderer* pRenderer)
@@ -137,24 +170,31 @@ void Node::Erase(ISpatialObject* pObj)
 {
 	if(m_pObjects != nullptr)
 	{
-		m_pObjects->erase(pObj);
+		auto iter = m_pObjects->find(pObj);
+		if(iter == m_pObjects->end())
+			return;
 
-		/*if(m_pObjects->empty())
+		m_pObjects->erase(iter);
+
+		/*if(m_pObjects->empty() && (m_Previous->m_Previous != nullptr) && (m_Previous->m_bUseable == false))
 		{
-			m_bUseable = false;
-
 			bool success = false;
 
 			for(unsigned int i = 0; i < MAX_NODES; ++i)
 			{
-				success |= m_Previous->m_Nodes[i]->m_bUseable;
+				Node* pNode = m_Previous->m_Nodes[i];
+				success |= pNode->RHasPoint();
 			}
-
+							
 			if(!success)
 			{
-				if(m_Previous->m_Previous != nullptr)
+				m_Previous->m_bUseable = true;
+				m_bUseable = false;
+
+				for(unsigned int i = 0; i < MAX_NODES; ++i)
 				{
-					m_Previous->m_bUseable = true;
+					Node* pNode = m_Previous->m_Nodes[i];
+					pNode->m_bUseable = false;
 				}
 			}
 		}*/
@@ -198,10 +238,28 @@ void Node::RInsert(ISpatialObject* pObj)
 		const FRECT& subR = nodes[i]->R.GetRect();
 
 		// if the current node is full
+		// 200
 		if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 100.0f)
 		{
-			// subdivide the node
-			pNode->SubDivide();
+			if(!pNode->IsDivided())
+			{
+				// subdivide the node
+				pNode->SubDivide(true);
+			}
+			else if(m_pObjects != nullptr)
+			{
+				for(unsigned int j = 0; j < MAX_NODES; ++j)
+				{
+					Node* pSubNode = m_Nodes[j];
+					pSubNode->m_bUseable = true;
+
+					SubDivideObjects(pSubNode);
+				}
+
+				m_bUseable = false;
+				m_pObjects->clear();
+			}
+
 			// Try to insert pObj into this sub node
 			pNode->RInsert(pObj);
 		}
@@ -218,12 +276,15 @@ void Node::RInsert(ISpatialObject* pObj)
 void Node::FindNearNodes(const ICollisionPolygon* pPolygon, std::vector<Node*>& out)
 {
 	// recursive version
-	if(IsDivided())
+	if(!m_bUseable)
 	{
 		// Loop through all of the sub nodes
 		for(unsigned int i = 0; i < MAX_NODES; ++i)
 		{
 			Node* pSubNode = m_Nodes[i];
+
+			// todo: this is bugged, sometimes m_bUseable is false when we are at the bottom, 
+			// m_bUseable in this case should be true...
 
 			if(pSubNode->R.Intersects(pPolygon))
 			{
@@ -370,6 +431,7 @@ void NodeIterator::Increment()
 
 void ISpatialObject::EraseFromQuadtree(QuadTree* pTree)
 {
+	//pTree->EraseFromPrev(this);
 	pTree->Erase(this);
 }
 
@@ -406,6 +468,11 @@ void QuadTree::Erase(ISpatialObject* pObj)
 	}
 }
 
+void QuadTree::EraseFromPrev(ISpatialObject* pObj)
+{
+	m_pRoot->EraseFromPreviousPos(pObj);
+}
+
 void QuadTree::FindNearNodes(ICollisionPolygon* pPoly, std::vector<Node*>& out)
 {
 	m_pRoot->FindNearNodes(pPoly,out);
@@ -418,11 +485,7 @@ void QuadTree::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
 
 void QuadTree::Update(ISpatialObject* pObj)
 {
-	// todo: add this
-	//note: this is how the algorithm should work:
-	// erase the nodes from pObj
-	// then, reinsert them
-	this->m_pRoot->EraseFromPreviousPos(pObj);
+	m_pRoot->EraseFromPreviousPos(pObj);
 	Insert(pObj);
 	//pObj->
 }

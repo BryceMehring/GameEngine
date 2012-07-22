@@ -9,6 +9,7 @@
 #include "scriptmath\scriptmath.h"
 #include "Menu.h"
 #include "VecMath.h"
+#include "FileManager.h"
 #include <sstream>
 //#include "asConsole.h"
 //#include "EngineHelper.h"
@@ -31,8 +32,10 @@ asVM::asVM() : m_iExeScript(0), m_pTextBox(nullptr)
 {
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
 
+	RegisterStdString(m_pEngine);
+
 	// turn off auto GARBAGE_COLLECT
-	m_pEngine->SetEngineProperty(asEP_AUTO_GARBAGE_COLLECT,false);
+	//m_pEngine->SetEngineProperty(asEP_AUTO_GARBAGE_COLLECT,false);
 }
 asVM::~asVM()
 {
@@ -288,8 +291,6 @@ void asVM::ListFunctions()
 {
 	asUINT n;
 
-	ostringstream os;
-	os << "Application functions:" << endl;
 	// List the application registered functions
 	
 	for( n = 0; n < (asUINT)m_pEngine->GetGlobalFunctionCount(); n++ )
@@ -299,25 +300,26 @@ void asVM::ListFunctions()
 		// Skip the functions that start with _ as these are not meant to be called explicitly by the user
 		if( func->GetName()[0] != '_' )
 		{
-			os << func->GetDeclaration() << endl;
+			m_pTextBox->Write(func->GetDeclaration());
 		}
 	}
-
-	os << endl;
 
 	// List the user functions in the module
 	asIScriptModule *mod = m_pEngine->GetModule("Application");
 	if( mod )
 	{
+		ostringstream os;
+
 		os << "User functions:" << endl;
 		for( n = 0; n < (asUINT)mod->GetFunctionCount(); n++ )
 		{
 			asIScriptFunction *func = mod->GetFunctionByIndex(n);
 			os << " " << func->GetDeclaration() << endl;
+
+			m_pTextBox->Write(func->GetDeclaration());
 		}
 	}
 
-	m_pTextBox->Write(os.str());
 }
 
 /*void asVM::SetTextBox(TextBox* pTextBox)
@@ -338,13 +340,13 @@ void asVM::RegisterScript()
 
 	DBAS(m_pEngine->SetDefaultAccessMask(0xffffffff));
 
-	RegisterStdString(m_pEngine);
 	RegisterScriptMath(m_pEngine);
-	::RegisterScriptVecMath(m_pEngine);
+	RegisterScriptVecMath(m_pEngine);
 
 
 	// ============= POD =============
 
+	// todo: move this into the renderer
 	DBAS(m_pEngine->RegisterGlobalFunction("uint color(uint red, uint green, uint blue)",::asFUNCTION(color),asCALL_CDECL));
 
 	// the macro offsetof should only work on pod types(no virtual methods),

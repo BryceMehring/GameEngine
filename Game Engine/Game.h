@@ -50,6 +50,8 @@ public:
 	IKMInput* GetInput();
 	WindowManager* GetWindow();
 	asVM* GetAs();
+	// todo: I could just use this with handles instead of 
+	// todo: having IPlugin interfaces lying around here 
 	const PluginManager* GetPluginManager() const;
 	double GetDt() const;
 	unsigned int GetFps() const;
@@ -67,8 +69,6 @@ protected:
 	bool m_bConsoleEnabled;
 
 	GameStateMachine m_StateMachine;
-
-	// todo: this is where I could add the asVM in the future...
 
 	double m_fDT;
 	GameInfo m_info;

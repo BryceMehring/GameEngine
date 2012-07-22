@@ -16,7 +16,6 @@
 #include <hash_map>
 #include <Windows.h>
 
-
 struct PluginInfo
 {
 	IPlugin* pPlugin;
@@ -36,9 +35,8 @@ public:
 
 	// more functions would go here as needed to work with the dlls...
 	//  ===== interface with dlls =====
-	HINSTANCE GetHINSTANCE() const;
-	HWND GetWindowHandle() const;
-	class WindowManager* GetWindowManager() { return m_pEngine; }
+	class WindowManager* GetWindowManager();
+	class asVM* GetAngelScript();
 	//asVM& GetScriptVM() const;
 
 	// Returns all of the keys for all of the dll's that are loaded
@@ -55,14 +53,14 @@ public:
 	void FreeAllPlugins();
 
 	// todo: is this good to do?
-	void SetEngine(class WindowManager* pEngine) { m_pEngine = pEngine; }
+	void SetGame(class Game* pGame) { m_pGame = pGame; }
 
 	// todo: need to implement this?
 	virtual void RegisterScript() {}
 
 private:
 
-	class WindowManager* m_pEngine;
+	class Game* m_pGame;
 	typedef stdext::hash_map<DLLType,PluginInfo> plugin_type;
 	plugin_type m_plugins;
 
