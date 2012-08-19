@@ -20,13 +20,7 @@
     <ClCompile Include="GameOfLifeMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameOfLife.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameOfLifeMenuCreator.cpp">
-      <Filter>Creators</Filter>
-    </ClCompile>
-    <ClCompile Include="GameOfLifeCreator.cpp">
       <Filter>Creators</Filter>
     </ClCompile>
     <ClCompile Include="pong.cpp">
@@ -35,24 +29,30 @@
     <ClCompile Include="PongCreator.cpp">
       <Filter>Creators</Filter>
     </ClCompile>
+    <ClCompile Include="GameOfLife.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameOfLifeCreator.cpp">
+      <Filter>Creators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameOfLifeMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameOfLife.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameOfLifeMenuCreator.h">
-      <Filter>Creators</Filter>
-    </ClInclude>
-    <ClInclude Include="GameOfLifeCreator.h">
       <Filter>Creators</Filter>
     </ClInclude>
     <ClInclude Include="Pong.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PongCreator.h">
+      <Filter>Creators</Filter>
+    </ClInclude>
+    <ClInclude Include="GameOfLife.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameOfLifeCreator.h">
       <Filter>Creators</Filter>
     </ClInclude>
   </ItemGroup>

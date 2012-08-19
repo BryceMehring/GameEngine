@@ -5,28 +5,6 @@
 
 using namespace std;
 
-#define MAX_CONSOLE_LINES 500
-
-class DisplayError
-{
-public:
-
-	DisplayError(HWND hWnd, const char* lpText, const char* lpCaption, UINT uType)
-	{
-		MessageBox(hWnd,lpText,lpCaption,uType);
-	}
-	~DisplayError()
-	{
-		exit(0);
-	}
-
-private:
- 
-	// Nothing goes here!
-
-};
-
-
 // static variables
 WindowManager* WindowManager::s_pThis = nullptr;
 
@@ -34,30 +12,10 @@ WindowManager::WindowManager(HINSTANCE hInstance) :
 m_hInstance(hInstance), m_hWindowHandle(NULL), m_bPaused(false)
 {
 	// Initialize
-	try
-	{
-		InitializeWindows(hInstance);
-		//RedirectIOToConsole();
-		RegisterScript();
-	}
-	// catch any errors
-	catch(string error)
-	{
-		MessageBox(0,error.c_str(),0,0);
-		exit(0);
-	}
-	catch(bad_alloc ba)
-	{
-		string buffer = "bad_alloc caught: ";
-		buffer += ba.what();
-		DisplayError error(0,buffer.c_str(),0,0);
-	}
-	catch(DWORD winError)
-	{
-		string buffer = "System Error: ";
-		buffer += (int)winError;
-		DisplayError error(0,buffer.c_str(),0,0);
-	}
+	
+	InitializeWindows(hInstance);
+	//RedirectIOToConsole();
+	RegisterScript();
 
 	::FileManager::Instance().WriteToLog("Window Constructed");
 	s_pThis = this;
@@ -93,7 +51,7 @@ bool WindowManager::Update()
 
 	do
 	{
-		while(PeekMessage(&msg,0,0,0,PM_REMOVE))
+		while(::PeekMessage(&msg,0,0,0,PM_REMOVE) > 0)
 		{
 			TranslateMessage( &msg );
 			DispatchMessage( &msg );
@@ -127,7 +85,8 @@ void WindowManager::InitializeWindows(HINSTANCE hInstance)
 	wc.lpszMenuName  = 0;
 	wc.lpszClassName = "D3DWndClassName";
 
-	if( !RegisterClass(&wc) ) { throw std::string("RegisterClass Failed"); }
+	
+	gassert(RegisterClass(&wc),"RegisterClass Failed");
 
 	// Default to a window with a client area rectangle of 800x600.
 	m_rect.left = 0;
@@ -139,16 +98,11 @@ void WindowManager::InitializeWindows(HINSTANCE hInstance)
 		(WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX) , 100, 100, m_rect.right, m_rect.bottom, 
 		0, 0, hInstance, 0); 
 
-	if( !m_hWindowHandle ) { throw std::string("RegisterClass Failed"); }
-
 	ShowWindow(m_hWindowHandle, SW_SHOW);
 	assert(UpdateWindow(m_hWindowHandle) != 0);
 }
 void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
-	MsgProcData data = {msg,wParam,lparam};
-	m_events.Notify(data);
-
 	switch( msg )
 	{
 		// WM_ACTIVE is sent when the window is activated or deactivated.
@@ -173,6 +127,9 @@ void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 			//Quit();
 			break;
 	}
+
+	MsgProcData data = {msg,wParam,lparam};
+	m_events.Notify(data);
 }
 LRESULT CALLBACK WindowManager::MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

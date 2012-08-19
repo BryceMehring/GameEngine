@@ -5,40 +5,41 @@
 #include "Game.h"
 #include <assert.h>
 
-void GameStateMachine::SetState(IGameState* pState, Game* pGame)
+void GameStateMachine::SetState(IGameState* pState, Game& game)
 {
 	// Update change to log
 	char buffer[64];
 	sprintf_s(buffer,"Changing state to: %s",pState->GetType()->GetName().c_str());
 	FileManager::Instance().WriteToLog(buffer);
 
-	pGame->GetWindow()->SetWinCaption(pState->GetType()->GetName());
+	game.GetWindow().SetWinCaption(pState->GetType()->GetName());
 
-	RemoveState(pGame);
+	RemoveState(game);
 
 	m_pState = pState;
 
 	if(m_pState)
 	{
-		m_pState->Init(pGame);
+		m_pState->Init(game);
 	}
 }
 
-void GameStateMachine::RemoveState(Game* pGame)
+void GameStateMachine::RemoveState(Game& game)
 {
 	// If there is a state, 
 	if(m_pState)
 	{
+		// todo: I could add this line of code to SetState, to fix the code
 		m_states.push(m_pState->GetType()->GetName());
 
 		// Delete the state once the state is ready to be deleted.
-		m_pState->Destroy(pGame);
+		m_pState->Destroy(game);
 		delete m_pState;
 		m_pState = nullptr;
 	}
 }
 
-void GameStateMachine::LoadPreviousState(Game* pGame)
+void GameStateMachine::LoadPreviousState(Game& game)
 {
 	if(m_states.empty() == false)
 	{
@@ -47,6 +48,6 @@ void GameStateMachine::LoadPreviousState(Game* pGame)
 		IGameState* pState = gsf.CreateState(m_states.top());
 		m_states.pop();
 
-		SetState(pState,pGame);
+		SetState(pState,game);
 	}
 }

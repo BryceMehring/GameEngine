@@ -45,7 +45,10 @@ struct DrawTextInfo
 	DWORD format;
 };
 
-
+unsigned int color(unsigned char r, unsigned char g, unsigned char b)
+{
+	return D3DCOLOR_XRGB(r,g,b);
+}
 
 DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref), m_p3Device(nullptr),
 m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr),
@@ -93,7 +96,7 @@ DX9Render::~DX9Render()
 {
 	delete m_pTextureManager;
 
-	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript()->GetScriptEngine();
+	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript().GetScriptEngine();
 	
 	DBAS(pEngine->RemoveConfigGroup("Renderer"));
 	pEngine->Release();
@@ -127,7 +130,7 @@ void DX9Render::InitializeDirectX()
 	if( !m_pDirect3D ) { throw std::string("Direct3DCreate9 Failed"); }
 
 	//EnumerateDisplayAdaptors();
-	HWND windowHandle = m_mgr.GetWindowManager()->GetWindowHandle();
+	HWND windowHandle = m_mgr.GetWindowManager().GetWindowHandle();
 
 	// todo: need to check device caps 
 
@@ -349,7 +352,7 @@ UINT DX9Render::GetNumDisplayAdaptors() const
 
 void DX9Render::SetWindowStyle()
 {
-	HWND h = m_mgr.GetWindowManager()->GetWindowHandle();
+	HWND h = m_mgr.GetWindowManager().GetWindowHandle();
 
 	if(m_D3DParameters.Windowed)
 	{
@@ -373,7 +376,7 @@ void DX9Render::SetDisplayMode(UINT i)
 	if( i > m_DisplayModes.size() )
 		return;
 
-	HWND h = m_mgr.GetWindowManager()->GetWindowHandle();
+	HWND h = m_mgr.GetWindowManager().GetWindowHandle();
 
 	UINT Width = m_DisplayModes[i].mode.Width;
 	UINT Height = m_DisplayModes[i].mode.Height;
@@ -569,9 +572,11 @@ UINT DX9Render::CreateVertexDecl(const VertexDeclaration& decl)
 
 void DX9Render::RegisterScript()
 {
-	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript()->GetScriptEngine();
+	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript().GetScriptEngine();
 
 	pEngine->BeginConfigGroup("Renderer");
+
+	DBAS(pEngine->RegisterGlobalFunction("uint color(uint8 red, uint8 green, uint8 blue)",::asFUNCTION(color),asCALL_CDECL));
 
 	DBAS(pEngine->RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(pEngine->RegisterObjectMethod("DX9Render","void EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors),asCALL_THISCALL));

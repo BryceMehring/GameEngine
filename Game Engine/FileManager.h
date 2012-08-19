@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <fstream>
 
 class FileManager : public Singleton<FileManager>
 {
@@ -20,7 +21,7 @@ public:
 	/*void LoadAllFilesFromDictionary(std::vector<std::string>& files,
 	const boost::filesystem::path& path, const std::string& ext) const;*/
 
-	bool OpenFileName(std::string& file) const; 
+	std::string OpenFileName() const; 
 
 	bool GetFolder(std::string& folderpath);
 
@@ -34,6 +35,31 @@ public:
 		WriteTime();
 		m_buffer << data << std::endl;
 	}
+
+	template< class T >
+	bool ProccessFileByLine(const char* file, T& functor) const
+	{
+		std::fstream in(file,std::ios::in);
+
+		if(in)
+		{
+			while(in)
+			{
+				std::string line;
+				std::getline(in,line);
+
+				functor(line);
+			}
+
+			in.close();
+
+			return true;
+		}
+
+		return false;
+	}
+
+	void RegisterScript(class asVM& vm);
 
 private:
 

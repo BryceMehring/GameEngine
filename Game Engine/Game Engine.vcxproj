@@ -28,7 +28,6 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -43,35 +42,21 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <MinimalRebuild>true</MinimalRebuild>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib />
     <Lib>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\boost\boost_1_47\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Bryce\Documents\Visual Studio 2010\Projects\Game Engine\Game Engine\Debug;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\boost\boost_1_47\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
+    <ClCompile />
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -87,9 +72,12 @@
     <ClInclude Include="DxPolygon.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameConstants.h" />
     <ClInclude Include="GameState.h" />
+    <ClInclude Include="GameStateConstants.h" />
     <ClInclude Include="GameStateFactory.h" />
     <ClInclude Include="GameStateMachine.h" />
+    <ClInclude Include="GameStateScript.h" />
     <ClInclude Include="gassert.h" />
     <ClInclude Include="Heap.h" />
     <ClInclude Include="IInput.h" />
@@ -105,6 +93,7 @@
     <ClInclude Include="QuadTree.h" />
     <ClInclude Include="RefCounting.h" />
     <ClInclude Include="RTTI.h" />
+    <ClInclude Include="SerializedState.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StringAlgorithms.h" />
     <ClInclude Include="ITextureManager.h" />
@@ -119,17 +108,19 @@
     <ClCompile Include="DxPolygon.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="GameStateFactory.cpp" />
     <ClCompile Include="GameStateMachine.cpp" />
+    <ClCompile Include="GameStateScript.cpp" />
     <ClCompile Include="Heap.cpp" />
     <ClCompile Include="MemoryPool.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RefCounting.cpp" />
+    <ClCompile Include="SerializedState.cpp" />
     <ClCompile Include="StringAlgorithms.cpp" />
-    <ClCompile Include="ITextureManager.cpp" />
     <ClCompile Include="VecMath.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>

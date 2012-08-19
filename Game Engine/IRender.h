@@ -19,7 +19,7 @@ public:
 
 	//virtual IRenderType GetRenderType() const = 0;
 	//virtual void Begin() = 0;
-	virtual void Render(class IRenderer* pRenderer) = 0;
+	virtual void Render(class IRenderer& renderer) = 0;
 	//virtual void End() = 0;
 
 };

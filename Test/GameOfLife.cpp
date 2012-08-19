@@ -13,337 +13,227 @@
 
 using namespace std;
 
-const RECT SCREEN_R = {50,50,700,550};
-
-// note: global variable only temporary, simple to test concept
-RECT g_R;
-
-class ISpatialObjectUpdate : public ISpatialObject
+class Cell : public ISpatialObject
 {
 public:
 
-	virtual void Update(double dt) = 0;
+	Cell(const D3DXVECTOR2& pos, float R, bool a) :
+	  pos(pos), m_CCircle(Math::Circle(pos,R)), m_bAlive(a), m_time(0.0) {}
 
-};
-
-// todo: need to rewrite this class
-class Unit : public ISpatialObjectUpdate, public Pooled
-{
-public:
-
-	Unit(const D3DXVECTOR2& center, float fRad, DWORD color, float speed)
-	: m_color(color), m_fSpeed(speed), m_fAcceleration(0.0f), m_fdistance(0.0f), m_fRad(fRad), m_pos(center), m_fTime(0.0f)
+	virtual D3DXVECTOR2 GetPos() const { return pos; }
+	virtual Type GetType() const { return ISpatialObject::Unit; }
+	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const
 	{
-		m_pCollisionPolygon = new CCircle(Circle(center,fRad));
+		return m_CCircle;
 	}
 
-	virtual D3DXVECTOR2 GetPos() const
-	{
-		return m_pos;
-	}
-	virtual Type GetType() const
-	{
-		return Type::Unit;
-	}
-	void SetPos(const D3DXVECTOR2& P)
-	{
-		m_pos = P;
-	}
-	void SetDir(const D3DXVECTOR2& dir) { m_dir = dir; }
+	bool IsAlive() const { return m_bAlive; }
+
 	virtual void Update(double dt)
 	{
-		D3DXVECTOR2 normal[4];
-		normal[0] = D3DXVECTOR2(1.0f,0.0f);
-		normal[1] = D3DXVECTOR2(-1.0f,0.0f);
-		normal[2] = D3DXVECTOR2(0.0f,1.0f);
-		normal[3] = D3DXVECTOR2(0.0f,-1.0f);
+		unsigned int uiLive = 0;
 
-		D3DXVECTOR2 G = D3DXVECTOR2(0.0f,.58f);
+		m_time += dt;
 
-		unsigned int index = -1;
-		if(m_pos.x <= 0)
+		//.5
+		if(m_time > 1.0)
 		{
-			//m_pos.x = 800.0f;
-			index = 0;
-		}
-		else if(m_pos.x >= g_R.right)
-		{
-			//m_pos.x = 0.0f;
-			index = 1;
-		}
+			m_time = 0.0;
 
-		if(m_pos.y <= 0.0f)
-		{
-			//m_pos.y = 600.0f;
-			index = 2;
-		}
-		else if(m_pos.y >= g_R.bottom)
-		{
-			//m_pos.y = 0.0f;
-			index = 3;
-			//G = D3DXVECTOR2(0.0f,-1.2f);
-		}
-
-		if(index != -1)
-		{
-			m_dir = Reflect(-m_dir,normal[index]);
-		}
-		else
-		{
-			//G = D3DXVECTOR2(0.0f,2.8f);
-		}
-
-		/*if(m_pNode != nullptr)
-		{
-			const Node::LIST_DTYPE& nearObj = *(m_pNode->GetNearObjects());
-			for(auto iter = nearObj.begin(); iter != nearObj.end(); ++iter)
-			{
-				if(*iter != this)
-				{
-					if(m_pCollisionPolygon->Intersects((*iter)->GetCollisionPolygon()))
-					{
-						D3DXVECTOR2 pos = D3DXVECTOR2((*iter)->GetPos().x,(*iter)->GetPos().y);
-						D3DXVECTOR2 dist = pos - m_pos;
-						D3DXVECTOR2 dir = m_dir + G;
-								
-						::D3DXVec2Normalize(&dir,&dir);
-						D3DXVec2Normalize(&dist,&dist);
-
-
-						m_dir = Reflect(-dir,dist);
-						break;
-					}
-				}
-			}
-		}
-		*/
-		//D3DXVec2Normalize(&m_dir,&m_dir);
-
-		m_fTime += dt;
-		G *= m_fTime;
-
-		m_pos += (m_dir + G) * m_fSpeed * dt;
-
-		static_cast<CCircle*>(m_pCollisionPolygon)->GetCircle().center = m_pos;
-	}
-
-	virtual void Render(IRenderer* pRenderer)
-	{
-		//ClearNodes();
-
-		/*char buffer[64];
-		sprintf_s(buffer,"D: %f",m_fdistance);
-		POINT P = GetPos();
-		//P.y += 20;*/
-		//pRenderer->DrawString(buffer,P,0xffffffff);
-		::D3DXMATRIX S, T;
-		::D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,0.0f);
-		::D3DXMatrixScaling(&S,m_fRad / 16.0f,m_fRad/16.0f,1.0f);
-
-		pRenderer->DrawSprite(S*T,"Point",0,m_color);
-		//pRenderer->DrawPoint(D3DXVECTOR2(m_pos.x,m_pos.y),m_color);
-	}
-
-	/*void Move()
-	{
-		if(m_pNode)
-		{
-			const Node::LIST_DTYPE* pNearObjs = m_pNode->GetNearObjects();
-			for_each(pNearObjs->begin(),pNearObjs->end(),[&](ISpatialObject* pObj)
+			ProccessNearNodes(m_nodes,[&](const ISpatialObject* pObj) -> bool
 			{
 				if(pObj != this)
 				{
-					if(pObj->GetType() == ISpatialObject::Unit)
+					Cell* pCell = (Cell*)pObj;
+
+					if(pCell->IsAlive())
 					{
-						Unit* pUnit = static_cast<Unit*>(pObj);
-						cout<<pNearObjs->size()<<endl;
+						++uiLive;
+					}
+					//else
+					{
+						///++uiDead;
 					}
 				}
+
+				return false;
 			});
+
+		
+			// note: if this object is dead, 
+			// note: the counter uiLive is not always 0
+			// note: this is because the cells around it might be alive
+			if(m_bAlive && (uiLive < 2 || uiLive > 3))
+			{
+				m_bAlive = false;
+			}
+			else if(!m_bAlive && uiLive > 1)
+			{
+				m_bAlive = true;
+			}
 		}
+	}
 
-		int scalar = 10;
-		m_pos.x += scalar;
-		//m_pos.y -= scalar;
-	}*/
+	virtual void Render(::IRenderer& renderer)
+	{
+		if(m_bAlive)
+		{
+			D3DXMATRIX T, R;
+			D3DXMatrixTranslation(&T,pos.x,pos.y,0.0f);
 
-private:
+			float rad = m_CCircle.GetCircle().r;
 
-	D3DXVECTOR2 m_pos;
-	float m_fSpeed;
-	float m_fAcceleration;
-	float m_fdistance;
-	float m_fRad;
-	float m_fTime;
-	D3DXVECTOR2 m_dir;
-	DWORD m_color;
+			::D3DXMatrixScaling(&R,rad / 32.0f,rad/ 32.0f,1.0f);
+
+			renderer.DrawSprite(R*T,"cell",2);
+		}
+	}
+
+protected:
+
+	bool m_bAlive;
+	double m_time;
+
+	D3DXVECTOR2 pos;
+	Math::CCircle m_CCircle;
 
 };
 
-class Mouse : public ISpatialObjectUpdate
-{
-public:
 
-	virtual D3DXVECTOR2 GetPos() const
-	{
-		return m_pos;
-	}
-	virtual Type GetType() const { return AnotherUnit; }
 
-	void SetMousePos(const D3DXVECTOR2& P) { m_pos = P; }
+RTTI_IMPL(GOL);
 
-	virtual void Update(double dt)
-	{
-	}
-
-	virtual void Render(IRenderer* pRenderer)
-	{
-		::D3DXMATRIX T;
-		::D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,0.0f);
-
-		//DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
-		pRenderer->DrawSprite(T,"Square",1);
-		//pRenderer->DrawPoint(D3DXVECTOR2(m_pos.x,m_pos.y),color);
-	}
-
-private:
-
-	D3DXVECTOR2 m_pos;
-};
-
-RTTI_IMPL(GameOfLife);
-
-GameOfLife::GameOfLife() : m_fTime(0.0f), m_pQuadTree(nullptr), m_bDrawQuadTree(false)
+GOL::GOL() : m_fTime(0.0f), m_pQuadTree(nullptr), m_bDrawQuadTree(false)
 {
 	
 }
-GameOfLife::~GameOfLife()
+GOL::~GOL()
 {
-	for_each(m_units.begin(),m_units.end(),[=](ISpatialObject* pUnit)
+	for(unsigned int i = 0; i < m_units.size(); ++i)
 	{
-		delete pUnit;
-	});
+		delete m_units[i];
+	}
 
 	delete m_pQuadTree;
 	m_pQuadTree = nullptr;
 }
 
 
-void GameOfLife::BuildMenu(Game* m_pGame)
+void GOL::BuildMenu(Game* m_pGame)
 {
 }
 
-void GameOfLife::Init(Game* pGame)
+void GOL::Init(Game& game)
 {
+	RegisterScript(game);
+
 	RECT R;
-	GetClientRect(pGame->GetWindow()->GetWindowHandle(),&R);
-	g_R = R;
+	GetClientRect(game.GetWindow().GetWindowHandle(),&R);
 	//InflateRect(&R,40,40);
 
 	// build FRECT from regular rect
-	FRECT fRect(D3DXVECTOR2(0.0f,0.0f),D3DXVECTOR2(800.0f,600.0f));
+	Math::FRECT fRect(D3DXVECTOR2(0.0f,0.0f),D3DXVECTOR2(R.right,R.bottom));
 
 	m_pQuadTree = new QuadTree(fRect);
-	m_pMouse = new Mouse();
 
-	m_pos = pGame->GetInput()->MousePos();
+	//Reset();
 
-	m_pMouse->SetMousePos(D3DXVECTOR2(m_pos.x,m_pos.y));
-
-	//m_pQuadTree->Insert(m_pMouse);
-	m_units.push_back(m_pMouse);
-
-	BuildMenu(pGame);
-
-	ShowCursor(false);
-}
-void GameOfLife::Destroy(Game* pGame)
-{
-	ShowCursor(true);
-
-	// clear screen
-	IRenderer* pRenderer = pGame->GetRenderer();
-}
-void GameOfLife::Update(Game* pGame)
-{
-	float dt = pGame->GetDt();
-	m_fTime += dt;
-
-	/*if(m_timer.GetTimeInSeconds() > 5.0f)
-	{
-		m_pGame->SetState(0);
-	}*/
-
-	IKMInput* pInput = pGame->GetInput();
-
-	m_pos = pInput->MousePos();
-	m_pMouse->SetMousePos(::D3DXVECTOR2(m_pos.x,m_pos.y));
-
-	if(pInput->KeyDown(SPACE))
-	{
-		m_bDrawQuadTree = !m_bDrawQuadTree;
-	}
+	//TextureInfo info;
+	//game.GetRenderer().GetTextureManager().GetTextureInfo("cell",info);
 	
-	if(pInput->MouseClick(0))
+	
+}
+void GOL::Destroy(Game& game)
+{
+	asIScriptEngine* pScriptEngine = game.GetAs().GetScriptEngine();
+
+	DBAS(pScriptEngine->GarbageCollect());
+	DBAS(pScriptEngine->RemoveConfigGroup(s_rtti.GetName().c_str()));
+
+	pScriptEngine->Release();
+}
+void GOL::Update(Game& game)
+{
+	static double time = 5.0;
+
+	time += game.GetDt();
+
+	if(time > 0.04)
 	{
-		if(m_fTime > 0.05f && m_units.size() < 200)
+		time = 0.0;
+
+		if(game.GetInput().MouseClick(0,false))
 		{
-			m_fTime = 0.0f;
-			//m_pos.y += 1;
-			DWORD color = D3DCOLOR_XRGB(rand() % 256,rand() % 256,rand() % 256);
-			float angle = (float)(rand() % 180) * 0.01745329f;
-			float v = GetRandFloat(50.0f,250.0f);
-			float s = ::GetRandFloat(10.0f,60.0f);
-			D3DXVECTOR2 dir(cosf(angle),-sinf(angle));
-			Unit* pUnit = new Unit(D3DXVECTOR2(m_pos.x,m_pos.y),s,color,v);
-			pUnit->SetDir(dir);
-
-			//m_ui.Update(pInput);
-
-			if(m_pQuadTree->Insert(pUnit) == false)
-			{
-				delete pUnit;
-			}
-			else
-			{
-				m_units.push_back(pUnit);
-			}
+			POINT P = game.GetInput().MousePos();
+			Cell* pCell = new Cell(D3DXVECTOR2(P.x,P.y),8.0f,true);
+			this->m_pQuadTree->Insert(*pCell);
+			this->m_units.push_back(pCell);
 		}
 	}
 
 	// Update all units
-	for(unsigned int i = 0; i < m_units.size();)
+	for(unsigned int i = 0; i < m_units.size(); ++i)
 	{
-		m_units[i]->Update(dt);
-
-		// if it the unit is a ball, and is left the screen
-		if((m_units[i]->GetType() == ISpatialObject::Unit) && (!m_pQuadTree->IsWithin(m_units[i])))
-		{
-			// remove it
-			delete m_units[i];
-			m_units.erase(m_units.begin() + i);
-		}
-		else
-		{
-			// loop to next node
-			++i;
-		}
+		m_units[i]->Update(game.GetDt());
 	}
 }
-void GameOfLife::Draw(Game* pGame)
+void GOL::Draw(Game& game)
 {
-	IRenderer* pRenderer = pGame->GetRenderer();
-
-	for_each(m_units.begin(),m_units.end(),[=](ISpatialObject* pUnit)
+	for(unsigned int i = 0; i < m_units.size(); ++i)
 	{
-		pUnit->Render(pRenderer);
-	});
-
-	if(m_bDrawQuadTree)
-	{
-		m_pQuadTree->Render(pRenderer);
+		m_units[i]->Render(game.GetRenderer());
 	}
 
-	//pRenderer->DrawLine(m_VEC,4,0xdeadc0de);
-	//pRenderer->DrawString(out.str().c_str(),P,0xffffffff);
+	//this->m_pQuadTree->Render(game.GetRenderer());
+}
+
+void GOL::RegisterScript(Game& game)
+{
+	// register the pong interface in script within a ConfigGroup
+
+	asIScriptEngine* pScriptEngine = game.GetAs().GetScriptEngine();
+
+	const char* pName = s_rtti.GetName().c_str();
+
+	DBAS(pScriptEngine->BeginConfigGroup(pName));
+
+	DBAS(pScriptEngine->RegisterObjectType(pName,0,asOBJ_REF | asOBJ_NOHANDLE));
+
+	DBAS(pScriptEngine->RegisterObjectMethod(pName,"void Reset()",asMETHOD(GOL,Reset),asCALL_THISCALL));
+
+	DBAS(pScriptEngine->RegisterGlobalProperty("GOL gol",(void*)this));
+
+	DBAS(pScriptEngine->EndConfigGroup());
+
+	pScriptEngine->Release();
+
+}
+
+void GOL::Reset()
+{
+	RECT R;
+	GetClientRect(::GetActiveWindow(),&R);
+
+	for(unsigned int i = 0; i < m_units.size(); ++i)
+	{
+		m_pQuadTree->Erase(*m_units[i]);
+		delete m_units[i];
+	}
+
+	m_units.clear();
+
+	// 15
+	//50
+	for(unsigned int i = 0; i < 200; ++i)
+	{
+		bool alive = i < 40;
+		//bool alive = ((rand() % 1) == 0);
+
+		//float x =  alive ? ((R.left + R.right + 20) / 2) : GetRandFloat(R.left,R.right);
+		float x =  Math::GetRandFloat(R.left,R.right);
+		float y = Math::GetRandFloat(R.top,R.bottom);
+		Cell* pCell = new Cell(D3DXVECTOR2(x,y),16.0f,alive);
+		m_pQuadTree->Insert(*pCell);
+		m_units.push_back(pCell);
+	}
 }

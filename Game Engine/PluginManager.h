@@ -35,8 +35,8 @@ public:
 
 	// more functions would go here as needed to work with the dlls...
 	//  ===== interface with dlls =====
-	class WindowManager* GetWindowManager();
-	class asVM* GetAngelScript();
+	class WindowManager& GetWindowManager();
+	class asVM& GetAngelScript();
 	//asVM& GetScriptVM() const;
 
 	// Returns all of the keys for all of the dll's that are loaded

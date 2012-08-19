@@ -8,6 +8,7 @@
 #include <string>
 #include "gassert.h"
 #include <ctime>
+#include <iomanip>
 //#include "MenuCreator.h"
 
 using namespace std;
@@ -21,8 +22,7 @@ m_pRenderer(nullptr), m_pInput(nullptr), m_pNextState(nullptr), m_bConsoleEnable
 	//GetWindowRect(m_window.GetWindowHandle(),&R);
 	m_pConsole = new ScriptingConsole(&m_vm,"Scripting Console",R);
 
-	m_vm.SetTextBox(m_pConsole);
-	m_vm.RegisterScript();
+	m_vm.RegisterScript(m_pConsole);
 
 	m_pConsole->RegisterScript();
 
@@ -31,6 +31,8 @@ m_pRenderer(nullptr), m_pInput(nullptr), m_pNextState(nullptr), m_bConsoleEnable
 	m_iEventId = m_window.AddMsgListener(WindowManager::MsgDelegate(this,&Game::MsgProc));
 
 	//m_timer.Start();
+
+	//this->m_pRenderer->ToggleFullscreen();
 }
 
 Game::~Game()
@@ -44,7 +46,7 @@ Game::~Game()
 	pEngine->Release();
 
 	// destroy the current state
-	m_StateMachine.GetState()->Destroy(this);
+	m_StateMachine.GetState().Destroy(*this);
 
 	// remove the listener from the window
 	m_window.RemoveListener(m_iEventId);
@@ -52,7 +54,7 @@ Game::~Game()
 
 const std::string& Game::GetCurrentState() const
 {
-	return m_StateMachine.GetState()->GetType()->GetName();
+	return m_StateMachine.GetState().GetType()->GetName();
 }
 
 void Game::SetNextState(const std::string& name)
@@ -60,17 +62,13 @@ void Game::SetNextState(const std::string& name)
 	// todo: fix this so that 
 	if(m_pNextState == nullptr)
 	{
-		// get the current state
-		IGameState* pState = m_StateMachine.GetState();
-
 		// If the current state is null, or if the new state is different than the current
-		if((pState == nullptr) || (pState->GetType()->GetName() != name))
+		if(!m_StateMachine.HasState() || m_StateMachine.GetState().GetType()->GetName() != name)
 		{
-			
 			// Create new state, but do not use it until we are out of the update/render phase
 			m_pNextState = GameStateFactory::Instance().CreateState(name);
-			
 		}
+		
 	}
 }
 
@@ -105,7 +103,7 @@ void Game::Update()
 	if(m_pNextState != nullptr)
 	{
 		// switch states
-		m_StateMachine.SetState(m_pNextState,this);
+		m_StateMachine.SetState(m_pNextState,*this);
 
 		//m_window.SetWinCaption(m_pNextState->GetType()->GetName());
 
@@ -114,7 +112,7 @@ void Game::Update()
 	}
 	else if(!m_bConsoleEnabled && m_pInput->KeyDown(B))
 	{
-		m_StateMachine.LoadPreviousState(this);
+		m_StateMachine.LoadPreviousState(*this);
 	}
 
 
@@ -126,7 +124,7 @@ void Game::Update()
 
 	if(m_bConsoleEnabled)
 	{
-		m_pConsole->Update(m_pInput,m_fDT);
+		m_pConsole->Update(*m_pInput,m_fDT);
 
 		// update garbage collection
 		////asIScriptEngine* pEngine = m_vm.GetScriptEngine();
@@ -135,7 +133,7 @@ void Game::Update()
 	}
 	else
 	{
-		m_StateMachine.GetState()->Update(this);
+		m_StateMachine.GetState().Update(*this);
 	}
 }
 
@@ -149,12 +147,12 @@ void Game::Draw()
 
 	if(m_bConsoleEnabled)
 	{
-		m_pConsole->Render(m_pRenderer);
+		m_pConsole->Render(*m_pRenderer);
 	}
 	else
 	{
 		// render the current state
-		m_StateMachine.GetState()->Draw(this);
+		m_StateMachine.GetState().Draw(*this);
 	}
 
 	// end rendering
@@ -168,32 +166,37 @@ void Game::Draw()
 
 void Game::DrawFPS()
 {
-	static char buffer[128];
-	static int i = 0;
-	POINT P = {700,0};
+	RECT windowR;
+	::GetWindowRect(this->m_window.GetWindowHandle(),&windowR);
 
 	::std::ostringstream out;
-	out<<"FPS: " << GetFps() << endl << "Dt: " << GetDt();
+	out<<"FPS: " << GetFps() << endl << "Dt: " << setprecision (4) << GetDt();
+
 	//sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
-	
-	m_pRenderer->DrawString(out.str().c_str(),P,0xffffffff);
+
+
+	//RECT stringR = {0,0,0,0};
+	//this->m_pRenderer->GetStringRec(str.c_str(),stringR);
+
+	POINT point = {windowR.right - windowR.left - 140,0};
+	m_pRenderer->DrawString(out.str().c_str(),point,0xffffffff);
 }
 
-IRenderer* Game::GetRenderer()
+IRenderer& Game::GetRenderer()
 {
-	return m_pRenderer;
+	return (*m_pRenderer);
 }
-IKMInput* Game::GetInput()
+IKMInput& Game::GetInput()
 {
-	return m_pInput;
+	return (*m_pInput);
 }
-WindowManager* Game::GetWindow()
+WindowManager& Game::GetWindow()
 {
-	return &m_window;
+	return m_window;
 }
-asVM* Game::GetAs()
+asVM& Game::GetAs()
 {
-	return &m_vm;
+	return m_vm;
 }
 const PluginManager* Game::GetPluginManager() const
 {
@@ -211,7 +214,11 @@ unsigned int Game::GetFps() const
 
 void Game::ReloadPlugins()
 {
+#ifdef _DEBUG
 	ReloadPlugins("..\\Debug\\");
+#else
+	ReloadPlugins("..\\Release\\");
+#endif
 }
 
 void Game::ReloadPlugins(const std::string& file)

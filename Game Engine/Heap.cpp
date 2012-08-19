@@ -73,7 +73,7 @@ MemoryPool& Heap::GetPool(unsigned int size)
 		// insert pool into hash map
 		//xtodo: could make size dynamic
 		unsigned int uiBlocks = 512 - 2*uiNewSize;
-		uiBlocks = Clamp(uiBlocks,16u,512u);
+		uiBlocks = Math::Clamp(uiBlocks,16u,512u);
 
 
 		auto pair = m_pool.insert(make_pair(uiNewSize,new MemoryPool(uiNewSize,uiBlocks)));

@@ -4,6 +4,9 @@
 #include "asVM.h"
 #include "FileManager.h"
 
+namespace Math
+{
+
 // function declarations 
 bool Intersects(const Circle& c1, const FRECT& R1);
 bool Intersects(const Circle& c1, const Circle& c2);
@@ -31,32 +34,32 @@ bool Intersects(const FRECT& c1, const FRECT& c2);
 
 // ----- CCircle -----
 
-CCircle::CCircle(const ::Circle& circle) : m_circle(circle)
+CCircle::CCircle(const Circle& circle) : m_circle(circle)
 {
 }
 
-bool CCircle::Intersects(const ICollisionPolygon* pOther) const
+bool CCircle::Intersects(const ICollisionPolygon& other) const
 {
 	// exclude collision with the same object 
-	if(pOther == this) { return true; }
+	if(&other == this) { return true; }
 
 	// Get the type of the other object
-	ICollisionPolygon::Type polyType = pOther->GetType();
+	ICollisionPolygon::Type polyType = other.GetType();
 	bool bSuccess = false;
 
 	switch(polyType)
 	{
 		case ICollisionPolygon::CircleType:
 		{
-			const CCircle* pCircle = static_cast<const CCircle*>(pOther);
-			bSuccess = ::Intersects(m_circle,pCircle->m_circle);
+			const CCircle& circle = static_cast<const CCircle&>(other);
+			bSuccess = Math::Intersects(m_circle,circle.m_circle);
 			break;
 		}
 
 		case ICollisionPolygon::RectangleType:
 		{
-			const CRectangle* pRectangle = static_cast<const CRectangle*>(pOther);
-			bSuccess = ::Intersects(m_circle,pRectangle->GetRect());
+			const CRectangle& rectangle = static_cast<const CRectangle&>(other);
+			bSuccess = Math::Intersects(m_circle,rectangle.GetRect());
 			break;
 		}
 	}
@@ -76,26 +79,26 @@ CRectangle::CRectangle(const FRECT& rect) : m_rect(rect)
 {
 }
 
-bool CRectangle::Intersects(const ICollisionPolygon* pOther) const
+bool CRectangle::Intersects(const ICollisionPolygon& other) const
 {
-	if(pOther == this) { return true; }
+	if(&other == this) { return true; }
 
-	ICollisionPolygon::Type polyType = pOther->GetType();
+	ICollisionPolygon::Type polyType = other.GetType();
 	bool bSuccess = false;
 
 	switch(polyType)
 	{
 		case ICollisionPolygon::CircleType:
 		{
-			const CCircle* pCircle = static_cast<const CCircle*>(pOther);
-			bSuccess = ::Intersects(pCircle->GetCircle(),m_rect);
+			const CCircle& circle = static_cast<const CCircle&>(other);
+			bSuccess = Math::Intersects(circle.GetCircle(),m_rect);
 			break;
 		}
 
 		case ICollisionPolygon::RectangleType:
 		{
-			const CRectangle* pRectangle = static_cast<const CRectangle*>(pOther);
-			bSuccess = ::Intersects(m_rect,pRectangle->m_rect);
+			const CRectangle& rectangle = static_cast<const CRectangle&>(other);
+			bSuccess = Math::Intersects(m_rect,rectangle.m_rect);
 			break;
 		}
 	}
@@ -280,7 +283,7 @@ float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound)
 		pos = D3DXVECTOR2(x,m*x + b);
 
 		// reflect dir
-		dir = ::Reflect(-dir,D3DXVECTOR2(0.0f,n));
+		dir = Math::Reflect(-dir,D3DXVECTOR2(0.0f,n));
 	}
 
 	// y = mx + b
@@ -329,7 +332,34 @@ bool Equals(float a, float b, float diff)
 	return fabsf(a - b) < diff;
 }
 
-void RegisterScriptVecMath(asIScriptEngine* pEngine)
+// todo: write this as a static comp.
+bool IsPrime(unsigned int n)
+{
+	// 0 - not
+	// 1 - not
+	//- 2 - is
+	// 3 - is
+
+	if(((n % 2 == 0) && (n != 2)) || n < 2)
+	{
+		return false;
+	}
+	else if( n < 4)
+	{
+		return true;
+	}
+
+	unsigned int i = 3;
+	bool success = true;
+	while((success = ((n % i) != 0)) && ((i * i) < n))
+	{
+		i += 2;
+	}
+
+	return success;
+}
+
+void RegisterScriptVecMath(::asIScriptEngine* pEngine)
 {
 	//D3DXVECTOR2
 
@@ -337,6 +367,8 @@ void RegisterScriptVecMath(asIScriptEngine* pEngine)
 	DBAS(pEngine->RegisterObjectType("Vector2",sizeof(D3DXVECTOR2),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
 	DBAS(pEngine->RegisterObjectProperty("Vector2","float x",offsetof(D3DXVECTOR2,x)));
 	DBAS(pEngine->RegisterObjectProperty("Vector2","float y",offsetof(D3DXVECTOR2,x)));
+
+	DBAS(pEngine->RegisterGlobalFunction("bool IsPrime(uint)",asFUNCTION(IsPrime),asCALL_CDECL));
 
 	DBAS(pEngine->RegisterGlobalFunction("uint log2(uint)",asFUNCTION(LOG2),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("bool InRange(float,float,float)",asFUNCTION(InRange),asCALL_CDECL));
@@ -362,3 +394,5 @@ unsigned int LOG2(unsigned int v)
 
 	return r;
 }
+
+} // Math

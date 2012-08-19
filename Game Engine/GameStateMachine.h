@@ -17,17 +17,19 @@ public:
 
 	// Removes current state if there is one
 	// And then initializes the new state
-	void SetState(IGameState* pState, class Game* pGame);
+	void SetState(IGameState* pState, class Game&);
 
 	// Adds the current state string id to the stack
 	// Destroy the current state
-	void RemoveState(class Game* pGame);
+	void RemoveState(class Game&);
 
 	// Sets the last state that was called with RemoveState()
-	void LoadPreviousState(class Game* pGame);
+	void LoadPreviousState(class Game&);
 
-	IGameState* GetState() { return m_pState; }
-	const IGameState* GetState() const { return m_pState; }
+	bool HasState() const { return m_pState != nullptr; }
+
+	IGameState& GetState() { return *m_pState; }
+	const IGameState& GetState() const { return *m_pState; }
 
 private:
 

@@ -12,7 +12,7 @@
 
 
 // todo: should this be a global function or should I put this into an interface?
-bool IsClicked(class IKMInput* pInput, DxPolygon* pPolygon);
+bool IsClicked(class IKMInput& input, DxPolygon* pPolygon);
 
 class IUIElement : public IRender
 {
@@ -22,8 +22,9 @@ public:
 
 	virtual void Select() = 0;
 	virtual void Deselect() = 0;
-	virtual void Enter() = 0;
-	virtual void Update(class IKMInput* pInput, double dt) = 0;
+	virtual void Trigger() = 0;
+
+	virtual void Update(class IKMInput&, double dt) = 0;
 
 protected:
 
@@ -51,8 +52,8 @@ public:
 	//Menu(const std::string& str);
 	~Menu();
 
-	virtual void Update(class GUI* pGUI, class IKMInput* pInput, double dt);
-	virtual void Render(class IRenderer* pRenderer);
+	virtual void Update(class GUI* pGUI, class IKMInput& input, double dt);
+	virtual void Render(class IRenderer& renderer);
 
 	void SetMenuTitle(const std::string& str,const POINT& P);
 	void SetPolygon(DxPolygon* pPolygon);
@@ -88,8 +89,8 @@ public:
 
 	void SetMenu(Menu* pMenu);
 
-	void Update(class IKMInput* pInput, double dt);
-	void Render(class IRenderer* pRenderer);
+	void Update(class IKMInput& input, double dt);
+	void Render(class IRenderer& renderer);
 
 private:
 
@@ -108,8 +109,8 @@ public:
 	ButtonBase(const Text& name, DxPolygon* pPolygon);
 	virtual ~ButtonBase();
 
-	virtual void Render(class IRenderer* pRenderer);
-	virtual void Update(class IKMInput* pInput);
+	virtual void Render(class IRenderer&);
+	virtual void Update(class IKMInput&);
 
 	virtual void Select()
 	{
@@ -157,17 +158,17 @@ public:
 		m_type = arg;
 	}
 	
-	virtual void Enter()
+	virtual void Trigger()
 	{
 		m_callback.Call(m_type);
 	}
-	virtual void Update(class IKMInput* pInput, double)
+	virtual void Update(class IKMInput& input, double)
 	{
-		ButtonBase::Update(pInput);
+		ButtonBase::Update(input);
 
-		if(IsClicked(pInput,m_pPolygon))
+		if(IsClicked(input,m_pPolygon))
 		{
-			m_callback.Call(m_type);
+			Trigger();
 		}
 	}
 
@@ -198,17 +199,17 @@ public:
 		m_type = arg;
 	}
 	
-	virtual void Enter()
+	virtual void Trigger()
 	{
 		m_callback.Call(m_type);
 	}
-	virtual void Update(class IKMInput* pInput, double)
+	virtual void Update(class IKMInput& input, double)
 	{
-		ButtonBase::Update(pInput);
+		ButtonBase::Update(input);
 
-		if(IsClicked(pInput,m_pPolygon))
+		if(IsClicked(input,m_pPolygon))
 		{
-			m_callback.Call(m_type);
+			Trigger();
 		}
 	}
 
@@ -237,17 +238,17 @@ public:
 		m_callback = callback;
 	}
 
-	virtual void Enter()
+	virtual void Trigger()
 	{
 		m_callback.Call();
 	}
-	virtual void Update(class IKMInput* pInput, double)
+	virtual void Update(class IKMInput& input, double)
 	{
-		ButtonBase::Update(pInput);
+		ButtonBase::Update(input);
 
-		if(IsClicked(pInput,m_pPolygon))
+		if(IsClicked(input,m_pPolygon))
 		{
-			m_callback.Call();
+			Trigger();
 		}
 	}
 
@@ -278,22 +279,23 @@ class TextBox : public IUIElement
 public:
 
 	TextBox(const std::string& name, const RECT& R);
+	virtual ~TextBox();
 
 	// Enters a new line
 	void Write(const std::string& line, DWORD color = 0xffffffff, bool bContinue = false);
 
-	virtual void Update(IKMInput* pInput, double dt);
-	virtual void Render(IRenderer* pRenderer);
+	virtual void Update(IKMInput&, double dt);
+	virtual void Render(IRenderer&);
 	
 	// todo: clears the buffer
-	void CLS();
+	virtual void CLS();
 
-	// todo: Save text buffer to file
 	void SaveToFile(const std::string& file) const;
 
 	// todo: need to implement
 	virtual void Select() {}
 	virtual void Deselect() {}
+	virtual void Trigger() {}
 
 protected:
 
@@ -309,7 +311,7 @@ protected:
 		std::string line;
 		D3DCOLOR color;
 		POINT P;
-		bool bContinue;
+		bool bContinue; 
 	};
 
 //private:
@@ -344,12 +346,14 @@ protected:
 private:
 
 	// todo: passing around these interfaces seems redundant
-	void UpdateScrolling(class IKMInput* pInput, double dt);
-	void UpdateCarrot(class IKMInput* pInput);
-	void UpdateInput(class IKMInput* pInput);
-	void UpdateTextInput(class IKMInput* pInput);
+	void UpdateScrolling(class IKMInput&, double dt);
+	void UpdateCarrot(class IKMInput&);
+	void UpdateInput(class IKMInput&);
+	void UpdateTextInput(class IKMInput&);
 
-	unsigned int GetNumberOfRowsInLine(const std::string&) const;
+	// splits the last line if needed so that it fits within the bounders of
+	// the textbox
+	void BreakLastLine(IRenderer&);
 
 };
 
@@ -358,9 +362,13 @@ class ScriptingConsole : public TextBox
 public:
 
 	ScriptingConsole(asVM* pVM, const std::string& name, const RECT& R);
+	virtual ~ScriptingConsole();
 
+	virtual void Update(IKMInput&, double dt);
 	virtual void Enter();
 	virtual void Backspace();
+
+	virtual void CLS();
 
 	void MessageCallback(const asSMessageInfo *msg);
 
@@ -371,6 +379,7 @@ protected:
 	asVM* m_pVM;
 
 	unsigned int m_uiStartIndex;
+	unsigned int m_uiBackIndex;
 
 	// helper functions
 

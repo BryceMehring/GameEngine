@@ -32,33 +32,33 @@ public:
 
 	// constructors
 	Node();
-	Node(const FRECT& R);
+	Node(const Math::FRECT& R);
 	~Node();
 
-	void SetRect(const CRectangle& R); 
+	void SetRect(const Math::CRectangle& R); 
 
-	void Erase(ISpatialObject* pObj);
-	void EraseFromPreviousPos(ISpatialObject* pObj);
+	void Erase(ISpatialObject& obj);
+	void EraseFromPreviousPos(ISpatialObject& obj);
 
-	const LIST_DTYPE* GetNearObjects() const { return m_pObjects; }
+	LIST_DTYPE* GetNearObjects() { return m_pObjects; }
 
 	// returns true if P lies within the rectangle
-	bool IsWithin(const ISpatialObject* pObj) const;
+	bool IsWithin(ISpatialObject& obj) const;
 
 	// operations
-	bool Insert(ISpatialObject* pObj);
+	bool Insert(ISpatialObject& obj);
 
 	// recursive algorithm
-	void FindNearNodes(const ICollisionPolygon* pObj, std::vector<Node*>& out);
+	void FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>& out);
 
-	void Render(IRenderer* pRenderer);
+	void Render(IRenderer& renderer);
 
-	const FRECT& GetRect() const { return R.GetRect(); }
+	const Math::FRECT& GetRect() const { return R.GetRect(); }
 	 
 private:
 
 	// The rectangle of the current node
-	CRectangle R;
+	Math::CRectangle R;
 	//std::list<obj*>* m_pObjects;
 	// obj
 	LIST_DTYPE* m_pObjects;
@@ -73,7 +73,7 @@ private:
 	// --- helper functions ---
 
 	// recursive insertion algorithm
-	void RInsert(ISpatialObject* pObj);
+	void RInsert(ISpatialObject& obj);
 
 	// Returns true if this node is divided. 
 	bool IsDivided() const;
@@ -84,7 +84,7 @@ private:
 
 	// Subdivides the current node/R into 4 sub nodes
 	void SubDivide(bool bAlloc);
-	void SubDivideObjects(Node* pSubNode);
+	void SubDivideObjects(Node& subNode);
 	void ExpandLeft();
 	void ExpandRight();
 };
@@ -101,30 +101,20 @@ public:
 		AnotherUnit,
 	};
 
-	ISpatialObject() : m_pCollisionPolygon(nullptr) {}
+	virtual ~ISpatialObject() {}
 
-	// todo: need some rtti info here for casting
-	virtual ~ISpatialObject()
-	{
-		delete m_pCollisionPolygon;
-	}
-
-	//-todo: need to change the KEY structure to D3dxvector?
 	virtual D3DXVECTOR2 GetPos() const = 0;
 	virtual Type GetType() const = 0;
+
+	// todo: I could add other methods here for 
+	// todo: use multiple inheritance with class characteristics 
 
 	// todo: this method is not needed
 	void EraseFromQuadtree(class QuadTree* pTree);
 
-	// todo: create a better interface
-	void SetCollisionPolygon(ICollisionPolygon* pPolygon) { m_pCollisionPolygon = pPolygon; }
-	const ICollisionPolygon* GetCollisionPolygon() const { return m_pCollisionPolygon; }
-
-
+	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const = 0;
 
 protected:
-
-	ICollisionPolygon* m_pCollisionPolygon;
 
 	std::vector<Node*> m_nodes;
 };
@@ -185,31 +175,30 @@ class QuadTree : public IRender
 public:
 
 	// constructor/destructor
-	QuadTree(const FRECT& R);
+	QuadTree(const Math::FRECT& R);
 	virtual ~QuadTree();
 
 	// adds a point to the quadtree
 	// recursive
-	bool Insert(ISpatialObject* pObj);
-	void Erase(ISpatialObject* pObj);
-	void EraseFromPrev(ISpatialObject*);
+	bool Insert(ISpatialObject&);
+	void Erase(ISpatialObject&);
+	void EraseFromPrev(ISpatialObject&);
 
-	bool IsWithin(ISpatialObject* pObj) const;
+	bool IsWithin(ISpatialObject&) const;
 
-	// todo: are these methods needed? I guess so, if you want to check for near nodes
-	// in different areas
-	void FindNearNodes(ICollisionPolygon* pPoly, std::vector<Node*>& out);
+	void FindNearObjects(Math::ICollisionPolygon* pPoly,std::vector<ISpatialObject*>& out);
+	void FindNearNodes(Math::ICollisionPolygon* pPoly, std::vector<Node*>& out);
 	void FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out);
 	//void FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out);
 
-	void Update(ISpatialObject* pObj);
+	void Update(ISpatialObject& obj);
 
 	void SaveToFile(std::string& file);
 	void LoadFile(const std::string& file);
 
-	virtual void Render(class IRenderer* pRenderer);
+	virtual void Render(class IRenderer&);
 
-	const FRECT& GetRect() const { return m_pRoot->GetRect(); }
+	const Math::FRECT& GetRect() const { return m_pRoot->GetRect(); }
 
 private:
 	Node* m_pRoot;
@@ -220,7 +209,7 @@ template< class T >
 void ProccessNearNodes(const std::vector<Node*>& nodes, const T& functor)
 {
 	// this set is used to only process each object once
-	std::set<const ISpatialObject*> outSet;
+	std::set<ISpatialObject*> outSet;
 
 	// loop over all of the nodes the object collides with 
 	for(unsigned int i = 0; i < nodes.size(); ++i)
@@ -233,7 +222,7 @@ void ProccessNearNodes(const std::vector<Node*>& nodes, const T& functor)
 			// Loop over all the objects in the node
 			for(auto iter = theList->begin(); iter != theList->end(); ++iter)
 			{
-				const ISpatialObject* pObj = *iter;
+				ISpatialObject* pObj = *iter;
 
 				// If this is the first pObj being processed 
 				if(outSet.insert(pObj).second == true)

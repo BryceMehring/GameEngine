@@ -29,7 +29,7 @@
 
 #else
 #ifndef DBAS 
-#define DBAS(f) ((void)0)
+#define DBAS(f) (f)
 #endif
 #endif
 
@@ -85,13 +85,12 @@ public:
 	// returns a token from the input string from the script engine
 	//asETokenClass GetToken(std::string& token, const std::string& text, unsigned int& pos);
 
-	void RegisterScript();
-
-	// todo: need to remove this
-	void SetTextBox(class ScriptingConsole* pTextBox);
+	void RegisterScript(class ScriptingConsole* pTextBox);
 
 	// access to the asIScriptEngine
 	asIScriptEngine* GetScriptEngine() const;
+
+	void SendMessage(const std::string& msg) const;
 
 private:
 
@@ -107,9 +106,6 @@ private:
 	// each element in the vector is the main function in script
 	typedef std::vector<Script> ScriptElementType;
 	ScriptElementType m_scripts;
-
-	// todo: this member does not need to be stored
-	class ScriptingConsole* m_pTextBox;
 
 	CScriptBuilder m_builder;
 

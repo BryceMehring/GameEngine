@@ -8,6 +8,8 @@ enum DLLType
 	// more dll types here
 };
 
+#define DLLTYPE decltype(DLLType::Type)
+
 class __declspec(novtable) IPlugin
 {
 public:

@@ -33,8 +33,8 @@ void PluginManager::FreeAllPlugins()
 	m_plugins.clear();
 }
 
-WindowManager* PluginManager::GetWindowManager() { return this->m_pGame->GetWindow(); }
-asVM* PluginManager::GetAngelScript() { return m_pGame->GetAs(); }
+WindowManager& PluginManager::GetWindowManager() { return m_pGame->GetWindow(); }
+asVM& PluginManager::GetAngelScript() { return m_pGame->GetAs(); }
 
 //  ===== interface with dlls =====
 

@@ -18,17 +18,18 @@ GameOfLifeMenu::GameOfLifeMenu()
 	
 }
 
-void GameOfLifeMenu::Init(Game* pGame)
+void GameOfLifeMenu::Init(Game& game)
 {
+	IRenderer& renderer = game.GetRenderer();
 	const int iSkize = sizeof(GameOfLifeMenu);
 
 	RECT R = {10,10,500,500};
 
 	RECT R2 = {200,100,0,0};
-	pGame->GetRenderer()->GetStringRec("Options",R2);
+	renderer.GetStringRec("Options",R2);
 
 	RECT R3 = {300,100,0,0};
-	pGame->GetRenderer()->GetStringRec("State",R3);
+	renderer.GetStringRec("State",R3);
 
 	POINT mainPoint = {15,15};
 
@@ -56,7 +57,7 @@ void GameOfLifeMenu::Init(Game* pGame)
 
 	// Delegates
 	GenericButton<Menu*>::DELEGATE dPush(&m_gui,&GUI::SetMenu);
-	GenericButton<const std::string&>::DELEGATE dState(pGame,&Game::SetNextState);
+	GenericButton<const std::string&>::DELEGATE dState(&game,&Game::SetNextState);
 
 	// Create Menu Objects
 	//m_pGame->SetState(MENU);
@@ -72,6 +73,9 @@ void GameOfLifeMenu::Init(Game* pGame)
 	pButton->SetArg(pOptions);
 
 	GenericButton<Menu*>* pButton2 = new GenericButton<Menu*>(text3,dPush,pMenu,pTriangle);
+
+	
+	//todo: loop over all states, and create buttons for them
 	GenericButton<const std::string&>* pStateButton = new GenericButton<const std::string&>(text2,dState,"Pong",pStateButtonSquare);
 
 	// Associate square with menu
@@ -85,17 +89,23 @@ void GameOfLifeMenu::Init(Game* pGame)
 	pMenu->AddElement(pButton);
 	pMenu->AddElement(pStateButton);
 
-	BuildResolutionMenu(pGame,pOptions);
-	BuildQuitButton(pGame,pMenu);
-	BuildTextBoxButton(pGame,pOptions);
-	BuildPluginViewMenu(pGame,pOptions);
+	BuildResolutionMenu(game,pOptions);
+	BuildQuitButton(game,pMenu);
+	BuildTextBoxButton(game,pOptions);
+	BuildPluginViewMenu(game,pOptions);
 
 	m_gui.SetMenu(pMenu);
 }
 
-void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
+/*auto& keys = GameStateFactory::Instance().GetKeys();
+	for(unsigned int i = 0; i < keys.size(); ++i)
+	{
+
+	}
+	*/
+void GameOfLifeMenu::BuildResolutionMenu(Game& game, Menu* pMenu)
 {
-	IRenderer* pRenderer = pGame->GetRenderer();
+	IRenderer& renderer = game.GetRenderer();
 	
 	RECT R = {10,10,500,500};
 	RECT R2 = {200,300};
@@ -105,10 +115,10 @@ void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
 	pResMenu->SetMenuTitle("Resolution Menu",menuTitlePoint);
 	pResMenu->SetPolygon(new DxSquare(R));
 
-	GenericButton<UINT>::DELEGATE setDisplayModeCallback(pRenderer,&IRenderer::SetDisplayMode);
+	GenericButton<UINT>::DELEGATE setDisplayModeCallback(&renderer,&IRenderer::SetDisplayMode);
 	GenericButton<Menu*>::DELEGATE setMenuCallback = m_gui.CreateCallback();
 
-	pRenderer->GetStringRec("Resolution Options",R2);
+	renderer.GetStringRec("Resolution Options",R2);
 	GenericButton<Menu*>* pResMenuButton = new SquareButton<Menu*>(R2,"Resolution Options");
 	pResMenuButton->SetCallback(setMenuCallback);
 	pResMenuButton->SetArg(pResMenu);
@@ -118,13 +128,13 @@ void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
 
 	// build toggle fullscreen button
 	RECT tfR = {400,400,0,0};
-	pRenderer->GetStringRec("Toggle Fullscreen",tfR);
+	renderer.GetStringRec("Toggle Fullscreen",tfR);
 	GenericButton<void>* pTFButton = new SquareButton<void>(R2,"Toggle Fullscreen");
-	pTFButton->SetCallback(GenericButton<void>::DELEGATE(pRenderer,&IRenderer::ToggleFullscreen));
-
+	pTFButton->SetCallback(GenericButton<void>::DELEGATE(&renderer,&IRenderer::ToggleFullscreen));
+	
 	pResMenu->AddElement(pTFButton);
 
-	UINT uiDisplayModes = pRenderer->GetNumDisplayAdaptors();
+	UINT uiDisplayModes = renderer.GetNumDisplayAdaptors();
 	UINT j = 0;
 	UINT k = 0;
 	for(UINT i = 0; i < uiDisplayModes; ++i)
@@ -132,9 +142,9 @@ void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
 		// the problem, here is that % resets to 0, not what I want it to do
 		RECT R3 = {50 + 150 * j,(50 + 50 * k),0,0};
 
-		pRenderer->GetStringRec(pRenderer->GetDisplayModeStr(i).c_str(),R3);
+		renderer.GetStringRec(renderer.GetDisplayModeStr(i).c_str(),R3);
 
-		GenericButton<UINT>* pStateButton = new SquareButton<UINT>(R3,pRenderer->GetDisplayModeStr(i));
+		GenericButton<UINT>* pStateButton = new SquareButton<UINT>(R3,renderer.GetDisplayModeStr(i));
 		pStateButton->SetCallback(setDisplayModeCallback);
 		//pStateButton->s
 		pStateButton->SetArg(i);
@@ -155,14 +165,14 @@ void GameOfLifeMenu::BuildResolutionMenu(Game* pGame, Menu* pMenu)
 	}
 }
 
-void GameOfLifeMenu::BuildQuitButton(Game* pGame, Menu* pMenu)
+void GameOfLifeMenu::BuildQuitButton(Game& game, Menu* pMenu)
 {
 	const char* pStr = "Quit";
 
 	GenericButton<void>::DELEGATE callback(Quit);
 
 	::RECT R = { 400,100,0,0};
-	pGame->GetRenderer()->GetStringRec(pStr,R);
+	game.GetRenderer().GetStringRec(pStr,R);
 
 	SquareButton<void>* pButton = new SquareButton<void>(R,pStr);
 	pButton->SetCallback(callback);
@@ -171,7 +181,7 @@ void GameOfLifeMenu::BuildQuitButton(Game* pGame, Menu* pMenu)
 	pMenu->AddElement(pButton);
 }
 
-void GameOfLifeMenu::BuildTextBoxButton(Game* pGame, Menu* pMenu)
+void GameOfLifeMenu::BuildTextBoxButton(Game& game, Menu* pMenu)
 {
 	Menu* pTextMenu = new Menu;
 	pMenu->AddMenu(pTextMenu);
@@ -188,7 +198,7 @@ void GameOfLifeMenu::BuildTextBoxButton(Game* pGame, Menu* pMenu)
 	pTextMenu->AddElement(pTextBox);
 }
 
-void GameOfLifeMenu::BuildPluginViewMenu(Game* pGame, Menu* pMenu)
+void GameOfLifeMenu::BuildPluginViewMenu(Game& game, Menu* pMenu)
 {
 	// Create the Menu
 	Menu* pPluginMenu = new Menu;
@@ -197,7 +207,7 @@ void GameOfLifeMenu::BuildPluginViewMenu(Game* pGame, Menu* pMenu)
 	// Create the button
 	const char* pName = "View Plugins";
 	RECT R = {100,100};
-	pGame->GetRenderer()->GetStringRec(pName,R);
+	game.GetRenderer().GetStringRec(pName,R);
 
 	SquareButton<Menu*>* pButton = new SquareButton<Menu*>(R,pName);
 	pButton->SetCallback(m_gui.CreateCallback());
@@ -206,7 +216,7 @@ void GameOfLifeMenu::BuildPluginViewMenu(Game* pGame, Menu* pMenu)
 	pMenu->AddElement(pButton);
 
 	// Define the Menu
-	const PluginManager* pPluginManager = pGame->GetPluginManager();
+	const PluginManager* pPluginManager = game.GetPluginManager();
 	const std::vector<DLLType>& PluginKeys = pPluginManager->GetPluginKeys();
 
 	for(unsigned int i = 0; i < PluginKeys.size(); ++i)
@@ -217,7 +227,7 @@ void GameOfLifeMenu::BuildPluginViewMenu(Game* pGame, Menu* pMenu)
 		char text[64];
 		sprintf_s(text,"%i. %s",i+1,pPlugin->GetName());
 
-		pGame->GetRenderer()->GetStringRec(text,R);
+		game.GetRenderer().GetStringRec(text,R);
 
 		SquareButton<void>* pButton = new SquareButton<void>(R,text);
 		pButton->SetCallback(GenericButton<void>::DELEGATE(pPlugin,&IPlugin::About));
@@ -226,20 +236,18 @@ void GameOfLifeMenu::BuildPluginViewMenu(Game* pGame, Menu* pMenu)
 	}
 }
 
-void GameOfLifeMenu::Destroy(Game* pGame)
+void GameOfLifeMenu::Destroy(Game& game)
 {
 	//StateUpdater su(m_state,_DESTROYING);
-	IRenderer* pRenderer = pGame->GetRenderer();
+	//IRenderer* pRenderer = game
 	//StateUpdater su(m_state,::DESTROYING);
 
 }
-void GameOfLifeMenu::Update(Game* pGame)
+void GameOfLifeMenu::Update(Game& game)
 {
-	IKMInput* pInput = pGame->GetInput();
-	m_gui.Update(pInput,pGame->GetDt());
+	m_gui.Update(game.GetInput(),game.GetDt());
 }
-void GameOfLifeMenu::Draw(Game* pGame)
+void GameOfLifeMenu::Draw(Game& game)
 {
-	IRenderer* pRenderer = pGame->GetRenderer();
-	m_gui.Render(pRenderer);
+	m_gui.Render(game.GetRenderer());
 }

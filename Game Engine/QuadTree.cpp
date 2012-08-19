@@ -23,7 +23,7 @@ Node::Node() : m_Previous(nullptr), m_pObjects(nullptr), m_bUseable(false)
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
 }
 
-Node::Node(const FRECT& R) : m_Previous(nullptr), m_pObjects(nullptr), R(R), m_bUseable(false)
+Node::Node(const Math::FRECT& R) : m_Previous(nullptr), m_pObjects(nullptr), R(R), m_bUseable(false)
 {
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
 	SubDivide(true);
@@ -43,13 +43,13 @@ Node::~Node()
 }
 
 
-void Node::SetRect(const CRectangle& R)
+void Node::SetRect(const Math::CRectangle& R)
 {
 	this->R = R;
 }
-bool Node::IsWithin(const ISpatialObject* pObj) const
+bool Node::IsWithin(ISpatialObject& obj) const
 {
-	return R.Intersects(pObj->GetCollisionPolygon());
+	return R.Intersects(obj.GetCollisionPolygon());
 }
 
 
@@ -87,14 +87,14 @@ bool Node::RHasPoint() const
 
 bool Node::IsFull() const
 {
-	return (m_pObjects->size()) >= 3;
+	return (m_pObjects->size()) >= 2;
 }
 
 
 void Node::SubDivide(bool bAlloc)
 {
 	//const GetRect& this->m
-	const FRECT& rect = R.GetRect();
+	const Math::FRECT& rect = R.GetRect();
 
 	// this will divide the current rect into MAX_NODES new rectangles
 	D3DXVECTOR2 middle = rect.Middle();
@@ -102,12 +102,12 @@ void Node::SubDivide(bool bAlloc)
 	const D3DXVECTOR2& bottomRight = rect.bottomRight;
 
 	Node* pNodeArray = new Node[MAX_NODES];
-	FRECT subRects[MAX_NODES] =
+	Math::FRECT subRects[MAX_NODES] =
 	{
-		FRECT(topLeft,middle),
-		FRECT(D3DXVECTOR2(middle.x,topLeft.y),D3DXVECTOR2(bottomRight.x,middle.y)),
-		FRECT(D3DXVECTOR2(topLeft.x,middle.y),D3DXVECTOR2(middle.x,bottomRight.y)),
-		FRECT(middle,bottomRight)
+		Math::FRECT(topLeft,middle),
+		Math::FRECT(D3DXVECTOR2(middle.x,topLeft.y),D3DXVECTOR2(bottomRight.x,middle.y)),
+		Math::FRECT(D3DXVECTOR2(topLeft.x,middle.y),D3DXVECTOR2(middle.x,bottomRight.y)),
+		Math::FRECT(middle,bottomRight)
 		//{xMid,yMid,R.right,R.bottom}*/
 	};
 
@@ -120,7 +120,7 @@ void Node::SubDivide(bool bAlloc)
 		pSubNode->m_Previous = this;
 		pSubNode->m_bUseable = true;
 
-		SubDivideObjects(pSubNode);
+		SubDivideObjects(*pSubNode);
 	}
 
 	m_bUseable = false;
@@ -135,7 +135,7 @@ void Node::SubDivide(bool bAlloc)
 	//m_pObjects = nullptr;
 }
 
-void Node::SubDivideObjects(Node* pSubNode)
+void Node::SubDivideObjects(Node& subNode)
 {
 	if(m_pObjects)
 	{
@@ -143,15 +143,15 @@ void Node::SubDivideObjects(Node* pSubNode)
 		LIST_DTYPE::iterator end = m_pObjects->end();
 		for(; iter != end; ++iter)
 		{
-			if(pSubNode->IsWithin(*iter))
+			if(subNode.IsWithin(**iter))
 			{
-				pSubNode->m_pObjects->insert(*iter);
+				subNode.m_pObjects->insert(*iter);
 			}
 		}
 	}
 }
 
-void Node::Render(IRenderer* pRenderer)
+void Node::Render(IRenderer& renderer)
 {
 	DxSquare square;
 
@@ -161,20 +161,18 @@ void Node::Render(IRenderer* pRenderer)
 		{
 			RECT R = iter->R.GetRect().Rect();
 			square.ConstructFromRect(R);
-			square.Render(pRenderer);
+			square.Render(renderer);
 		}
 	}
 }
 
-void Node::Erase(ISpatialObject* pObj)
+void Node::Erase(ISpatialObject& obj)
 {
-	if(m_pObjects != nullptr)
+	auto iter = m_pObjects->find(&obj);
+	if(iter != m_pObjects->end())
 	{
-		auto iter = m_pObjects->find(pObj);
-		if(iter == m_pObjects->end())
-			return;
-
 		m_pObjects->erase(iter);
+	}
 
 		/*if(m_pObjects->empty() && (m_Previous->m_Previous != nullptr) && (m_Previous->m_bUseable == false))
 		{
@@ -198,48 +196,49 @@ void Node::Erase(ISpatialObject* pObj)
 				}
 			}
 		}*/
-	}
+	
 }
 
-void Node::EraseFromPreviousPos(ISpatialObject* pObj)
+void Node::EraseFromPreviousPos(ISpatialObject& obj)
 {
-	std::vector<Node*>& nodes = pObj->m_nodes;
+	std::vector<Node*>& nodes = obj.m_nodes;
 
 	for(unsigned int i = 0; i < nodes.size(); ++i)
 	{
-		nodes[i]->Erase(pObj);
+		nodes[i]->Erase(obj);
 	}
 }
 
-bool Node::Insert(ISpatialObject* pObj)
+bool Node::Insert(ISpatialObject& obj)
 {
 	// If the point is within the the root
-	if(IsWithin(pObj))
+	if(IsWithin(obj))
 	{
-		RInsert(pObj);
+		RInsert(obj);
 	}
 
 	return true;
 }
 
-void Node::RInsert(ISpatialObject* pObj)
+void Node::RInsert(ISpatialObject& obj)
 {
 	// find the near nodes to pObj
-	std::vector<Node*>& nodes = pObj->m_nodes;
+	std::vector<Node*>& nodes = obj.m_nodes;
 	nodes.clear();
 
-	FindNearNodes(pObj->GetCollisionPolygon(),nodes);
+	FindNearNodes(obj.GetCollisionPolygon(),nodes);
 
 	// as we iterate over the near nodes
 	for(unsigned int i = 0; i < nodes.size(); ++i)
 	{
 		Node* pNode = nodes[i];
 
-		const FRECT& subR = nodes[i]->R.GetRect();
+		const Math::FRECT& subR = nodes[i]->R.GetRect();
 
 		// if the current node is full
 		// 200
-		if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 100.0f)
+		// 400
+		if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 400.0f)
 		{
 			if(!pNode->IsDivided())
 			{
@@ -253,7 +252,7 @@ void Node::RInsert(ISpatialObject* pObj)
 					Node* pSubNode = m_Nodes[j];
 					pSubNode->m_bUseable = true;
 
-					SubDivideObjects(pSubNode);
+					SubDivideObjects(*pSubNode);
 				}
 
 				m_bUseable = false;
@@ -261,19 +260,19 @@ void Node::RInsert(ISpatialObject* pObj)
 			}
 
 			// Try to insert pObj into this sub node
-			pNode->RInsert(pObj);
+			pNode->RInsert(obj);
 		}
 		// node is not yet full
 		else
 		{
 			// Add pObj to node
-			pNode->m_pObjects->insert(pObj);
+			pNode->m_pObjects->insert(&obj);
 		}
 	}
 }
 
 // this method is recursive, for simplicity
-void Node::FindNearNodes(const ICollisionPolygon* pPolygon, std::vector<Node*>& out)
+void Node::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>& out)
 {
 	// recursive version
 	if(!m_bUseable)
@@ -286,10 +285,10 @@ void Node::FindNearNodes(const ICollisionPolygon* pPolygon, std::vector<Node*>& 
 			// todo: this is bugged, sometimes m_bUseable is false when we are at the bottom, 
 			// m_bUseable in this case should be true...
 
-			if(pSubNode->R.Intersects(pPolygon))
+			if(pSubNode->R.Intersects(poly))
 			{
 				// find the near nodes from this node
-				pSubNode->FindNearNodes(pPolygon,out);
+				pSubNode->FindNearNodes(poly,out);
 			}
 		}
 	}
@@ -432,11 +431,11 @@ void NodeIterator::Increment()
 void ISpatialObject::EraseFromQuadtree(QuadTree* pTree)
 {
 	//pTree->EraseFromPrev(this);
-	pTree->Erase(this);
+	pTree->Erase(*this);
 }
 
 // constructor
-QuadTree::QuadTree(const FRECT& R)
+QuadTree::QuadTree(const Math::FRECT& R)
 {
 	m_pRoot = new Node(R);
 }
@@ -448,34 +447,47 @@ QuadTree::~QuadTree()
 	m_pRoot = nullptr;
 }
 
-bool QuadTree::IsWithin(ISpatialObject* pObj) const
+bool QuadTree::IsWithin(ISpatialObject& obj) const
 {
-	return m_pRoot->IsWithin(pObj);
+	return m_pRoot->IsWithin(obj);
 }
 
-bool QuadTree::Insert(ISpatialObject* pObj)
+bool QuadTree::Insert(ISpatialObject& obj)
 {
-	return m_pRoot->Insert(pObj);
+	return m_pRoot->Insert(obj);
 }
 
-void QuadTree::Erase(ISpatialObject* pObj)
+void QuadTree::Erase(ISpatialObject& obj)
 {
 	std::vector<Node*> nodes;
-	FindNearNodes(pObj,nodes);
+	m_pRoot->FindNearNodes(obj.GetCollisionPolygon(),nodes);
 	for(unsigned int i = 0; i < nodes.size(); ++i)
 	{
-		nodes[i]->Erase(pObj);
+		nodes[i]->Erase(obj);
 	}
 }
 
-void QuadTree::EraseFromPrev(ISpatialObject* pObj)
+void QuadTree::EraseFromPrev(ISpatialObject& obj)
 {
-	m_pRoot->EraseFromPreviousPos(pObj);
+	m_pRoot->EraseFromPreviousPos(obj);
 }
 
-void QuadTree::FindNearNodes(ICollisionPolygon* pPoly, std::vector<Node*>& out)
+void QuadTree::FindNearObjects(Math::ICollisionPolygon* pPoly, std::vector<ISpatialObject*>& out)
 {
-	m_pRoot->FindNearNodes(pPoly,out);
+	std::vector<Node*> nodes;
+	FindNearNodes(pPoly,nodes);
+
+	ProccessNearNodes(nodes,[&](ISpatialObject* pObj) -> bool
+	{
+		out.push_back(pObj);
+		return false;
+	});
+	
+}
+
+void QuadTree::FindNearNodes(Math::ICollisionPolygon* pPoly, std::vector<Node*>& out)
+{
+	m_pRoot->FindNearNodes(*pPoly,out);
 }
 
 void QuadTree::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
@@ -483,10 +495,10 @@ void QuadTree::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
 	m_pRoot->FindNearNodes(pObj->GetCollisionPolygon(),out);
 }
 
-void QuadTree::Update(ISpatialObject* pObj)
+void QuadTree::Update(ISpatialObject& obj)
 {
-	m_pRoot->EraseFromPreviousPos(pObj);
-	Insert(pObj);
+	m_pRoot->EraseFromPreviousPos(obj);
+	Insert(obj);
 	//pObj->
 }
 
@@ -552,9 +564,9 @@ void QuadTree::SaveToFile(std::string& file)
 	}*/
 }
 
-void QuadTree::Render(IRenderer* pRenderer)
+void QuadTree::Render(IRenderer& renderer)
 {
-	m_pRoot->Render(pRenderer);
+	m_pRoot->Render(renderer);
 }
 
 

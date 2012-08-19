@@ -46,10 +46,10 @@ public:
 
 	// Get Functions
 	// todo: provide const overloaded versions
-	IRenderer* GetRenderer();
-	IKMInput* GetInput();
-	WindowManager* GetWindow();
-	asVM* GetAs();
+	IRenderer& GetRenderer();
+	IKMInput& GetInput();
+	WindowManager& GetWindow();
+	asVM& GetAs();
 	// todo: I could just use this with handles instead of 
 	// todo: having IPlugin interfaces lying around here 
 	const PluginManager* GetPluginManager() const;
@@ -72,6 +72,7 @@ protected:
 
 	double m_fDT;
 	GameInfo m_info;
+
 	// Interfaces
 	IRenderer* m_pRenderer;
 	IKMInput* m_pInput;

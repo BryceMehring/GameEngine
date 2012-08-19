@@ -4,27 +4,28 @@
 #include "GameState.h"
 #include "d3dx9math.h"
 #include "DxPolygon.h"
+#include "QuadTree.h"
 
 #include "RTTI.h"
 
-class GameOfLife : public IGameState
+class GOL : public IGameState
 {
 public:
 
 	RTTI_DECL;
 
-	GameOfLife();
-	virtual ~GameOfLife();
+	GOL();
+	virtual ~GOL();
 
-	virtual void Init(class Game*);
-	virtual void Destroy(class Game*);
-	virtual void Update(class Game*);
-	virtual void Draw(class Game*);
+	virtual void Init(class Game& game);
+	virtual void Destroy(class Game& game);
+	virtual void Update(class Game& game);
+	virtual void Draw(class Game& game);
 
 private:
 
 	class QuadTree* m_pQuadTree;
-	std::vector<class ISpatialObjectUpdate*> m_units;
+	std::vector<class Cell*> m_units;
 
 	class Mouse* m_pMouse;
 	POINT m_pos;
@@ -33,6 +34,9 @@ private:
 	bool m_bDrawQuadTree;
 
 	void BuildMenu(Game* pGame);
+
+	void RegisterScript(class Game&);
+	void Reset();
 
 };
 

@@ -34,6 +34,9 @@
     <Filter Include="Quadtree">
       <UniqueIdentifier>{1f4953f4-1657-4cb9-b360-81f1ac50be41}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Serialization">
+      <UniqueIdentifier>{8cfcb647-7925-46dd-83a2-83fb0befc927}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileManager.h">
@@ -120,6 +123,16 @@
     <ClInclude Include="ITextureManager.h">
       <Filter>Rendering Addons</Filter>
     </ClInclude>
+    <ClInclude Include="GameStateConstants.h">
+      <Filter>State</Filter>
+    </ClInclude>
+    <ClInclude Include="SerializedState.h">
+      <Filter>Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStateScript.h">
+      <Filter>State</Filter>
+    </ClInclude>
+    <ClInclude Include="GameConstants.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileManager.cpp">
@@ -170,8 +183,12 @@
     </ClCompile>
     <ClCompile Include="VecMath.cpp" />
     <ClCompile Include="StringAlgorithms.cpp" />
-    <ClCompile Include="ITextureManager.cpp">
-      <Filter>Rendering Addons</Filter>
+    <ClCompile Include="SerializedState.cpp">
+      <Filter>Serialization</Filter>
     </ClCompile>
+    <ClCompile Include="GameStateScript.cpp">
+      <Filter>State</Filter>
+    </ClCompile>
+    <ClCompile Include="GameConstants.cpp" />
   </ItemGroup>
 </Project>

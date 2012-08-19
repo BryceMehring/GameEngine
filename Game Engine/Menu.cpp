@@ -3,8 +3,11 @@
 #include "IRenderer.h"
 #include "Game.h"
 #include "FileManager.h"
+#include "VecMath.h"
+#include "GameConstants.h"
 
 #include <sstream>
+
 
 
 using namespace std;
@@ -12,11 +15,11 @@ using namespace std;
 //const RTTI Menu::s_rtti("Menu");
 RTTI_IMPL(Menu);
 
-bool IsClicked(IKMInput* pInput, DxPolygon* pPolygon)
+bool IsClicked(IKMInput& input, DxPolygon* pPolygon)
 {
-	if(pInput->MouseClick(0))
+	if(input.MouseClick(0))
 	{
-		return pPolygon->IsPointInPolygon(pInput->MousePos());
+		return pPolygon->IsPointInPolygon(input.MousePos());
 	}
 
 	return false;
@@ -46,7 +49,7 @@ void Menu::SetMenuTitle(const std::string& str,const POINT& P)
 }
 void Menu::SetPolygon(DxPolygon* pPolygon)
 {
-	if(pPolygon)
+	if(pPolygon != nullptr)
 	{
 		m_pPolygon = pPolygon;
 	}
@@ -69,9 +72,9 @@ void Menu::AddElement(IUIElement* pElement)
 	}
 }
 
-void Menu::Update(GUI* pGUI, IKMInput* pInput, double dt)
+void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 {
-	if(pInput->KeyDown(ESCAPE))
+	if(input.KeyDown(ESCAPE))
 	{
 		if(m_pPrev != nullptr)
 		{
@@ -80,41 +83,41 @@ void Menu::Update(GUI* pGUI, IKMInput* pInput, double dt)
 	}
 
 	// todo: fix this
-	if(pInput->KeyDown(TAB))
+	if(input.KeyDown(TAB))
 	{
 		m_elements[pGUI->m_uiCurrentIndex]->Deselect();
 		pGUI->m_uiCurrentIndex = ((pGUI->m_uiCurrentIndex + 1) % m_elements.size());
 		m_elements[pGUI->m_uiCurrentIndex]->Select();
 	}
-	else if(pInput->KeyDown(ENTER))
+	else if(input.KeyDown(ENTER))
 	{
 		if(pGUI->m_uiCurrentIndex < m_elements.size())
 		{
-			m_elements[pGUI->m_uiCurrentIndex]->Enter();
+			m_elements[pGUI->m_uiCurrentIndex]->Trigger();
 		}
 	}
-	else
+	
+	// fixed bug in textbox
+	for(unsigned int i = 0; i < m_elements.size(); ++i)
 	{
-		for(unsigned int i = 0; i < m_elements.size(); ++i)
-		{
-			m_elements[i]->Update(pInput,dt);
-		}
+		m_elements[i]->Update(input,dt);
 	}
+	
 }
-void Menu::Render(IRenderer* pRenderer)
+void Menu::Render(IRenderer& renderer)
 {
 	// Render menu border and header
-	pRenderer->DrawString(m_menuTitle.c_str(),m_point,0xffffffff);
+	renderer.DrawString(m_menuTitle.c_str(),m_point,0xffffffff);
 
 	if(m_pPolygon)
 	{
-		m_pPolygon->Render(pRenderer);
+		m_pPolygon->Render(renderer);
 	}
 
 	// Render all of the elements
 	for(unsigned int i = 0; i < m_elements.size(); ++i)
 	{
-		m_elements[i]->Render(pRenderer);
+		m_elements[i]->Render(renderer);
 	}
 }
 
@@ -132,21 +135,21 @@ GUI::ChangeMenuCallback GUI::CreateCallback()
 	return ChangeMenuCallback(this,&GUI::SetMenu);
 }
 
-void GUI::Update(IKMInput* pInput, double dt)
+void GUI::Update(IKMInput& input, double dt)
 {
 	if(m_bSetMenu)
 	{
-		pInput->SetMouseState(Default);
+		input.SetMouseState(Default);
 
 		m_bSetMenu = false;
 	}
 
-	m_pMenu->Update(this,pInput,dt);
+	m_pMenu->Update(this,input,dt);
 }
 
-void GUI::Render(IRenderer* pRenderer)
+void GUI::Render(IRenderer& renderer)
 {
-	m_pMenu->Render(pRenderer);
+	m_pMenu->Render(renderer);
 }
 
 void GUI::SetMenu(Menu* pMenu)
@@ -169,14 +172,14 @@ ButtonBase::~ButtonBase()
 	delete m_pPolygon;
 }
 
-void ButtonBase::Update(IKMInput* pInput)
+void ButtonBase::Update(IKMInput& input)
 {
 	// todo: I could optimize this by checking first if the mouse is moving
 	// then move on to check if the mouse is colliding with the button
-	if(m_pPolygon->IsPointInPolygon(pInput->MousePos()))
+	if(m_pPolygon->IsPointInPolygon(input.MousePos()))
 	{
 		m_color = 0xffffff00;
-		pInput->SetMouseState(::MouseCursorState::Hand);
+		input.SetMouseState(::MouseCursorState::Hand);
 
 		m_bMouseHover = true;
 	}
@@ -184,17 +187,17 @@ void ButtonBase::Update(IKMInput* pInput)
 	{
 		m_color = 0xffffffff;
 
-		pInput->SetMouseState(::MouseCursorState::Default);
+		input.SetMouseState(::MouseCursorState::Default);
 
 		m_bMouseHover = false;
 	}
 }
 
-void ButtonBase::Render(class IRenderer* pRenderer)
+void ButtonBase::Render(IRenderer& renderer)
 {
-	pRenderer->DrawString(m_name.name.c_str(),m_name.P,m_color);
+	renderer.DrawString(m_name.name.c_str(),m_name.P,m_color);
 
-	m_pPolygon->Render(pRenderer);
+	m_pPolygon->Render(renderer);
 }
 
 /*Button::Button(UI* pUI, Menu* pMenu, DxPolygon* pPolygon) : m_pUI(pUI), m_pMenu(pMenu), m_pPolygon(pPolygon)  {}
@@ -218,6 +221,24 @@ TextBox::TextBox(const std::string& name, const RECT& R)
 	Enter();
 
 	m_carrotPos.x = m_carrotPos.y = 0;
+}
+TextBox::~TextBox()
+{
+}
+
+void TextBox::SaveToFile(const std::string& file) const
+{
+	::fstream out(file.c_str(),ios::out);
+
+	if(out.is_open())
+	{
+		for(unsigned int i = 0; i < m_text.size(); ++i)
+		{
+			out << m_text[i].line.c_str() << endl;
+		}
+
+		out.close();
+	}
 }
 
 void TextBox::Write(const std::string& line, DWORD color, bool c)
@@ -268,7 +289,7 @@ void TextBox::Backspace()
 		text.resize(size - 1);
 	}
 	// If there is no text to remove, try to pop the line in the vector
-	else if(size > 1)
+	else if(m_text.size() > 1)
 	{
 		m_text.pop_back();
 	}
@@ -288,51 +309,62 @@ void TextBox::Enter()
 	Write("");
 }
 
-void TextBox::Update(IKMInput* pInput, double dt)
+void TextBox::Update(IKMInput& input, double dt)
 {
+	if(/*input.MouseClick(0,false) &&*/ PtInRect(&m_square.GetRect(),input.MousePos()) > 0)
+	{
+		input.SetMouseState(Beam);
+	}
+	else
+	{
+		input.SetMouseState(Default);
+	}
 
-	if(pInput->KeyDown(BACKSPACE))
+
+	if(input.KeyDown(BACKSPACE))
 	{
 		Backspace();
 	}
 
-	if(pInput->KeyDown(ENTER))
+	if(input.KeyDown(ENTER))
 	{
 		Enter();
 	}
 
-	if(pInput->IsKeyDown())
+	if(input.IsKeyDown())
 	{
-		char key = pInput->GetKeyDown();
+		char key = input.GetKeyDown();
 		AddKey(key);
 	}
 
 	//m_carrotPos = this->m_text.back().P;
 	//m_carrotPos.x += m_text.back().line.size() * 8;
 
-	UpdateScrolling(pInput,dt);
+	UpdateScrolling(input,dt);
 }
 
-void TextBox::Render(IRenderer* pRenderer)
+void TextBox::BreakLastLine(IRenderer& renderer)
 {
-	m_square.Render(pRenderer);
+	TextBox::LineData& theBack = m_text.back();
+	RECT myR = {theBack.P.x,theBack.P.y,0,0};
+	renderer.GetStringRec(theBack.line.c_str(),myR);
 
-	if(m_drawCarrot)
+	if(myR.right >= (this->m_square.GetRect().right - 15))
+	{
+		TextBox::Write("",0xffffffff,true);
+	}
+}
+
+void TextBox::Render(IRenderer& renderer)
+{
+	m_square.Render(renderer);
+
+	/*if(m_drawCarrot)
 	{
 		pRenderer->DrawString("|",m_carrotPos,0xffffffff);
-	}
+	}*/
 
-	// todo: put this into another function
-	{
-		TextBox::LineData& theBack = m_text.back();
-		RECT myR = {theBack.P.x,theBack.P.y,0,0};
-		pRenderer->GetStringRec(theBack.line.c_str(),myR);
-
-		if(myR.right >= (this->m_square.GetRect().right - 10))
-		{
-			TextBox::Write("",0xffffffff,true);
-		}
-	}
+	BreakLastLine(renderer);
 
 	// Iterate across all lines
 	for(TextDataType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
@@ -350,29 +382,37 @@ void TextBox::Render(IRenderer* pRenderer)
 		const RECT& R = m_square.GetRect();
 
 		// scroll lines
-		data.P.y += m_scrollSpeed;
-
-		RECT myR = {data.P.x,data.P.y,0,0};
-		pRenderer->GetStringRec(line.c_str(),myR);
+		data.P.y += (m_scrollSpeed);
 
 		// If the line is on the screen
-		if(myR.top >= R.top)
+		if(data.P.y >= R.top)
 		{
-			if(myR.bottom <= R.bottom) 
+			if(data.P.y <= R.bottom - 15) 
 			{
-				RECT temp = {myR.left,myR.top,R.right,R.bottom};
+				RECT temp = {data.P.x,data.P.y,R.right,R.bottom};
 
 				// draw it
-				pRenderer->DrawString(line.c_str(),temp,data.color,false);
+				renderer.DrawString(line.c_str(),data.P,data.color);
+				//pRenderer->DrawString(line.c_str(),temp,data.color,false);
 			}
 		}
 	}
 }
 
-void TextBox::UpdateScrolling(IKMInput* pInput, double dt)
+void TextBox::UpdateScrolling(IKMInput& input, double dt)
 {
-	// Use the scroll on the mouse to scroll the textbox
-	m_scrollSpeed = pInput->MouseZ()*8;
+	//m_scrollSpeed = 0;
+	
+	if(input.MouseClick(0,false))
+	{
+		m_scrollSpeed = -input.MouseY();
+		//m_scrollSpeed = pInput->MousePos().y;// - this->m_text.back().P.y;
+	}
+	else
+	{
+		// Use the scroll on the mouse to scroll the textbox
+		m_scrollSpeed = input.MouseZ()*8;
+	}
 
 	// Scroll Text Box using MouseY
 	/*if(IsClicked(pInput,&m_square))
@@ -407,39 +447,23 @@ void TextBox::UpdateScrolling(IKMInput* pInput, double dt)
 
 }
 
-//note: this method is not used anymore
-unsigned int TextBox::GetNumberOfRowsInLine(const std::string& line) const
-{
-	unsigned int uiStrLength = line.length();
-	
-	if(uiStrLength == 0)
-	{
-		uiStrLength = 1;
-	}
-
-	// Get the rectangle for the textbox
-	const RECT& squareRect = m_square.GetRect();
-
-	//unsigned int n = count(line.begin(),line.end(),'\n') / 1.4f;
-
-	// todo: the value '6' here should be modifiable in the ctor, because there could be different size font
-	// which is not yet implemented yet.
-	unsigned int r = (unsigned int)ceil((float)(8*uiStrLength) / ((squareRect.right - squareRect.left)));
-
-	return (r);
-}
-
 void TextBox::CLS()
 {
 	m_text.clear();
+
 	//TextBox::Enter();
 }
 
 
 ScriptingConsole::ScriptingConsole(asVM* pVM, const std::string& name, const RECT& R)
-: TextBox(name,R), m_pVM(pVM), m_uiStartIndex(-1)
+: TextBox(name,R), m_pVM(pVM), m_uiStartIndex(-1), m_uiBackIndex(0)
 {
 
+}
+
+ScriptingConsole::~ScriptingConsole()
+{
+	SaveToFile(Constants::SCRIPTFILE);
 }
 
 bool ScriptingConsole::IsBlocked() const
@@ -447,16 +471,45 @@ bool ScriptingConsole::IsBlocked() const
 	return m_uiStartIndex != -1;
 }
 
+void ScriptingConsole::Update(IKMInput& input, double dt)
+{
+	if(m_text.size() > 1)
+	{
+		// Check if the up or down arrow keys were pressed
+		bool bUp = input.KeyDown(UP);
+		bool bDown = input.KeyDown(DOWN);
+
+		// if either of them were pressed
+		if(bUp || bDown)
+		{
+			// go back a line
+			m_text.back().line = m_text[m_uiBackIndex].line;
+
+			// clamp index into range
+			m_uiBackIndex = Math::Clamp(bUp ? (m_uiBackIndex - 1) : (m_uiBackIndex + 1),(unsigned int)0,m_text.size() - 2);
+			
+		}
+	}
+
+	TextBox::Update(input,dt);
+}
+
 void ScriptingConsole::Enter()
 {
+	// the last line
 	const string& backLine = m_text.back().line;
 
+	// if the user wants to start entering block code
 	if(backLine == "start")
 	{
+		// mark the index
 		m_uiStartIndex = m_text.size();
 	}
 	else if((backLine == "end") && IsBlocked())
 	{
+		// the user is done entering code
+		// sum up all of the lines and execute the code
+
 		string sum;
 
 		const unsigned int uiMax = m_text.size() - 1;
@@ -472,7 +525,12 @@ void ScriptingConsole::Enter()
 	}
 	else if(!IsBlocked())
 	{
-		string line = "console.grab(" + backLine + ")";
+		// single command line 
+
+		// wrap code into console.grab() so that we can display the output
+		string line = "console.write(" + backLine + ")";
+
+		m_uiBackIndex = m_text.size();
 
 		m_pVM->ExecuteScript(line,0xffffffff);
 	}
@@ -496,6 +554,13 @@ void ScriptingConsole::MessageCallback(const asSMessageInfo *msg)
 	const unsigned int COLOR[3] = {0xffff0000,0xffffff00,0xffffffff};
 
 	Write(std::string(msg->message),COLOR[msg->type]);
+}
+
+void ScriptingConsole::CLS()
+{
+	TextBox::CLS();
+
+	m_uiBackIndex = 0;
 }
 
 void ScriptingConsole::Grab()
@@ -538,16 +603,16 @@ void ScriptingConsole::RegisterScript()
 
 	//asEngine->SetDefaultAccessMask(0xffffffff);
 	DBAS(asEngine->RegisterObjectType("Console",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(asEngine->RegisterObjectMethod("Console","void write(const string& in, uint color = 0xffffffff, bool c = false)",asMETHOD(ScriptingConsole,Write),asCALL_THISCALL));
+	//DBAS(asEngine->RegisterObjectMethod("Console","void write(const string& in, uint color = 0xffffffff, bool c = false)",asMETHOD(ScriptingConsole,Write),asCALL_THISCALL));
 	DBAS(asEngine->RegisterObjectMethod("Console","void clear()",asMETHOD(ScriptingConsole,CLS),asCALL_THISCALL));
 
-	DBAS(asEngine->RegisterObjectMethod("Console","void grab(void)",asMETHODPR(ScriptingConsole,Grab,(void),void),asCALL_THISCALL));
-	DBAS(asEngine->RegisterObjectMethod("Console","void grab(const string& in)",asMETHODPR(ScriptingConsole,Grab,(const std::string&),void),asCALL_THISCALL));
-	DBAS(asEngine->RegisterObjectMethod("Console","void grab(int)",asMETHODPR(ScriptingConsole,Grab,(int),void),asCALL_THISCALL));
-	DBAS(asEngine->RegisterObjectMethod("Console","void grab(float)",asMETHODPR(ScriptingConsole,Grab,(float),void),asCALL_THISCALL));
-	DBAS(asEngine->RegisterObjectMethod("Console","void grab(double)",asMETHODPR(ScriptingConsole,Grab,(double),void),asCALL_THISCALL));
-	DBAS(asEngine->RegisterObjectMethod("Console","void grab(uint)",asMETHODPR(ScriptingConsole,Grab,(unsigned int),void),asCALL_THISCALL));
-	DBAS(asEngine->RegisterObjectMethod("Console","void grab(bool)",asMETHODPR(ScriptingConsole,Grab,(bool),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void write(void)",asMETHODPR(ScriptingConsole,Grab,(void),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void write(const string& in)",asMETHODPR(ScriptingConsole,Grab,(const std::string&),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void write(int)",asMETHODPR(ScriptingConsole,Grab,(int),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void write(float)",asMETHODPR(ScriptingConsole,Grab,(float),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void write(double)",asMETHODPR(ScriptingConsole,Grab,(double),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void write(uint)",asMETHODPR(ScriptingConsole,Grab,(unsigned int),void),asCALL_THISCALL));
+	DBAS(asEngine->RegisterObjectMethod("Console","void write(bool)",asMETHODPR(ScriptingConsole,Grab,(bool),void),asCALL_THISCALL));
 	
 	DBAS(asEngine->RegisterGlobalProperty("Console console",this));
 

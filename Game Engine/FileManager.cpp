@@ -1,19 +1,18 @@
 
 
 #include "FileManager.h"
+#include "asVM.h"
+#include "GameConstants.h"
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/filesystem.hpp>
 #include <Shlobj.h>
 
 using namespace std;
 
-const char* FILENAME = "..//Log.txt";
-
-
 FileManager::FileManager() {}
 FileManager::~FileManager()
 {
-	::fstream out(FILENAME,ios::out);
+	::fstream out(Constants::LOGFILE,ios::out);
 
 	if(out.is_open())
 	{
@@ -82,7 +81,7 @@ bool FileManager::GetFolder(std::string& folderpath)
    return retVal;
 }
 
-bool FileManager::OpenFileName(std::string& file) const
+std::string FileManager::OpenFileName() const
 {
 	OPENFILENAME ofn = {0};
 	char fileName[MAX_PATH] = "";
@@ -97,17 +96,16 @@ bool FileManager::OpenFileName(std::string& file) const
 
 	if(GetOpenFileName(&ofn) > 0)
 	{
-		file = fileName;
-		return true;
+		return std::string(fileName);
 	}
 
-	return false;
+	return std::string();
 }
 
 unsigned int FileManager::GetSeedFromLog() const
 {
 	unsigned int seed = 0;
-	std::fstream in(FILENAME,ios::in);
+	std::fstream in(::Constants::LOGFILE,ios::in);
 
 	if(in.is_open())
 	{
@@ -133,4 +131,18 @@ unsigned int FileManager::GetSeedFromLog() const
 void FileManager::WriteTime()
 {
 	m_buffer << clock() / (float)CLOCKS_PER_SEC << ": ";
+}
+
+void FileManager::RegisterScript(asVM& vm)
+{
+	auto pEngine = vm.GetScriptEngine();
+
+	const char* NAME = "FileManager";
+
+	DBAS(pEngine->RegisterObjectType(NAME,0,asOBJ_REF | asOBJ_NOHANDLE));
+
+	DBAS(pEngine->RegisterObjectMethod(NAME,"string OpenFileName() const",asMETHOD(FileManager,OpenFileName),asCALL_THISCALL));
+	DBAS(pEngine->RegisterGlobalProperty("FileManager fm",this));
+
+	pEngine->Release();
 }

@@ -10,11 +10,18 @@
 #include "Menu.h"
 #include "VecMath.h"
 #include "FileManager.h"
+#include "StringAlgorithms.h" // todo: remove this file
+
 #include <sstream>
+#include <ctime>
 //#include "asConsole.h"
 //#include "EngineHelper.h"
 
+#ifdef _DEBUG
 #pragma comment(lib,"angelscriptd.lib")
+#else
+#pragma comment(lib,"angelscript.lib")
+#endif
 
 using namespace std;
 
@@ -28,11 +35,26 @@ struct Script
 
 };
 
-asVM::asVM() : m_iExeScript(0), m_pTextBox(nullptr)
+// The line callback function is called by the VM for each statement that is executed
+void LineCallback(asIScriptContext *ctx, DWORD *timeOut)
+{
+	// If the time out is reached we suspend the script
+	if( *timeOut < clock() )
+	{
+		ctx->Suspend();
+	}
+}
+
+asVM::asVM() : m_iExeScript(0)
 {
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
+	m_pEngine->SetEngineProperty(asEP_BUILD_WITHOUT_LINE_CUES,TRUE);
+	m_pEngine->SetEngineProperty(asEP_USE_CHARACTER_LITERALS, TRUE);
 
 	RegisterStdString(m_pEngine);
+
+	::FileManager::Instance().RegisterScript(*this);
+	::RegisterStrAlgorScript(*this);
 
 	// turn off auto GARBAGE_COLLECT
 	//m_pEngine->SetEngineProperty(asEP_AUTO_GARBAGE_COLLECT,false);
@@ -107,11 +129,6 @@ asIScriptEngine* asVM::GetScriptEngine() const
 	return m_pEngine;
 }
 
-void asVM::SetTextBox(ScriptingConsole* pTextBox)
-{
-	m_pTextBox = pTextBox;
-}
-
 void asVM::ExecuteScript(unsigned int scriptId)
 {
 	if(GoodScriptId(scriptId))
@@ -130,13 +147,20 @@ void asVM::ExecuteScript(unsigned int scriptId)
 		DBAS(s.pCtx->Unprepare());
 	}
 }
+
 void asVM::ExecuteScript(const string& script, asDWORD mask)
 {
-	//string theScript = "console.grab(" + script + ")";
+	::asIScriptContext* ctx = m_pEngine->CreateContext();
 
-	asIScriptModule* pMod = m_pEngine->GetModule("mod",asGM_ALWAYS_CREATE);
-	pMod->SetAccessMask(mask);
-	ExecuteString(m_pEngine,script.c_str(),pMod);
+	// Define the timeout as 1 second
+	DWORD timeOut = clock() + 1000;
+
+	// Set up the line callback that will timout the script
+	ctx->SetLineCallback(asFUNCTION(LineCallback), &timeOut, asCALL_CDECL);
+
+	ExecuteString(this->m_pEngine,script.c_str(),nullptr,ctx);
+
+	ctx->Release();
 }
 void asVM::ExecuteScriptFunction(const ScriptFunctionStruct& func)
 {
@@ -226,8 +250,6 @@ asVM::asDelegate asVM::GetFunc(asIScriptFunction* pFunc)
 void asVM::ListVariables()
 {
 	asUINT n;
-	ostringstream os;
-	os << "Application variables: " << endl;
 
 	// List the application registered variables
 	for( n = 0; n < (asUINT)m_pEngine->GetGlobalPropertyCount(); n++ )
@@ -244,20 +266,16 @@ void asVM::ListVariables()
 		decl += name;
 		decl += "\n";
 
-		os << name << endl;
+		SendMessage(decl);
 	}
-	//m_pTextBox->Write(os.str()); // todo: need to fix
 }
 
 void asVM::ListObjects()
 {
-	//ostringstream os;
-	//os << "Registered Objects: " << endl;
-
-	ostringstream os;
-		
 	for(int o = 0; o < m_pEngine->GetObjectTypeCount(); ++o)
 	{
+		ostringstream os;
+
 		asIObjectType* pObjType = m_pEngine->GetObjectTypeByIndex(o);
 		const char* pObjName = pObjType->GetName();
 
@@ -279,10 +297,10 @@ void asVM::ListObjects()
 
 		os << endl;
 		os << endl;
+
+		SendMessage(os.str());
 		
 	}
-
-	m_pTextBox->Write(os.str());
 
 	//m_pTextBox->Write(os.str());
 }
@@ -300,7 +318,7 @@ void asVM::ListFunctions()
 		// Skip the functions that start with _ as these are not meant to be called explicitly by the user
 		if( func->GetName()[0] != '_' )
 		{
-			m_pTextBox->Write(func->GetDeclaration());
+			SendMessage(func->GetDeclaration());
 		}
 	}
 
@@ -316,7 +334,7 @@ void asVM::ListFunctions()
 			asIScriptFunction *func = mod->GetFunctionByIndex(n);
 			os << " " << func->GetDeclaration() << endl;
 
-			m_pTextBox->Write(func->GetDeclaration());
+			SendMessage(func->GetDeclaration());
 		}
 	}
 
@@ -327,27 +345,23 @@ void asVM::ListFunctions()
 	m_pTextBox = pTextBox;
 }*/
 
-unsigned int color(unsigned int r, unsigned int g, unsigned int b)
+void asVM::SendMessage(const std::string& msg) const
 {
-	return D3DCOLOR_XRGB(r,g,b);
+	DBAS(m_pEngine->WriteMessage("SendMessage",0,0,asMSGTYPE_INFORMATION,msg.c_str()));
 }
 
-void asVM::RegisterScript()
+void asVM::RegisterScript(ScriptingConsole* pTextBox)
 {
 	// logging output
-	DBAS(m_pEngine->SetMessageCallback(asMETHOD(ScriptingConsole,MessageCallback),m_pTextBox,asCALL_THISCALL));
-	DBAS(m_pEngine->WriteMessage("Test",0,0,asMSGTYPE_ERROR,"Hello World"));
+	DBAS(m_pEngine->SetMessageCallback(asMETHOD(ScriptingConsole,MessageCallback),pTextBox,asCALL_THISCALL));
 
 	DBAS(m_pEngine->SetDefaultAccessMask(0xffffffff));
 
 	RegisterScriptMath(m_pEngine);
-	RegisterScriptVecMath(m_pEngine);
+	Math::RegisterScriptVecMath(m_pEngine);
 
 
 	// ============= POD =============
-
-	// todo: move this into the renderer
-	DBAS(m_pEngine->RegisterGlobalFunction("uint color(uint red, uint green, uint blue)",::asFUNCTION(color),asCALL_CDECL));
 
 	// the macro offsetof should only work on pod types(no virtual methods),
 	// but it does seem to work on regular classes that use polymorphism. todo: need to look into this.

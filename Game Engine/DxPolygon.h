@@ -29,7 +29,7 @@ public:
 	virtual IRenderType GetRenderType() const;
 
 	// Operations
-	virtual void Render(class IRenderer* pRenderer);
+	virtual void Render(class IRenderer&);
 
 	// Ray casting algorithm
 	virtual bool IsPointInPolygon(POINT P) const;

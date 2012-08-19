@@ -43,15 +43,15 @@ void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
 DWORD DxPolygon::GetColor() const { return m_color; }
 unsigned int DxPolygon::GetSize() const { return m_edges.size(); }
 
-void DxPolygon::Render(IRenderer* pRenderer)
+void DxPolygon::Render(IRenderer& renderer)
 {
-	pRenderer->DrawLine(&(m_edges.front()),m_edges.size(),m_color);
+	renderer.DrawLine(&(m_edges.front()),m_edges.size(),m_color);
 }
 
 // algorithm from: http://alienryderflex.com/polygon/
 bool DxPolygon::IsPointInPolygon(POINT P) const
 {
-	return ::IsPointInPolygon(&(m_edges.front()),m_edges.size(),P);
+	return Math::IsPointInPolygon(&(m_edges.front()),m_edges.size(),P);
 }
 IRender::IRenderType DxPolygon::GetRenderType() const { return IRender::Polygon; }
 

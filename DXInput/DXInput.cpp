@@ -22,8 +22,8 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 DirectInput::DirectInput(PluginManager& mgr)
 : m_mgr(mgr), m_iMouseX(0), m_iMouseY(0), m_uiCurrentCursor(0), m_bMouseMove(false)
 {
-	WindowManager* pWinMgr = m_mgr.GetWindowManager();
-	m_eventId = pWinMgr->AddMsgListener(WindowManager::MsgDelegate(this,&DirectInput::Poll));
+	WindowManager& winMgr = m_mgr.GetWindowManager();
+	m_eventId = winMgr.AddMsgListener(WindowManager::MsgDelegate(this,&DirectInput::Poll));
 
 	RegisterScript();
 
@@ -32,15 +32,17 @@ DirectInput::DirectInput(PluginManager& mgr)
 	LoadCursors();
 
 	Reset();
+
+	memset(m_bMouseClick,0,sizeof(m_bMouseClickOnce));
 }
 
 
 DirectInput::~DirectInput()
 {
-	WindowManager* pWinMgr = m_mgr.GetWindowManager();
-	pWinMgr->RemoveListener(m_eventId);
+	WindowManager& winMgr = m_mgr.GetWindowManager();
+	winMgr.RemoveListener(m_eventId);
 
-	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript()->GetScriptEngine();
+	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript().GetScriptEngine();
 	pEngine->RemoveConfigGroup("Input");
 	pEngine->Release();
 	//m_mgr.GetMsgProcEvent().Detach(m_id);
@@ -53,7 +55,7 @@ void DirectInput::InitRawInput()
 	Rid.usUsagePage = 0x01; 
 	Rid.usUsage = 0x02; 
 	Rid.dwFlags = 0;   // adds HID mouse and also ignores legacy mouse messages
-	Rid.hwndTarget = m_mgr.GetWindowManager()->GetWindowHandle();
+	Rid.hwndTarget = m_mgr.GetWindowManager().GetWindowHandle();
 
 	/*Rid[1].usUsagePage = 0x01; 
 	Rid[1].usUsage = 0x06; 
@@ -69,6 +71,7 @@ void DirectInput::LoadCursors()
 {
 	m_cursors.push_back(LoadCursor(NULL,IDC_ARROW));
 	m_cursors.push_back(LoadCursor(NULL,IDC_HAND));
+	m_cursors.push_back(LoadCursor(NULL,IDC_IBEAM));
 }
 
 /*void DirectInput::Notify(const MsgProcData& data)
@@ -93,7 +96,7 @@ void DirectInput::Reset()
 
 	m_bMouseMove = false;
 
-	memset(m_bMouseClick,0,sizeof(m_bMouseClick));
+	memset(m_bMouseClickOnce,0,sizeof(m_bMouseClickOnce));
 }
 
 void DirectInput::Poll(const MsgProcData& data)
@@ -134,9 +137,12 @@ void DirectInput::Poll(const MsgProcData& data)
 		case WM_CHAR:
 			m_cCharDown = data.wParam;
 			break;
-		case WM_LBUTTONDOWN:
-			//m_bLeftMouseClick = true;
+		/*case WM_LBUTTONDOWN:
+			m_bMouseClick[0] = true;
 			break;
+		case WM_LBUTTONUP:
+			m_bMouseClick[0] = false;
+			break;*/
 	}
 }
 
@@ -145,10 +151,16 @@ void DirectInput::ReadMouse(const RAWMOUSE& mouse)
 	switch(mouse.usButtonFlags)
 	{
 		case RI_MOUSE_LEFT_BUTTON_DOWN:
-			m_bMouseClick[0] = true;
-		break;
+			m_bMouseClick[0] = m_bMouseClickOnce[0] = true;
+			break;
+		case RI_MOUSE_LEFT_BUTTON_UP:
+			m_bMouseClick[0] = false;
+			break;
 		case RI_MOUSE_RIGHT_BUTTON_DOWN:
-			m_bMouseClick[1] = true;
+			m_bMouseClick[1] = m_bMouseClickOnce[1] = true;
+			break;
+		case RI_MOUSE_RIGHT_BUTTON_UP:
+			m_bMouseClick[1] = false;
 			break;
 		case RI_MOUSE_WHEEL:
 		{
@@ -187,9 +199,9 @@ char DirectInput::GetKeyDown() const
 	return m_cCharDown;
 	//return m_Key;
 }
-bool DirectInput::MouseClick(int iButton)
+bool DirectInput::MouseClick(int iButton, bool once)
 {
-	return m_bMouseClick[iButton];
+	return (once ? m_bMouseClickOnce[iButton] : m_bMouseClick[iButton]);
 	//return ((m_MouseState.rgbButtons[iButton] & 0x80) != 0);
 }
 int DirectInput::MouseX()
@@ -221,7 +233,7 @@ void DirectInput::About() const
 
 void DirectInput::RegisterScript()
 {
-	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript()->GetScriptEngine();
+	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript().GetScriptEngine();
 
 	pEngine->BeginConfigGroup("Input");
 

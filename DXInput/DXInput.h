@@ -32,7 +32,7 @@ public:
 
 	// Mouse
 	virtual POINT MousePos();
-	virtual bool MouseClick(int Button);
+	virtual bool MouseClick(int Button, bool once);
 
 	virtual int MouseX();
 	virtual int MouseY();
@@ -63,6 +63,7 @@ private:
 	POINT m_MousePos;
 
 	bool m_bMouseClick[2];
+	bool m_bMouseClickOnce[2];
 
 	bool m_bMouseMove;
 

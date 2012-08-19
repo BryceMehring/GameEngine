@@ -6,6 +6,9 @@
 
 #include "d3dx9math.h"
 
+namespace Math
+{
+
 // Basic rect, using floats
 struct FRECT
 {
@@ -100,6 +103,8 @@ bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P);
 
 float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound); 
 
+bool IsPrime(unsigned int);
+
 void RegisterScriptVecMath(class asIScriptEngine* pEngine);
 
 // collision interface
@@ -117,7 +122,7 @@ public:
 	virtual ~ICollisionPolygon() {}
 
 	// returns true if pOther interests this, else false
-	virtual bool Intersects(const ICollisionPolygon* pOther) const = 0;
+	virtual bool Intersects(const ICollisionPolygon& other) const = 0;
 	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const = 0;
 
 	// returns the type of the collision object
@@ -133,19 +138,19 @@ public:
 
 	// todo: default ctor?
 	// ctor
-	CCircle(const ::Circle& circle);
+	CCircle(const Circle& circle);
 
 	virtual Type GetType() const { return ICollisionPolygon::CircleType; }
-	virtual bool Intersects(const ICollisionPolygon* pOther) const;
+	virtual bool Intersects(const ICollisionPolygon& other) const;
 	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const;
 	
 	// circle access
 	const Circle& GetCircle() const { return m_circle; }
-	::Circle& GetCircle() { return m_circle; }
+	Circle& GetCircle() { return m_circle; }
 
 private:
 
-	::Circle m_circle;
+	Circle m_circle;
 
 };
 
@@ -159,7 +164,7 @@ public:
 	CRectangle(const FRECT& rect);
 
 	virtual Type GetType() const { return ICollisionPolygon::RectangleType; }
-	virtual bool Intersects(const ICollisionPolygon* pOther) const;
+	virtual bool Intersects(const ICollisionPolygon& other) const;
 	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const;
 
 	// rect access
@@ -171,5 +176,7 @@ private:
 	FRECT m_rect;
 
 };
+
+} // math
 
 #endif // _VECMATH_

@@ -1,7 +1,7 @@
 #ifndef _GASSERT_
 #define _GASSERT_
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #define gassert(condit,msg) \
 	if(!(condit)) \
 	{ \
@@ -10,8 +10,8 @@
 		MessageBox(0,msg,0,0); \
 		PostQuitMessage(0); \
 	}
-#else
+/*#else
 #define gassert(condit,msg) ((void)0)
-#endif // _DEBUG
+#endif // _DEBUG*/
 
 #endif //_GASSERT_
