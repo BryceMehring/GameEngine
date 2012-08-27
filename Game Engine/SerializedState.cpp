@@ -34,13 +34,15 @@ void SerializedState::Load(asVM& vm)
 void SerializedState::SaveMap() const
 {
 	std::fstream out(m_pFile,std::fstream::out);
-	
-	for(auto iter = m_scriptFile.begin(); iter != m_scriptFile.end(); ++iter)
-	{
-		out << iter->first << "=" << iter->second << endl;
-	}
 
-	out.close();
+	if(out.is_open())
+	{
+		for(auto iter = m_scriptFile.begin(); iter != m_scriptFile.end(); ++iter)
+		{
+			out << iter->first << "=" << iter->second << endl;
+		}
+		out.close();
+	}
 }
 
 void SerializedState::BuildMap(const string& line)

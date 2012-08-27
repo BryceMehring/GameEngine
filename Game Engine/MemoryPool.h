@@ -81,6 +81,7 @@ private:
 		Node* pPrevious;
 	};
 
+	// friend access to access private data structures
 	friend void BDelete(void* p);
 
 	// ========== Data Members ========== 

@@ -319,6 +319,7 @@ void Pong::Init(Game& game)
 	//m_pQuadTree->Insert(pBall);
 }
 
+
 void Pong::Save()
 {
 	auto iter = m_scriptFile.find("pong.fAILevel");
@@ -331,6 +332,18 @@ void Pong::Save()
 	if(iter != m_scriptFile.end())
 	{
 		iter->second = WrapWithQuote(m_texture);
+	}
+
+	iter = m_scriptFile.find("pong.fMaxBallVelocity");
+	if(iter != m_scriptFile.end())
+	{
+		iter->second = boost::lexical_cast<string>(m_fMaxBallVelocity);
+	}
+
+	iter = m_scriptFile.find("pong.fMinBallVelocity");
+	if(iter != m_scriptFile.end())
+	{
+		iter->second = boost::lexical_cast<string>(m_fMinBallVelocity);
 	}
 
 	SerializedState::SaveMap();
@@ -371,7 +384,7 @@ void Pong::Update(Game& game)
 		POINT P = input.MousePos();
 		float a = Math::GetRandFloat(135.0f,225.0f) * 0.01745329f;
 		float s = Math::GetRandFloat(5.0f,8.0f);
-		float v = Math::GetRandFloat(500.0f,600.0f);
+		float v = Math::GetRandFloat(m_fMinBallVelocity,m_fMaxBallVelocity);
 
 		//Ball* pBall = new Ball(D3DXVECTOR2(P.x,P.y),D3DXVECTOR2(-cosf(a),sinf(a)),0.0f,s);
 		Ball* pBall = new Ball(D3DXVECTOR2(R.bottomRight.x/2.0f,R.bottomRight.y/8.0f),D3DXVECTOR2(-cosf(a),sinf(a)),v,s,this->m_texture);
@@ -434,6 +447,8 @@ void Pong::RegisterScript(Game& game)
 	// properties
 	DBAS(pScriptEngine->RegisterObjectProperty(pName,"float fAILevel",asOFFSET(Pong,m_aiLevel)));
 	DBAS(pScriptEngine->RegisterObjectProperty(pName,"string sBallTex",asOFFSET(Pong,m_texture)));
+	DBAS(pScriptEngine->RegisterObjectProperty(pName,"float fMinBallVelocity",asOFFSET(Pong,m_fMinBallVelocity)));
+	DBAS(pScriptEngine->RegisterObjectProperty(pName,"float fMaxBallVelocity",asOFFSET(Pong,m_fMaxBallVelocity)));
 
 	DBAS(pScriptEngine->RegisterGlobalProperty("Pong pong",(void*)this));
 

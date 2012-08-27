@@ -64,6 +64,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="PooledAllocator.h" />
     <ClInclude Include="asVM.h" />
     <ClInclude Include="BNew.h" />
     <ClInclude Include="Camera.h" />
@@ -79,6 +80,7 @@
     <ClInclude Include="GameStateMachine.h" />
     <ClInclude Include="GameStateScript.h" />
     <ClInclude Include="gassert.h" />
+    <ClInclude Include="GUIButton.h" />
     <ClInclude Include="Heap.h" />
     <ClInclude Include="IInput.h" />
     <ClInclude Include="IKMInput.h" />
@@ -94,6 +96,7 @@
     <ClInclude Include="RefCounting.h" />
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="SerializedState.h" />
+    <ClInclude Include="SingleInstance.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StringAlgorithms.h" />
     <ClInclude Include="ITextureManager.h" />
@@ -120,6 +123,7 @@
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RefCounting.cpp" />
     <ClCompile Include="SerializedState.cpp" />
+    <ClCompile Include="SingleInstance.cpp" />
     <ClCompile Include="StringAlgorithms.cpp" />
     <ClCompile Include="VecMath.cpp" />
     <ClCompile Include="WindowManager.cpp" />

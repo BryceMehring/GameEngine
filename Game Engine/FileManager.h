@@ -11,21 +11,24 @@ class FileManager : public Singleton<FileManager>
 {
 public:
 
+	// todo: a lot of these methods could be global functions 
+
 	friend class Singleton<FileManager>;
 
 	~FileManager();
 
+	//note: ext can be a list of extensions delimited by spaces
+	// example: LoadAllFilesFromDictionary(... ,".h .cpp .txt .as")
 	void LoadAllFilesFromDictionary(std::vector<std::string>& files,
 	const std::string& path, const std::string& ext) const;
 
-	/*void LoadAllFilesFromDictionary(std::vector<std::string>& files,
-	const boost::filesystem::path& path, const std::string& ext) const;*/
-
 	std::string OpenFileName() const; 
 
-	bool GetFolder(std::string& folderpath);
+	bool GetFolder(std::string& folderpath) const;
 
 	unsigned int GetSeedFromLog() const;
+
+	unsigned int CountNumberOfLines(const std::string& path, const std::string& ext) const;
 
 	// replaced all of the overloaded versions of WriteToLog with
 	// a template version
@@ -69,6 +72,8 @@ private:
 	FileManager();
 
 	void WriteTime();
+
+	void GetDelimitedExtensions(const std::string& ext, std::vector<std::string>& out) const;
 };
 
 #endif

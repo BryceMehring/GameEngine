@@ -242,6 +242,7 @@ void DirectInput::RegisterScript()
 	DBAS(pEngine->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
 	DBAS(pEngine->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
 	DBAS(pEngine->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("IKMInput","void SetMouseState(int)",asMETHOD(DirectInput,SetMouseState),asCALL_THISCALL));
 	DBAS(pEngine->RegisterGlobalProperty("IKMInput input",this));
 
 	pEngine->EndConfigGroup();

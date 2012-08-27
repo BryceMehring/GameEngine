@@ -6,10 +6,10 @@
 #include "Menu.h"
 #include "GameStateConstants.h"
 #include "SerializedState.h"
+#include "PooledAllocator.h"
 #include <vector>
 #include <list>
 #include <map>
-#include <boost\any.hpp>
 
 class Ball : public ISpatialObject, public Pooled
 {
@@ -110,27 +110,6 @@ protected:
 };
 
 
-template< class T >
-class IConstants
-{
-public:
-
-	friend T;
-
-	// todo: everything sould just inherit from the same base class
-
-	bool GetConstant(const std::string& str, boost::any& out) const
-	{
-		return m_const.GetConstant(str,out);
-	}
-
-private:
-
-	GameStateConstants<boost::any> m_const;
-
-};
-
-
 class Pong : public GameStateScript, public SerializedState
 {
 public:
@@ -153,7 +132,7 @@ private:
 
 	Paddle* m_pLeftPaddle;
 	Paddle* m_pRightPaddle;
-	std::list<Ball*> m_balls;
+	std::list<Ball*,PooledAllocator<Ball*>> m_balls;
 
 	QuadTree* m_pQuadTree;
 
@@ -166,12 +145,13 @@ private:
 
 	float m_aiLevel;
 
+	float m_fMinBallVelocity;
+	float m_fMaxBallVelocity;
+
 	std::string m_texture;
 
 	int m_iLeftScore;
 	int m_iRightScore;
-
-	IConstants<Pong> m_const;
 
 	// helper functions
 

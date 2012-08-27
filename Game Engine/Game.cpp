@@ -67,6 +67,7 @@ void Game::SetNextState(const std::string& name)
 		{
 			// Create new state, but do not use it until we are out of the update/render phase
 			m_pNextState = GameStateFactory::Instance().CreateState(name);
+			assert(m_pNextState != nullptr);
 		}
 		
 	}

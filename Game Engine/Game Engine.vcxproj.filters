@@ -133,6 +133,13 @@
       <Filter>State</Filter>
     </ClInclude>
     <ClInclude Include="GameConstants.h" />
+    <ClInclude Include="GUIButton.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="PooledAllocator.h">
+      <Filter>Memory Management</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleInstance.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileManager.cpp">
@@ -190,5 +197,6 @@
       <Filter>State</Filter>
     </ClCompile>
     <ClCompile Include="GameConstants.cpp" />
+    <ClCompile Include="SingleInstance.cpp" />
   </ItemGroup>
 </Project>

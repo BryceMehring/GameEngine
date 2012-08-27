@@ -1,12 +1,12 @@
 #include "Heap.h"
 #include "VecMath.h"
+#include "BNew.h"
 
 using namespace std;
-using namespace stdext;
 
-
-Heap::Heap()
+Heap::Heap() : m_uiTotalWastedBytes(0)
 {
+	m_pool.resize(MAX_POOL_SIZE / 8);
 }
 Heap::~Heap()
 {
@@ -15,7 +15,7 @@ Heap::~Heap()
 	// free memory
 	for(auto iter = m_pool.begin(); iter != m_pool.end(); ++iter)
 	{
-		delete (iter->second);
+		delete iter->pool;
 	}
 
 }
@@ -28,7 +28,7 @@ unsigned int Heap::GetMemoryUsageInBytes() const
 	unsigned int total = 0;
 	for(auto iter = m_pool.begin(); iter != m_pool.end(); ++iter)
 	{
-		const MemoryPool& pool = *(iter->second);
+		const MemoryPool& pool = *(iter->pool);
 		total += pool.GetMemoryUsage();
 	}
 
@@ -39,7 +39,7 @@ void Heap::Sort()
 {
 	for(auto iter = m_pool.begin(); iter != m_pool.end(); ++iter)
 	{
-		iter->second->SortBlocks();
+		iter->pool->SortBlocks();
 	}
 }
 
@@ -53,33 +53,43 @@ float Heap::GetMemoryUsageInMb() const
 	return GetMemoryUsageInBytes() / 1048576.0f;
 }
 
-void Heap::GetMemoryInfo(char* pStr, unsigned int uiLength) const
+void Heap::GetMemoryInfo(char* buffer, unsigned int uiLength) const
 {
-	sprintf_s(pStr,uiLength,"\nTotal memory pool usage: %f(kb)\n",GetMemoryUsageInKb());
+	sprintf_s(buffer,uiLength,"\nTotal memory pool usage: %f(kb)\n",GetMemoryUsageInKb());
+}
+
+unsigned int Heap::GetNumberOfPools() const
+{
+	return m_pool.size();
+}
+
+unsigned int Heap::GetWastedBytes(unsigned int pool) const
+{
+	return (pool < GetNumberOfPools()) ? -1 : m_pool[pool].uiWastedBytes;
+}
+unsigned int Heap::GetWastedBytes() const
+{
+	return m_uiTotalWastedBytes;
 }
 
 
 MemoryPool& Heap::GetPool(unsigned int size)
 {
 	const unsigned int uiNewSize = ((size+7)&~7);
-	const unsigned int uiDifference = uiNewSize - size;
-
-	m_uiWastedBytes = uiDifference * 512;
-
-	auto iter = m_pool.find(uiNewSize);
+	const unsigned int uiIndex = (uiNewSize / 8) - 1;
 	
-	if(iter == m_pool.end())
+	if(m_pool[uiIndex].pool == nullptr)
 	{
-		// insert pool into hash map
-		//xtodo: could make size dynamic
-		unsigned int uiBlocks = 512 - 2*uiNewSize;
-		uiBlocks = Math::Clamp(uiBlocks,16u,512u);
+		// insert pool into vector
+		const unsigned int uiBlocks = ((MAX_POOL_SIZE * 2) - uiNewSize);
 
+		const unsigned int uiWastedBytes = uiBlocks*(uiNewSize - size);
+		m_uiTotalWastedBytes += uiWastedBytes;
 
-		auto pair = m_pool.insert(make_pair(uiNewSize,new MemoryPool(uiNewSize,uiBlocks)));
-		iter = pair.first;
+		m_pool[uiIndex].pool = new MemoryPool(uiNewSize,uiBlocks);
+		m_pool[uiIndex].uiWastedBytes = uiWastedBytes;
 	}
 
 	// return the memory pool
-	return *(iter->second);
+	return *m_pool[uiIndex].pool;
 }

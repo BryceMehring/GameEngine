@@ -7,7 +7,7 @@
 
 void* Bnew(unsigned int bytes)
 {
-	gassert(bytes <= 256,"Allocate less than 257 bytes\n from the memory pool");
+	gassert(bytes <= MAX_POOL_SIZE,"Allocate less than 257 bytes\n from the memory pool");
 	return Heap::Instance().GetPool(bytes).Allocate();
 }
 

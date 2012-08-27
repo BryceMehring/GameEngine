@@ -359,22 +359,21 @@ bool IsPrime(unsigned int n)
 	return success;
 }
 
-void RegisterScriptVecMath(::asIScriptEngine* pEngine)
+// todo: move these functions elsewhere?
+
+template< class T >
+void Constructor(void *memory)
 {
-	//D3DXVECTOR2
+  // Initialize the pre-allocated memory by calling the
+  // object constructor with the placement-new operator
+  new(memory) T();
+}
 
-	// todo finish registering the vector interface to script
-	DBAS(pEngine->RegisterObjectType("Vector2",sizeof(D3DXVECTOR2),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
-	DBAS(pEngine->RegisterObjectProperty("Vector2","float x",offsetof(D3DXVECTOR2,x)));
-	DBAS(pEngine->RegisterObjectProperty("Vector2","float y",offsetof(D3DXVECTOR2,x)));
-
-	DBAS(pEngine->RegisterGlobalFunction("bool IsPrime(uint)",asFUNCTION(IsPrime),asCALL_CDECL));
-
-	DBAS(pEngine->RegisterGlobalFunction("uint log2(uint)",asFUNCTION(LOG2),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("bool InRange(float,float,float)",asFUNCTION(InRange),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("float rand(float,float)",asFUNCTION(GetRandFloat),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("uint rand(uint,uint)",asFUNCTION(GetRandInt),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("float clamp(float,float,float)",asFUNCTION(Clamp<float>),asCALL_CDECL));
+template< class T >
+void Destructor(void *memory)
+{
+  // Uninitialize the memory by calling the object destructor
+  ((Object*)memory)->~T();
 }
 
 unsigned int LOG2(unsigned int v)
@@ -393,6 +392,24 @@ unsigned int LOG2(unsigned int v)
 	}
 
 	return r;
+}
+
+void RegisterScriptVecMath(::asIScriptEngine* pEngine)
+{
+	//D3DXVECTOR2
+
+	// todo finish registering the vector interface to script
+	DBAS(pEngine->RegisterObjectType("vector2",sizeof(D3DXVECTOR2),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
+	DBAS(pEngine->RegisterObjectProperty("vector2","float x",offsetof(D3DXVECTOR2,x)));
+	DBAS(pEngine->RegisterObjectProperty("vector2","float y",offsetof(D3DXVECTOR2,x)));
+
+	DBAS(pEngine->RegisterGlobalFunction("bool IsPrime(uint)",asFUNCTION(IsPrime),asCALL_CDECL));
+
+	DBAS(pEngine->RegisterGlobalFunction("uint log2(uint)",asFUNCTION(LOG2),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("bool InRange(float,float,float)",asFUNCTION(InRange),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("float rand(float,float)",asFUNCTION(GetRandFloat),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("uint rand(uint,uint)",asFUNCTION(GetRandInt),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("float clamp(float,float,float)",asFUNCTION(Clamp<float>),asCALL_CDECL));
 }
 
 } // Math

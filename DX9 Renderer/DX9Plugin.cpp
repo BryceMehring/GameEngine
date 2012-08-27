@@ -580,7 +580,7 @@ void DX9Render::RegisterScript()
 
 	DBAS(pEngine->RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(pEngine->RegisterObjectMethod("DX9Render","void EnumerateDisplayAdaptors()",asMETHOD(DX9Render,EnumerateDisplayAdaptors),asCALL_THISCALL));
-	DBAS(pEngine->RegisterObjectMethod("DX9Render","void GetNumDisplayAdaptors()",asMETHOD(DX9Render,GetNumDisplayAdaptors),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod("DX9Render","uint GetNumDisplayAdaptors()",asMETHOD(DX9Render,GetNumDisplayAdaptors),asCALL_THISCALL));
 	DBAS(pEngine->RegisterObjectMethod("DX9Render","void SetDisplayMode(uint)",asMETHOD(DX9Render,SetDisplayMode),asCALL_THISCALL));
 	DBAS(pEngine->RegisterObjectMethod("DX9Render","const string& GetDisplayModeStr(uint) const",asMETHOD(DX9Render,GetDisplayModeStr),asCALL_THISCALL));
 	DBAS(pEngine->RegisterObjectMethod("DX9Render","void tf()",asMETHOD(DX9Render,ToggleFullscreen),asCALL_THISCALL));

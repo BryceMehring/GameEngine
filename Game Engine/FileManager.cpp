@@ -20,19 +20,78 @@ FileManager::~FileManager()
 		out.close();
 	}
 }
+
+void FileManager::GetDelimitedExtensions(const std::string& ext, std::vector<string>& out) const
+{
+	std::stringstream stream(ext);
+
+	while(!stream.eof())
+	{
+		string temp;
+		stream >> temp;
+
+		out.push_back(temp);
+	}
+}
+
+unsigned int FileManager::CountNumberOfLines(const string& path, const string& ext) const
+{
+	std::vector<std::string> files;
+	LoadAllFilesFromDictionary(files,path,ext);
+
+	unsigned int uiTotalLines = 0;
+	for(unsigned int i = 0; i < files.size(); ++i)
+	{
+		std::ifstream inFile(files[i]); 
+		uiTotalLines += std::count(std::istreambuf_iterator<char>(inFile), std::istreambuf_iterator<char>(), '\n');
+	}
+
+	return uiTotalLines;
+}
+
+
 void FileManager::LoadAllFilesFromDictionary(std::vector<std::string>& files, const std::string& path, const std::string& ext) const
 {
-	// note: when the path is empty, it causes the program to crash
-	if(!path.empty())
+	// If there is a path and ext
+	if(!path.empty() && !ext.empty())
 	{
-		for ( boost::filesystem::directory_iterator it( path );
-			it != boost::filesystem::directory_iterator(); ++it )
+		// extract all of the extensions from the string
+		std::vector<string> extensions;
+		GetDelimitedExtensions(ext,extensions);
+
+		// stack emulates recursion
+		std::stack<std::string> dir;
+		dir.push(path);
+
+		// Loop over all of the dictionaries
+		while(!dir.empty())
 		{
-			if ( boost::filesystem::is_regular_file( it->status() ))
+			string top = dir.top();
+			dir.pop();
+
+			// Loop over all files/dict in path
+			for ( boost::filesystem::directory_iterator it( top ); it != boost::filesystem::directory_iterator(); ++it )
 			{
-				if( boost::algorithm::to_lower_copy(it->path().extension().string()) == ext)
+				// If the current path is a dict
+				if(boost::filesystem::is_directory(it->status()))
 				{
-					files.push_back(it->path().string());
+					// Add it to the stack
+					dir.push(it->path().string());
+				}
+				// If the current path is a file
+				else if ( boost::filesystem::is_regular_file( it->status() ))
+				{
+					// Loop over all of the extensions
+					for(unsigned int i = 0; i < extensions.size(); ++i)
+					{
+						// if the file extension matches one in the list of extensions
+						if( boost::algorithm::to_lower_copy(it->path().extension().string()) == extensions[i] )
+						{
+							// add the file to the vector
+							files.push_back(it->path().string());
+							break;
+						}
+					}
 				}
 
 			}
@@ -42,7 +101,7 @@ void FileManager::LoadAllFilesFromDictionary(std::vector<std::string>& files, co
 
 }
 
-bool FileManager::GetFolder(std::string& folderpath)
+bool FileManager::GetFolder(std::string& folderpath) const
 {
    bool retVal = false;
 
@@ -141,7 +200,11 @@ void FileManager::RegisterScript(asVM& vm)
 
 	DBAS(pEngine->RegisterObjectType(NAME,0,asOBJ_REF | asOBJ_NOHANDLE));
 
+	// todo: get this to work.
+	//DBAS(pEngine->RegisterObjectMethod(NAME,"void LoadAllFilesFromDictionary(array<string>& out, const string& in, const string& in) const",asMETHOD(FileManager,LoadAllFilesFromDictionary),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod(NAME,"uint CountNumberOfLines(const string& in, const string& in) const",asMETHOD(FileManager,CountNumberOfLines),asCALL_THISCALL));
 	DBAS(pEngine->RegisterObjectMethod(NAME,"string OpenFileName() const",asMETHOD(FileManager,OpenFileName),asCALL_THISCALL));
+	DBAS(pEngine->RegisterObjectMethod(NAME,"bool GetFolder(string& out) const",asMETHOD(FileManager,GetFolder),asCALL_THISCALL));
 	DBAS(pEngine->RegisterGlobalProperty("FileManager fm",this));
 
 	pEngine->Release();

@@ -4,7 +4,7 @@
 
 #include "MemoryPool.h"
 #include "Singleton.h"
-#include <hash_map>
+#include <vector>
 #include <map>
 
 class Heap : public Singleton<Heap>
@@ -23,8 +23,12 @@ public:
 	float GetMemoryUsageInKb() const;
 	float GetMemoryUsageInMb() const;
 
+	unsigned int GetNumberOfPools() const;
+	unsigned int GetWastedBytes(unsigned int pool) const;
+	unsigned int GetWastedBytes() const;
+
 	// Memory usage in text form
-	void GetMemoryInfo(char* pStr, unsigned int uiLength) const;
+	void GetMemoryInfo(char* buffer, unsigned int uiLength) const;
 
 	// todo: implement
 	void SaveLogFile() const;
@@ -35,11 +39,17 @@ private:
 
 	Heap();
 
+	struct Data
+	{
+		MemoryPool* pool;
+		unsigned int uiWastedBytes;
+	};
+
 	// Data members
-	typedef std::hash_map<unsigned int,MemoryPool*> POOL_MAP;
+	typedef std::vector<Data> POOL_MAP;
 	POOL_MAP m_pool;
 
-	unsigned int m_uiWastedBytes;
+	unsigned int m_uiTotalWastedBytes;
 };
 
 /*#define MEMPOOL_DECLARE(CLASS) \
