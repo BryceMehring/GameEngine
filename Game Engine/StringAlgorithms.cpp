@@ -42,6 +42,17 @@ unsigned int myHash(const char *str)
     return hash;
 }
 
+void GetDelimitedString(const std::string& str, std::vector<std::string>& out, char delim)
+{
+	std::stringstream stream(str);
+	string temp;
+
+	while(getline(stream,temp,delim))
+	{
+		out.push_back(temp);
+	}
+}
+
 float CompareFiles(const std::string& file1, const std::string& file2)
 {
 	const std::string files[2] = {file1,file2};

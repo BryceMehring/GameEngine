@@ -27,13 +27,12 @@ public:
 	unsigned int GetWastedBytes(unsigned int pool) const;
 	unsigned int GetWastedBytes() const;
 
-	// Memory usage in text form
-	void GetMemoryInfo(char* buffer, unsigned int uiLength) const;
-
 	// todo: implement
 	void SaveLogFile() const;
 
 	void Sort();
+
+	void Compact();
 
 private:
 
@@ -48,6 +47,8 @@ private:
 	// Data members
 	typedef std::vector<Data> POOL_MAP;
 	POOL_MAP m_pool;
+
+	const unsigned int MULTIPLE_OF;
 
 	unsigned int m_uiTotalWastedBytes;
 };

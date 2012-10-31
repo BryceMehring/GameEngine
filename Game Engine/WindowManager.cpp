@@ -14,15 +14,10 @@ m_hInstance(hInstance), m_hWindowHandle(NULL), m_bPaused(false)
 	// Initialize
 	
 	InitializeWindows(hInstance);
-	//RedirectIOToConsole();
 	RegisterScript();
 
 	::FileManager::Instance().WriteToLog("Window Constructed");
 	s_pThis = this;
-	//SendMessage(m_hWindowHandle,0,0,0);
-
-	// todo: is this the best location for this?
-	
 }
 WindowManager::~WindowManager()
 {
@@ -154,25 +149,5 @@ void WindowManager::Quit()
 
 void WindowManager::RegisterScript()
 {
-	// todo: maybe I could separate this from this class
-
-	/*m_vm.reset(new asVM());
-
-	asIScriptEngine* pEngine = m_vm->GetScriptEngine();
-
-	asVM::RegisterScript(pEngine);
-	UI::RegisterScript(pEngine);
-
-	asIScriptEngine& scriptEngine = GetScriptVM().GetScriptEngine();
-
-	// IEngine
-	// todo: where should the registering go?
-
-	// what should I ware today
-	DBAS(scriptEngine.RegisterObjectType("IEngine",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(scriptEngine.RegisterObjectMethod("IEngine","void Quit()",asMETHOD(WindowManager,Quit),asCALL_THISCALL));
-	DBAS(scriptEngine.RegisterObjectMethod("IEngine","string OpenFileName()",asMETHOD(WindowManager,OpenFileName),asCALL_THISCALL));
-	DBAS(scriptEngine.RegisterGlobalProperty("IEngine engine",this));
-
-	scriptEngine.Release();*/
+	
 }

@@ -145,36 +145,6 @@ D3DXVECTOR3 Reflect(const D3DXVECTOR3& dir, const D3DXVECTOR3& normal)
 	return 2*normal*D3DXVec3Dot(&dir,&normal) - dir;
 }
 
-/*void NormalizeScreenRect(const RECT& R, FRECT& out)
-{
-	RECT window;
-	GetWindowRect(GetActiveWindow(),&window);
-
-	float fWidth = (float)window.right - window.left;
-	float fHeight = (float)window.bottom - window.top;
-	float fAspect = fWidth / fHeight;
-	
-	// todo: create a function that uses this algorithm to reduce code
-	out.left = (R.left/(fWidth*0.5f)-1.0f/fAspect);
-	out.top = (1.0f-(R.top/(fHeight*0.5f)));
-	out.right = (R.right/(fWidth*0.5f)-1.0f/fAspect);
-	out.bottom = 1.0f-(R.bottom/(fHeight*0.5f));
-}
-*/
-/*double intersectRaySphere(D3DVECTOR rO, D3DVECTOR rV, D3DVECTOR sO, double sR) {
-	
-   D3DVECTOR Q = sO-rO;
-   double c = lengthOfVector(Q);
-   double v = dot(Q,rV);
-   double d = sR*sR - (c*c - v*v);
-
-   // If there was no intersection, return -1
-   if (d < 0.0) return (-1.0f);
-
-   // Return the distance to the [first] intersecting point
-   return (v - sqrt(d));
-}
-*/
 float RayCircleInsersection(const D3DXVECTOR2& center, float r, const D3DXVECTOR2& pos, const D3DXVECTOR2& dir)
 {
 	D3DXVECTOR2 Q = center - pos;
@@ -225,6 +195,23 @@ bool Intersects(const FRECT& rect1, const FRECT& rect2)
 }
 
 bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P)
+{
+	int j= length - 1;
+	bool oddNodes = false;
+
+	for(unsigned int i=0; i < length; i++)
+	{
+		if ((pArray[i].y< P.y && pArray[j].y>= P.y ||   pArray[j].y< P.y && pArray[i].y>=P.y) &&  (pArray[i].x<=P.x || pArray[j].x<=P.x))
+		{
+			oddNodes^=(pArray[i].x+(P.y-pArray[i].y)/(pArray[j].y-pArray[i].y)*(pArray[j].x-pArray[i].x)<P.x);
+		}
+		j=i;
+	}
+
+	return oddNodes; 
+}
+
+bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P)
 {
 	int j= length - 1;
 	bool oddNodes = false;
@@ -318,8 +305,7 @@ float GetRandFloat(float a, float b)
 
 unsigned int GetRandInt(unsigned int a, unsigned int b)
 {
-	// todo: need to check this
-	return a + (xor128() % b);
+	return a + (rand() % b);
 }
 
 bool InRange(float value, float min, float max)
@@ -359,23 +345,6 @@ bool IsPrime(unsigned int n)
 	return success;
 }
 
-// todo: move these functions elsewhere?
-
-template< class T >
-void Constructor(void *memory)
-{
-  // Initialize the pre-allocated memory by calling the
-  // object constructor with the placement-new operator
-  new(memory) T();
-}
-
-template< class T >
-void Destructor(void *memory)
-{
-  // Uninitialize the memory by calling the object destructor
-  ((Object*)memory)->~T();
-}
-
 unsigned int LOG2(unsigned int v)
 {
 	const unsigned int b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
@@ -394,17 +363,92 @@ unsigned int LOG2(unsigned int v)
 	return r;
 }
 
+unsigned int LOG10(unsigned int i)
+{
+	static const unsigned int PowersOf10[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
+
+	int t = (LOG2(i) + 1) * 1233 >> 12; // temp
+	int r = t - (i < PowersOf10[t]);
+	return r;
+}
+
+unsigned int NumDigits(unsigned int uiNumber)
+{
+	if(uiNumber == 0)
+		return 1;
+
+	return LOG10(uiNumber) + 1;
+}
+
+// uiNumber: base 10, uiBase: base of the output 
+/*unsigned int NumDigits(unsigned int uiNumber, unsigned int uiBase)
+{
+	return ((unsigned int)(log((float)uiNumber) / log((float)uiBase))) + 1;
+}*/
+
+unsigned int NumDigits(unsigned int uiNumber, unsigned int uiBase)
+{
+	if(uiNumber == 0)
+		return 1;
+
+	unsigned int uiCount = 0;
+	while(uiNumber != 0)
+	{
+		uiNumber /= uiBase;
+		uiCount++;
+	}
+
+	return uiCount;
+}
+
+std::string ConvertTo(unsigned int uiInputNumber, unsigned int uiTargetBase)
+{
+	std::string targetNumber;
+
+	if(uiTargetBase > 1)
+	{
+		// num of characters in target base
+		const unsigned int uiTotalDigits = NumDigits(uiInputNumber,uiTargetBase);
+		unsigned int i = uiTotalDigits - 1;
+
+		// resize string to final size
+		targetNumber.resize(uiTotalDigits);
+
+		while(uiInputNumber > 0)
+		{
+			unsigned int uiNewDigit = (uiInputNumber % uiTargetBase);
+
+			if(uiNewDigit >= 10)
+			{
+				char hexChar = (uiNewDigit - 10) + 'A';
+				targetNumber[i] = hexChar;
+			}
+			else
+			{
+				targetNumber[i] = '0' + uiNewDigit;
+			}
+
+			uiInputNumber /= uiTargetBase;
+			i--;
+		}
+	}
+	
+	return targetNumber;
+}
+
 void RegisterScriptVecMath(::asIScriptEngine* pEngine)
 {
 	//D3DXVECTOR2
 
-	// todo finish registering the vector interface to script
+	// todo: finish registering the vector interface to script
 	DBAS(pEngine->RegisterObjectType("vector2",sizeof(D3DXVECTOR2),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
 	DBAS(pEngine->RegisterObjectProperty("vector2","float x",offsetof(D3DXVECTOR2,x)));
 	DBAS(pEngine->RegisterObjectProperty("vector2","float y",offsetof(D3DXVECTOR2,x)));
 
 	DBAS(pEngine->RegisterGlobalFunction("bool IsPrime(uint)",asFUNCTION(IsPrime),asCALL_CDECL));
-
+	DBAS(pEngine->RegisterGlobalFunction("string ConvertTo(uint,uint)",asFUNCTION(ConvertTo),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("uint NumDigits(uint)",asFUNCTIONPR(NumDigits,(unsigned int),unsigned int),asCALL_CDECL));
+	DBAS(pEngine->RegisterGlobalFunction("uint NumDigits(uint,uint)",asFUNCTIONPR(NumDigits,(unsigned int,unsigned int),unsigned int),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("uint log2(uint)",asFUNCTION(LOG2),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("bool InRange(float,float,float)",asFUNCTION(InRange),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("float rand(float,float)",asFUNCTION(GetRandFloat),asCALL_CDECL));

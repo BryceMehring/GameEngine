@@ -1,7 +1,7 @@
 #pragma once
 #include "istatecreator.h"
-#include "GameStateFactory.h"
 
+// What if these objects are singleton?
 class GameOfLifeCreator : public IStateCreator
 {
 public:
@@ -9,5 +9,9 @@ public:
 	GameOfLifeCreator();
 	virtual IGameState* Create() const;
 
-} ;
+private:
+
+
+
+};
 

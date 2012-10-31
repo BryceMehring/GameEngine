@@ -2,7 +2,6 @@
 #include "FileManager.h"
 #include "StringAlgorithms.h"
 #include "gassert.h"
-#include <d3dx9.h>
 #include <vector>
 #include <cassert>
 
@@ -36,8 +35,18 @@ void TextureManager::LoadTexture(const std::string& file)
 	D3DSURFACE_DESC format;
 	pTexture->GetLevelDesc(0,&format);
 
+	// try to read number of cells in the animation
+	std::fstream in(file + ".txt",ios::in);
+	unsigned int cells = 1;
+
+	if(in)
+	{
+		in >> cells;
+		in.close();
+	}
+
 	// fill out texture structure 
-	Texture tex = {pTexture,format.Width,format.Height,D3DXVECTOR3(format.Width / 2.0f, format.Height / 2.0f, 0.0f)};
+	Texture tex = {pTexture,format.Width,format.Height,cells};
 
 	std::string name = GetFileNameFromPath(file);
 
@@ -69,7 +78,7 @@ void TextureManager::ExtractNormals(Texture& texture)
 	D3DLOCKED_RECT R;
 	pTexture->LockRect(0,&R,NULL,D3DLOCK_READONLY);
 
-	DWORD* imgData = (DWORD*)R.pBits;
+	/*DWORD* imgData = (DWORD*)R.pBits;
 	for(unsigned int i = 0; i < texture.uiHeight; ++i)
 	{
 		for(unsigned int j = 0; j < texture.uiWidth; ++j)
@@ -82,7 +91,7 @@ void TextureManager::ExtractNormals(Texture& texture)
 				texture.normals.insert(make_pair(D3DXVECTOR2(j,i),D3DXVECTOR2(ConvertColorToVec(color))));
 			}
 		}
-	}
+	}*/
 
 	pTexture->UnlockRect(0);
 }
@@ -90,7 +99,7 @@ void TextureManager::ExtractNormals(Texture& texture)
 void TextureManager::LoadAllTexturesFromFolder(const std::string& folder)
 {
 	std::vector<string> textureFileNames;
-	FileManager::Instance().LoadAllFilesFromDictionary(textureFileNames,folder,".png");
+	FileManager::Instance().LoadAllFilesFromDictionary(textureFileNames,folder,".png .jpg");
 
 	// loop through each file, and create the texture
 	for_each(textureFileNames.begin(),textureFileNames.end(),[&](string& file)
@@ -109,9 +118,10 @@ bool TextureManager::GetTextureInfo(const std::string& name, TextureInfo& out) c
 	if(success)
 	{
 		const Texture& tex = iter->second;
-		out.center = tex.center;
-		out.uiHeight = tex.uiHeight;
-		out.uiWidth = tex.uiWidth;
+		const char* pStart = (char*)&tex + sizeof(void*);
+		const unsigned int uiSize = sizeof(TextureInfo) - sizeof(void*);
+		memcpy_s((void*)&out,sizeof(TextureInfo),(void*)pStart,uiSize);
+		//memcpy((void*)&out,(void*)pStart,uiSize);
 	}
 
 	return success;

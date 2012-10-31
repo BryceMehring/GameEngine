@@ -46,6 +46,8 @@ public:
 	// The underlying sorting algorithm is insertion sort, returning the number of out of order nodes
 	unsigned int SortBlocks();
 
+	void Compact();
+
 	// info
 	unsigned int GetBlocks() const;
 	unsigned int GetSize() const;
@@ -100,8 +102,6 @@ private:
 	void CheckNextNodeForMemory();
 	bool FreeSpace(Node* pNode) const; 
 
-	// todo: the first two functions could be combined
-
 	// for adding & moving nodes around
 	void Move(Node* pTo, Node* pNode);
 	void Erase(Node* pNode);
@@ -112,7 +112,7 @@ private:
 
 	// creates a linked list from the contiguous memory block pMem
 	// the amount of memory that pMem should be BlockArraySize()
-	void LinkMemoryBlock();
+	void LinkMemoryBlock(char* pMemory);
 
 	unsigned int BlockArraySize() const; // m_iLength * m_iSize
 

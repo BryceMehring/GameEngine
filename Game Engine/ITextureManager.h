@@ -9,7 +9,7 @@ struct TextureInfo
 {
 	unsigned int uiWidth;
 	unsigned int uiHeight;
-	D3DXVECTOR3 center;
+	unsigned int uiCells;
 };
 
 class ITextureManager

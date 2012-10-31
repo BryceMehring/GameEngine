@@ -31,8 +31,10 @@ public:
 	virtual bool IsKeyDown() const; // true if WM_CHAR is thrown
 
 	// Mouse
+	// todo: return const ref 
 	virtual POINT MousePos();
-	virtual bool MouseClick(int Button, bool once);
+	virtual const D3DXVECTOR2& GetTransformedMousePos() const;
+	virtual bool MouseClick(int Button, bool once) const;
 
 	virtual int MouseX();
 	virtual int MouseY();
@@ -61,6 +63,7 @@ private:
 	int m_iMouseY;
 	int m_iMouseZ;
 	POINT m_MousePos;
+	D3DXVECTOR2 m_tpos;
 
 	bool m_bMouseClick[2];
 	bool m_bMouseClickOnce[2];
@@ -77,7 +80,7 @@ private:
 	// helper functions
 	void Reset();
 	void ReadMouse(const RAWMOUSE& mouse);
-	void ReadKeyboard();
+	void ReadKeyboard(const RAWKEYBOARD& keyboard);
 
 	void InitRawInput();
 	void LoadCursors();

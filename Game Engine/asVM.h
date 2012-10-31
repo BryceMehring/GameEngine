@@ -92,6 +92,8 @@ public:
 
 	void SendMessage(const std::string& msg) const;
 
+	void Save() const;
+
 private:
 
 	typedef Delegate<void,void> asDelegate;

@@ -39,7 +39,7 @@ public:
 	virtual ~Game();
 
 	const std::string& GetCurrentState() const;
-	void SetNextState(const std::string& name);
+	void SetNextState(const std::string& state);
 	
 	void ReloadPlugins();
 	void ReloadPluginsFromUserFolder();
@@ -79,7 +79,7 @@ protected:
 
 private:
 
-	IGameState* m_pNextState;
+	::std::string m_NextState;
 
 	Timer m_timer;
 

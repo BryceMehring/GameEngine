@@ -23,6 +23,11 @@ public:
 	explicit RTTI(const std::string& className) : m_className(className) {}
 	const std::string& GetName() const { return m_className; }
 
+	bool IsEqual(const RTTI& other) const
+	{
+		return (this == &other);
+	}
+
 private:
 
 	std::string m_className;

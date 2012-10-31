@@ -20,16 +20,18 @@ GameOfLifeMenu::GameOfLifeMenu()
 
 void GameOfLifeMenu::Init(Game& game)
 {
+	/*if(m_gui.GetMenu() != nullptr)
+		return;*/
+
 	IRenderer& renderer = game.GetRenderer();
-	const int iSkize = sizeof(GameOfLifeMenu);
 
 	RECT R = {10,10,500,500};
 
 	RECT R2 = {200,100,0,0};
-	renderer.GetStringRec("Options",R2);
+	renderer.Get2DRenderer().GetStringRec("Options",R2);
 
 	RECT R3 = {300,100,0,0};
-	renderer.GetStringRec("State",R3);
+	renderer.Get2DRenderer().GetStringRec("State",R3);
 
 	POINT mainPoint = {15,15};
 
@@ -49,10 +51,16 @@ void GameOfLifeMenu::Init(Game& game)
 
 	::DxTriangle* pTriangle = new DxTriangle();
 	::D3DXVECTOR2 VEC[4];
-	VEC[0] = D3DXVECTOR2(270,50);
+
+	/*VEC[0] = D3DXVECTOR2(270,50);
 	VEC[1] = D3DXVECTOR2(290,100);
 	VEC[2] = D3DXVECTOR2(240,100);
-	VEC[3] = D3DXVECTOR2(270,50);
+	VEC[3] = D3DXVECTOR2(270,50);*/
+
+	VEC[0] = D3DXVECTOR2(-0.8f,0.8f);
+	VEC[1] = D3DXVECTOR2(0.0f,1.0f);
+	VEC[2] = D3DXVECTOR2(0.8f,0.8f);
+	VEC[3] = D3DXVECTOR2(-0.8f,0.8f);
 	pTriangle->ConstructFromArray(VEC,4);
 
 	// Delegates
@@ -118,7 +126,7 @@ void GameOfLifeMenu::BuildResolutionMenu(Game& game, Menu* pMenu)
 	GenericButton<UINT>::DELEGATE setDisplayModeCallback(&renderer,&IRenderer::SetDisplayMode);
 	GenericButton<Menu*>::DELEGATE setMenuCallback = m_gui.CreateCallback();
 
-	renderer.GetStringRec("Resolution Options",R2);
+	renderer.Get2DRenderer().GetStringRec("Resolution Options",R2);
 	GenericButton<Menu*>* pResMenuButton = new SquareButton<Menu*>(R2,"Resolution Options");
 	pResMenuButton->SetCallback(setMenuCallback);
 	pResMenuButton->SetArg(pResMenu);
@@ -128,7 +136,7 @@ void GameOfLifeMenu::BuildResolutionMenu(Game& game, Menu* pMenu)
 
 	// build toggle fullscreen button
 	RECT tfR = {400,400,0,0};
-	renderer.GetStringRec("Toggle Fullscreen",tfR);
+	renderer.Get2DRenderer().GetStringRec("Toggle Fullscreen",tfR);
 	GenericButton<void>* pTFButton = new SquareButton<void>(R2,"Toggle Fullscreen");
 	pTFButton->SetCallback(GenericButton<void>::DELEGATE(&renderer,&IRenderer::ToggleFullscreen));
 	
@@ -140,18 +148,17 @@ void GameOfLifeMenu::BuildResolutionMenu(Game& game, Menu* pMenu)
 	for(UINT i = 0; i < uiDisplayModes; ++i)
 	{
 		// the problem, here is that % resets to 0, not what I want it to do
-		RECT R3 = {50 + 150 * j,(50 + 50 * k),0,0};
+		RECT R3 = {50 + 150 * j,(40 + 50 * k),0,0};
 
-		renderer.GetStringRec(renderer.GetDisplayModeStr(i).c_str(),R3);
+		renderer.Get2DRenderer().GetStringRec(renderer.GetDisplayModeStr(i).c_str(),R3);
 
 		GenericButton<UINT>* pStateButton = new SquareButton<UINT>(R3,renderer.GetDisplayModeStr(i));
 		pStateButton->SetCallback(setDisplayModeCallback);
-		//pStateButton->s
 		pStateButton->SetArg(i);
 
 		pResMenu->AddElement(pStateButton);
 
-		if(R3.bottom >= R.bottom)
+		if((R3.bottom + 3*(R3.bottom - R3.top)) >= R.bottom)
 		{
 			 //i = 0;
 			 ++j;
@@ -172,7 +179,7 @@ void GameOfLifeMenu::BuildQuitButton(Game& game, Menu* pMenu)
 	GenericButton<void>::DELEGATE callback(Quit);
 
 	::RECT R = { 400,100,0,0};
-	game.GetRenderer().GetStringRec(pStr,R);
+	game.GetRenderer().Get2DRenderer().GetStringRec(pStr,R);
 
 	SquareButton<void>* pButton = new SquareButton<void>(R,pStr);
 	pButton->SetCallback(callback);
@@ -207,7 +214,7 @@ void GameOfLifeMenu::BuildPluginViewMenu(Game& game, Menu* pMenu)
 	// Create the button
 	const char* pName = "View Plugins";
 	RECT R = {100,100};
-	game.GetRenderer().GetStringRec(pName,R);
+	game.GetRenderer().Get2DRenderer().GetStringRec(pName,R);
 
 	SquareButton<Menu*>* pButton = new SquareButton<Menu*>(R,pName);
 	pButton->SetCallback(m_gui.CreateCallback());
@@ -227,7 +234,7 @@ void GameOfLifeMenu::BuildPluginViewMenu(Game& game, Menu* pMenu)
 		char text[64];
 		sprintf_s(text,"%i. %s",i+1,pPlugin->GetName());
 
-		game.GetRenderer().GetStringRec(text,R);
+		game.GetRenderer().Get2DRenderer().GetStringRec(text,R);
 
 		SquareButton<void>* pButton = new SquareButton<void>(R,text);
 		pButton->SetCallback(GenericButton<void>::DELEGATE(pPlugin,&IPlugin::About));
@@ -238,10 +245,6 @@ void GameOfLifeMenu::BuildPluginViewMenu(Game& game, Menu* pMenu)
 
 void GameOfLifeMenu::Destroy(Game& game)
 {
-	//StateUpdater su(m_state,_DESTROYING);
-	//IRenderer* pRenderer = game
-	//StateUpdater su(m_state,::DESTROYING);
-
 }
 void GameOfLifeMenu::Update(Game& game)
 {
@@ -249,5 +252,11 @@ void GameOfLifeMenu::Update(Game& game)
 }
 void GameOfLifeMenu::Draw(Game& game)
 {
+	/*::D3DXVECTOR3 VEC[4];
+	VEC[0] = D3DXVECTOR3(0.0f,0.0f,1.0f);
+	VEC[1] = D3DXVECTOR3(1.0f,-1.0f,1.0f);
+
+	game.GetRenderer().DrawLine(VEC,2,0xffffffff);*/
+
 	m_gui.Render(game.GetRenderer());
 }

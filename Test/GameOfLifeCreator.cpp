@@ -1,4 +1,5 @@
 #include "GameOfLifeCreator.h"
+#include "GameStateFactory.h"
 #include "GameOfLife.h"
 
 // global instance of GameOfLifeCreator creator

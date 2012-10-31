@@ -57,10 +57,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DX93DRenderer.h" />
     <ClInclude Include="DX9Plugin.h" />
+    <ClInclude Include="DX92DRenderer.h" />
     <ClInclude Include="TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DX92DRenderer.cpp" />
     <ClCompile Include="DX9Plugin.cpp" />
     <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>

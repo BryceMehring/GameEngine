@@ -7,6 +7,7 @@
 
 using namespace std;
 
+
 // ===== DxPolygon =====
 
 DxPolygon::DxPolygon() : m_color(0xffffffff)
@@ -26,13 +27,13 @@ void DxPolygon::SetColor(DWORD color) { m_color = color; }
 void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
 {
 	gassert(pArray != nullptr,"Null pointer");
-	gassert(pArray[0] == pArray[size-1],"DxPolygon is not configured correctly");
+	//gassert(pArray[0] == pArray[size-1],"DxPolygon is not configured correctly");
 
 	// todo: is this line below needed?
 	// If one is constructing a polygon again, most of the time
 	// It will be the same shape
 	//note: Loop at QuadTree::Render()
-	 m_edges.clear();
+	m_edges.clear();
 	m_edges.resize(size);
 
 	// copy vectors from array into the dynamic array
@@ -45,7 +46,7 @@ unsigned int DxPolygon::GetSize() const { return m_edges.size(); }
 
 void DxPolygon::Render(IRenderer& renderer)
 {
-	renderer.DrawLine(&(m_edges.front()),m_edges.size(),m_color);
+	renderer.Get2DRenderer().DrawLine(&(m_edges.front()),m_edges.size(),m_color);
 }
 
 // algorithm from: http://alienryderflex.com/polygon/
@@ -87,6 +88,29 @@ const RECT& DxSquare::GetRect() const
 	return m_rect;
 }
 
+/*void DxSquare::SendMsg(int msg)
+{
+	switch(msg)
+	{
+	case 0:
+
+		RECT R;
+		GetWindowRect(GetActiveWindow(),&R);
+
+		RECT minus;
+		SubtractRect(&minus,&R,&m_rect);
+
+		m_rect.left += minus.left;
+		m_rect.top += minus.top;
+		m_rect.bottom += minus.bottom;
+		m_rect.right += minus.right;
+
+		ConstructFromRect(m_rect);
+
+		break;
+	}
+}*/
+
 bool DxSquare::IsPointInPolygon(POINT P) const
 {
 	return PtInRect(&m_rect,P) > 0;
@@ -98,6 +122,7 @@ DxTriangle::DxTriangle() {}
 DxTriangle::DxTriangle(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon(pArray,size) 
 {
 }
+
 
 // algorithm from: http://www.blackpawn.com/texts/pointinpoly/default.html
 bool DxTriangle::IsPointInPolygon(POINT P) const

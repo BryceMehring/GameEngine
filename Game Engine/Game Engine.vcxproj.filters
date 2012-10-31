@@ -25,9 +25,6 @@
     <Filter Include="Memory Management">
       <UniqueIdentifier>{fc603ad1-b4c6-47df-98a9-66654a014e54}</UniqueIdentifier>
     </Filter>
-    <Filter Include="State\Creator">
-      <UniqueIdentifier>{801eeabe-573f-4934-ac6e-54af254dcaeb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Managers">
       <UniqueIdentifier>{c62b9548-e921-4120-8d9d-a4c52282a637}</UniqueIdentifier>
     </Filter>
@@ -107,22 +104,9 @@
     <ClInclude Include="BNew.h">
       <Filter>Memory Management</Filter>
     </ClInclude>
-    <ClInclude Include="IStateCreator.h">
-      <Filter>State\Creator</Filter>
-    </ClInclude>
-    <ClInclude Include="MenuCreator.h">
-      <Filter>State\Creator</Filter>
-    </ClInclude>
-    <ClInclude Include="CreatorId.h">
-      <Filter>State\Creator</Filter>
-    </ClInclude>
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="VecMath.h" />
-    <ClInclude Include="StringAlgorithms.h" />
     <ClInclude Include="gassert.h" />
-    <ClInclude Include="ITextureManager.h">
-      <Filter>Rendering Addons</Filter>
-    </ClInclude>
     <ClInclude Include="GameStateConstants.h">
       <Filter>State</Filter>
     </ClInclude>
@@ -140,6 +124,16 @@
       <Filter>Memory Management</Filter>
     </ClInclude>
     <ClInclude Include="SingleInstance.h" />
+    <ClInclude Include="ITextureManager.h">
+      <Filter>Base Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="StringAlgorithms.h" />
+    <ClInclude Include="IStateCreator.h">
+      <Filter>State</Filter>
+    </ClInclude>
+    <ClInclude Include="Tiler.h">
+      <Filter>Rendering Addons</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileManager.cpp">

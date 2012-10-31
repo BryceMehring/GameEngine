@@ -15,6 +15,11 @@ public:
 	virtual void Draw(class Game& game) = 0;
 	virtual const class RTTI* GetType() const = 0;
 
+	//virtual void SendMsg(int msg, void* data) = 0;
+
+	// An example of the usage of SendMessage
+	// 
+
 protected:
 
 	Timer m_timer;

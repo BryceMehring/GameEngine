@@ -2,11 +2,12 @@
 #include "Camera.h"
 #include <dinput.h>
 
-Camera::Camera() : m_Speed(1.0f)
+Camera::Camera()
 {
 	memset(&m_PosW,0,sizeof(D3DXVECTOR3));
 	memset(&m_LookW,0,sizeof(D3DXVECTOR3));
 	memset(&m_RightW,0,sizeof(D3DXVECTOR3));
+	memset(&m_dir,0,sizeof(D3DXVECTOR3));
 
 	m_UpW.x = m_UpW.z = 0.0f;
 	m_UpW.y = 1.0f;
@@ -44,35 +45,16 @@ void Camera::setLens(float fov, float aspect, float nearZ, float farZ)
 	D3DXMatrixPerspectiveFovLH(&m_Proj,fov,aspect,nearZ,farZ);
 }
 
-void Camera::setSpeed(float s)
+void Camera::setDir(const D3DXVECTOR3& dir)
 {
-	m_Speed = s;
+	m_dir = dir;
 }
 
-void Camera::update(IKMInput& input, float dt)
+void Camera::update(float dt)
 {
-	D3DXVECTOR3 dir(0.0f,0.0f,0.0f);
-	if(input.KeyDown(DIK_W))
-	{
-		dir += m_LookW;
-	}
-	if(input.KeyDown(DIK_S))
-	{
-		dir -= m_LookW;
-	}
-	if(input.KeyDown(DIK_D))
-	{
-		dir += m_RightW;
-	}
-	if(input.KeyDown(DIK_D))
-	{
-		dir -= m_RightW;
-	}
+	m_PosW += m_dir * dt;
 
-	D3DXVec3Normalize(&dir,&dir);
-	m_PosW += dir*m_Speed*dt;
-
-	float pitch = input.MouseY() / 150.0f;
+	/*float pitch = input.MouseY() / 150.0f;
 	float yAngle = input.MouseX() / 150.0f;
 
 	D3DXMATRIX R;
@@ -84,23 +66,13 @@ void Camera::update(IKMInput& input, float dt)
 	D3DXMatrixRotationY(&R,yAngle);
 	D3DXVec3TransformCoord(&m_RightW,&m_RightW,&R);
 	D3DXVec3TransformCoord(&m_UpW,&m_UpW,&R);
-	D3DXVec3TransformCoord(&m_LookW,&m_LookW,&R);
+	D3DXVec3TransformCoord(&m_LookW,&m_LookW,&R);*/
+	//::D3DXMatrixLookAtLH(&m_View,&m_PosW,
 
 	buildView();
 
 	m_ViewProj = m_View * m_Proj;
 
-}
-
-void RegisterScript(asVM* pVM)
-{
-	//asIScriptEngine& engine = pVM->GetScriptEngine();
-
-///	DBAS(engine.RegisterObjectType("Camera",0,asOBJ_REF));
-//	DBAS(engine.RegisterObjectMethod("Camera","void setLens(float, float, float, float)",asMETHOD(Camera,setLens),asCALL_THISCALL));
-//	DBAS(engine.RegisterObjectMethod("Camera","void setSpeed(float)",asMETHOD(Camera,setSpeed),asCALL_THISCALL));
-
-	//RegisterRefCountingObject(Camera,engine);
 }
 
 void Camera::buildView()

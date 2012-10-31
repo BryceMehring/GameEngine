@@ -5,6 +5,7 @@
 #define _VECMATH_
 
 #include "d3dx9math.h"
+#include <string>
 
 namespace Math
 {
@@ -88,9 +89,8 @@ bool InRange(float value, float min, float max);
 
 bool Equals(float a, float b, float diff = 0.0001f);
 
-unsigned int LOG2(unsigned int v);
-
-// todo: I could put these collision functions in the cpp file
+unsigned int LOG2(unsigned int i);
+unsigned int LOG10(unsigned int i);
 
 // If rays interest, the return value is not -1
 float RayCircleInsersection(const D3DXVECTOR2& c, float r, const D3DXVECTOR2& pos, const D3DXVECTOR2& dir);
@@ -98,7 +98,6 @@ float RayCircleInsersection(const D3DXVECTOR2& c, float r, const D3DXVECTOR2& po
 // ray casting algorithm
 bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P);
 
-// todo: need to implement
 bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P);
 
 float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound); 
@@ -106,6 +105,10 @@ float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound);
 bool IsPrime(unsigned int);
 
 void RegisterScriptVecMath(class asIScriptEngine* pEngine);
+
+std::string ConvertTo(unsigned int uiInputNumber, unsigned int uiTargetBase);
+
+unsigned int NumDigits(unsigned int uiNumber);
 
 // collision interface
 

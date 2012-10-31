@@ -12,6 +12,18 @@
     <Filter Include="Creators">
       <UniqueIdentifier>{96a61f0c-0db9-4d5b-a57e-17ba08beeac9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Textures">
+      <UniqueIdentifier>{33ad7d58-94c0-4884-92cc-4e587c350cc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{beb1cbce-388d-485a-b1d4-bb22fb9d921c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts\Pong">
+      <UniqueIdentifier>{6594aa78-1116-4052-9737-6beda6b0530a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pong">
+      <UniqueIdentifier>{0d399537-3573-4a7e-a225-80b6de9b6859}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -43,9 +55,6 @@
     <ClInclude Include="GameOfLifeMenuCreator.h">
       <Filter>Creators</Filter>
     </ClInclude>
-    <ClInclude Include="Pong.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PongCreator.h">
       <Filter>Creators</Filter>
     </ClInclude>
@@ -55,5 +64,40 @@
     <ClInclude Include="GameOfLifeCreator.h">
       <Filter>Creators</Filter>
     </ClInclude>
+    <ClInclude Include="Pong.h">
+      <Filter>Header Files\Pong</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Textures\cell.png">
+      <Filter>Textures</Filter>
+    </None>
+    <None Include="..\Textures\paddle.png">
+      <Filter>Textures</Filter>
+    </None>
+    <None Include="..\Textures\Point - Copy.png">
+      <Filter>Textures</Filter>
+    </None>
+    <None Include="..\Textures\point normal mappng.png">
+      <Filter>Textures</Filter>
+    </None>
+    <None Include="..\Textures\Point.png">
+      <Filter>Textures</Filter>
+    </None>
+    <None Include="..\Textures\Square.png">
+      <Filter>Textures</Filter>
+    </None>
+    <None Include="..\Scripts\pong\destroy.as">
+      <Filter>Scripts\Pong</Filter>
+    </None>
+    <None Include="..\Scripts\pong\init.as">
+      <Filter>Scripts\Pong</Filter>
+    </None>
+    <None Include="..\Scripts\pong\pong.as">
+      <Filter>Scripts\Pong</Filter>
+    </None>
+    <None Include="..\Textures\flame_sprite.png">
+      <Filter>Textures</Filter>
+    </None>
   </ItemGroup>
 </Project>

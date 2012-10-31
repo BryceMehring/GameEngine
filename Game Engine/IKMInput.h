@@ -34,9 +34,11 @@ public:
 	virtual char GetKeyDown() const = 0;
 
 	// mouse
-	virtual bool MouseClick(int Button, bool once = true) = 0;
+	virtual bool MouseClick(int Button, bool once = true) const = 0;
 
 	virtual POINT MousePos() = 0;
+	virtual const struct D3DXVECTOR2& GetTransformedMousePos() const = 0;
+
 	virtual int MouseX() = 0;
 	virtual int MouseY() = 0;
 	virtual int MouseZ() = 0;

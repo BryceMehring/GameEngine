@@ -73,7 +73,6 @@ private:
 };
 
 
-// todo: this class should traverse the menu graph
 class GUI : public IRender
 {
 public:
@@ -88,6 +87,7 @@ public:
 	ChangeMenuCallback CreateCallback();
 
 	void SetMenu(Menu* pMenu);
+	Menu* GetMenu();
 
 	void Update(class IKMInput& input, double dt);
 	void Render(class IRenderer& renderer);
@@ -283,11 +283,10 @@ public:
 
 	// Enters a new line
 	void Write(const std::string& line, DWORD color = 0xffffffff, bool bContinue = false);
-
+	
 	virtual void Update(IKMInput&, double dt);
 	virtual void Render(IRenderer&);
 	
-	// todo: clears the buffer
 	virtual void CLS();
 
 	void SaveToFile(const std::string& file) const;
@@ -402,6 +401,23 @@ protected:
 	void Grab(double);
 	void Grab(unsigned int);
 	void Grab(bool);
+
+};
+
+class Slider : public IUIElement
+{
+public:
+
+	virtual void Select();
+	virtual void Deselect();
+	virtual void Trigger();
+	virtual void Render(IRenderer&);
+
+	virtual void Update(class IKMInput&, double dt);
+
+private:
+
+	std::string m_SpriteTexture;
 
 };
 

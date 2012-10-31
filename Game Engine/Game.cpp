@@ -2,7 +2,6 @@
 #include "Game.h"
 #include "FileManager.h"
 #include "Heap.h"
-#include "CreatorId.h"
 #include "RTTI.h"
 #include "Menu.h"
 #include <string>
@@ -14,7 +13,7 @@
 using namespace std;
 
 Game::Game(HINSTANCE hInstance) : m_window(hInstance), m_fDT(0.0f), 
-m_pRenderer(nullptr), m_pInput(nullptr), m_pNextState(nullptr), m_bConsoleEnabled(false)
+m_pRenderer(nullptr), m_pInput(nullptr), m_bConsoleEnabled(false)
 {
 	LoadAllDLL();
 
@@ -37,19 +36,18 @@ m_pRenderer(nullptr), m_pInput(nullptr), m_pNextState(nullptr), m_bConsoleEnable
 
 Game::~Game()
 {
-	delete m_pNextState;
+	// destroy the current state
+	m_StateMachine.GetState().Destroy(*this);
+
+	// remove the listener from the window
+	m_window.RemoveListener(m_iEventId);
+
 	delete m_pConsole;
 
 	// run the garbage collector before we destroy
 	asIScriptEngine* pEngine = m_vm.GetScriptEngine();
 	pEngine->GarbageCollect();
 	pEngine->Release();
-
-	// destroy the current state
-	m_StateMachine.GetState().Destroy(*this);
-
-	// remove the listener from the window
-	m_window.RemoveListener(m_iEventId);
 }
 
 const std::string& Game::GetCurrentState() const
@@ -57,17 +55,14 @@ const std::string& Game::GetCurrentState() const
 	return m_StateMachine.GetState().GetType()->GetName();
 }
 
-void Game::SetNextState(const std::string& name)
+void Game::SetNextState(const std::string& state)
 {
-	// todo: fix this so that 
-	if(m_pNextState == nullptr)
+	if(m_NextState.empty())
 	{
 		// If the current state is null, or if the new state is different than the current
-		if(!m_StateMachine.HasState() || m_StateMachine.GetState().GetType()->GetName() != name)
+		if(!m_StateMachine.HasState() || m_StateMachine.GetState().GetType()->GetName() != state)
 		{
-			// Create new state, but do not use it until we are out of the update/render phase
-			m_pNextState = GameStateFactory::Instance().CreateState(name);
-			assert(m_pNextState != nullptr);
+			m_NextState = state;
 		}
 		
 	}
@@ -101,15 +96,15 @@ void Game::Update()
 	m_info.Update(m_fDT);
 
 	// If There has been a state change, 
-	if(m_pNextState != nullptr)
+	if(!m_NextState.empty())
 	{
 		// switch states
-		m_StateMachine.SetState(m_pNextState,*this);
+		m_StateMachine.SetState(m_NextState,*this);
 
 		//m_window.SetWinCaption(m_pNextState->GetType()->GetName());
 
 		// Reset next state
-		m_pNextState = nullptr;
+		m_NextState.clear();
 	}
 	else if(!m_bConsoleEnabled && m_pInput->KeyDown(B))
 	{
@@ -119,6 +114,9 @@ void Game::Update()
 
 	if(m_pInput->GetKeyDown() == 96)
 	{
+		// todo: implement
+		//m_StateMachine.SetState("ScriptConsole",*this);
+
 		m_bConsoleEnabled = !m_bConsoleEnabled;
 		m_pInput->Reset();
 	}
@@ -126,11 +124,6 @@ void Game::Update()
 	if(m_bConsoleEnabled)
 	{
 		m_pConsole->Update(*m_pInput,m_fDT);
-
-		// update garbage collection
-		////asIScriptEngine* pEngine = m_vm.GetScriptEngine();
-		//DBAS(pEngine->GarbageCollect(asGC_ONE_STEP));
-		//pEngine->Release();
 	}
 	else
 	{
@@ -167,11 +160,18 @@ void Game::Draw()
 
 void Game::DrawFPS()
 {
+	static float x = 0;
+	static float y = 0;
+
 	RECT windowR;
 	::GetWindowRect(this->m_window.GetWindowHandle(),&windowR);
 
+	x += m_pInput->MouseX();
+	y += m_pInput->MouseY();
+
 	::std::ostringstream out;
-	out<<"FPS: " << GetFps() << endl << "Dt: " << setprecision (4) << GetDt();
+	out<<"FPS: " << GetFps() << endl << "Dt: " << setprecision (4) << GetDt() << endl;
+	out<<x << " " << y  << endl;
 
 	//sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
 
@@ -179,8 +179,8 @@ void Game::DrawFPS()
 	//RECT stringR = {0,0,0,0};
 	//this->m_pRenderer->GetStringRec(str.c_str(),stringR);
 
-	POINT point = {windowR.right - windowR.left - 140,0};
-	m_pRenderer->DrawString(out.str().c_str(),point,0xffffffff);
+	POINT point = {windowR.right - windowR.left - 100,0};
+	m_pRenderer->Get2DRenderer().DrawString(out.str().c_str(),point,0xffffffff);
 }
 
 IRenderer& Game::GetRenderer()

@@ -186,7 +186,7 @@ public:
 	typedef IFunction<RETURN,PARAM> GENERIC_FUNC;
 
 	DelegateBase() : m_ptr(nullptr) {}
-	DelegateBase(typename GlobalFunction<RETURN,PARAM>::PTR pFunc) : m_ptr(nullptr)
+	explicit DelegateBase(typename GlobalFunction<RETURN,PARAM>::PTR pFunc) : m_ptr(nullptr)
 	{
 		Bind(pFunc);
 	}
@@ -206,11 +206,7 @@ public:
 
 	DelegateBase(const DelegateBase& d)
 	{
-		m_ptr = d.m_ptr;
-		if(m_ptr)
-		{
-			m_ptr->AddRef();
-		}
+		CopyConstruct(d);
 	}
 	~DelegateBase()
 	{
@@ -233,17 +229,6 @@ public:
 		}
 	}
 
-	/*template< class CLASS >
-	void Bind(const CLASS* pThis,typename const ConstMemberFunctionData<CLASS,RETURN,PARAM>::PTR pFunc)
-	{
-		if(m_ptr == nullptr)
-		{
-			m_ptr = new ConstMemberFunctionData<CLASS,RETURN,PARAM>(pThis,pFunc);
-			//m_ptr = TestFunct<CLASS>::GetFunct(pThis,pFunc);
-			//m_ptr = new ConstMemberFunction<CLASS,RETURN,PARAM>((pThis),pFunc);
-		}
-	}*/
-
 	template< class T >
 	void Bind(T* pThis, RETURN (T::*pFunc)(PARAM))
 	{
@@ -262,15 +247,6 @@ public:
 		}
 	}
 
-	/*template< class CLASS >
-	void Bind(CLASS* pThis,typename ConstMemberFunction<CLASS,RETURN,PARAM>::PTR pFunc,int)
-	{
-		if(m_ptr == nullptr)
-		{
-			m_ptr = new ConstMemberFunctionData<CLASS,RETURN,PARAM>(pThis,pFunc);
-		}
-	}*/
-
 	void Unbind()
 	{
 		if(m_ptr)
@@ -287,19 +263,10 @@ public:
 		if(this != &d)
 		{
 			// Release old pointer
-			if(m_ptr)
-			{
-				m_ptr->Release();
-			}
+			Unbind();
 
 			// copy the new pointer
-			m_ptr = d.m_ptr;
-
-			// Keep a copy, call AddRef
-			if(m_ptr)
-			{
-				m_ptr->AddRef();
-			}
+			CopyConstruct(d);
 		}
 
 		return *this;
@@ -308,6 +275,15 @@ public:
 protected:
 
 	GENERIC_FUNC* m_ptr;
+
+	void CopyConstruct(const DelegateBase& d)
+	{
+		m_ptr = d.m_ptr;
+		if(m_ptr)
+		{
+			m_ptr->AddRef();
+		}
+	}
 
 };
 
@@ -319,7 +295,7 @@ class Delegate : public DelegateBase<RETURN,PARAM>
 public:
 
 	Delegate() {}
-	Delegate(typename GlobalFunction<RETURN,PARAM>::PTR pFunc) : DelegateBase(pFunc) {}
+	explicit Delegate(typename GlobalFunction<RETURN,PARAM>::PTR pFunc) : DelegateBase(pFunc) {}
 
 	template< class T >
 	Delegate(T* pThis,RETURN (T::*pFunc)(PARAM)) : DelegateBase(pThis,pFunc)
@@ -345,7 +321,7 @@ class Delegate<RETURN,void> : public DelegateBase<RETURN,void>
 public:
 
 	Delegate() {}
-	Delegate(typename GlobalFunction<RETURN,void>::PTR pFunc) : DelegateBase(pFunc) {}
+	explicit Delegate(typename GlobalFunction<RETURN,void>::PTR pFunc) : DelegateBase(pFunc) {}
 
 	template< class T >
 	Delegate(T* pThis,RETURN (T::*pFunc)()) : DelegateBase(pThis,pFunc)

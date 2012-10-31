@@ -5,6 +5,7 @@
 
 #include "GameState.h"
 #include <stack>
+#include <map>
 
 
 // This class manages setting and removing the current state
@@ -12,30 +13,40 @@ class GameStateMachine
 {
 public:
 
-	GameStateMachine() : m_pState(nullptr) {}
-	~GameStateMachine() { delete m_pState; }
+	GameStateMachine();
+	~GameStateMachine();
 
 	// Removes current state if there is one
 	// And then initializes the new state
-	void SetState(IGameState* pState, class Game&);
+	void SetState(const std::string& state, class Game&);
+
+	void AddState(const std::string& state);
 
 	// Adds the current state string id to the stack
-	// Destroy the current state
+	// Temporarily stops the current state
 	void RemoveState(class Game&);
+
+	// Deletes all of the states(frees all memory)
+	void ClearAllStates(class Game&);
 
 	// Sets the last state that was called with RemoveState()
 	void LoadPreviousState(class Game&);
 
-	bool HasState() const { return m_pState != nullptr; }
+	// todo: this is kind of bugged here
+	bool HasState() const { return m_pCurrentState != nullptr; }
 
-	IGameState& GetState() { return *m_pState; }
-	const IGameState& GetState() const { return *m_pState; }
+	IGameState& GetState() { return *m_pCurrentState; }
+	const IGameState& GetState() const { return *m_pCurrentState; }
 
 private:
 
-	IGameState* m_pState;
+	// todo: create a vector of states
+	IGameState* m_pCurrentState;
 
-	std::stack<std::string> m_states;
+	std::map<std::string,IGameState*> m_states; // a list of all the states
+	std::stack<std::string> m_stateStack;
+
+	std::map<std::string,IGameState*>::iterator RAddState(const std::string& state);
 
 };
 

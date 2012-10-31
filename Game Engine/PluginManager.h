@@ -28,6 +28,10 @@ public:
 
 	/* 
 	   This class manages all of the dll plugins. It will load and unload them when needed.
+
+	   // todo: this class could inherit from a interface which only the plugins would know about, so that the plugins would not
+	   // todo: have to link with the game engine lib
+	   // note: this would not work
 	*/
 
 	PluginManager();

@@ -4,8 +4,6 @@
 
 #pragma comment(lib,"Game Engine.lib")
 
-// todo: fix pong from crashing
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	SingleInstance instance;

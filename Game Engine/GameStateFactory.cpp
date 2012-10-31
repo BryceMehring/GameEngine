@@ -7,7 +7,6 @@ bool GameStateFactory::Register(const std::string& name, IStateCreator* pCreator
 
 	if(iter != m_Creators.end())
 	{
-		//delete pCreator;
 		return false;
 	}
 

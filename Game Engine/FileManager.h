@@ -46,11 +46,9 @@ public:
 
 		if(in)
 		{
-			while(in)
+			std::string line;
+			while(std::getline(in,line))
 			{
-				std::string line;
-				std::getline(in,line);
-
 				functor(line);
 			}
 
@@ -72,8 +70,6 @@ private:
 	FileManager();
 
 	void WriteTime();
-
-	void GetDelimitedExtensions(const std::string& ext, std::vector<std::string>& out) const;
 };
 
 #endif

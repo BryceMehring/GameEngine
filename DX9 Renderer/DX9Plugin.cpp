@@ -1,5 +1,4 @@
 
-#include <sstream>
 
 #include "DX9Plugin.h"
 #include "PluginManager.h"
@@ -10,8 +9,10 @@
 #include "D3d9types.h"
 #include "WindowManager.h"
 
-#pragma comment(lib,"d3d9.lib")
+#include <sstream>
+
 #pragma comment(lib,"d3dx9.lib")
+#pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"Game Engine.lib")
 
 using namespace std;
@@ -34,16 +35,7 @@ enum InterfaceType
 	Line,
 };
 
-struct DrawTextInfo
-{
-	DrawTextInfo(const string& str, const RECT& rect, DWORD c, DWORD f) 
-		: text(str), R(rect),color(c),format(f) {}
 
-	std::string text;
-	RECT R;
-	DWORD color;
-	DWORD format;
-};
 
 unsigned int color(unsigned char r, unsigned char g, unsigned char b)
 {
@@ -51,7 +43,7 @@ unsigned int color(unsigned char r, unsigned char g, unsigned char b)
 }
 
 DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref), m_p3Device(nullptr),
-m_pDirect3D(nullptr), m_pFont(nullptr), m_pLine(nullptr), m_pSprite(nullptr),
+m_pDirect3D(nullptr),
 m_pTextureManager(nullptr)
 {
 	// todo: need to organize constructor
@@ -74,36 +66,22 @@ m_pTextureManager(nullptr)
 	m_pTextureManager = new TextureManager(m_p3Device);
 	m_pTextureManager->LoadAllTexturesFromFolder("..\\Textures");
 
-	// post-Initialize
-	//desc.Width = 10;
-	//desc.Height = 20;
-	this->InitializeSprite();
-	this->InitializeFont();
-	this->InitializeLine();
-
-	m_p3Device->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_LINEAR);
-	m_p3Device->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_LINEAR);
-	m_p3Device->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_LINEAR);
+	m_p3Device->AddRef();
+	m_p2DRenderer = new DX92DRenderer(m_p3Device,m_pTextureManager);
 
 	EnumerateDisplayAdaptors();
 
 	RegisterScript();
-
-	//SetWindowStyle();
-	//SetDisplayMode(0);
 }
 DX9Render::~DX9Render()
 {
 	delete m_pTextureManager;
+	delete m_p2DRenderer;
 
 	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript().GetScriptEngine();
-	
 	DBAS(pEngine->RemoveConfigGroup("Renderer"));
 	pEngine->Release();
 
-	m_pSprite->Release();
-	m_pFont->Release();
-	m_pLine->Release();
 	m_p3Device->Release();
 	m_pDirect3D->Release();
 }
@@ -175,48 +153,14 @@ void DX9Render::Reset()
 	OnResetDevice();
 }
 
-void DX9Render::GetStringRec(const char* str, RECT& out)
-{
-	m_pFont->DrawText(this->m_pSprite,str,-1,&out,DT_CALCRECT | DT_TOP | DT_LEFT | DT_WORDBREAK,0);
-}
-
-void DX9Render::DrawString(const char* str, POINT P, DWORD color) // not clipped
-{
-	RECT R = {P.x,P.y};
-	//DrawTextInfo info = {str,R,color,DT_NOCLIP};
-	m_text.push_back(DrawTextInfo(str,R,color,DT_NOCLIP));
-}
-void DX9Render::DrawString(const char* str, RECT& R, DWORD color, bool calcRect)
-{
-	if(calcRect)
-	{
-		GetStringRec(str,R);
-	}
-
-	m_text.push_back(DrawTextInfo(str,R,color,DT_NOCLIP));
-	//int Height = this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
-	//DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
-	//DrawTextInfo info = {str,R,color,DT_NOCLIP};
-	//m_text.push_back(info);
-}
-
-void DX9Render::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform, D3DCOLOR color)
-{
-	m_pLine->DrawTransform(pVertexList,dwVertexListCount,pTransform,color);
-}
-void DX9Render::DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color)
-{
-	m_pLine->Draw(pVertexList,dwVertexListCount,color);
-}
-
-void DX9Render::DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color)
-{
-	m_sprites.push(Sprite(transformation,texture,color,iPriority));
-}
-
 ITextureManager& DX9Render::GetTextureManager()
 {
 	return *m_pTextureManager;
+}
+
+I2DRenderer& DX9Render::Get2DRenderer()
+{
+	return *m_p2DRenderer;
 }
 
 /*void DX9Render::DrawSprite()
@@ -261,16 +205,12 @@ bool DX9Render::IsDeviceLost()
 
 void DX9Render::OnLostDevice()
 {
-	m_pSprite->OnLostDevice();
-	m_pLine->OnLostDevice();
-	m_pFont->OnLostDevice();
+	m_p2DRenderer->OnLostDevice();
 }
 
 void DX9Render::OnResetDevice()
 {
-	m_pSprite->OnResetDevice();
-	m_pLine->OnResetDevice();
-	m_pFont->OnResetDevice();
+	m_p2DRenderer->OnResetDevice();
 }
 
 void DX9Render::ClearScreen()
@@ -286,16 +226,13 @@ void DX9Render::Begin()
 		m_p3Device->BeginScene();
 		// todo: these flags need to be modifiable
 		
-		m_pLine->Begin();
+		m_p2DRenderer->Begin();
 	}
 }
 
 void DX9Render::End()
 {
-	RenderScene();
-
-	m_pSprite->End();
-	m_pLine->End();
+	m_p2DRenderer->End();
 	m_p3Device->EndScene();
 }
 
@@ -440,98 +377,9 @@ void DX9Render::GetWinSize(POINT& P) const
 	P.y = m_D3DParameters.BackBufferHeight;
 }
 
-void DX9Render::InitializeFont()
-{
-	if(m_pFont == nullptr)
-	{
-		D3DXFONT_DESC desc;
-		ZeroMemory(&desc,sizeof(desc));
-		desc.Height = 15; // 15
-		desc.Width = 7; // 8
-		desc.Weight = 500;
-		desc.Quality = 255;
-		desc.MipLevels = 1;
 
-		D3DXCreateFontIndirect(m_p3Device,&desc,&m_pFont);
-	}
-}
 
-void DX9Render::InitializeLine()
-{
-	if(m_pLine == nullptr)
-	{
-		D3DXCreateLine(m_p3Device,&m_pLine);
-		m_pLine->SetAntialias(true);
-		m_pLine->SetWidth(1.0f);
-	}
-}
-void DX9Render::InitializeSprite()
-{
-	if(m_pSprite == nullptr)
-	{
-		D3DXCreateSprite(m_p3Device,&m_pSprite);
-
-		m_p3Device->SetSamplerState(0,::D3DSAMP_MAGFILTER,::D3DTEXF_LINEAR);
-		m_p3Device->SetSamplerState(0,::D3DSAMP_MINFILTER,::D3DTEXF_LINEAR);
-		m_p3Device->SetSamplerState(0,::D3DSAMP_MIPFILTER,::D3DTEXF_LINEAR);
-
-		m_p3Device->SetRenderState(D3DRS_LIGHTING,false);
-	}
-}
-
-void DX9Render::RenderScene()
-{
-	//m_pSprite->SetTransform(&T);
-	m_pSprite->Begin(0);
-
-	RenderText();
-	RenderSprites();
-	
-
-	m_pSprite->End();
-}
-
-void DX9Render::RenderText()
-{
-	while(!m_text.empty())
-	{
-		DrawTextInfo& info = m_text.back();
-		m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,info.format,info.color);
-		m_text.pop_back();
-	}
-}
-
-void DX9Render::RenderSprites()
-{
-	// Render all sprites
-	while(!m_sprites.empty())
-	{
-		// top sprite in the queue
-		const Sprite& top = m_sprites.top();
-
-		// Get texture for the sprite
-		TextureManager::Texture texture;
-		m_pTextureManager->GetTexture(top.texture,texture);
-
-		//m_pSprite->SetWorldViewLH(&m_T,0);
-		m_pSprite->SetTransform(&(top.T));
-		m_pSprite->Draw(texture.pTexture,0,&(texture.center),0,top.Color);
-
-		m_sprites.pop();
-	}
-
-	m_pSprite->Flush();
-
-	// reset to normal transform matrix after rendering
-
-	D3DXMATRIX T;
-	D3DXMatrixIdentity(&T);
-	
-	m_pSprite->SetTransform(&T);
-	
-}
-
-UINT DX9Render::CreateVertexBuffer(UINT bytes,DWORD flags)
+/*UINT DX9Render::CreateVertexBuffer(UINT bytes,DWORD flags)
 {
 	IDirect3DVertexBuffer9* pBuffer = nullptr;
 
@@ -568,7 +416,7 @@ UINT DX9Render::CreateVertexDecl(const VertexDeclaration& decl)
 	m_VertexDecl.push_back(pDecl);
 
 	return m_VertexDecl.size() - 1;
-}
+}*/
 
 void DX9Render::RegisterScript()
 {

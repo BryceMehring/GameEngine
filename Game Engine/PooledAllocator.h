@@ -3,10 +3,13 @@
 
 #include "BNew.h"
 #include <memory>
+#include <cassert>
 
 using namespace std;
 
 		// TEMPLATE CLASS _ALLOCATOR
+// note: this allocator only works if the data structure only allocs
+// note: one node at a time
 template<class _Ty>
 class PooledAllocator : public _Allocator_base<_Ty>
 	{	// generic allocator for objects of class _Ty
@@ -64,12 +67,14 @@ public:
 
 	pointer allocate(size_type _Count)
 		{	// allocate array of _Count elements
+			assert(_Count  == 1);
 		return (pointer)::Bnew(sizeof(_Ty));
 		//return (_Allocate(_Count, (pointer)0));
 		}
 
 	pointer allocate(size_type _Count, const void _FARQ *)
 		{	// allocate array of _Count elements, ignore hint
+			assert(_Count  == 1);
 		return ::Bnew(sizeof(_Ty));
 		}
 

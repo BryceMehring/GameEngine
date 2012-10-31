@@ -1,11 +1,9 @@
 #ifndef _CAMERA_
 #define _CAMERA_
 
-#include "RefCounting.h"
-#include "IKMInput.h"
-#include "asVM.h"
+#include <d3dx9math.h>
 
-class Camera : public RefCounting
+class Camera
 {
 public:
 
@@ -25,11 +23,9 @@ public:
 
 	void setLens(float fov, float aspect, float nearZ, float farZ);
 
-	void setSpeed(float s);
+	void setDir(const D3DXVECTOR3& dir);
 
-	void update(IKMInput& input, float dt);
-
-	void RegisterScript(asVM* pVM);
+	void update(float dt);
 
 protected:
 
@@ -46,7 +42,7 @@ protected:
 	D3DXVECTOR3 m_UpW;
 	D3DXVECTOR3 m_LookW;
 
-	float m_Speed;
+	D3DXVECTOR3 m_dir;
 
 };
 

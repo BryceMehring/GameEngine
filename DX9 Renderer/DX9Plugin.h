@@ -6,15 +6,13 @@
 
 #define PLUGIN_EXPORTS
 
-#include <d3d9.h>
-#include <string>
-#include <vector>
-#include <map>
-#include <queue>
-
 #include "IRenderer.h"
 #include "PluginManager.h"
 #include "TextureManager.h"
+#include "DX92DRenderer.h"
+
+#include <d3d9.h>
+#include <vector>
 
 struct DisplayMode;
 
@@ -26,20 +24,7 @@ struct DrawTextInfo;
 //http://www.ogre3d.org/tikiwiki/Deferred+Shading
 //http://www.catalinzima.com/tutorials/deferred-rendering-in-xna/
 
-struct UPOINT
-{
-	bool operator <(const UPOINT& other)
-	{
-		return this->width < other.width && this->height < other.height;
-	}
-
-	UINT width;
-	UINT height;
-};
-
-
-
-// I should subclass this class
+//todo: I should subclass this class
 class DX9Render : public IRenderer
 {
 public:
@@ -55,12 +40,6 @@ public:
 	// displays a info box about the plug-in
 	virtual void About() const;
 
-	// mesh functions
-	//virtual int LoadMesh(char* pFile);
-	//virtual void DrawMesh(int id, int x, int y, int z);
-
-	//shaders
-	//virtual int LoadShader(char* pFile);
 	virtual void ClearScreen();
 	virtual void Begin();
 	virtual void End();
@@ -71,58 +50,17 @@ public:
 	virtual void OnResetDevice();
 	virtual bool IsDeviceLost();
 
-	// strings
-
-	// screen space
-	virtual void GetStringRec(const char* str, RECT& out);
-	
-	virtual void DrawString(const char* str, POINT P, DWORD color);
-	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true);
-	
-	// todo: need to implement?
-	//template< class T >
-	//virtual void DrawString(T&, const D3DXMATRIX& transform);
-
-	//virtual void DrawSprite();
-
-	// lines
-	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color);
-	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DXMATRIX* pTransform , D3DCOLOR color);
-
-	// sprites
-	//virtual void SetSpriteTransformation(float s, float r);
-	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
-
 	virtual ITextureManager& GetTextureManager();
-
-	// effects
-	// todo: need to implement
-	virtual UINT CreateEffectFromFile(const char* file) { return 0; }
-	virtual UINT GetTechnique(UINT n, const char* name) { return 0; }
-	virtual void SetTechnique(UINT n) {}
-	virtual void SetValue(void* pData, UINT bytes) {}
-
-	// Meshes
-	// todo: need to implement
-	virtual UINT CreateMeshFromFile(const char* file) { return 0; }
-	virtual UINT CreateTriGridMesh() { return 0; }
+	virtual I2DRenderer& Get2DRenderer();
+	//virtual I3DRenderer& Get3DRenderer();
 
 	// options
+	virtual void ToggleFullscreen();
 	virtual void EnumerateDisplayAdaptors();
 	virtual UINT GetNumDisplayAdaptors() const;
 	virtual void SetDisplayMode(UINT i);
 	virtual const std::string& GetDisplayModeStr(UINT i) const;
 	virtual void GetWinSize(POINT&) const;
-
-	// vertex buffer
-	virtual UINT CreateVertexBuffer(UINT bytes,DWORD flags);
-	virtual void* WriteToVertexBuffer(UINT iBufferIndex);
-	virtual void Unlock(UINT iIndex);
-	virtual void DrawVertexBuffer(UINT iIndex);
-
-	virtual UINT CreateVertexDecl(const VertexDeclaration& decl);
-
-	virtual void ToggleFullscreen();
 
 	//virtual UINT GetRatioSize() const;
 	//virtual float GetRatio(UINT n);
@@ -149,55 +87,13 @@ protected:
 	IDirect3DDevice9* m_p3Device;
 	IDirect3D9* m_pDirect3D;
 
-	ID3DXSprite* m_pSprite;
-	ID3DXLine* m_pLine;
-
-	// fonts
-
-	ID3DXFont* m_pFont; // todo: I need to match these with sprites!!! this will solve the problem of scrolling
-	typedef std::vector<DrawTextInfo> TextContainerType; 
-	TextContainerType m_text;
-
+	DX92DRenderer* m_p2DRenderer;
 	TextureManager* m_pTextureManager;
 
-	struct Sprite
-	{
-		// default ctor
-		Sprite()
-		{
-		}
-
-		Sprite(const D3DXMATRIX& T, const std::string& str, DWORD color, unsigned int Priority) :
-		T(T), texture(str), Color(color), uiPriority(Priority)
-		{
-		}
-
-		D3DXMATRIX T;
-		DWORD Color;
-		unsigned int uiPriority;
-		std::string texture;
-		
-	};
-
-	class SpriteSorter
-	{
-	public:
-
-		// todo: could implement switch to switch draw order
-
-		bool operator()(const Sprite& a, const Sprite& b) const
-		{
-			return a.uiPriority > b.uiPriority;
-		}
-
-	};
-
-	std::priority_queue<Sprite,std::vector<Sprite>,SpriteSorter> m_sprites;
-
-	std::vector<IDirect3DVertexDeclaration9*> m_VertexDecl;
+	//std::vector<IDirect3DVertexDeclaration9*> m_VertexDecl;
 
 	// Vertex Buffers
-	std::vector<IDirect3DVertexBuffer9*> m_VertexBuffers;
+	//std::vector<IDirect3DVertexBuffer9*> m_VertexBuffers;
 
 	//std::map<UPOINT,DisplayMode> m_DisplayModes;
 	std::vector<DisplayMode> m_DisplayModes;
@@ -207,9 +103,6 @@ protected:
 	D3DPRESENT_PARAMETERS m_D3DParameters;
 
 	// ===== Helper Funcrions =====
-	void InitializeFont();
-	void InitializeLine();
-	void InitializeSprite();
 	void InitializeDirectX();
 
 	void RegisterScript();
@@ -246,9 +139,6 @@ protected:
 	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager&);
 
 private:
-
-	void RenderText();
-	void RenderSprites();
 
 	// todo: move this method into the window manager class.
 	void SetWindowStyle();

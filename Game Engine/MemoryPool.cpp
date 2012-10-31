@@ -6,12 +6,12 @@
 #include "MemoryPool.h"
 #include "Heap.h"
 #include "gassert.h"
+#include "FileManager.h"
 #include <Windows.h>
 #include <assert.h>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-#include "FileManager.h"
 
 
 using namespace std;
@@ -20,13 +20,13 @@ using namespace std;
 // MemoryBlock links together the allocated memory
 
 
-MemoryPool::MemoryPool(unsigned int size, unsigned int n) : m_pNode(NULL),
-	m_pNodeHead(NULL), m_pNodeTail(NULL), m_iBlocks(0), m_iLength(n)
+MemoryPool::MemoryPool(unsigned int size, unsigned int n) : m_pNode(nullptr),
+	m_pNodeHead(nullptr), m_pNodeTail(nullptr), m_iBlocks(0), m_iLength(n)
 {
 	m_iSize = size+sizeof(Node*);
 
 	// Create first memory block
-	LinkMemoryBlock();
+	LinkMemoryBlock(AllocMemoryBlock());
 }
 
 MemoryPool::~MemoryPool()
@@ -45,7 +45,7 @@ void MemoryPool::FreePool()
 		Node* pTemp = pIter;
 		pIter = pIter->pNext;
 
-		free(pTemp);
+		::operator delete(pTemp);
 	}
 
 	m_pNode = m_pNodeHead = m_pNodeTail = nullptr;
@@ -57,7 +57,7 @@ void* MemoryPool::Allocate()
 	CheckNextNodeForMemory();
 	
 	// Acquire the pointer to the memory block
-	void* pMem = (char*)m_pNode->pMemoryBlock + sizeof(Node*);
+	void* pMem = reinterpret_cast<char*>(m_pNode->pMemoryBlock) + sizeof(Node*);
 
 	// iterate to the next memory block
 	m_pNode->pMemoryBlock = m_pNode->pMemoryBlock->pNext;
@@ -71,7 +71,7 @@ void MemoryPool::Deallocate(void* pMem)
 {
 	if(pMem)
 	{
-		MemoryBlock* pBlock = (MemoryBlock*)((char*)pMem - sizeof(Node*));
+		MemoryBlock* pBlock = reinterpret_cast<MemoryBlock*>(static_cast<char*>(pMem) - sizeof(Node*));
 		Node* pNode = pBlock->pNode;
 
 		// fix up the linked list, add pBlock to the front of the list
@@ -84,7 +84,6 @@ void MemoryPool::Deallocate(void* pMem)
 			m_pNode = pNode;
 		}
 
-		// todo: once there is a certain amount of free space left, place this node in the front 
 		//m_pNode = pNode;
 		/*}
 		else
@@ -107,33 +106,30 @@ char* MemoryPool::AllocMemoryBlock()
 	unsigned int iBlockArraySize = BlockArraySize() + sizeof(Node);
 
 	// Alloc memory from the system
-	void* pMem = malloc(iBlockArraySize);
-	gassert(pMem != nullptr,"No more memory!");
+	char* pMem = static_cast<char*>(::operator new(iBlockArraySize));
 
 	//memset(pMem,0,iBlockArraySize);
 
 	++m_iBlocks;
 
 	// return memory
-	return (char*)pMem;
+	return pMem;
 }
 
-void MemoryPool::LinkMemoryBlock()
+void MemoryPool::LinkMemoryBlock(char* pMem)
 {
-	char* pMem = AllocMemoryBlock();
-
 	// ===== link the list =====
 
 	// link to the beginning
 	if(m_pNodeHead)
 	{
-		m_pNodeHead->pPrevious = (Node*)pMem;
+		m_pNodeHead->pPrevious = reinterpret_cast<Node*>(pMem);
 		m_pNodeHead->pPrevious->pNext = m_pNodeHead;
 		m_pNodeHead = m_pNodeHead->pPrevious;
 	}
 	else
 	{
-		m_pNodeHead = m_pNodeTail = (Node*)pMem;
+		m_pNodeHead = m_pNodeTail = reinterpret_cast<Node*>(pMem);
 		m_pNodeHead->pNext = nullptr;
 	}
 
@@ -145,9 +141,9 @@ void MemoryPool::LinkMemoryBlock()
 	// ignore the header info in each node
 	pMem += sizeof(Node);
 
-	// m_pMemoryStart is the first node in the list
+	// m_pNode->pMemoryBlock is the first node in the list
 	m_pNode->pPool = this;
-	m_pNode->pMemoryBlock = (MemoryBlock*)(pMem);
+	m_pNode->pMemoryBlock = reinterpret_cast<MemoryBlock*>(pMem);
 	m_pNode->iSize = m_iLength;
 
 	// iterator that iterates over the memory block, pMem
@@ -160,7 +156,7 @@ void MemoryPool::LinkMemoryBlock()
 		pMem += m_iSize;
 
 		// add the next part of the buffer
-		pIter->pNext = (MemoryBlock*)(pMem); // next pointer
+		pIter->pNext = reinterpret_cast<MemoryBlock*>(pMem); // next pointer
 
 		pIter->pNode = m_pNode;
 
@@ -184,7 +180,7 @@ unsigned int MemoryPool::BlockArraySize() const
 bool MemoryPool::FreeSpace(Node* pNode) const
 {
 	// memory is free while the pointer is still valid
-	return (pNode->pMemoryBlock != nullptr);
+	return (pNode != nullptr) && (pNode->pMemoryBlock != nullptr);
 }
 
 unsigned int MemoryPool::GetBlocks() const
@@ -262,6 +258,7 @@ void MemoryPool::Insert(Node* pWhere, Node* pNode)
 
 // I need to comment this function
 // This method defrags the memory blocks
+// with insertion sort
 unsigned int MemoryPool::SortBlocks()
 {
 	unsigned int count = 0; // counts the number of nodes that were out of order
@@ -274,11 +271,11 @@ unsigned int MemoryPool::SortBlocks()
 		Node* pNext = pIter->pNext;
 		
 		// If the nodes are out of order
-		if((pIter->pNext->iSize > pIter->iSize)) 
+		if((pNext->iSize > pIter->iSize)) 
 		{
 			// Find the new node to insert after
 			Node* pPrevIter = pIter;
-			while((pPrevIter != nullptr) && !(pPrevIter->iSize > pIter->pNext->iSize))
+			while((pPrevIter != nullptr) && !(pPrevIter->iSize > pNext->iSize))
 			{
 				pPrevIter = pPrevIter->pPrevious;
 			}
@@ -289,7 +286,7 @@ unsigned int MemoryPool::SortBlocks()
 			}
 
 			// Move the node to the new location in the list
-			Move(pPrevIter,pIter->pNext);
+			Move(pPrevIter,pNext);
 
 			count++;
 		}
@@ -301,24 +298,50 @@ unsigned int MemoryPool::SortBlocks()
 	return count;
 }
 
+void MemoryPool::Compact()
+{
+	 // Iterate over all memory blocks and delete them, if they are full, but leaves one free block
+	Node* pIter = m_pNodeHead;
+
+	while(pIter != nullptr)
+	{
+		Node* pPrevious = pIter;
+		pIter = pIter->pNext;
+
+        if(pPrevious->iSize == m_iLength && pPrevious != m_pNodeHead)
+        {
+            pPrevious->pPrevious->pNext = pIter;
+
+            if(pIter != nullptr)
+            {
+                pIter->pPrevious = pPrevious->pPrevious;
+            }
+
+            operator delete(pPrevious);
+
+            m_iBlocks--;
+        }
+	}
+}
+
 void MemoryPool::CheckNextNodeForMemory()
 {
 	// If the current node is full
 	if(FreeSpace(m_pNode) == false)
 	{
-		if(m_pNode->pNext != nullptr && (FreeSpace(m_pNode->pNext)))
+		if(FreeSpace(m_pNode->pNext))
 		{
 			m_pNode = m_pNode->pNext;
 		}
 		// V this fixed the memory leak V
-		else if(m_pNode->pPrevious != nullptr && (FreeSpace(m_pNode->pPrevious)))
+		else if(FreeSpace(m_pNode->pPrevious))
 		{
 			m_pNode = m_pNode->pPrevious;
 		}
 		else
 		{
 			// add a new block to the list
-			LinkMemoryBlock();
+			LinkMemoryBlock(AllocMemoryBlock());
 		}
 	}
 }

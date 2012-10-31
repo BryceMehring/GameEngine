@@ -20,16 +20,26 @@ public:
 	virtual void Update(QuadTree&, double dt);
 	virtual void Render(class IRenderer&);
 
-	virtual Type GetType() const;
+	virtual void* QueryInterface(unsigned int i) const
+	{
+		if(i == INTERFACE_BALL)
+		{
+			return (void*)(this);
+		}
+
+		return nullptr;
+	}
 
 	virtual D3DXVECTOR2 GetPos() const
 	{
 		return m_pos;
 	}
+	virtual D3DXVECTOR2 GetDir() const { return m_dir; }
+	virtual float GetSpeed() const { return m_fSpeed; }
 
 	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const;
 	
-	const D3DXVECTOR2& GetDir() const { return m_dir; }
+	static const unsigned int INTERFACE_BALL = 0xe8cbe6e9;
 
 protected:
 
@@ -50,6 +60,23 @@ protected:
 
 };
 
+class AniBall : public Ball
+{
+public:
+
+	AniBall(const D3DXVECTOR2& pos, const D3DXVECTOR2& dir, float V, float R, const std::string& texture, unsigned uiCells);
+
+	virtual void Update(QuadTree&, double dt);
+	virtual void Render(class IRenderer&);
+
+private:
+
+	double m_AniTime;
+	unsigned int m_uiMaxCells;
+	unsigned int m_uiCurrentCell;
+
+};
+
 class Paddle : public ISpatialObject
 {
 public:
@@ -65,12 +92,26 @@ public:
 	void IncreaseScore() { ++m_iScore; }
 	int GetScore() const { return m_iScore; }
 
-	virtual Type GetType() const { return ISpatialObject::AnotherUnit; }
-
 	virtual D3DXVECTOR2 GetPos() const
 	{
 		return m_pos;
 	}
+
+	// todo: maybe I could actually return the dir in the future based off of its movement
+	virtual D3DXVECTOR2 GetDir() const { return D3DXVECTOR2(0.0f,0.0f); }
+	virtual float GetSpeed() const { return 0.0f; }
+
+	virtual void* QueryInterface(unsigned int i) const
+	{
+		if(i == INTERFACE_PADDLE)
+		{
+			return (void*)this;
+		}
+
+		return nullptr;
+	}
+
+	static const unsigned int INTERFACE_PADDLE = 714198838;
 
 protected:
 
@@ -109,7 +150,7 @@ protected:
 
 };
 
-
+// todo: this class needs to be subdivided into a menu class and a game class
 class Pong : public GameStateScript, public SerializedState
 {
 public:
@@ -127,6 +168,14 @@ public:
 	virtual void Save();
 
 private:
+
+	enum State
+	{
+		MENU,
+		GAME
+	};
+
+	State m_state;
 
 	// data members
 
@@ -155,9 +204,14 @@ private:
 
 	// helper functions
 
-	void BuildMenu();
-
 	void RegisterScript(class Game&);
+
+	void UpdateMenu(Game&);
+	void UpdateGame(Game&);
+	void DrawMenu(Game&);
+	void DrawGame(Game&);
+
+	void BuildMenu(Game& game);
 
 	void UpdateBalls(Game&);
 	void UpdatePaddles(Game&);
@@ -165,6 +219,8 @@ private:
 
 	void ResetScores();
 	void ClearObjects();
+
+	unsigned int GetNumBalls() const;
 
 	void SetAILevel(float);
 

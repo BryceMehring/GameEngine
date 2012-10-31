@@ -21,13 +21,24 @@ public:
 	  pos(pos), m_CCircle(Math::Circle(pos,R)), m_bAlive(a), m_time(0.0) {}
 
 	virtual D3DXVECTOR2 GetPos() const { return pos; }
-	virtual Type GetType() const { return ISpatialObject::Unit; }
+	virtual D3DXVECTOR2 GetDir() const { return D3DXVECTOR2(0.0f,0.0f); }
+	virtual float GetSpeed() const { return 0.0f; }
 	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const
 	{
 		return m_CCircle;
 	}
 
 	bool IsAlive() const { return m_bAlive; }
+
+	virtual void* QueryInterface(unsigned int i) const
+	{
+		if(i == INTERFACE_CELL)
+		{
+			return (void*)(this);
+		}
+
+		return nullptr;
+	}
 
 	virtual void Update(double dt)
 	{
@@ -85,9 +96,11 @@ public:
 
 			::D3DXMatrixScaling(&R,rad / 32.0f,rad/ 32.0f,1.0f);
 
-			renderer.DrawSprite(R*T,"cell",2);
+			renderer.Get2DRenderer().DrawSprite(R*T,"cell",2);
 		}
 	}
+
+	static const unsigned int INTERFACE_CELL = 492494964;
 
 protected:
 

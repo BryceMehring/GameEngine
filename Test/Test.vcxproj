@@ -73,6 +73,18 @@
     <ClInclude Include="Pong.h" />
     <ClInclude Include="PongCreator.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Scripts\pong\destroy.as" />
+    <None Include="..\Scripts\pong\init.as" />
+    <None Include="..\Scripts\pong\pong.as" />
+    <None Include="..\Textures\cell.png" />
+    <None Include="..\Textures\flame_sprite.png" />
+    <None Include="..\Textures\paddle.png" />
+    <None Include="..\Textures\Point - Copy.png" />
+    <None Include="..\Textures\point normal mappng.png" />
+    <None Include="..\Textures\Point.png" />
+    <None Include="..\Textures\Square.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -107,7 +107,7 @@ void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 void Menu::Render(IRenderer& renderer)
 {
 	// Render menu border and header
-	renderer.DrawString(m_menuTitle.c_str(),m_point,0xffffffff);
+	renderer.Get2DRenderer().DrawString(m_menuTitle.c_str(),m_point,0xffffffff);
 
 	if(m_pPolygon)
 	{
@@ -149,7 +149,10 @@ void GUI::Update(IKMInput& input, double dt)
 
 void GUI::Render(IRenderer& renderer)
 {
-	m_pMenu->Render(renderer);
+	if(m_pMenu)
+	{
+		m_pMenu->Render(renderer);
+	}
 }
 
 void GUI::SetMenu(Menu* pMenu)
@@ -160,6 +163,11 @@ void GUI::SetMenu(Menu* pMenu)
 		m_bSetMenu = true;
 		m_uiCurrentIndex = 0;
 	}
+}
+
+Menu* GUI::GetMenu()
+{
+	return m_pMenu;
 }
 
 ButtonBase::ButtonBase(const Text& name, DxPolygon* pPolygon) :
@@ -195,7 +203,7 @@ void ButtonBase::Update(IKMInput& input)
 
 void ButtonBase::Render(IRenderer& renderer)
 {
-	renderer.DrawString(m_name.name.c_str(),m_name.P,m_color);
+	renderer.Get2DRenderer().DrawString(m_name.name.c_str(),m_name.P,m_color);
 
 	m_pPolygon->Render(renderer);
 }
@@ -331,6 +339,15 @@ void TextBox::Update(IKMInput& input, double dt)
 		Enter();
 	}
 
+	/*if(input.KeyDown(TAB))
+	{
+		// todo: fix this implementation
+		for(int i = 0; i < 3; ++i)
+		{
+			AddKey(' ');
+		}
+	}*/
+
 	if(input.IsKeyDown())
 	{
 		char key = input.GetKeyDown();
@@ -347,7 +364,7 @@ void TextBox::BreakLastLine(IRenderer& renderer)
 {
 	TextBox::LineData& theBack = m_text.back();
 	RECT myR = {theBack.P.x,theBack.P.y,0,0};
-	renderer.GetStringRec(theBack.line.c_str(),myR);
+	renderer.Get2DRenderer().GetStringRec(theBack.line.c_str(),myR);
 
 	if(myR.right >= (this->m_square.GetRect().right - 15))
 	{
@@ -370,29 +387,28 @@ void TextBox::Render(IRenderer& renderer)
 	for(TextDataType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		LineData& data = *iter;
-		std::string line = data.line;
-
-		// Render the '>'
-		if(!data.bContinue)
-		{
-			line = "> " + data.line;
-		}
 
 		// cull lines that are not on the screen
 		const RECT& R = m_square.GetRect();
 
 		// scroll lines
-		data.P.y += (m_scrollSpeed);
+		data.P.y += static_cast<int>(m_scrollSpeed);
 
 		// If the line is on the screen
 		if(data.P.y >= R.top)
 		{
 			if(data.P.y <= R.bottom - 15) 
 			{
-				RECT temp = {data.P.x,data.P.y,R.right,R.bottom};
+				std::string line = data.line;
+
+				// Render the '>'
+				if(!data.bContinue)
+				{
+					line = "> " + data.line;
+				}
 
 				// draw it
-				renderer.DrawString(line.c_str(),data.P,data.color);
+				renderer.Get2DRenderer().DrawString(line.c_str(),data.P,data.color);
 				//pRenderer->DrawString(line.c_str(),temp,data.color,false);
 			}
 		}
@@ -401,11 +417,13 @@ void TextBox::Render(IRenderer& renderer)
 
 void TextBox::UpdateScrolling(IKMInput& input, double dt)
 {
-	//m_scrollSpeed = 0;
+	static int lastPos = 0;
+	m_scrollSpeed = 0;
 	
 	if(input.MouseClick(0,false))
 	{
 		m_scrollSpeed = -input.MouseY();
+		//lastPos = newPos;
 		//m_scrollSpeed = pInput->MousePos().y;// - this->m_text.back().P.y;
 	}
 	else
@@ -500,7 +518,7 @@ void ScriptingConsole::Enter()
 	const string& backLine = m_text.back().line;
 
 	// if the user wants to start entering block code
-	if(backLine == "start")
+	if(backLine == "start" /*|| backLine == "function"*/)
 	{
 		// mark the index
 		m_uiStartIndex = m_text.size();
@@ -597,6 +615,7 @@ void ScriptingConsole::Grab(bool b)
 	_Grab(b);
 }
 
+
 void ScriptingConsole::RegisterScript()
 {
 	auto asEngine = m_pVM->GetScriptEngine();
@@ -613,7 +632,7 @@ void ScriptingConsole::RegisterScript()
 	DBAS(asEngine->RegisterObjectMethod("Console","void write(double)",asMETHODPR(ScriptingConsole,Grab,(double),void),asCALL_THISCALL));
 	DBAS(asEngine->RegisterObjectMethod("Console","void write(uint)",asMETHODPR(ScriptingConsole,Grab,(unsigned int),void),asCALL_THISCALL));
 	DBAS(asEngine->RegisterObjectMethod("Console","void write(bool)",asMETHODPR(ScriptingConsole,Grab,(bool),void),asCALL_THISCALL));
-	
+
 	DBAS(asEngine->RegisterGlobalProperty("Console console",this));
 
 	asEngine->Release();

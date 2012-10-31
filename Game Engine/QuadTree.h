@@ -40,7 +40,8 @@ public:
 	void Erase(ISpatialObject& obj);
 	void EraseFromPreviousPos(ISpatialObject& obj);
 
-	LIST_DTYPE* GetNearObjects() { return m_pObjects; }
+	// todo: return reference
+	LIST_DTYPE* GetNearObjects() { return &m_Objects; }
 
 	// returns true if P lies within the rectangle
 	bool IsWithin(ISpatialObject& obj) const;
@@ -61,14 +62,12 @@ private:
 	Math::CRectangle R;
 	//std::list<obj*>* m_pObjects;
 	// obj
-	LIST_DTYPE* m_pObjects;
+	LIST_DTYPE m_Objects;
 	//KEY* m_pKey;
 
 	// the sub nodes of the current node
 	Node* m_Nodes[MAX_NODES];
 	Node* m_Previous;
-
-	bool m_bUseable;
 
 	// --- helper functions ---
 
@@ -83,7 +82,7 @@ private:
 	bool IsFull() const;
 
 	// Subdivides the current node/R into 4 sub nodes
-	void SubDivide(bool bAlloc);
+	void SubDivide();
 	void SubDivideObjects(Node& subNode);
 	void ExpandLeft();
 	void ExpandRight();
@@ -95,22 +94,13 @@ public:
 
 	friend class Node;
 
-	enum Type
-	{
-		Unit,
-		AnotherUnit,
-	};
-
 	virtual ~ISpatialObject() {}
 
 	virtual D3DXVECTOR2 GetPos() const = 0;
-	virtual Type GetType() const = 0;
+	virtual D3DXVECTOR2 GetDir() const = 0;
+	virtual float GetSpeed() const = 0;
 
-	// todo: I could add other methods here for 
-	// todo: use multiple inheritance with class characteristics 
-
-	// todo: this method is not needed
-	void EraseFromQuadtree(class QuadTree* pTree);
+	virtual void* QueryInterface(unsigned int) const = 0; 
 
 	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const = 0;
 
@@ -118,27 +108,6 @@ protected:
 
 	std::vector<Node*> m_nodes;
 };
-
-/*class CollidableObject : public ISpatialObject
-{
-public:
-
-	void foo()
-	{
-		
-	}
-
-	void SetNode(Node* pNode)
-	{
-		m_pNode = pNode;
-	}
-
-protected:
-	
-	Node* m_pNode; // 
-	KEY m_pos; // current position of the object
-};*/
-
 
 // todo: need to create a better public/protected/private interface
 class NodeIterator
@@ -191,6 +160,14 @@ public:
 	void FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out);
 	//void FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out);
 
+	template< class T >
+	void Update(ISpatialObject& obj, const T& funct)
+	{
+		Erase(obj);
+		funct();
+		Insert(obj);
+	}
+
 	void Update(ISpatialObject& obj);
 
 	void SaveToFile(std::string& file);
@@ -217,113 +194,20 @@ void ProccessNearNodes(const std::vector<Node*>& nodes, const T& functor)
 		// Find the near objects to the node
 		auto theList = nodes[i]->GetNearObjects();
 
-		//if(theList->size() > 1)
-		{
-			// Loop over all the objects in the node
-			for(auto iter = theList->begin(); iter != theList->end(); ++iter)
-			{
-				ISpatialObject* pObj = *iter;
-
-				// If this is the first pObj being processed 
-				if(outSet.insert(pObj).second == true)
-				{
-					// process this object
-					if(functor(pObj)) { return; }
-				}
-			}
-		}
-	}
-}
-
-/*template< class T >
-void ProccessNearNodes(Node* pNode, const T& functor)
-{
-	// this set is used to only process each object once
-	std::set<const ISpatialObject*> outSet;
-
-	// loop over all of the nodes the object collides with 
-	for(unsigned int i = 0; i < nodes.size(); ++i)
-	{
-		Node* pNode = nodes[i];
-
-		// Find the near objects to the node
-		auto theList = pNode->GetNearObjects();
-
 		// Loop over all the objects in the node
 		for(auto iter = theList->begin(); iter != theList->end(); ++iter)
 		{
-			const ISpatialObject* pObj = *iter;
+			ISpatialObject* pObj = *iter;
+
 			// If this is the first pObj being processed 
-			auto pair = outSet.insert(pObj);
-			if(pair.second == true)
+			if(outSet.insert(pObj).second == true)
 			{
 				// process this object
 				if(functor(pObj)) { return; }
 			}
 		}
 	}
-}*/
+}
 
-
-
-
-/*class Unit : public CollidableObject
-{
-public:
-
-	virtual void GetPos(KEY& out)
-	{
-		out = key;
-	}
-
-private:
-
-};
-
-class ISpatialDatastruct
-{
-public:
-
-	virtual ~ISpatialDatastruct() {}
-	virtual void AddObj(ISpatialObject*) = 0;
-	virtual void TestColision(ISpatialObject*) = 0;
-};
-
-class QuadTreeCollisionDection : public ISpatialDatastruct
-{
-public:
-
-	QuadTreeCollisionDection(QuadTree* pTree) : m_pTree(pTree)
-	{
-	}
-
-	virtual ~QuadTreeCollisionDection()
-	{
-		delete m_pTree;
-	}
-
-	virtual void AddObj(ISpatialObject* pObj)
-	{
-		m_pTree->AddPoint();
-	}
-	virtual void TestColision(ISpatialObject* pObj)
-	{
-		KEY pos;
-		pObj->GetPos(pos);
-
-		std::list<KEY> points;
-		bool success = m_pTree->FindNearPoint(pos,points);
-
-		if(success)
-		{
-			
-		}
-	}
-
-private:
-
-	QuadTree* m_pTree;
-
-};*/
 
 #endif // _QUADTREE_

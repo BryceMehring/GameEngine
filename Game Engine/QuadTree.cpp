@@ -18,28 +18,19 @@ bool operator != (const POINT& a, const POINT& b)
 	return !::operator==(a,b);
 }
 
-Node::Node() : m_Previous(nullptr), m_pObjects(nullptr), m_bUseable(false)
+Node::Node() : m_Previous(nullptr)
 {
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
 }
 
-Node::Node(const Math::FRECT& R) : m_Previous(nullptr), m_pObjects(nullptr), R(R), m_bUseable(false)
+Node::Node(const Math::FRECT& R) : m_Previous(nullptr), R(R)
 {
 	memset(m_Nodes,0,sizeof(Node*)*MAX_NODES);
-	SubDivide(true);
+	SubDivide();
 }
 Node::~Node()
 {
-	// If m_pObjects points to an object
-	if(m_pObjects != nullptr)
-	{
-		// The delete operator already checks if m_pObjects is null, but because of the 
-		// for_each loop, this is needed.
-		delete m_pObjects; 
-		m_pObjects = nullptr;
-
-		delete[] m_Nodes[0];
-	}
+	delete[] m_Nodes[0];
 }
 
 
@@ -60,7 +51,7 @@ bool Node::IsDivided() const
 
 bool Node::HasPoint() const
 {
-	return (m_pObjects != nullptr) && (!m_pObjects->empty());
+	return (!m_Objects.empty());
 }
 
 bool Node::RHasPoint() const
@@ -87,11 +78,11 @@ bool Node::RHasPoint() const
 
 bool Node::IsFull() const
 {
-	return (m_pObjects->size()) >= 2;
+	return (m_Objects.size()) >= 4;
 }
 
 
-void Node::SubDivide(bool bAlloc)
+void Node::SubDivide()
 {
 	//const GetRect& this->m
 	const Math::FRECT& rect = R.GetRect();
@@ -116,37 +107,27 @@ void Node::SubDivide(bool bAlloc)
 	{
 		Node* pSubNode = m_Nodes[i] = pNodeArray + i;
 		pSubNode->SetRect(subRects[i]);
-		pSubNode->m_pObjects = new LIST_DTYPE();
 		pSubNode->m_Previous = this;
-		pSubNode->m_bUseable = true;
 
 		SubDivideObjects(*pSubNode);
 	}
-
-	m_bUseable = false;
-
-	if(m_pObjects)
-	{
-		m_pObjects->clear();
-	}
-
-	// free memory, this node will no longer store points.
-	//delete m_pObjects;
-	//m_pObjects = nullptr;
 }
 
 void Node::SubDivideObjects(Node& subNode)
 {
-	if(m_pObjects)
+	LIST_DTYPE::iterator iter = m_Objects.begin();
+	LIST_DTYPE::iterator end = m_Objects.end();
+	while(iter != end)
 	{
-		LIST_DTYPE::iterator iter = m_pObjects->begin();
-		LIST_DTYPE::iterator end = m_pObjects->end();
-		for(; iter != end; ++iter)
+		if(subNode.IsWithin(**iter))
 		{
-			if(subNode.IsWithin(**iter))
-			{
-				subNode.m_pObjects->insert(*iter);
-			}
+			subNode.m_Objects.insert(*iter);
+
+			iter = m_Objects.erase(iter);
+		}
+		else
+		{
+			++iter;
 		}
 	}
 }
@@ -168,12 +149,11 @@ void Node::Render(IRenderer& renderer)
 
 void Node::Erase(ISpatialObject& obj)
 {
-	auto iter = m_pObjects->find(&obj);
-	if(iter != m_pObjects->end())
+	auto iter = m_Objects.find(&obj);
+	if(iter != m_Objects.end())
 	{
-		m_pObjects->erase(iter);
+		m_Objects.erase(iter);
 	}
-
 		/*if(m_pObjects->empty() && (m_Previous->m_Previous != nullptr) && (m_Previous->m_bUseable == false))
 		{
 			bool success = false;
@@ -222,6 +202,69 @@ bool Node::Insert(ISpatialObject& obj)
 
 void Node::RInsert(ISpatialObject& obj)
 {
+	// non recursive version
+
+	// the stack emulates recursion
+	/*std::stack<Node*> callstack;
+	callstack.push(this);
+
+	// reference to vector of node pointers within the ISpatialObject
+	std::vector<Node*>& nodes = obj.m_nodes;
+
+	// Loop while 
+	while(!callstack.empty())
+	{
+		Node* pTop = callstack.top();
+		callstack.pop();
+
+		nodes.clear();
+
+		pTop->FindNearNodes(obj.GetCollisionPolygon(),nodes);
+
+		// as we iterate over the near nodes
+		for(unsigned int i = 0; i < nodes.size(); ++i)
+		{
+			Node* pNode = nodes[i];
+
+			const Math::FRECT& subR = nodes[i]->R.GetRect();
+
+			// if the current node is full
+			// 200
+			// 400
+			if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 200.0f)
+			{
+				// subdivide the node
+				pNode->SubDivide(true);
+				callstack.push(pNode);
+				
+				/*else if(m_pObjects != nullptr)
+				{
+					for(unsigned int j = 0; j < MAX_NODES; ++j)
+					{
+						Node* pSubNode = m_Nodes[j];
+						pSubNode->m_bUseable = true;
+
+						SubDivideObjects(*pSubNode);
+					}
+
+					m_bUseable = false;
+					m_pObjects->clear();
+				}
+
+				// Try to insert pObj into this sub node
+
+				
+				//pNode->RInsert(obj);
+			}
+			// node is not yet full
+			else
+			{
+				// Add pObj to node
+				pNode->m_pObjects->insert(&obj);
+			}
+		}
+	}*/
+
 	// find the near nodes to pObj
 	std::vector<Node*>& nodes = obj.m_nodes;
 	nodes.clear();
@@ -238,44 +281,31 @@ void Node::RInsert(ISpatialObject& obj)
 		// if the current node is full
 		// 200
 		// 400
-		if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 400.0f)
+		if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 200.0f) 
 		{
-			if(!pNode->IsDivided())
-			{
-				// subdivide the node
-				pNode->SubDivide(true);
-			}
-			else if(m_pObjects != nullptr)
-			{
-				for(unsigned int j = 0; j < MAX_NODES; ++j)
-				{
-					Node* pSubNode = m_Nodes[j];
-					pSubNode->m_bUseable = true;
 
-					SubDivideObjects(*pSubNode);
-				}
-
-				m_bUseable = false;
-				m_pObjects->clear();
-			}
-
-			// Try to insert pObj into this sub node
+			// subdivide the node
+			pNode->SubDivide();
+			
+			// recursive call... 
+			// note: this is ok because this only happens when the node is subdividing, which does happen that often
 			pNode->RInsert(obj);
 		}
 		// node is not yet full
 		else
 		{
 			// Add pObj to node
-			pNode->m_pObjects->insert(&obj);
+			pNode->m_Objects.insert(&obj);
 		}
 	}
+
 }
 
 // this method is recursive, for simplicity
 void Node::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>& out)
 {
 	// recursive version
-	if(!m_bUseable)
+	if(IsDivided())
 	{
 		// Loop through all of the sub nodes
 		for(unsigned int i = 0; i < MAX_NODES; ++i)
@@ -302,7 +332,7 @@ void Node::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>
 	/*std::stack<Node*> theStack;
 	theStack.push(this);
 
-	do
+	while(!theStack.empty())
 	{
 		Node* pTop = theStack.top();
 		theStack.pop();
@@ -314,7 +344,7 @@ void Node::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>
 			{
 				Node* pSubNode = pTop->m_Nodes[i];
 
-				if(pSubNode->R.Intersects(pPolygon))  
+				if(pSubNode->R.Intersects(poly))
 				{
 					theStack.push(pSubNode);
 					// find the near nodes from this node
@@ -327,7 +357,7 @@ void Node::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>
 			out.push_back(pTop);
 		}
 
-	} while(!theStack.empty());*/
+	} */
 }
 
 void Node::ExpandLeft()
@@ -428,12 +458,6 @@ void NodeIterator::Increment()
 	}
 }
 
-void ISpatialObject::EraseFromQuadtree(QuadTree* pTree)
-{
-	//pTree->EraseFromPrev(this);
-	pTree->Erase(*this);
-}
-
 // constructor
 QuadTree::QuadTree(const Math::FRECT& R)
 {
@@ -461,10 +485,12 @@ void QuadTree::Erase(ISpatialObject& obj)
 {
 	std::vector<Node*> nodes;
 	m_pRoot->FindNearNodes(obj.GetCollisionPolygon(),nodes);
+
 	for(unsigned int i = 0; i < nodes.size(); ++i)
 	{
 		nodes[i]->Erase(obj);
 	}
+	
 }
 
 void QuadTree::EraseFromPrev(ISpatialObject& obj)
@@ -498,39 +524,11 @@ void QuadTree::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
 void QuadTree::Update(ISpatialObject& obj)
 {
 	m_pRoot->EraseFromPreviousPos(obj);
+	//Erase(obj);
 	Insert(obj);
 	//pObj->
 }
 
-/*void QuadTree::CheckNodeForDeletion(Node* pNode, int n)
-{
-	Node** pArray = pNode->m_Previous->m_Nodes;
-
-	pNode->m_Previous->m_pObjects = nullptr;
-
-	delete[] pArray[0];
-	memset(pArray,0,sizeof(Node*)*MAX_NODES);
-
-	// todo: check this function
-	/*if(n == (MAX_NODES - 1))
-	{
-		bool bDelete = false;
-		for(int i = 0; i < MAX_NODES; ++i)
-		{
-			if(pNode->m_Nodes[i]->HasPoint())
-			{
-				bDelete = false;
-				break;
-			}
-		}
-
-		if(bDelete)
-		{
-			delete[] pNode->m_Nodes[0];
-			memset(pNode->m_Nodes,0,sizeof(Node*)*MAX_NODES);
-		}
-	}
-}*/
 void QuadTree::SaveToFile(std::string& file)
 {
 	/*file.append(".quad");

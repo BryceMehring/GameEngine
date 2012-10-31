@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 
+// This class will only create one instance of the program, even if the program has been launched a 2nd time.
 class SingleInstance
 {
 public:

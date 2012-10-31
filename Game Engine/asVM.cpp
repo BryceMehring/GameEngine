@@ -48,6 +48,7 @@ void LineCallback(asIScriptContext *ctx, DWORD *timeOut)
 asVM::asVM() : m_iExeScript(0)
 {
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
+	assert(m_pEngine != nullptr);
 	m_pEngine->SetEngineProperty(asEP_BUILD_WITHOUT_LINE_CUES,TRUE);
 	m_pEngine->SetEngineProperty(asEP_USE_CHARACTER_LITERALS, TRUE);
 
@@ -69,6 +70,11 @@ asVM::~asVM()
 
 	// release the Script Engine
 	m_pEngine->Release();
+}
+
+void asVM::Save() const
+{
+	::WriteConfigToFile(m_pEngine,"config.txt");
 }
 
 unsigned int asVM::BuildScriptFromFile(const string& file)

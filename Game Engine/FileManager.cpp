@@ -3,6 +3,7 @@
 #include "FileManager.h"
 #include "asVM.h"
 #include "GameConstants.h"
+#include "StringAlgorithms.h"
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/filesystem.hpp>
 #include <Shlobj.h>
@@ -21,18 +22,6 @@ FileManager::~FileManager()
 	}
 }
 
-void FileManager::GetDelimitedExtensions(const std::string& ext, std::vector<string>& out) const
-{
-	std::stringstream stream(ext);
-
-	while(!stream.eof())
-	{
-		string temp;
-		stream >> temp;
-
-		out.push_back(temp);
-	}
-}
 
 unsigned int FileManager::CountNumberOfLines(const string& path, const string& ext) const
 {
@@ -57,7 +46,7 @@ void FileManager::LoadAllFilesFromDictionary(std::vector<std::string>& files, co
 	{
 		// extract all of the extensions from the string
 		std::vector<string> extensions;
-		GetDelimitedExtensions(ext,extensions);
+		GetDelimitedString(ext,extensions);
 
 		// stack emulates recursion
 		std::stack<std::string> dir;
@@ -200,7 +189,6 @@ void FileManager::RegisterScript(asVM& vm)
 
 	DBAS(pEngine->RegisterObjectType(NAME,0,asOBJ_REF | asOBJ_NOHANDLE));
 
-	// todo: get this to work.
 	//DBAS(pEngine->RegisterObjectMethod(NAME,"void LoadAllFilesFromDictionary(array<string>& out, const string& in, const string& in) const",asMETHOD(FileManager,LoadAllFilesFromDictionary),asCALL_THISCALL));
 	DBAS(pEngine->RegisterObjectMethod(NAME,"uint CountNumberOfLines(const string& in, const string& in) const",asMETHOD(FileManager,CountNumberOfLines),asCALL_THISCALL));
 	DBAS(pEngine->RegisterObjectMethod(NAME,"string OpenFileName() const",asMETHOD(FileManager,OpenFileName),asCALL_THISCALL));
