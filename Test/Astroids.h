@@ -53,7 +53,7 @@ class Astroid
 {
 public:
 
-	Astroid(DxPolygon* m_pPolygon, const D3DXVECTOR2& pos, float a);
+	Astroid(const DxPolygon& polygon, const D3DXVECTOR2& pos, float a);
 	~Astroid();
 
 	void Update(double dt);
@@ -61,7 +61,7 @@ public:
 
 private:
 
-	DxPolygon* m_pPolygon;
+	DxPolygon m_Polygon;
 	float m_angle;
 	float m_anglet;
 	D3DXVECTOR2 m_pos;

@@ -53,15 +53,15 @@ ASpaceShip::~ASpaceShip()
 
 void ASpaceShip::Update(IKMInput& input, double dt)
 {
-	if(input.KeyDown(KeyCode::W,false))
+	if(input.KeyDown(KeyCode::W,false) || input.KeyDown(KeyCode::UP,false))
 	{
 		m_acceleration += 2000.0f * dt;
 	}
-	if(input.KeyDown(KeyCode::A,false))
+	if(input.KeyDown(KeyCode::A,false) || input.KeyDown(KeyCode::LEFT,false))
 	{
 		m_dir -= 5.0f * dt;
 	}
-	if(input.KeyDown(KeyCode::D,false))
+	if(input.KeyDown(KeyCode::D,false) || input.KeyDown(KeyCode::RIGHT,false))
 	{
 		m_dir += 5.0f * dt;
 	}
@@ -139,12 +139,11 @@ void ASpaceShip::BuildShipLines(D3DXVECTOR2* pArray)
 	}
 }
 
-Astroid::Astroid(DxPolygon* pPolygon, const D3DXVECTOR2& pos, float a) : m_pPolygon(pPolygon), m_pos(pos), m_angle(a)
+Astroid::Astroid(const DxPolygon& polygon, const D3DXVECTOR2& pos, float a) : m_Polygon(polygon), m_pos(pos), m_angle(a)
 {
 }
 Astroid::~Astroid()
 {
-	delete m_pPolygon;
 }
 
 void Astroid::Update(double dt)
@@ -160,12 +159,12 @@ void Astroid::Render(IRenderer& renderer)
 	D3DXVECTOR2 center(m_pos.x,m_pos.y);
 	D3DXMatrixTransformation2D(&R,0,0,0,&center,m_anglet,0);
 	
-	for(int i = 0; i < m_pPolygon->GetSize(); ++i)
+	for(int i = 0; i < m_Polygon.GetSize(); ++i)
 	{
-		D3DXVec2TransformCoord(&(*m_pPolygon)[i],&(*m_pPolygon)[i],&R);
+		D3DXVec2TransformCoord(&(m_Polygon)[i],&(m_Polygon)[i],&R);
 	}
 
-	m_pPolygon->Render(renderer);
+	m_Polygon.Render(renderer);
 }
 
 Astroids::Astroids() : m_ship(D3DXVECTOR2(100.0f,100.0f))
@@ -214,7 +213,7 @@ void Astroids::BuildAstroids()
 
 		pos[size] = pos[0];
 		
-		m_Astroids.push_back(Astroid(new DxPolygon(pos),D3DXVECTOR2(x,y),Math::GetRandFloat(-1.0f,2.0f)));
+		m_Astroids.push_back(Astroid(DxPolygon(pos),D3DXVECTOR2(x,y),Math::GetRandFloat(-1.0f,2.0f)));
 	}
 	
 }
