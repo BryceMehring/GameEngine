@@ -34,6 +34,7 @@ DirectInput::DirectInput(PluginManager& mgr)
 	Reset();
 
 	memset(m_bMouseClick,0,sizeof(m_bMouseClickOnce));
+	memset(m_cKeyDown,0,sizeof(m_cKeyDown));
 	memset(m_tpos,0,sizeof(D3DXVECTOR2));
 }
 
@@ -92,7 +93,7 @@ DLLType DirectInput::GetType() const
 
 void DirectInput::Reset()
 {
-	m_cKeyDown = m_cCharDown = -1;
+	m_cKeyDownOnce = m_cCharDown = -1;
 	m_iMouseX = m_iMouseY = m_iMouseZ = 0;
 
 	m_bMouseMove = false;
@@ -151,10 +152,12 @@ void DirectInput::Poll(const MsgProcData& data)
 			// I want the mouse to be translated to [-1,1] to [1,-1]
 			break;
 		case WM_KEYDOWN:
-			m_cKeyDown = data.wParam;
+			m_cKeyDownOnce = data.wParam;
+			m_cKeyDown[m_cKeyDownOnce] = true;
 			break;
 		case WM_KEYUP:
-			m_cKeyDown = -1;
+			m_cKeyDown[data.wParam] = false;
+			m_cKeyDownOnce = -1;
 			break;
 		case WM_CHAR:
 			m_cCharDown = data.wParam;
@@ -204,7 +207,7 @@ void DirectInput::ReadMouse(const RAWMOUSE& mouse)
 
 void DirectInput::ReadKeyboard(const RAWKEYBOARD& keyboard)
 {
-	this->m_cKeyDown = keyboard.Message;
+	//this->m_cKeyDown = keyboard.Message;
 }
 
 POINT DirectInput::MousePos()
@@ -217,9 +220,9 @@ const D3DXVECTOR2& DirectInput::GetTransformedMousePos() const
 	return m_tpos;
 }
 
-bool DirectInput::KeyDown(char Key)
+bool DirectInput::KeyDown(char Key, bool once)
 {
-	return (m_cKeyDown == Key);
+	return once ? (m_cKeyDownOnce == Key) : m_cKeyDown[Key];
 }
 bool DirectInput::IsKeyDown() const
 {

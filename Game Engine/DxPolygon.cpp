@@ -13,9 +13,12 @@ using namespace std;
 DxPolygon::DxPolygon() : m_color(0xffffffff)
 {
 }
-DxPolygon::DxPolygon(const D3DXVECTOR2* pArray, unsigned int size)
+DxPolygon::DxPolygon(const D3DXVECTOR2* pArray, unsigned int size) : m_color(0xffffffff)
 {
 	ConstructFromArray(pArray,size);
+}
+DxPolygon::DxPolygon(const std::vector<D3DXVECTOR2>& edges) : m_edges(edges), m_color(0xffffffff)
+{
 }
 
 const D3DXVECTOR2& DxPolygon::operator[](unsigned int i) const { return m_edges[i]; }
@@ -24,6 +27,10 @@ D3DXVECTOR2& DxPolygon::operator[](unsigned int i) { return m_edges[i]; }
 // Set
 void DxPolygon::SetColor(DWORD color) { m_color = color; }
 
+void DxPolygon::ConstructFromArray(const std::vector<D3DXVECTOR2>& edges)
+{
+	m_edges = edges;
+}
 void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
 {
 	gassert(pArray != nullptr,"Null pointer");
@@ -43,6 +50,7 @@ void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
 // Get
 DWORD DxPolygon::GetColor() const { return m_color; }
 unsigned int DxPolygon::GetSize() const { return m_edges.size(); }
+std::vector<D3DXVECTOR2> DxPolygon::GetEdges() const { return m_edges; }
 
 void DxPolygon::Render(IRenderer& renderer)
 {

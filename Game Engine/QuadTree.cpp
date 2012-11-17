@@ -154,6 +154,8 @@ void Node::Erase(ISpatialObject& obj)
 	{
 		m_Objects.erase(iter);
 	}
+
+
 		/*if(m_pObjects->empty() && (m_Previous->m_Previous != nullptr) && (m_Previous->m_bUseable == false))
 		{
 			bool success = false;
@@ -283,7 +285,6 @@ void Node::RInsert(ISpatialObject& obj)
 		// 400
 		if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 200.0f) 
 		{
-
 			// subdivide the node
 			pNode->SubDivide();
 			
@@ -317,6 +318,7 @@ void Node::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>
 
 			if(pSubNode->R.Intersects(poly))
 			{
+				//out.push_back(this);
 				// find the near nodes from this node
 				pSubNode->FindNearNodes(poly,out);
 			}

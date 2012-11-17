@@ -95,9 +95,10 @@ unsigned int LOG10(unsigned int i);
 // If rays interest, the return value is not -1
 float RayCircleInsersection(const D3DXVECTOR2& c, float r, const D3DXVECTOR2& pos, const D3DXVECTOR2& dir);
 
+//bool Intersects(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2);
+
 // ray casting algorithm
 bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P);
-
 bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P);
 
 float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound); 
@@ -109,6 +110,7 @@ void RegisterScriptVecMath(class asIScriptEngine* pEngine);
 std::string ConvertTo(unsigned int uiInputNumber, unsigned int uiTargetBase);
 
 unsigned int NumDigits(unsigned int uiNumber);
+
 
 // collision interface
 

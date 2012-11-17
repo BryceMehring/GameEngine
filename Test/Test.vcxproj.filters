@@ -47,6 +47,12 @@
     <ClCompile Include="GameOfLifeCreator.cpp">
       <Filter>Creators</Filter>
     </ClCompile>
+    <ClCompile Include="Astroids.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AstroidsCreator.cpp">
+      <Filter>Creators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameOfLifeMenu.h">
@@ -66,6 +72,12 @@
     </ClInclude>
     <ClInclude Include="Pong.h">
       <Filter>Header Files\Pong</Filter>
+    </ClInclude>
+    <ClInclude Include="Astroids.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AstroidsCreator.h">
+      <Filter>Creators</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

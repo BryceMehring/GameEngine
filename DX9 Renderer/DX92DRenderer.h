@@ -61,7 +61,7 @@ public:
 
 	// Line
 	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color);
-	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DCOLOR color);
+	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, float angle, D3DCOLOR color);
 
 	// Fonts
 	virtual void GetStringRec(const char* str, RECT& out);

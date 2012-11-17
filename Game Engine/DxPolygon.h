@@ -11,6 +11,7 @@ public:
 
 	DxPolygon();
 	DxPolygon(const D3DXVECTOR2* pArray, unsigned int size);
+	explicit DxPolygon(const std::vector<D3DXVECTOR2>& edges);
 	virtual ~DxPolygon() {}
 
 	// array access
@@ -21,10 +22,12 @@ public:
 	void SetColor(DWORD color);
 
 	// resize
+	void ConstructFromArray(const std::vector<D3DXVECTOR2>& edges);
 	void ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size);
 
 	// Get
 	DWORD GetColor() const;
+	std::vector<D3DXVECTOR2> GetEdges() const;
 	unsigned int GetSize() const;
 	virtual IRenderType GetRenderType() const;
 

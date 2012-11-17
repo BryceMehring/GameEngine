@@ -26,7 +26,7 @@ public:
 	
 	
 	// Keyboard
-	virtual bool KeyDown(char Key);
+	virtual bool KeyDown(char Key, bool once = true);
 	virtual char GetKeyDown() const;
 	virtual bool IsKeyDown() const; // true if WM_CHAR is thrown
 
@@ -55,7 +55,8 @@ private:
 	// Interface
 
 	// Keyboard
-	char m_cKeyDown;
+	bool m_cKeyDown[256];
+	char m_cKeyDownOnce;
 	char m_cCharDown;
 
 	// Mouse

@@ -215,7 +215,7 @@ unsigned int Game::GetFps() const
 
 void Game::ReloadPlugins()
 {
-#ifdef _DEBUG
+#ifdef DEBUG
 	ReloadPlugins("..\\Debug\\");
 #else
 	ReloadPlugins("..\\Release\\");

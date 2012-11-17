@@ -57,6 +57,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Astroids.cpp" />
+    <ClCompile Include="AstroidsCreator.cpp" />
     <ClCompile Include="GameOfLife.cpp" />
     <ClCompile Include="GameOfLifeCreator.cpp" />
     <ClCompile Include="GameOfLifeMenu.cpp" />
@@ -66,6 +68,8 @@
     <ClCompile Include="PongCreator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Astroids.h" />
+    <ClInclude Include="AstroidsCreator.h" />
     <ClInclude Include="GameOfLife.h" />
     <ClInclude Include="GameOfLifeCreator.h" />
     <ClInclude Include="GameOfLifeMenu.h" />

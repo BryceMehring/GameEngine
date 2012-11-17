@@ -80,20 +80,12 @@ void DX92DRenderer::DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListC
 {
 	m_pLine->Draw(pVertexList,dwVertexListCount,color);
 }
-void DX92DRenderer::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, D3DCOLOR color)
+void DX92DRenderer::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, float angle, D3DCOLOR color)
 {
-	/*RECT Rect;
-	::GetWindowRect(::GetActiveWindow(),&Rect);
+	::D3DXMATRIX R;
+	::D3DXMatrixRotationZ(&R,angle);
 
-	// todo: fix this later
-	::D3DXMATRIX S, R;
-	::D3DXMatrixIdentity(&S);*/
-	//::D3DXMatrixRotationY(&R,1.57079f);
-	
-	//::D3DXMatrixTranslation(&S,-0.6f,0.5f,0.0f);
-	//::D3DXMatrixScaling(&S,(float)(R.right - R.left),(float)(R.bottom - R.top),0.0f);
-
-	//m_pLine->DrawTransform(pVertexList,dwVertexListCount,&(S),color);
+	m_pLine->DrawTransform(pVertexList,dwVertexListCount,&R,color);
 }
 
 // Fonts

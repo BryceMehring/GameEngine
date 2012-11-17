@@ -201,7 +201,7 @@ bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P)
 
 	for(unsigned int i=0; i < length; i++)
 	{
-		if ((pArray[i].y< P.y && pArray[j].y>= P.y ||   pArray[j].y< P.y && pArray[i].y>=P.y) &&  (pArray[i].x<=P.x || pArray[j].x<=P.x))
+		if ((pArray[i].y< P.y && pArray[j].y>= P.y || pArray[j].y< P.y && pArray[i].y>=P.y) &&  (pArray[i].x<=P.x || pArray[j].x<=P.x))
 		{
 			oddNodes^=(pArray[i].x+(P.y-pArray[i].y)/(pArray[j].y-pArray[i].y)*(pArray[j].x-pArray[i].x)<P.x);
 		}
