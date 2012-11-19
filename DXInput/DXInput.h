@@ -17,7 +17,7 @@ class DirectInput : public IKMInput//, public IScripted<DirectInput>
 public:
 
 	// IRender
-	virtual DLLType GetType() const;
+	virtual DLLType GetPluginType() const;
 	virtual const char* GetName() const { return "DirectInput"; }
 	virtual void About() const;
 	virtual int GetVersion() const;
@@ -26,8 +26,8 @@ public:
 	
 	
 	// Keyboard
-	virtual bool KeyDown(char Key, bool once = true);
-	virtual char GetKeyDown() const;
+	virtual bool KeyDown(unsigned char Key, bool once = true);
+	virtual unsigned char GetKeyDown() const;
 	virtual bool IsKeyDown() const; // true if WM_CHAR is thrown
 
 	// Mouse
@@ -56,8 +56,8 @@ private:
 
 	// Keyboard
 	bool m_cKeyDown[256];
-	char m_cKeyDownOnce;
-	char m_cCharDown;
+	unsigned char m_cKeyDownOnce;
+	unsigned char m_cCharDown;
 
 	// Mouse
 	int m_iMouseX;

@@ -1,13 +1,14 @@
 #ifndef _GAMESTATE_
 #define _GAMESTATE_
 #include "Timer.h"
+#include "IPlugin.h"
 
-class IGameState
+
+class IGameState : public IPlugin
 {
 public:
 
 	IGameState();
-	virtual ~IGameState() {}
 
 	virtual void Init(class Game& game) = 0;
 	virtual void Destroy(class Game& game) = 0;
@@ -23,6 +24,8 @@ public:
 protected:
 
 	Timer m_timer;
+
+	virtual ~IGameState() {}
 
 };
 

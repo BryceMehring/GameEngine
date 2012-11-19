@@ -5,6 +5,8 @@
 #include <vector>
 #include <cassert>
 
+#include <d3dx9.h>
+
 using namespace std;
 
 TextureManager::TextureManager(IDirect3DDevice9* pDevice) : m_pDevice(pDevice)

@@ -15,6 +15,7 @@
 #include "Delegates.h"
 #include <hash_map>
 #include <Windows.h>
+#include <map>
 
 struct PluginInfo
 {
@@ -46,6 +47,8 @@ public:
 	// Returns all of the keys for all of the dll's that are loaded
 	const std::vector<DLLType>& GetPluginKeys() const { return m_Keys; }
 
+	bool Good(const char* pFile) const;
+
 	// returns the plugin if found, else, it returns null
 	const IPlugin* GetPlugin(DLLType type) const;
 	IPlugin* GetPlugin(DLLType type);
@@ -65,7 +68,8 @@ public:
 private:
 
 	class Game* m_pGame;
-	typedef stdext::hash_map<DLLType,PluginInfo> plugin_type;
+	//typedef 
+	typedef std::map<DLLType,PluginInfo> plugin_type;
 	plugin_type m_plugins;
 
 	std::vector<DLLType> m_Keys;

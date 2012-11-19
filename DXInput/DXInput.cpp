@@ -45,9 +45,13 @@ DirectInput::~DirectInput()
 	winMgr.RemoveListener(m_eventId);
 
 	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript().GetScriptEngine();
-	pEngine->RemoveConfigGroup("Input");
+	DBAS(pEngine->RemoveConfigGroup("Input"));
 	pEngine->Release();
-	//m_mgr.GetMsgProcEvent().Detach(m_id);
+
+	for(auto iter = this->m_cursors.begin(); iter != m_cursors.end(); ++iter)
+	{
+		DestroyCursor(*iter);
+	}
 }
 
 void DirectInput::InitRawInput()
@@ -64,9 +68,7 @@ void DirectInput::InitRawInput()
 	Rid[1].dwFlags = 0;   // adds HID keyboard
 	Rid[1].hwndTarget = m_mgr.GetWindowManager().GetWindowHandle();*/
 
-	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE) {
-	//registration failed. Call GetLastError for the cause of the error.
-	}
+	RegisterRawInputDevices(Rid,1,sizeof(RAWINPUTDEVICE));
 }
 
 void DirectInput::LoadCursors()
@@ -86,9 +88,9 @@ int DirectInput::GetVersion() const
 	return 0;
 }
 
-DLLType DirectInput::GetType() const
+DLLType DirectInput::GetPluginType() const
 {
-	return Input;
+	return InputPlugin;
 }
 
 void DirectInput::Reset()
@@ -220,16 +222,15 @@ const D3DXVECTOR2& DirectInput::GetTransformedMousePos() const
 	return m_tpos;
 }
 
-bool DirectInput::KeyDown(char Key, bool once)
+bool DirectInput::KeyDown(unsigned char Key, bool once)
 {
 	return once ? (m_cKeyDownOnce == Key) : m_cKeyDown[Key];
 }
 bool DirectInput::IsKeyDown() const
 {
-	return (m_cCharDown != -1) && (m_cCharDown >= 32);
-	//return m_keyDown;
+	return (m_cCharDown != (unsigned char)(-1)) && (m_cCharDown >= 32);
 }
-char DirectInput::GetKeyDown() const
+unsigned char DirectInput::GetKeyDown() const
 {
 	return m_cCharDown;
 	//return m_Key;

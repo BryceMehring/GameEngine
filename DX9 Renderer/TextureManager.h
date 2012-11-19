@@ -2,6 +2,7 @@
 #define _TEXTUREMANAGER_
 
 #include "ITextureManager.h"
+#include <map>
 
 class TextureManager : public ITextureManager
 {
@@ -9,14 +10,14 @@ public:
 
 	struct Texture
 	{
-		IDirect3DTexture9* pTexture;
+		struct IDirect3DTexture9* pTexture;
 		unsigned int uiWidth;
 		unsigned int uiHeight;
 		unsigned int uiCells;
 		//std::map<D3DXVECTOR2,D3DXVECTOR2> normals;
 	};
 
-	TextureManager(IDirect3DDevice9* pDevice);
+	TextureManager(struct IDirect3DDevice9* pDevice);
 	virtual ~TextureManager();
 
 	virtual void LoadAllTexturesFromFolder(const std::string& folder);

@@ -28,18 +28,14 @@ m_pRenderer(nullptr), m_pInput(nullptr), m_bConsoleEnabled(false)
 	RegisterScript();
 
 	m_iEventId = m_window.AddMsgListener(WindowManager::MsgDelegate(this,&Game::MsgProc));
-
-	//m_timer.Start();
-
-	//this->m_pRenderer->ToggleFullscreen();
 }
 
 Game::~Game()
 {
 	// destroy the current state
-	m_StateMachine.GetState().Destroy(*this);
+	m_StateMachine.RemoveState(*this);
 
-	// remove the listener from the window
+	/// remove the listener from the window
 	m_window.RemoveListener(m_iEventId);
 
 	delete m_pConsole;
@@ -64,7 +60,6 @@ void Game::SetNextState(const std::string& state)
 		{
 			m_NextState = state;
 		}
-		
 	}
 }
 
@@ -195,15 +190,14 @@ WindowManager& Game::GetWindow()
 {
 	return m_window;
 }
+PluginManager& Game::GetPM()
+{
+	return m_plugins;
+}
 asVM& Game::GetAs()
 {
 	return m_vm;
 }
-const PluginManager* Game::GetPluginManager() const
-{
-	return &m_plugins;
-}
-
 double Game::GetDt() const
 {
 	return m_fDT;
@@ -228,22 +222,12 @@ void Game::ReloadPlugins(const std::string& file)
 
 	if(m_plugins.LoadAllPlugins(file,".dll"))
 	{
-		m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(Rendering));
+		m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(RenderingPlugin));
 		gassert(m_pRenderer != nullptr,"No Rendering plugin was found");
 
-		m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(Input));
+		m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(InputPlugin));
 		gassert(m_pRenderer != nullptr,"No Input plugin was found");
 	}
-}
-
-void Game::ReloadPluginsFromUserFolder()
-{
-	string folder;
-	if(FileManager::Instance().GetFolder(folder))
-	{
-		ReloadPlugins(folder);
-	}
-	
 }
 
 void Game::LoadAllDLL()

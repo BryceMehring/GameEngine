@@ -144,8 +144,6 @@ void DX92DRenderer::RenderSprites()
 		TextureManager::Texture texture;
 		if(m_pTextureManager->GetTexture(top.texture,texture))
 		{
-			m_pSprite->SetTransform(&(top.T));
-
 			const unsigned int uiWidth = texture.uiWidth / texture.uiCells;
 			const unsigned int uiCell = top.uiCell;
 			const RECT R = {uiCell * uiWidth,0,(uiCell+1) * uiWidth,texture.uiHeight};
@@ -153,6 +151,7 @@ void DX92DRenderer::RenderSprites()
 			// calculate center of texture
 			D3DXVECTOR3 center = D3DXVECTOR3((R.right - R.left) / 2.0f,(R.bottom - R.top) / 2.0f,0.0f);
 
+			m_pSprite->SetTransform(&(top.T));
 			m_pSprite->Draw(texture.pTexture,&R,&center,0,top.Color);
 		}
 

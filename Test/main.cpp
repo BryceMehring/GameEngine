@@ -1,5 +1,3 @@
-//#include "StdAfx.h"
-
 #include "SingleInstance.h"
 
 #pragma comment(lib,"Game Engine.lib")

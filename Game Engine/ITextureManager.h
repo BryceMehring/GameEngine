@@ -1,9 +1,7 @@
 #ifndef _ITEXTUREMANAGER_
 #define _ITEXTUREMANAGER_
 
-#include <map>
 #include <string>
-#include <d3dx9.h>
 
 struct TextureInfo
 {

@@ -3,12 +3,13 @@
 
 enum DLLType
 {
-	Rendering,
-	Input,
+	RenderingPlugin,
+	InputPlugin,
+	GamePlugin,
 	// more dll types here
 };
 
-#define DLLTYPE decltype(DLLType::Type)
+#define DLLTYPE decltype(DLLType)
 
 class __declspec(novtable) IPlugin
 {
@@ -22,7 +23,7 @@ public:
 	friend class PluginManager;
 
 	// returns the name of the plug-in
-	virtual DLLType GetType() const = 0;
+	virtual DLLType GetPluginType() const = 0;
 	virtual const char* GetName() const = 0;
 	virtual int GetVersion() const = 0;
  

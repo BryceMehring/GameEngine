@@ -4,6 +4,8 @@
 #include "asVM.h"
 #include "FileManager.h"
 
+#pragma comment(lib,"d3dx9.lib")
+
 namespace Math
 {
 

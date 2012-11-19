@@ -78,7 +78,7 @@ DX9Render::~DX9Render()
 	delete m_pTextureManager;
 	delete m_p2DRenderer;
 
-	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript().GetScriptEngine();
+	asIScriptEngine* pEngine = m_mgr.GetAngelScript().GetScriptEngine();
 	DBAS(pEngine->RemoveConfigGroup("Renderer"));
 	pEngine->Release();
 
@@ -96,9 +96,9 @@ void DX9Render::About() const
 	MessageBox(nullptr,"DX9 DLL\nProgrammed By Bryce Mehring","About",MB_OK);
 }
 
-DLLType DX9Render::GetType() const
+DLLType DX9Render::GetPluginType() const
 {
-	return Rendering;
+	return RenderingPlugin;
 }
 void DX9Render::InitializeDirectX()
 {

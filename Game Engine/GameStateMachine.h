@@ -20,7 +20,7 @@ public:
 	// And then initializes the new state
 	void SetState(const std::string& state, class Game&);
 
-	void AddState(const std::string& state);
+	//void AddState(const std::string& state);
 
 	// Adds the current state string id to the stack
 	// Temporarily stops the current state

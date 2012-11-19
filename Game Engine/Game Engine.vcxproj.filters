@@ -66,9 +66,6 @@
     <ClInclude Include="GameState.h">
       <Filter>State</Filter>
     </ClInclude>
-    <ClInclude Include="GameStateFactory.h">
-      <Filter>State</Filter>
-    </ClInclude>
     <ClInclude Include="GameStateMachine.h">
       <Filter>State</Filter>
     </ClInclude>
@@ -175,9 +172,6 @@
     </ClCompile>
     <ClCompile Include="BNew.cpp">
       <Filter>Memory Management</Filter>
-    </ClCompile>
-    <ClCompile Include="GameStateFactory.cpp">
-      <Filter>State</Filter>
     </ClCompile>
     <ClCompile Include="GameState.cpp">
       <Filter>State</Filter>

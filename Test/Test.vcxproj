@@ -17,6 +17,7 @@
     <SccAuxPath>Svn</SccAuxPath>
     <SccLocalPath>Svn</SccLocalPath>
     <SccProvider>SubversionScc</SccProvider>
+    <ProjectName>GameLauncher</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -45,6 +46,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\\Debug\;C:\Users\Bryce\Documents\C++\AngelScript\angelscript\lib;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libboost_chrono-vc100-mt-gd-1_51.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference />
   </ItemDefinitionGroup>
@@ -57,37 +59,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Astroids.cpp" />
-    <ClCompile Include="AstroidsCreator.cpp" />
-    <ClCompile Include="GameOfLife.cpp" />
-    <ClCompile Include="GameOfLifeCreator.cpp" />
-    <ClCompile Include="GameOfLifeMenu.cpp" />
-    <ClCompile Include="GameOfLifeMenuCreator.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="pong.cpp" />
-    <ClCompile Include="PongCreator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Astroids.h" />
-    <ClInclude Include="AstroidsCreator.h" />
-    <ClInclude Include="GameOfLife.h" />
-    <ClInclude Include="GameOfLifeCreator.h" />
-    <ClInclude Include="GameOfLifeMenu.h" />
-    <ClInclude Include="GameOfLifeMenuCreator.h" />
-    <ClInclude Include="Pong.h" />
-    <ClInclude Include="PongCreator.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Scripts\pong\destroy.as" />
-    <None Include="..\Scripts\pong\init.as" />
-    <None Include="..\Scripts\pong\pong.as" />
     <None Include="..\Textures\cell.png" />
-    <None Include="..\Textures\flame_sprite.png" />
-    <None Include="..\Textures\paddle.png" />
-    <None Include="..\Textures\Point - Copy.png" />
-    <None Include="..\Textures\point normal mappng.png" />
     <None Include="..\Textures\Point.png" />
-    <None Include="..\Textures\Square.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

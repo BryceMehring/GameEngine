@@ -29,9 +29,9 @@ class __declspec(novtable) IKMInput : public IInputPlugin
 public:
 
 	// keyboard
-	virtual bool KeyDown(char Key, bool once = true) = 0;
+	virtual bool KeyDown(unsigned char Key, bool once = true) = 0;
 	virtual bool IsKeyDown() const = 0;
-	virtual char GetKeyDown() const = 0;
+	virtual unsigned char GetKeyDown() const = 0;
 
 	// mouse
 	virtual bool MouseClick(int Button, bool once = true) const = 0;

@@ -32,7 +32,7 @@ public:
 	//friend class IScripted<DX9Render>;
 
 	// returns the name of the plug-in
-	virtual DLLType GetType() const;
+	virtual DLLType GetPluginType() const;
 	virtual const char* GetName() const { return "DX9Render"; }
 
 	virtual int GetVersion() const;

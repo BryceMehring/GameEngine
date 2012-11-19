@@ -361,7 +361,7 @@ void asVM::RegisterScript(ScriptingConsole* pTextBox)
 	// logging output
 	DBAS(m_pEngine->SetMessageCallback(asMETHOD(ScriptingConsole,MessageCallback),pTextBox,asCALL_THISCALL));
 
-	DBAS(m_pEngine->SetDefaultAccessMask(0xffffffff));
+	//DBAS(m_pEngine->SetDefaultAccessMask(0xffffffff));
 
 	RegisterScriptMath(m_pEngine);
 	Math::RegisterScriptVecMath(m_pEngine);

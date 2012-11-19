@@ -5,7 +5,6 @@
 
 #include "WindowManager.h"
 #include "Timer.h"
-#include "GameStateFactory.h"
 #include "GameStateMachine.h"
 #include "IKMInput.h"
 #include "IRenderer.h"
@@ -40,19 +39,19 @@ public:
 
 	const std::string& GetCurrentState() const;
 	void SetNextState(const std::string& state);
-	
-	void ReloadPlugins();
-	void ReloadPluginsFromUserFolder();
 
+	void ReloadPlugins();
+	
 	// Get Functions
 	// todo: provide const overloaded versions
 	IRenderer& GetRenderer();
 	IKMInput& GetInput();
 	WindowManager& GetWindow();
+	PluginManager& GetPM();
 	asVM& GetAs();
+
 	// todo: I could just use this with handles instead of 
 	// todo: having IPlugin interfaces lying around here 
-	const PluginManager* GetPluginManager() const;
 	double GetDt() const;
 	unsigned int GetFps() const;
 

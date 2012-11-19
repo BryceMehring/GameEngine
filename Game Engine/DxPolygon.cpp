@@ -7,7 +7,6 @@
 
 using namespace std;
 
-
 // ===== DxPolygon =====
 
 DxPolygon::DxPolygon() : m_color(0xffffffff)

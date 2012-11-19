@@ -24,10 +24,10 @@ PluginManager::~PluginManager()
 
 void PluginManager::FreeAllPlugins()
 {
-	for_each(m_plugins.begin(),m_plugins.end(),[&](const plugin_type::value_type& dll)
+	for(auto iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
 	{
-		FreePlugin(dll.second);
-	});
+		FreePlugin(iter->second);
+	}
 
 	m_Keys.clear();
 	m_plugins.clear();
@@ -60,6 +60,47 @@ IPlugin* PluginManager::GetPlugin(DLLType type)
 	}
 
 	return nullptr;
+}
+
+bool PluginManager::Good(const char* pDLL) const
+{
+	FileManager& fm = FileManager::Instance();
+	char buffer[128];
+	PluginInfo dll = {0,0};
+
+	dll.mod = LoadLibrary(pDLL);
+
+	// todo: fix the error handling here
+	if(dll.mod == nullptr)
+	{
+		// error, could not load dll
+
+		// need to output message to log
+		// todo: should create a logging singleton that should interact with the console.
+
+		sprintf_s(buffer,"Could not load: %s",pDLL);
+		fm.WriteToLog(buffer);
+
+		MessageBox(0,buffer,0,0);
+		
+		return false;
+	}
+
+	CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress(dll.mod,"CreatePlugin");
+
+	if(pFunct == nullptr)
+	{
+		sprintf_s(buffer,"CreatePlugin() function not found in: %s",pDLL);
+		fm.WriteToLog(buffer);
+
+		MessageBox(0,buffer,0,0);
+
+		return false;
+	}
+
+	FreeLibrary(dll.mod);
+
+	return true;
 }
 
 IPlugin* PluginManager::LoadDLL(const char* pDLL)
@@ -104,13 +145,14 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 		
 	// Create the plugin
 	dll.pPlugin = pFunct(*this);
+	assert(dll.pPlugin != nullptr);
 
 	// todo: look into this
 	//asIScriptEngine* pScriptEngine = m_pEngine->GetScriptVM()->GetScriptEngine();
 	//pScriptEngine->RegisterGlobalProperty("
 
 	// Get the type of the plugin
-	DLLType type = dll.pPlugin->GetType();
+	DLLType type = dll.pPlugin->GetPluginType();
 	auto iter = m_plugins.find(type); // see if the plugin is already loaded
 
 	// If it is already loaded
@@ -162,14 +204,15 @@ void PluginManager::FreePlugin(const PluginInfo& plugin)
 
 void PluginManager::FreePlugin(DLLType type)
 {
-	plugin_type::iterator iter = m_plugins.find(type);
+	auto iter = m_plugins.find(type);
 	if(iter != m_plugins.end())
 	{
-		auto posIter = std::find(m_Keys.begin(),m_Keys.end(),type);
-
-		m_Keys.erase(posIter);
-
 		FreePlugin(iter->second);
+
+		m_plugins.erase(iter);
+
+		auto posIter = std::find(m_Keys.begin(),m_Keys.end(),type);
+		m_Keys.erase(posIter);
 	}
 }
 
