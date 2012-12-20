@@ -7,6 +7,7 @@
 #include "DxPolygon.h"
 #include "IRender.h"
 #include "GameState.h"
+#include "Sprite.h"
 
 #include "RTTI.h"
 
@@ -278,7 +279,7 @@ class TextBox : public IUIElement
 {
 public:
 
-	TextBox(const std::string& name, const RECT& R);
+	TextBox(const std::string& name, const D3DXVECTOR3& pos, float w, float h);
 	virtual ~TextBox();
 
 	// Enters a new line
@@ -322,7 +323,7 @@ protected:
 	typedef std::vector<LineData> TextDataType;
 	TextDataType m_text;
 
-	DxSquare m_square;
+	Math::Sprite m_sprite;
 
 	unsigned int m_spacePos;
 	
@@ -360,7 +361,7 @@ class ScriptingConsole : public TextBox
 {
 public:
 
-	ScriptingConsole(asVM* pVM, const std::string& name, const RECT& R);
+	ScriptingConsole(asVM* pVM, const std::string& name, const D3DXVECTOR3& pos, float w, float h);
 	virtual ~ScriptingConsole();
 
 	virtual void Update(IKMInput&, double dt);

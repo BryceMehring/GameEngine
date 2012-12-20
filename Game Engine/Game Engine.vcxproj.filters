@@ -121,14 +121,17 @@
       <Filter>Memory Management</Filter>
     </ClInclude>
     <ClInclude Include="SingleInstance.h" />
-    <ClInclude Include="ITextureManager.h">
-      <Filter>Base Classes</Filter>
-    </ClInclude>
     <ClInclude Include="StringAlgorithms.h" />
     <ClInclude Include="IStateCreator.h">
       <Filter>State</Filter>
     </ClInclude>
     <ClInclude Include="Tiler.h">
+      <Filter>Rendering Addons</Filter>
+    </ClInclude>
+    <ClInclude Include="IResourceManager.h">
+      <Filter>Base Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.h">
       <Filter>Rendering Addons</Filter>
     </ClInclude>
   </ItemGroup>

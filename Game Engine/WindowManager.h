@@ -100,10 +100,11 @@ public:
 
 	void SetWinCaption(const std::string&);
 
-	// todo: need to implement these functions
-	void RegisterScript();
+	void RegisterScript(asIScriptEngine* pEngine);
 
 	bool Update();
+
+	void Quit();
 
 private: //todo: I should make some of these members private
 
@@ -126,7 +127,6 @@ private: //todo: I should make some of these members private
 	// ====== helper functions ======
 
 	void InitializeWindows(HINSTANCE hInstance);
-	void Quit();
 };
 
 

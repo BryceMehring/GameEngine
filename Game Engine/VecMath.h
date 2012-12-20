@@ -5,7 +5,9 @@
 #define _VECMATH_
 
 #include "d3dx9math.h"
+#include "DxPolygon.h"
 #include <string>
+#include <vector>
 
 namespace Math
 {
@@ -22,13 +24,23 @@ struct FRECT
 
 	bool IsPointWithin(const D3DXVECTOR2& pos) const
 	{
-		return ((pos.x >= topLeft.x) && (pos.x <= bottomRight.x)) && ((pos.y >= topLeft.y) && (pos.y <= bottomRight.y));
+		return (pos.x >= topLeft.x) && (pos.x <= bottomRight.x) && (pos.y >= bottomRight.y) && (pos.y <= topLeft.y);
 	}
 	
 	RECT Rect() const
 	{
 		RECT R = {(long)topLeft.x,(long)topLeft.y,(long)bottomRight.x,(long)bottomRight.y};
 		return R;
+	}
+
+	float Width() const
+	{
+		return (bottomRight.x - topLeft.x);
+	}
+
+	float Height() const
+	{
+		return (topLeft.y - bottomRight.y);
 	}
 
 	// sets new center
@@ -101,6 +113,8 @@ float RayCircleInsersection(const D3DXVECTOR2& c, float r, const D3DXVECTOR2& po
 bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P);
 bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P);
 
+bool Sat(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2);
+
 float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound); 
 
 bool IsPrime(unsigned int);
@@ -159,6 +173,7 @@ private:
 
 };
 
+// todo: create another CRectangle class that is renderable
 // collision rectangle
 class CRectangle : public ICollisionPolygon
 {
@@ -176,11 +191,16 @@ public:
 	const FRECT& GetRect() const { return m_rect; }
 	FRECT& GetRect() { return m_rect; }
 
+	void Render(IRenderer&);
+
 private:
 
 	FRECT m_rect;
+	DxSquare m_polygon;
 
 };
+
+ICollisionPolygon* CreateCollionPolygon(const std::vector<D3DXVECTOR2>& poly);
 
 } // math
 

@@ -2,6 +2,7 @@
 
 #include "WindowManager.h"
 #include "FileManager.h"
+#include "asVM.h"
 
 using namespace std;
 
@@ -14,7 +15,6 @@ m_hInstance(hInstance), m_hWindowHandle(NULL), m_bPaused(false)
 	// Initialize
 	
 	InitializeWindows(hInstance);
-	RegisterScript();
 
 	::FileManager::Instance().WriteToLog("Window Constructed");
 	s_pThis = this;
@@ -147,7 +147,9 @@ void WindowManager::Quit()
 	PostQuitMessage(0);
 }
 
-void WindowManager::RegisterScript()
+void WindowManager::RegisterScript(asIScriptEngine* pEngine)
 {
-	
+	DBAS(pEngine->RegisterObjectType("WindowManager",0,asOBJ_REF | asOBJ_NOHANDLE));
+	DBAS(pEngine->RegisterObjectMethod("WindowManager","void quit() const",asMETHOD(WindowManager,Quit),asCALL_THISCALL));
+	DBAS(pEngine->RegisterGlobalProperty("WindowManager wm",this));
 }

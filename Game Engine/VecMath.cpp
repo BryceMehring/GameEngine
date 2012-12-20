@@ -1,5 +1,4 @@
 // Programmed by Bryce Mehring
-
 #include "VecMath.h"
 #include "asVM.h"
 #include "FileManager.h"
@@ -13,26 +12,6 @@ namespace Math
 bool Intersects(const Circle& c1, const FRECT& R1);
 bool Intersects(const Circle& c1, const Circle& c2);
 bool Intersects(const FRECT& c1, const FRECT& c2);
-
-/*bool ICollisionPolygon::Intersects(const ICollisionPolygon* pOther) const
-{
-	if(pOther == this) { return true; }
-
-	Type thisType = this->GetType();
-	Type otherType = pOther->GetType();
-
-	switch(thisType)
-	{
-		case ICollisionPolygon::CircleType:
-		{
-			break;
-		}
-		case ICollisionPolygon::RectangleType:
-		{
-			break;
-		}
-	}
-}*/
 
 // ----- CCircle -----
 
@@ -77,8 +56,13 @@ void CCircle::GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const
 
 // ----- CCircle -----
 
-CRectangle::CRectangle(const FRECT& rect) : m_rect(rect)
+CRectangle::CRectangle(const FRECT& rect) : m_rect(rect), m_polygon(rect)
 {
+}
+
+void CRectangle::Render(::IRenderer& renderer)
+{
+	this->m_polygon.Render(renderer);
 }
 
 bool CRectangle::Intersects(const ICollisionPolygon& other) const
@@ -118,22 +102,51 @@ void CRectangle::GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const
 	{
 		D3DXVECTOR2 middle = m_rect.Middle();
 		// todo: use the && operator to fix this logic
-		if(pos.x <= m_rect.topLeft.x)
+		if(pos.x <= m_rect.bottomRight.x)
 		{
-			middle.x += 200;
+			middle.x += 30;
 		}
-		else if(pos.x >= m_rect.bottomRight.x)
+		else if(pos.x >= m_rect.topLeft.x)
 		{
-			middle.x -= 200;
+			middle.x -= 30;
 		}
 		else
 		{
 			middle.y = 0;
 		}
-		out = pos - middle;
+		out = middle - pos;
 		D3DXVec2Normalize(&out,&out);
 	}
 	
+}
+
+ICollisionPolygon* CreateCollionPolygon(const std::vector<D3DXVECTOR2>& poly)
+{
+	D3DXVECTOR2 topLeft(FLT_MAX,FLT_MAX);
+	D3DXVECTOR2 bottomRight(-FLT_MAX,-FLT_MAX);
+
+	for(auto iter = poly.begin(); iter != poly.end(); ++iter)
+	{
+		if(iter->x < topLeft.x)
+		{
+			topLeft.x = iter->x;
+		}
+		else if(iter->x > bottomRight.x)
+		{
+			bottomRight.x = iter->x;
+		}
+
+		if(iter->y < topLeft.y)
+		{
+			topLeft.y = iter->y;
+		}
+		else if(iter->y > bottomRight.y)
+		{
+			bottomRight.y = iter->y;
+		}
+	}
+
+	return new CRectangle(Math::FRECT(topLeft,bottomRight));
 }
 
 
@@ -164,7 +177,7 @@ bool Intersects(const Circle& c1, const FRECT& R1)
 	// todo: rewrite this with directx vectors
 
 	float closestX = Clamp(c1.center.x, R1.topLeft.x, R1.bottomRight.x);
-	float closestY = Clamp(c1.center.y, R1.topLeft.y, R1.bottomRight.y);
+	float closestY = Clamp(c1.center.y, R1.bottomRight.y, R1.topLeft.y);
 
 	// Calculate the distance between the circle's center and this closest point
 	float distanceX = c1.center.x - closestX;
@@ -178,27 +191,19 @@ bool Intersects(const Circle& c1, const FRECT& R1)
 //Returns true if the circles are touching, or false if they are not
 bool Intersects(const Circle& c1, const Circle& c2)
 {
-	// todo: check to make sure this is correct
 	float fSum = c1.r + c2.r;
 	return D3DXVec2LengthSq(&(c1.center - c2.center)) < (fSum * fSum);
-	///float dist = D3DXVec2LengthSq(&(c1.center - c2.center)) - (c1.r + c2.r);
-	//return (dist < 0);
 }
 
 bool Intersects(const FRECT& rect1, const FRECT& rect2)
 {
-	/*return rect1.IsPointWithin(rect2.bottomRight) ||
-		rect1.IsPointWithin(rect2.topLeft) ||
-		rect1.IsPointWithin(D3DXVECTOR2(rect2.topLeft.x,rect2.bottomRight.y)) ||
-		rect1.IsPointWithin(D3DXVECTOR2(rect2.bottomRight.x,rect2.bottomRight.y));*/
-
 	return (rect1.topLeft.x <= rect2.bottomRight.x && rect1.bottomRight.x >= rect2.topLeft.x &&
-    rect1.topLeft.y <= rect2.bottomRight.y && rect1.bottomRight.y >= rect2.topLeft.y);
+    rect1.topLeft.y >= rect2.bottomRight.y && rect1.bottomRight.y <= rect2.topLeft.y);
 }
 
 bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P)
 {
-	int j= length - 1;
+	int j = length - 1;
 	bool oddNodes = false;
 
 	for(unsigned int i=0; i < length; i++)
@@ -211,6 +216,52 @@ bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P)
 	}
 
 	return oddNodes; 
+}
+
+bool Sat(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2)
+{
+    bool ret = true;
+
+    //For every face in c1
+    for(int i = 0; i < poly1.size() - 1; i++)
+    {
+        //Grab a face (face x, face y)
+        float fx = poly1[i].x - poly1[(i + 1) % (poly1.size() - 1)].x;
+        float fy = poly1[i].y - poly1[(i + 1) % (poly1.size() - 1)].y;
+
+        //Create a perpendicular axis to project on (axis x, axis y)
+        float ax = -fy, ay = fx;
+
+        //Normalize the axis
+        float len_v = sqrt(ax * ax + ay * ay);
+        ax /= len_v;
+        ay /= len_v;
+
+        //Carve out the min and max values
+        float c1_min = FLT_MAX, c1_max = -FLT_MAX;
+        float c2_min = FLT_MAX, c2_max = -FLT_MAX;
+
+        //Project every point in c1 on the axis and store min and max
+        for(int j = 0; j < poly1.size() - 1; j++)
+        {
+            float c1_proj = (ax * (poly1[j].x) + ay * (poly1[j].y)) / (ax * ax + ay * ay);
+            c1_min = min(c1_proj, c1_min);
+            c1_max = max(c1_proj, c1_max);
+        }
+
+        //Project every point in c2 on the axis and store min and max
+        for(int j = 0; j < poly2.size() - 1; j++)
+        {
+            float c2_proj = (ax * (poly2[j].x) + ay * (poly2[j].y)) / (ax * ax + ay * ay);
+            c2_min = min(c2_proj, c2_min);
+            c2_max = max(c2_proj, c2_max);
+        }
+
+        //Return if the projections do not overlap
+        if(!(c1_max >= c2_min && c1_min <= c2_max))
+            ret = false;
+    }
+    return ret;
 }
 
 bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P)
@@ -232,28 +283,21 @@ bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P)
 
 float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound)
 {
-	// Bounds
-	RECT R;
-	::GetWindowRect(::GetActiveWindow(),&R);
-
-	const int Y = R.bottom - R.top;
-	const int X = R.right - R.left;
-
 	float b = 0.0f;
 	float m = 0.0f;
 	float x = 0.0f;
 
 	// Loop while pos is within the window
-	while(InRange(pos.x,fLeftBound,(float)X))
+	while(pos.x > fLeftBound)
 	{
-		float c = 0.0f;
-		float n = 1.0f; // normal vector
+		float c = 50.0f;
+		float n = -1.0f; // normal vector
 
 		// If the object is heading down
-		if(dir.y > 0.0f)
+		if(dir.y < 0.0f)
 		{
 			// Set the constant to solve for
-			c = (float)Y;
+			c = -50.0f;
 
 			// set the normal vector
 			n = -n;
@@ -416,7 +460,7 @@ std::string ConvertTo(unsigned int uiInputNumber, unsigned int uiTargetBase)
 		// resize string to final size
 		targetNumber.resize(uiTotalDigits);
 
-		while(uiInputNumber > 0)
+		do
 		{
 			unsigned int uiNewDigit = (uiInputNumber % uiTargetBase);
 
@@ -432,7 +476,7 @@ std::string ConvertTo(unsigned int uiInputNumber, unsigned int uiTargetBase)
 
 			uiInputNumber /= uiTargetBase;
 			i--;
-		}
+		} while(uiInputNumber > 0);
 	}
 	
 	return targetNumber;

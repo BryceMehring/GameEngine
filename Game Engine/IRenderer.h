@@ -2,68 +2,9 @@
 #define _IRENDERER_
 
 #include "IPlugin.h"
-#include "ITextureManager.h"
+#include "IResourceManager.h"
 #include <d3dx9math.h>
 #include <string>
-
-//FVF quick-system
-#define		FVF_XYZ			0x00000001
-#define		FVF_NORMAL		0x00000002
-#define		FVF_DIFFUSE		0x00000004
-#define		FVF_SPECULAR	0x00000008
-
-#define		FVF_TEXTURE0	0x00010000
-#define		FVF_TEXTURE1	0x00020000
-#define		FVF_TEXTURE2	0x00040000
-#define		FVF_TEXTURE3	0x00080000
-#define		FVF_TEXTURE(X)	(0x00010000 << (X))
-
-// VertexDecl code from: http://www.gamedev.net/topic/461559-abstracting-directx-vertex-declarations/
-//type of element, i.e. what it specifies
-/*enum VertexElementType
-{
-	VET_XYZ,
-	VET_NORMAL,
-	VET_DIFFUSE,
-	VET_SPECULAR,
-	VET_TEXCOORD,
-};
-
-//'format' of element, basically the data type
-//it's recommended that you avoid the INT64 types, as well as long double
-enum VertexElementFormat
-{
-	VEF_SIGNED_BYTE,
-	VEF_UNSIGNED_BYTE,
-
-	VEF_SIGNED_SHORT,
-	VEF_UNSIGNED_SHORT,
-
-	VEF_UNSIGNED_INT,
-	VEF_SIGNED_INT,
-
-	VEF_UNSIGNED_INT64,
-	VEF_SIGNED_INT64,
-
-	VEF_FLOAT,
-	VEF_DOUBLE,
-	VEF_LONG_DOUBLE,
-};
-
-//specifies a complete vertex, basically just a list of elements
-struct VertexDeclaration
-{
-	typedef std::vector<D3DVERTEXELEMENT9> ElementList;
-	typedef ElementList::iterator Iterator;
-
-	ElementList Elements;
-	unsigned int iClassSize;
-
-	VertexDeclaration()
-	{
-		Elements.reserve( 4 );
-	}
-};*/
 
 class __declspec(novtable) I2DRenderer
 {
@@ -72,7 +13,7 @@ public:
 	virtual ~I2DRenderer() {}
 
 	// Line
-	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color) = 0;
+	//virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color) = 0;
 	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, float angle, D3DCOLOR color) = 0;
 
 	// Fonts
@@ -81,7 +22,7 @@ public:
 	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true) = 0; // clipped to rect
 
 	// sprites
-	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, unsigned int iCellId = 0, DWORD color = 0xffffffff) = 0;
+	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId = 0, DWORD color = 0xffffffff) = 0;
 	//virtual void DrawSpriteAnimation(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
 
 	
@@ -128,12 +69,17 @@ public:
 	virtual void OnLostDevice() = 0;
 	virtual void OnResetDevice() = 0;
 	virtual bool IsDeviceLost() = 0;
+
+	// whenever an ISpatialObject is passed to the renderer,
+	// the renderer deals with rendering the object so the application does not have to worry about it.
 	
 	// textures
-	virtual ITextureManager& GetTextureManager() = 0;
+	virtual IResourceManager& GetResourceManager() = 0;
 
 	virtual I2DRenderer& Get2DRenderer() = 0;
 	//virtual I3DRenderer& Get3DRenderer() = 0;
+
+	virtual void SetCamera(class Camera*) = 0;
 
 
 	// config

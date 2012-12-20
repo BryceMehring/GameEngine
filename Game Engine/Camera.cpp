@@ -2,7 +2,19 @@
 #include "Camera.h"
 #include <dinput.h>
 
-Camera::Camera()
+Camera* CreateCamera()
+{
+	return new Camera();
+}
+void ReleaseCamera(Camera* pCam)
+{
+	if(pCam != nullptr)
+	{
+		pCam->Release();
+	}
+}
+
+Camera::Camera() : m_width(0.0f), m_height(0.0f)
 {
 	memset(&m_PosW,0,sizeof(D3DXVECTOR3));
 	memset(&m_LookW,0,sizeof(D3DXVECTOR3));
@@ -11,6 +23,15 @@ Camera::Camera()
 
 	m_UpW.x = m_UpW.z = 0.0f;
 	m_UpW.y = 1.0f;
+}
+
+float Camera::GetWidth() const
+{
+	return m_width;
+}
+float Camera::GetHeight() const
+{
+	return m_height;
 }
 
 const D3DXMATRIX& Camera::view() const
@@ -40,19 +61,23 @@ void Camera::lookAt(D3DXVECTOR3& pos, D3DXVECTOR3& target, D3DXVECTOR3& up)
 	buildView();
 }
 
-void Camera::setLens(float fov, float aspect, float nearZ, float farZ)
+void Camera::setLens(float w, float h, float nearZ, float farZ)
 {
-	D3DXMatrixPerspectiveFovLH(&m_Proj,fov,aspect,nearZ,farZ);
+	m_width = w;
+	m_height = h;
+	D3DXMatrixOrthoLH(&m_Proj,w,h,nearZ,farZ);
+	//D3DXMatrixOrthoLH
+	//D3DXMatrixPerspectiveFovLH(&m_Proj,fov,aspect,nearZ,farZ);
 }
 
 void Camera::setDir(const D3DXVECTOR3& dir)
 {
-	m_dir = dir;
+	//m_dir = dir;
 }
 
 void Camera::update(float dt)
 {
-	m_PosW += m_dir * dt;
+	//m_PosW += m_dir * dt;
 
 	/*float pitch = input.MouseY() / 150.0f;
 	float yAngle = input.MouseX() / 150.0f;
@@ -69,7 +94,10 @@ void Camera::update(float dt)
 	D3DXVec3TransformCoord(&m_LookW,&m_LookW,&R);*/
 	//::D3DXMatrixLookAtLH(&m_View,&m_PosW,
 
-	buildView();
+
+	//D3DXMatrixLookAtLH(&m_View,&m_PosW,&m_LookW,&m_UpW);
+
+	//buildView();
 
 	m_ViewProj = m_View * m_Proj;
 
@@ -77,7 +105,10 @@ void Camera::update(float dt)
 
 void Camera::buildView()
 {
-	D3DXVec3Normalize(&m_LookW,&m_LookW);
+	//::D3DXMatrixScaling(&m_View,.5f,.5f,.5f);
+	D3DXMatrixLookAtLH(&m_View,&m_PosW,&m_LookW,&m_UpW);
+
+	/*D3DXVec3Normalize(&m_LookW,&m_LookW);
 	D3DXVec3Cross(&m_UpW,&m_LookW,&m_RightW);
 	D3DXVec3Normalize(&m_UpW,&m_UpW);
 
@@ -106,5 +137,5 @@ void Camera::buildView()
 	m_View(0,3) = 0.0f;
 	m_View(1,3) = 0.0f;
 	m_View(2,3) = 0.0f;
-	m_View(3,3) = 1.0f;
+	m_View(3,3) = 1.0f;*/
 }

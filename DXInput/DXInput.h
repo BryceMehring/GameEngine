@@ -44,7 +44,7 @@ public:
 
 private:
 
-	virtual void Poll(const struct MsgProcData& data);
+	void Poll(const struct MsgProcData& data);
 
 	DirectInput(PluginManager& mgr);
 	virtual ~DirectInput();

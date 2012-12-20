@@ -23,8 +23,6 @@ public:
         Reset();
     }
  
-    ~Timer(){ /* empty */ }
- 
     // Activate the timer and poll the counter.
     void Start()
 	{
@@ -59,7 +57,7 @@ public:
  
     // Returns the time elapsed since Start() was called
     // in milli-seconds
-    /*long double GetTimeInMilliseconds(void) {
+  /*  long double GetTimeInMilliseconds(void) {
         return GetTimeInMicroSeconds() * 0.001;
     }
  

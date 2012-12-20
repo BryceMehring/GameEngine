@@ -8,6 +8,7 @@
 #include "TextureManager.h"
 #include "D3d9types.h"
 #include "WindowManager.h"
+#include "Streams.h"
 
 #include <sstream>
 
@@ -22,6 +23,8 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 	return new DX9Render(mgr);
 }
 
+IDirect3DVertexDeclaration9* VertexPT::m_pVertexDecl = nullptr;
+
 struct DisplayMode
 {
 	D3DDISPLAYMODE mode;
@@ -29,26 +32,17 @@ struct DisplayMode
 	std::string str;
 };
 
-enum InterfaceType
-{
-	Font,
-	Line,
-};
-
-
-
 unsigned int color(unsigned char r, unsigned char g, unsigned char b)
 {
 	return D3DCOLOR_XRGB(r,g,b);
 }
 
 DX9Render::DX9Render(PluginManager& ref) : m_mgr(ref), m_p3Device(nullptr),
-m_pDirect3D(nullptr),
-m_pTextureManager(nullptr)
+m_pDirect3D(nullptr), m_pResourceManager(nullptr), m_pCamera(nullptr)
 {
 	// todo: need to organize constructor
 	ZeroMemory(&m_D3DParameters,sizeof(D3DPRESENT_PARAMETERS));
-	m_ClearBuffers = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
+	m_ClearBuffers = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL;
 
 	try
 	{
@@ -61,26 +55,35 @@ m_pTextureManager(nullptr)
 		exit(0);
 	}
 
+	Streams::Initalize(m_p3Device);
+
 	// Load Textures
 	m_p3Device->AddRef();
-	m_pTextureManager = new TextureManager(m_p3Device);
-	m_pTextureManager->LoadAllTexturesFromFolder("..\\Textures");
+	m_pResourceManager = ::new ResourceManager(m_p3Device);
 
 	m_p3Device->AddRef();
-	m_p2DRenderer = new DX92DRenderer(m_p3Device,m_pTextureManager);
+	m_p2DRenderer = ::new DX92DRenderer(m_p3Device,m_pResourceManager);
 
 	EnumerateDisplayAdaptors();
 
+	InitCamera();
+
 	RegisterScript();
+
+	//this->SetDisplayMode(0);
 }
 DX9Render::~DX9Render()
 {
-	delete m_pTextureManager;
-	delete m_p2DRenderer;
-
 	asIScriptEngine* pEngine = m_mgr.GetAngelScript().GetScriptEngine();
 	DBAS(pEngine->RemoveConfigGroup("Renderer"));
 	pEngine->Release();
+
+	//delete m_pCamera;
+	Streams::Destroy();
+	ReleaseCamera(m_pCamera);
+
+	delete m_p2DRenderer;
+	delete m_pResourceManager;
 
 	m_p3Device->Release();
 	m_pDirect3D->Release();
@@ -100,6 +103,7 @@ DLLType DX9Render::GetPluginType() const
 {
 	return RenderingPlugin;
 }
+
 void DX9Render::InitializeDirectX()
 {
 	// Step 1: Create the IDirect3D9 object.
@@ -116,7 +120,7 @@ void DX9Render::InitializeDirectX()
 	
 	m_D3DParameters.BackBufferWidth            = 0;
 	m_D3DParameters.BackBufferHeight           = 0;
-	m_D3DParameters.BackBufferFormat           = D3DFMT_UNKNOWN;
+	m_D3DParameters.BackBufferFormat           = D3DFMT_X8R8G8B8;
 	m_D3DParameters.BackBufferCount            = 1;
 	m_D3DParameters.MultiSampleType            = D3DMULTISAMPLE_NONE;
 	m_D3DParameters.MultiSampleQuality         = 0;
@@ -153,14 +157,30 @@ void DX9Render::Reset()
 	OnResetDevice();
 }
 
-ITextureManager& DX9Render::GetTextureManager()
+IResourceManager& DX9Render::GetResourceManager()
 {
-	return *m_pTextureManager;
+	return *m_pResourceManager;
 }
 
 I2DRenderer& DX9Render::Get2DRenderer()
 {
 	return *m_p2DRenderer;
+}
+
+void DX9Render::SetCamera(Camera* pCam)
+{
+	if(pCam != nullptr)
+	{
+		if(m_pCamera != nullptr)
+		{
+			m_pCamera->Release();
+		}
+
+		m_pCamera = pCam;
+		m_pCamera->AddRef();
+
+		m_p2DRenderer->SetCamera(pCam);
+	}
 }
 
 /*void DX9Render::DrawSprite()
@@ -205,11 +225,13 @@ bool DX9Render::IsDeviceLost()
 
 void DX9Render::OnLostDevice()
 {
+	m_pResourceManager->OnLostDevice();
 	m_p2DRenderer->OnLostDevice();
 }
 
 void DX9Render::OnResetDevice()
 {
+	m_pResourceManager->OnResetDevice();
 	m_p2DRenderer->OnResetDevice();
 }
 
@@ -252,7 +274,7 @@ void DX9Render::EnumerateDisplayAdaptors()
 	float Y = (float)GetSystemMetrics(SM_CYSCREEN);
 	float fBaseRatio = X/Y;
 
-	for(int i = 0; i < m_pDirect3D->GetAdapterCount(); ++i)
+	for(unsigned int i = 0; i < m_pDirect3D->GetAdapterCount(); ++i)
 	{
 		int n = m_pDirect3D->GetAdapterModeCount(i,D3DFMT_X8R8G8B8) - 1;
 
@@ -285,6 +307,20 @@ void DX9Render::EnumerateDisplayAdaptors()
 UINT DX9Render::GetNumDisplayAdaptors() const
 {
 	return m_DisplayModes.size();
+}
+
+void DX9Render::InitCamera()
+{
+	D3DXVECTOR3 pos(0.0f,0.0f,-10.0f);
+	D3DXVECTOR3 target(0.0f,0.0f,0.0f);
+	D3DXVECTOR3 up(0.0f,1.0f,0.0f);
+
+	m_pCamera = CreateCamera();
+	m_pCamera->setLens(100.0f,100.0f,1.0f,5000.0f);
+	m_pCamera->lookAt(pos,target,up);
+	m_pCamera->update(0.0f);
+
+	m_p2DRenderer->SetCamera(m_pCamera);
 }
 
 void DX9Render::SetWindowStyle()
@@ -324,15 +360,8 @@ void DX9Render::SetDisplayMode(UINT i)
 	m_D3DParameters.FullScreen_RefreshRateInHz = m_DisplayModes[i].mode.RefreshRate;
 	m_D3DParameters.Windowed         = false;
 
-	// todo: look at this:
-	//HWND h1 = SetActiveWindow(h);
-	//HWND h2 = SetFocus(h);
-	//::GetActiveWindow();
-
 	SetWindowStyle();
-	
 	Reset();
-	//Reset();
 }
 
 void DX9Render::ToggleFullscreen()

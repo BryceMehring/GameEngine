@@ -4,33 +4,35 @@
 #include "PluginManager.h"
 #include "VecMath.h"
 #include "FileManager.h"
+#include "VecMath.h"
 
 using namespace std;
 
 // ===== DxPolygon =====
 
-DxPolygon::DxPolygon() : m_color(0xffffffff)
+DxPolygon::DxPolygon() : m_color(0xffffffff), m_fAngle(0.0f)
 {
 }
-DxPolygon::DxPolygon(const D3DXVECTOR2* pArray, unsigned int size) : m_color(0xffffffff)
+DxPolygon::DxPolygon(const D3DXVECTOR3* pArray, unsigned int size) : m_color(0xffffffff), m_fAngle(0.0f)
 {
 	ConstructFromArray(pArray,size);
 }
-DxPolygon::DxPolygon(const std::vector<D3DXVECTOR2>& edges) : m_edges(edges), m_color(0xffffffff)
+DxPolygon::DxPolygon(const std::vector<D3DXVECTOR3>& edges) : m_edges(edges), m_color(0xffffffff), m_fAngle(0.0f)
 {
 }
 
-const D3DXVECTOR2& DxPolygon::operator[](unsigned int i) const { return m_edges[i]; }
-D3DXVECTOR2& DxPolygon::operator[](unsigned int i) { return m_edges[i]; }
+const D3DXVECTOR3& DxPolygon::operator[](unsigned int i) const { return m_edges[i]; }
+D3DXVECTOR3& DxPolygon::operator[](unsigned int i) { return m_edges[i]; }
 
 // Set
 void DxPolygon::SetColor(DWORD color) { m_color = color; }
+void DxPolygon::SetAngle(float fAngle) { m_fAngle = fAngle; }
 
-void DxPolygon::ConstructFromArray(const std::vector<D3DXVECTOR2>& edges)
+void DxPolygon::ConstructFromArray(const std::vector<D3DXVECTOR3>& edges)
 {
 	m_edges = edges;
 }
-void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
+void DxPolygon::ConstructFromArray(const D3DXVECTOR3* pArray, unsigned int size)
 {
 	gassert(pArray != nullptr,"Null pointer");
 	//gassert(pArray[0] == pArray[size-1],"DxPolygon is not configured correctly");
@@ -49,17 +51,22 @@ void DxPolygon::ConstructFromArray(const D3DXVECTOR2* pArray, unsigned int size)
 // Get
 DWORD DxPolygon::GetColor() const { return m_color; }
 unsigned int DxPolygon::GetSize() const { return m_edges.size(); }
-std::vector<D3DXVECTOR2> DxPolygon::GetEdges() const { return m_edges; }
+std::vector<D3DXVECTOR3> DxPolygon::GetEdges() const { return m_edges; }
 
 void DxPolygon::Render(IRenderer& renderer)
 {
-	renderer.Get2DRenderer().DrawLine(&(m_edges.front()),m_edges.size(),m_color);
+	renderer.Get2DRenderer().DrawLine(&(m_edges.front()),m_edges.size(),m_fAngle,m_color);
 }
 
 // algorithm from: http://alienryderflex.com/polygon/
 bool DxPolygon::IsPointInPolygon(POINT P) const
 {
 	return Math::IsPointInPolygon(&(m_edges.front()),m_edges.size(),P);
+}
+
+bool DxPolygon::Overlaps(const DxPolygon& other) const
+{
+	return Math::Sat(m_edges,other.m_edges) && Math::Sat(other.m_edges,m_edges);
 }
 IRender::IRenderType DxPolygon::GetRenderType() const { return IRender::Polygon; }
 
@@ -70,24 +77,41 @@ DxSquare::DxSquare(const RECT& R)
 {
 	ConstructFromRect(R);
 }
-DxSquare::DxSquare(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon(pArray,size)
+DxSquare::DxSquare(const Math::FRECT& R)
+{
+	ConstructFromRect(R);
+}
+DxSquare::DxSquare(const D3DXVECTOR3* pArray, unsigned int size) : DxPolygon(pArray,size)
 {
 	gassert(size != SIZE,"Incorrect size");
 }
 
 void DxSquare::ConstructFromRect(const RECT& R)
 {
-	D3DXVECTOR2 vec[SIZE];
+	D3DXVECTOR3 vec[SIZE];
 
-	vec[0] = D3DXVECTOR2((float)R.right,(float)R.bottom);
-	vec[1] = D3DXVECTOR2((float)R.right,(float)R.top);
-	vec[2] = D3DXVECTOR2((float)R.left,(float)R.top);
-	vec[3] = D3DXVECTOR2((float)R.left,(float)R.bottom);
-	vec[4] = D3DXVECTOR2((float)R.right,(float)R.bottom);
+	vec[0] = D3DXVECTOR3((float)R.right,(float)R.bottom,0.0f);
+	vec[1] = D3DXVECTOR3((float)R.right,(float)R.top,0.0f);
+	vec[2] = D3DXVECTOR3((float)R.left,(float)R.top,0.0f);
+	vec[3] = D3DXVECTOR3((float)R.left,(float)R.bottom,0.0f);
+	vec[4] = D3DXVECTOR3((float)R.right,(float)R.bottom,0.0f);
 
 	ConstructFromArray(vec,SIZE);
 
 	m_rect = R;
+}
+
+void DxSquare::ConstructFromRect(const Math::FRECT& R)
+{
+	D3DXVECTOR3 vec[SIZE];
+
+	vec[0] = D3DXVECTOR3(R.bottomRight.x,R.bottomRight.y,0.0f);
+	vec[1] = D3DXVECTOR3(R.bottomRight.x,R.topLeft.y,0.0f);
+	vec[2] = D3DXVECTOR3(R.topLeft.x,R.topLeft.y,0.0f);
+	vec[3] = D3DXVECTOR3(R.topLeft.x,R.bottomRight.y,0.0f);
+	vec[4] =D3DXVECTOR3(R.bottomRight.x,R.bottomRight.y,0.0f);
+
+	ConstructFromArray(vec,SIZE);
 }
 
 const RECT& DxSquare::GetRect() const
@@ -126,7 +150,7 @@ bool DxSquare::IsPointInPolygon(POINT P) const
 // ==== DxTriangle ====
 
 DxTriangle::DxTriangle() {}
-DxTriangle::DxTriangle(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon(pArray,size) 
+DxTriangle::DxTriangle(const D3DXVECTOR3* pArray, unsigned int size) : DxPolygon(pArray,size) 
 {
 }
 
@@ -134,19 +158,19 @@ DxTriangle::DxTriangle(const D3DXVECTOR2* pArray, unsigned int size) : DxPolygon
 // algorithm from: http://www.blackpawn.com/texts/pointinpoly/default.html
 bool DxTriangle::IsPointInPolygon(POINT P) const
 {
-	D3DXVECTOR2 point((float)P.x,(float)P.y);
+	D3DXVECTOR3 point((float)P.x,(float)P.y,0.0f);
 
 	// Compute vectors        
-	D3DXVECTOR2 v0 = m_edges[2] - m_edges[0];
-	D3DXVECTOR2 v1 = m_edges[1] - m_edges[0];
-	D3DXVECTOR2 v2 = point - m_edges[0];
+	D3DXVECTOR3 v0 = m_edges[2] - m_edges[0];
+	D3DXVECTOR3 v1 = m_edges[1] - m_edges[0];
+	D3DXVECTOR3 v2 = point - m_edges[0];
 
 	// Compute dot products
-	float dot00 = D3DXVec2Dot(&v0, &v0);
-	float dot01 = D3DXVec2Dot(&v0, &v1);
-	float dot02 = D3DXVec2Dot(&v0, &v2);
-	float dot11 = D3DXVec2Dot(&v1, &v1);
-	float dot12 = D3DXVec2Dot(&v1, &v2);
+	float dot00 = D3DXVec3Dot(&v0, &v0);
+	float dot01 = D3DXVec3Dot(&v0, &v1);
+	float dot02 = D3DXVec3Dot(&v0, &v2);
+	float dot11 = D3DXVec3Dot(&v1, &v1);
+	float dot12 = D3DXVec3Dot(&v1, &v2);
 
 	// Compute barycentric coordinates
 	float invDenom = 1 / (dot00 * dot11 - dot01 * dot01);

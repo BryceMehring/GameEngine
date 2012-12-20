@@ -7,7 +7,6 @@
 #include "QuadTree.h"
 #include "BNew.h"
 #include "Menu.h"
-#include "GameStateConstants.h"
 #include "SerializedState.h"
 #include "PooledAllocator.h"
 #include <vector>
@@ -84,7 +83,7 @@ class Paddle : public ISpatialObject
 {
 public:
 
-	Paddle(const Math::FRECT& pos);
+	Paddle(const Math::Sprite&);
 	virtual ~Paddle() {}
 
 	virtual void Update(class IKMInput&, QuadTree&, double dt);
@@ -128,7 +127,7 @@ class PlayerPaddle : public Paddle
 {
 public:
 
-	PlayerPaddle(const Math::FRECT& pos);
+	PlayerPaddle(const Math::Sprite&);
 
 	virtual void Update(class IKMInput&, QuadTree&, double dt);
 	
@@ -138,7 +137,7 @@ class ComputerPaddle : public Paddle
 {
 public:
 
-	ComputerPaddle(const Math::FRECT& pos, const float& fAIspeed);
+	ComputerPaddle(const Math::Sprite&, const float& fAISpeed);
 
 	virtual void Update(class IKMInput&, QuadTree&, double dt);
 

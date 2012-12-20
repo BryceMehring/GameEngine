@@ -6,10 +6,11 @@
 #include "PluginManager.h"
 #include "FileManager.h"
 #include "Game.h"
+
+#include <algorithm>
 //#include "EngineHelper.h"
 
 using namespace std;
-using namespace stdext;
 
 PluginManager::PluginManager() : m_pGame(nullptr)
 {

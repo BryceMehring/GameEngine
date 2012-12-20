@@ -1,6 +1,7 @@
 #ifndef _IRENDER_
 #define _IRENDER_
 
+// todo: this class needs to be renamed to IRenderable
 class __declspec(novtable) IRender
 {
 public:

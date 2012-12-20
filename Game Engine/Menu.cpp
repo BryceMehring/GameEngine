@@ -203,29 +203,26 @@ void ButtonBase::Update(IKMInput& input)
 
 void ButtonBase::Render(IRenderer& renderer)
 {
-	renderer.Get2DRenderer().DrawString(m_name.name.c_str(),m_name.P,m_color);
+	TextureInfo buttonInfo;
+	renderer.GetResourceManager().GetTextureInfo("button",buttonInfo);
 
-	m_pPolygon->Render(renderer);
+	::D3DXMATRIX S,T;
+	//::D3DXMatrixScaling(&S,
+	::D3DXMatrixTranslation(&T,0.0f,0.0f,0.0f);
+	renderer.Get2DRenderer().DrawSprite(S*T,"button");
+
+
+	//renderer.Get2DRenderer().DrawString(m_name.name.c_str(),m_name.P,m_color);
+
+	//renderer.Get2DRenderer().DrawSprite(
+
+	//m_pPolygon->Render(renderer);
 }
 
-/*Button::Button(UI* pUI, Menu* pMenu, DxPolygon* pPolygon) : m_pUI(pUI), m_pMenu(pMenu), m_pPolygon(pPolygon)  {}
-void Button::Update()
-{
-	PluginManager& pm = ::PluginManager::Instance();
-	IKMInput* pInput = static_cast<IKMInput*>(pm.GetPlugin(Input));
-
-	if(IsClicked())
-	{
-		m_pUI->SetMenu(m_pMenu);
-	}
-}*/
-
-
 // textbox ctor
-TextBox::TextBox(const std::string& name, const RECT& R)
-: m_spacePos(-1), m_square(R), m_scrollSpeed(0), m_scrollAccel(0), m_fScrollTime(0.0)
+TextBox::TextBox(const std::string& name, const D3DXVECTOR3& pos, float w, float h)
+: m_spacePos(-1), m_scrollSpeed(0), m_scrollAccel(0), m_fScrollTime(0.0), m_sprite(w,h,D3DXVECTOR2(pos.x,pos.y))
 {
-	//m_text.reserve(10);
 	Enter();
 
 	m_carrotPos.x = m_carrotPos.y = 0;
@@ -267,7 +264,7 @@ void TextBox::Write(const std::string& line, DWORD color, bool c)
 
 
 	// calculate the rect of the line
-	POINT P;
+	/*POINT P;
 	if(!m_text.empty())
 	{
 		P =  m_text.back().P;
@@ -281,7 +278,7 @@ void TextBox::Write(const std::string& line, DWORD color, bool c)
 	}
 	
 	// Add line to vector
-	m_text.push_back(LineData(line,color,P,c));
+	m_text.push_back(LineData(line,color,P,c));*/
 }
 
 void TextBox::Backspace()
@@ -319,7 +316,7 @@ void TextBox::Enter()
 
 void TextBox::Update(IKMInput& input, double dt)
 {
-	if(/*input.MouseClick(0,false) &&*/ PtInRect(&m_square.GetRect(),input.MousePos()) > 0)
+	if(m_sprite.IsPointWithin(input.GetTransformedMousePos()))
 	{
 		input.SetMouseState(Beam);
 	}
@@ -362,29 +359,33 @@ void TextBox::Update(IKMInput& input, double dt)
 
 void TextBox::BreakLastLine(IRenderer& renderer)
 {
-	TextBox::LineData& theBack = m_text.back();
+	/*TextBox::LineData& theBack = m_text.back();
 	RECT myR = {theBack.P.x,theBack.P.y,0,0};
 	renderer.Get2DRenderer().GetStringRec(theBack.line.c_str(),myR);
 
 	if(myR.right >= (this->m_square.GetRect().right - 15))
 	{
 		TextBox::Write("",0xffffffff,true);
-	}
+	}*/
 }
 
 void TextBox::Render(IRenderer& renderer)
 {
-	m_square.Render(renderer);
-
 	/*if(m_drawCarrot)
 	{
 		pRenderer->DrawString("|",m_carrotPos,0xffffffff);
 	}*/
 
+	D3DXMATRIX S, T;
+	::D3DXVECTOR2 middle = m_sprite.Middle();
+	D3DXMatrixScaling(&S,m_sprite.Width(),m_sprite.Height(),1.0f);
+	D3DXMatrixTranslation(&T,middle.x,middle.y,0.0f);
+	renderer.Get2DRenderer().DrawSprite(S*T,"textbox3");
+
 	BreakLastLine(renderer);
 
 	// Iterate across all lines
-	for(TextDataType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
+	/*for(TextDataType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		LineData& data = *iter;
 
@@ -412,7 +413,7 @@ void TextBox::Render(IRenderer& renderer)
 				//pRenderer->DrawString(line.c_str(),temp,data.color,false);
 			}
 		}
-	}
+	}*/
 }
 
 void TextBox::UpdateScrolling(IKMInput& input, double dt)
@@ -473,8 +474,8 @@ void TextBox::CLS()
 }
 
 
-ScriptingConsole::ScriptingConsole(asVM* pVM, const std::string& name, const RECT& R)
-: TextBox(name,R), m_pVM(pVM), m_uiStartIndex(-1), m_uiBackIndex(0)
+ScriptingConsole::ScriptingConsole(asVM* pVM, const std::string& name, const D3DXVECTOR3& pos, float w, float h)
+: TextBox(name,pos,w,h), m_pVM(pVM), m_uiStartIndex(-1), m_uiBackIndex(0)
 {
 
 }

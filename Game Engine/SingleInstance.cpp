@@ -53,9 +53,9 @@ int SingleInstance::RunProgram(HINSTANCE h,const char* pState)
 	srand (seed);
 
 	// Write the seed to the log
-	char buffer[64];
-	sprintf_s(buffer,"The random number generator seed is: %u",seed);
-	FileManager::Instance().WriteToLog(buffer);
+	std::ostringstream stream;
+	stream << "The random number generator seed is: "<< seed << std::endl;
+	FileManager::Instance().WriteToLog(stream);
 
 	// start the game
 	Game myGame(h);

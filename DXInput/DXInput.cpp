@@ -9,9 +9,6 @@
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"Game Engine.lib")
 
-// todo: this should not be needed
-#pragma comment(lib,"d3dx9.lib")
-
 
 // Input plug-in implementation
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
@@ -134,17 +131,17 @@ void DirectInput::Poll(const MsgProcData& data)
 		case WM_MOUSEMOVE:
 			{
 
-			//RECT R;
-			//::GetWindowRect(::GetActiveWindow(),&R);
+			RECT R;
+			::GetWindowRect(::GetActiveWindow(),&R);
 
 			m_bMouseMove = true;
 			m_MousePos.x  = LOWORD(data.lparam);
 			m_MousePos.y = HIWORD(data.lparam);
 
-			//const float W = (R.right - R.left);
-			//const float H = (R.bottom - R.top);
+			const float W = (R.right - R.left);
+			const float H = (R.bottom - R.top);
 
-			//m_tpos = ::D3DXVECTOR2(2.0f * m_MousePos.x / W - 1.0f,-2.0f*m_MousePos.y / H + 1.0f);
+			m_tpos = 50.0f * D3DXVECTOR2((2.0f * m_MousePos.x / W - 1.0f),-2.0f*m_MousePos.y / H + 1.0f);
 
 			//::D3DXVec2Normalize(&m_tpos,&m_tpos);
 

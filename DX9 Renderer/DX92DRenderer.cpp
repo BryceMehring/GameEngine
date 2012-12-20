@@ -1,6 +1,9 @@
 #include "DX92DRenderer.h"
+#include "Streams.h"
+#include "Camera.h"
 
-DX92DRenderer::DX92DRenderer(IDirect3DDevice9* pDevice, TextureManager* pTm) : m_pDevice(pDevice), m_pTextureManager(pTm)
+DX92DRenderer::DX92DRenderer(IDirect3DDevice9* pDevice, ResourceManager* pTm)
+	: m_pDevice(pDevice), m_pResourceManager(pTm), m_pCamera(nullptr)
 {
 	InitializeFont();
 	InitializeLine();
@@ -10,7 +13,8 @@ DX92DRenderer::DX92DRenderer(IDirect3DDevice9* pDevice, TextureManager* pTm) : m
 
 DX92DRenderer::~DX92DRenderer()
 {
-	m_pSprite->Release();
+	ReleaseCamera(m_pCamera);
+	m_pMesh->Release();
 	m_pLine->Release();
 	m_pFont->Release();
 	m_pDevice->Release();
@@ -22,16 +26,6 @@ void DX92DRenderer::InitializeLine()
 	m_pLine->SetAntialias(true);
 	m_pLine->SetWidth(1.0f);
 	
-}
-void DX92DRenderer::InitializeSprite()
-{
-	D3DXCreateSprite(m_pDevice,&m_pSprite);
-
-	m_pDevice->SetSamplerState(0,D3DSAMP_MAGFILTER,D3DTEXF_LINEAR);
-	m_pDevice->SetSamplerState(0,D3DSAMP_MINFILTER,D3DTEXF_LINEAR);
-	m_pDevice->SetSamplerState(0,D3DSAMP_MIPFILTER,D3DTEXF_LINEAR);
-
-	m_pDevice->SetRenderState(D3DRS_LIGHTING,false);
 }
 
 void DX92DRenderer::InitializeFont()
@@ -50,17 +44,14 @@ void DX92DRenderer::InitializeFont()
 	
 }
 
-
 void DX92DRenderer::OnLostDevice()
 {
-	m_pSprite->OnLostDevice();
 	m_pLine->OnLostDevice();
 	m_pFont->OnLostDevice();
 }
 
 void DX92DRenderer::OnResetDevice()
 {
-	m_pSprite->OnResetDevice();
 	m_pLine->OnResetDevice();
 	m_pFont->OnResetDevice();
 }
@@ -75,13 +66,25 @@ void DX92DRenderer::End()
 	Render();
 }
 
+void DX92DRenderer::SetCamera(Camera* pCam)
+{
+	if(m_pCamera != nullptr)
+	{
+		m_pCamera->Release();
+	}
+
+	m_pCamera = pCam;
+	m_pCamera->AddRef();
+}
+
 // Line
-void DX92DRenderer::DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color)
+/*void DX92DRenderer::DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color)
 {
 	m_pLine->Draw(pVertexList,dwVertexListCount,color);
-}
+}*/
 void DX92DRenderer::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, float angle, D3DCOLOR color)
 {
+	// todo: get rid of m_pLine interfaces
 	::D3DXMATRIX R;
 	::D3DXMatrixRotationZ(&R,angle);
 
@@ -91,7 +94,7 @@ void DX92DRenderer::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListC
 // Fonts
 void DX92DRenderer::GetStringRec(const char* str, RECT& out)
 {
-	m_pFont->DrawText(this->m_pSprite,str,-1,&out,DT_CALCRECT | DT_TOP | DT_LEFT | DT_WORDBREAK,0);
+	m_pFont->DrawText(0,str,-1,&out,DT_CALCRECT | DT_TOP | DT_LEFT | DT_WORDBREAK,0);
 }
 void DX92DRenderer::DrawString(const char* str, POINT P, DWORD color) // not clipped
 {
@@ -115,66 +118,138 @@ void DX92DRenderer::DrawString(const char* str, RECT& R, DWORD color, bool calcR
 }
 
 // sprites
-void DX92DRenderer::DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, unsigned int iCellId, DWORD color)
+/*void DX92DRenderer::AddSprite(::ISpatialObject* pObj, const std::string& texture)
 {
-	m_sprites.push_back(Sprite(transformation,texture,color,iPriority,iCellId));
+	m_quadTree.Insert(*pObj);
+}*/
+void DX92DRenderer::InitializeSprite()
+{
+	// Number of objs
+	const UINT iNum = 1;
+
+	ID3DXMesh* pTempMesh = 0;
+	D3DVERTEXELEMENT9 elements[64];
+	UINT iElements = 0;
+	VertexPT::m_pVertexDecl->GetDeclaration(elements,&iElements);
+
+	// Create in system mem, then copy over to the graphics card.
+	D3DXCreateMesh(2,4,D3DXMESH_SYSTEMMEM,elements,m_pDevice,&pTempMesh);
+
+	VertexPT* v = 0;
+	pTempMesh->LockVertexBuffer(0,(void**)&v);
+
+	for(UINT i = 0; i < iNum; ++i)
+	{
+		v[i*4].pos = D3DXVECTOR3(-0.5,0.5,0.0);
+		v[i*4].tex = D3DXVECTOR2(0,0); // todo: to crop the texture, change the texture cords
+
+		v[i*4 + 1].pos = D3DXVECTOR3(-0.5,-0.5,0.0);
+		v[i*4 + 1].tex = D3DXVECTOR2(0,1);
+
+		v[i*4 + 2].pos = D3DXVECTOR3(0.5,0.5,0.0);
+		v[i*4 + 2].tex = D3DXVECTOR2(1,0);
+
+		v[i*4 + 3].pos = D3DXVECTOR3(0.5,-0.5,0.0);
+		v[i*4 + 3].tex = D3DXVECTOR2(1,1);
+	}
+
+	pTempMesh->UnlockVertexBuffer();
+	v = 0;
+
+	// Create index data
+	WORD* index = 0;
+	pTempMesh->LockIndexBuffer(0,(void**)&index);
+
+	for(UINT i = 0; i < iNum; ++i)
+	{
+		// Tri 1
+		index[i*6] = 4*i + 2;
+		index[i*6 + 1] =  4*i + 1;
+		index[i*6 + 2] = 4*i;
+
+		//Tri 2
+		//
+		index[i*6 + 3] = 4*i + 2;
+		index[i*6 + 4] = 4*i + 3;
+		index[i*6 + 5] = 4*i + 1;
+
+	}
+
+	pTempMesh->CloneMesh(D3DXMESH_MANAGED,elements,m_pDevice,&m_pMesh);
+	pTempMesh->Release();
+
+	// todo: this could be moved elsewhere
+	//ResourceManager::Shader meshShader;
+	//m_pResourceManager->GetResource("2DShader",meshShader);
+
+	/*D3DXHANDLE hTech = m_pEffect->GetTechniqueByName("Blending");
+
+	Mtrl* pMtrl =  new Mtrl;
+	pMtrl->diffuse = D3DXCOLOR(0.9f,0.9f,0.9f,0.0f);
+	pMtrl->ambient = D3DXCOLOR(0.0f,0.0f,0.0f,0.0f);
+	pMtrl->spec = D3DXCOLOR(0.2f,0.2f,0.2f,0.0f);*/
+
+	// Create Billboard object 
+	//m_pEffect->AddRef();
+	//m_Objects.push_back(new UserControlledMesh(pMesh,m_pEffect,pTex,pMtrl,hTech,pos));
 }
-//virtual void DrawSpriteAnimation(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
+void DX92DRenderer::DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId, DWORD color)
+{
+	m_sprites.push_back(Sprite(transformation,texture,color,iCellId));
+}
 
 void DX92DRenderer::RenderText()
 {
 	while(!m_text.empty())
 	{
 		DrawTextInfo& info = m_text.back();
-		m_pFont->DrawText(m_pSprite,info.text.c_str(),-1,&info.R,info.format,info.color);
+		m_pFont->DrawText(0,info.text.c_str(),-1,&info.R,info.format,info.color);
 		m_text.pop_back();
 	}
 }
 
 void DX92DRenderer::RenderSprites()
 {
-	m_sprites.sort(SpriteSorter());
+	ResourceManager::Shader shader;
+	m_pResourceManager->GetResource("2dshader",shader);
+	D3DXHANDLE tecHandle = shader.pEffect->GetTechniqueByName("Sprite");
 
-	for(auto iter = m_sprites.begin(); iter != m_sprites.end(); )
+	while(!m_sprites.empty())
 	{
-		// top sprite in the queue
-		const Sprite& top = *iter;
+		ResourceManager::Texture tex;
+		m_pResourceManager->GetResource(m_sprites.back().texture,tex);
 
-		// Get texture for the sprite
-		TextureManager::Texture texture;
-		if(m_pTextureManager->GetTexture(top.texture,texture))
+		// Set parameters in shader
+		shader.pEffect->SetTechnique(tecHandle);
+		shader.pEffect->SetTexture("gTex",tex.pTexture); 
+		shader.pEffect->SetInt("gCurrentFrame",m_sprites.back().uiCell);
+		shader.pEffect->SetMatrix("gWorldViewProj",&(m_sprites.back().T * m_pCamera->viewProj()));
+
+		// Start
+		UINT i = 0;
+		shader.pEffect->Begin(&i,0);
+
+		// Begin rendering all passes through the shader
+		for(UINT p = 0; p < i; ++p)
 		{
-			const unsigned int uiWidth = texture.uiWidth / texture.uiCells;
-			const unsigned int uiCell = top.uiCell;
-			const RECT R = {uiCell * uiWidth,0,(uiCell+1) * uiWidth,texture.uiHeight};
+			shader.pEffect->BeginPass(p);
+		
+			m_pMesh->DrawSubset(0);
 
-			// calculate center of texture
-			D3DXVECTOR3 center = D3DXVECTOR3((R.right - R.left) / 2.0f,(R.bottom - R.top) / 2.0f,0.0f);
-
-			m_pSprite->SetTransform(&(top.T));
-			m_pSprite->Draw(texture.pTexture,&R,&center,0,top.Color);
+			shader.pEffect->EndPass();
 		}
 
-		iter = m_sprites.erase(iter);
+		// End
+		shader.pEffect->End();
+
+		m_sprites.pop_back();
 	}
-
-	m_pSprite->Flush();
-
-	// reset to normal transform matrix after rendering
-
-	D3DXMATRIX T;
-	D3DXMatrixIdentity(&T);
-	
-	m_pSprite->SetTransform(&T);
 }
 
 void DX92DRenderer::Render()
 {
-	m_pSprite->Begin(0);
-
-	RenderText();
 	RenderSprites();
+	RenderText();
 
-	m_pSprite->End();
 	m_pLine->End();
 }

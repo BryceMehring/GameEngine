@@ -96,7 +96,8 @@
     <ClInclude Include="SerializedState.h" />
     <ClInclude Include="SingleInstance.h" />
     <ClInclude Include="Singleton.h" />
-    <ClInclude Include="ITextureManager.h" />
+    <ClInclude Include="IResourceManager.h" />
+    <ClInclude Include="Sprite.h" />
     <ClInclude Include="StringAlgorithms.h" />
     <ClInclude Include="Tiler.h" />
     <ClInclude Include="Timer.h" />

@@ -52,13 +52,15 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 
 		IPlugin* pPlugin = game.GetPM().LoadDLL(path.c_str());
 
-		// Update change to log
-		char buffer[64];
-		sprintf_s(buffer,"Changing state to: %s",state.c_str());
-		FileManager::Instance().WriteToLog(buffer);
+		string resourcePath = "..\\" + string(pPlugin->GetName()) + "\\resource.r";
+		game.GetRenderer().GetResourceManager().LoadResourceFile(resourcePath);
 
 		m_pCurrentState = static_cast<IGameState*>(pPlugin);
 		m_pCurrentState->Init(game);
+
+		// Update change to log
+		string buffer = "Changing state to: " + state;
+		FileManager::Instance().WriteToLog(buffer);
 
 		// update window caption
 		game.GetWindow().SetWinCaption(state);
@@ -74,6 +76,8 @@ void GameStateMachine::RemoveState(Game& game)
 
 		m_pCurrentState->Destroy(game);
 		game.GetPM().FreePlugin(DLLType::GamePlugin);
+
+		game.GetRenderer().GetResourceManager().RemoveAllTextures();
 	}
 }
 

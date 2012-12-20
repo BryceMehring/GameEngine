@@ -1,4 +1,4 @@
-#include "TextureManager.h"
+#include "ResourceManager.h"
 #include "FileManager.h"
 #include "StringAlgorithms.h"
 #include "gassert.h"
@@ -9,22 +9,51 @@
 
 using namespace std;
 
-TextureManager::TextureManager(IDirect3DDevice9* pDevice) : m_pDevice(pDevice)
+ResourceManager::ResourceManager(IDirect3DDevice9* pDevice) : m_pDevice(pDevice)
 {
 }
 
-TextureManager::~TextureManager()
+ResourceManager::~ResourceManager()
 {
 	RemoveAllTextures();
+	RemoveAllShaders();
 	m_pDevice->Release();
 }
 
-void TextureManager::AddTexture(const std::string& name, const Texture& tex)
+void ResourceManager::AddResource(const std::string& name, const Texture& tex)
 {
 	m_textures.insert(make_pair(name,tex));
 }
 
-void TextureManager::LoadTexture(const std::string& file)
+void ResourceManager::AddResource(const std::string& name, const Shader& shad)
+{
+	m_shaders.insert(make_pair(name,shad));
+}
+
+void ResourceManager::LoadResourceFile(const std::string& file)
+{
+	FileManager::Instance().ProccessFileByLine(file.c_str(),[&](const string& line)
+	{
+		stringstream stream(line);
+
+		string id;
+		stream >> id;
+
+		string fileName;
+		stream >> fileName;
+
+		if(id == "texture")
+		{
+			LoadTexture(fileName);
+		}
+		else if(id == "shader")
+		{
+			LoadShader(fileName);
+		}
+	});
+}
+
+void ResourceManager::LoadTexture(const std::string& file)
 {
 	// todo: I could divide this code up into smaller functions
 
@@ -58,9 +87,44 @@ void TextureManager::LoadTexture(const std::string& file)
 	//ExtractNormals(tex);
 
 	// insert texture into data structure
-	AddTexture(name,tex);
+	AddResource(name,tex);
 }
 
+void ResourceManager::LoadShader(const std::string& file)
+{
+	ID3DXEffect* pEffect = nullptr;
+	ID3DXBuffer* pBuffer = nullptr;
+
+#ifdef _DEBUG
+	D3DXCreateEffectFromFile(m_pDevice,file.c_str(),0,0,D3DXSHADER_DEBUG,0,&pEffect,&pBuffer);
+#else
+	D3DXCreateEffectFromFile(m_pDevice,file.c_str(),0,0,0,0,&pEffect,&pBuffer);
+#endif
+
+	// todo: create better error handling
+	if(pBuffer != nullptr)
+	{
+		MessageBox(0,(char*)pBuffer->GetBufferPointer(),0,0);
+		pBuffer->Release();
+	}
+	else if(pEffect == nullptr)
+	{
+		string errorMsg = "Could not load: " + file;
+
+		MessageBox(0,errorMsg.c_str(),0,0);
+	}
+	else
+	{
+		std::string name = GetFileNameFromPath(file);
+
+		// convert to lower case
+		StringToLower(name);
+
+		AddResource(name,Shader(pEffect));
+	}
+}
+
+// todo: move this somewhere else
 float ClampColor(unsigned int c)
 {
 	return (c * 2.0f/255.0f) - 1.0f;
@@ -73,7 +137,7 @@ D3DXVECTOR2 ConvertColorToVec(unsigned int c)
 	return D3DXVECTOR2(ClampColor(r), ClampColor(g));
 }
 
-void TextureManager::ExtractNormals(Texture& texture)
+void ResourceManager::ExtractNormals(Texture& texture)
 {
 	IDirect3DTexture9* pTexture = texture.pTexture;
 
@@ -98,7 +162,7 @@ void TextureManager::ExtractNormals(Texture& texture)
 	pTexture->UnlockRect(0);
 }
 
-void TextureManager::LoadAllTexturesFromFolder(const std::string& folder)
+void ResourceManager::LoadAllTexturesFromFolder(const std::string& folder)
 {
 	std::vector<string> textureFileNames;
 	FileManager::Instance().LoadAllFilesFromDictionary(textureFileNames,folder,".png .jpg");
@@ -111,7 +175,7 @@ void TextureManager::LoadAllTexturesFromFolder(const std::string& folder)
 }
 
 
-bool TextureManager::GetTextureInfo(const std::string& name, TextureInfo& out) const
+bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) const
 {
 	auto iter = m_textures.find(name);
 
@@ -129,7 +193,7 @@ bool TextureManager::GetTextureInfo(const std::string& name, TextureInfo& out) c
 	return success;
 }
 
-bool TextureManager::GetTexture(const std::string& name, TextureManager::Texture& out)
+bool ResourceManager::GetResource(const std::string& name, ResourceManager::Texture& out)
 {
 	auto iter = m_textures.find(name);
 
@@ -143,7 +207,38 @@ bool TextureManager::GetTexture(const std::string& name, TextureManager::Texture
 	return success;
 }
 
-void TextureManager::RemoveTexture(const std::string& name)
+bool ResourceManager::GetResource(const std::string& name, ResourceManager::Shader& out)
+{
+	auto iter = m_shaders.find(name);
+
+	bool success = iter != m_shaders.end();
+
+	if(success)
+	{
+		out = iter->second;
+	}
+
+	return success;
+}
+
+void ResourceManager::OnLostDevice()
+{
+	for(auto iter = m_shaders.begin(); iter != m_shaders.end(); ++iter)
+	{
+		ID3DXEffect* pEffect = iter->second.pEffect;
+		pEffect->OnLostDevice();
+	}
+}
+void ResourceManager::OnResetDevice()
+{
+	for(auto iter = m_shaders.begin(); iter != m_shaders.end(); ++iter)
+	{
+		ID3DXEffect* pEffect = iter->second.pEffect;
+		pEffect->OnResetDevice();
+	}
+}
+
+void ResourceManager::RemoveTexture(const std::string& name)
 {
 	auto iter = m_textures.find(name);
 
@@ -154,10 +249,22 @@ void TextureManager::RemoveTexture(const std::string& name)
 	}
 }
 
-void TextureManager::RemoveAllTextures()
+void ResourceManager::RemoveAllTextures()
 {
 	for_each(m_textures.begin(),m_textures.end(),[&](TextureMap::value_type& data)
 	{
 		data.second.pTexture->Release();
 	});
+
+	m_textures.clear();
+}
+
+void ResourceManager::RemoveAllShaders()
+{
+	for_each(m_shaders.begin(),m_shaders.end(),[&](ShaderMap::value_type& data)
+	{
+		data.second.pEffect->Release();
+	});
+
+	m_shaders.clear();
 }

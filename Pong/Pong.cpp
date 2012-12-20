@@ -1,7 +1,7 @@
 
 #include "Pong.h"
 #include "Game.h"
-#include "ITextureManager.h"
+#include "IResourceManager.h"
 #include "asVM.h"
 #include "FileManager.h"
 #include "StringAlgorithms.h"
@@ -22,20 +22,14 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 	return new Pong(mgr);
 }
 
-
-void GetWindowRect(RECT& R)
-{
-	GetClientRect(::GetActiveWindow(),&R);
-}
-
 // Ball class
 
 const D3DXVECTOR2 normal[4] = 
 {
 	D3DXVECTOR2(1.0f,0.0f),
 	D3DXVECTOR2(-1.0f,0.0f),
-	D3DXVECTOR2(0.0f,1.0f),
-	D3DXVECTOR2(0.0f,-1.0f)
+	D3DXVECTOR2(0.0f,-1.0f),
+	D3DXVECTOR2(0.0f,1.0f)
 };
 
 Ball::Ball(const D3DXVECTOR2& pos, const D3DXVECTOR2& dir, float V, float R, const std::string& texture) 
@@ -68,12 +62,12 @@ void Ball::Update(QuadTree& tree, double dt)
 
 	unsigned int index = -1;
 
-	if(m_pos.y <= 0.0f)
+	if(m_pos.y > R.topLeft.y)
 	{
 		//m_pos.y = 600.0f;
 		index = 2;
 	}
-	else if(m_pos.y >= R.bottomRight.y)
+	else if(m_pos.y < R.bottomRight.y)
 	{
 		//m_pos.y = 0.0f;
 		index = 3;
@@ -144,15 +138,11 @@ void Ball::Update(QuadTree& tree, double dt)
 
 void Ball::Render(IRenderer& renderer)
 {
-	::D3DXMATRIX S, T;
-	//::D3DXMatrixIdentity(&T);
-	::D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,0.0f);
-	::D3DXMatrixScaling(&S,m_fR / 16.0f,m_fR/16.0f,1.0f);
+	D3DXMATRIX S, T;
+	D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,0.0f);
+	D3DXMatrixScaling(&S,m_fR,m_fR,1.0f);
 
-	//TextureInfo info;
-	//renderer.GetTextureManager().GetTextureInfo(m_texture,info);
-
-	renderer.Get2DRenderer().DrawSprite(S*T,m_texture,2,0);
+	renderer.Get2DRenderer().DrawSprite(S*T,m_texture);
 }
 
 AniBall::AniBall(const D3DXVECTOR2& pos, const D3DXVECTOR2& dir, float V, float R, const std::string& texture, unsigned uiCells) :
@@ -173,22 +163,23 @@ void AniBall::Update(QuadTree& tree, double dt)
 
 void AniBall::Render(IRenderer& renderer)
 {
+	float fScale = m_fR * 2.0f;
+
 	::D3DXMATRIX S, T, R;
-	//::D3DXMatrixIdentity(&T);
 	::D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,0.0f);
-	::D3DXMatrixScaling(&S,m_fR / 32.0f,m_fR/32.0f,1.0f);
+	::D3DXMatrixScaling(&S,fScale,fScale,1.0f);
 	::D3DXMatrixRotationZ(&R,atan2(m_dir.y,m_dir.x));
 
 	//TextureInfo info;
 	//renderer.GetTextureManager().GetTextureInfo(m_texture,info);
 
-	renderer.Get2DRenderer().DrawSprite(R*S*T,m_texture,2,m_uiCurrentCell);
+	renderer.Get2DRenderer().DrawSprite(S*T,m_texture);
 }
 
 
 // paddle class
-Paddle::Paddle(const Math::FRECT& pos)
-: m_pos(pos.Middle()),m_iScore(0), m_CollisionPolygon(pos)
+Paddle::Paddle(const Math::Sprite& sprite)
+: m_pos(sprite.Middle()),m_iScore(0), m_CollisionPolygon(sprite)
 {
 }
 
@@ -206,32 +197,27 @@ void Paddle::Update(IKMInput& input, QuadTree& tree, double dt)
 
 void Paddle::Render(IRenderer& renderer)
 {
-	::D3DXMATRIX T;
+	::D3DXMATRIX S,T;
+	::D3DXMatrixScaling(&S,m_CollisionPolygon.GetRect().Width(),m_CollisionPolygon.GetRect().Height(),1.0f);
 	::D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,0.0f);
 
-	TextureInfo tex;
-	renderer.GetTextureManager().GetTextureInfo("paddle",tex);
-
-	//tex.uiCells
-
-	renderer.Get2DRenderer().DrawSprite(T,"paddle",2,0);
+	renderer.Get2DRenderer().DrawSprite(S*T,"paddle");
 }
 
-PlayerPaddle::PlayerPaddle(const Math::FRECT& pos) : Paddle(pos) {}
+PlayerPaddle::PlayerPaddle(const Math::Sprite& sprite) : Paddle(sprite) {}
 
 void PlayerPaddle::Update(IKMInput& input, QuadTree& tree, double dt)
 {
-	
-	m_pos.y = input.MousePos().y;
+	m_pos.y = input.GetTransformedMousePos().y;
 
 	const Math::FRECT& R = tree.GetRect();
-	m_pos.y = Math::Clamp(m_pos.y,(float)R.topLeft.y,(float)R.bottomRight.y);
+	m_pos.y = Math::Clamp(m_pos.y,(float)R.bottomRight.y,(float)R.topLeft.y);
 
 	Paddle::Update(input,tree,dt);
 }
 
-ComputerPaddle::ComputerPaddle(const Math::FRECT& pos, const float& fAIspeed)
-: Paddle(pos), m_fTime(0.0), m_fVelocity(0.0f), m_fFinalPosY(-1.0f), m_fAISpeed(fAIspeed)
+ComputerPaddle::ComputerPaddle(const Math::Sprite& sprite, const float& fAISpeed)
+: Paddle(sprite), m_fTime(0.0), m_fVelocity(0.0f), m_fFinalPosY(-1.0f), m_fAISpeed(fAISpeed)
 {
 
 }
@@ -241,7 +227,7 @@ void ComputerPaddle::Update(IKMInput& input, QuadTree& tree, double dt)
 	const Math::FRECT& R = tree.GetRect();
 
 	// Get rect of area to poll for balls
-	Math::CRectangle cRect(Math::FRECT(::D3DXVECTOR2(0.0f,0.0f),D3DXVECTOR2(R.bottomRight.x/2.0f-10.0f,R.bottomRight.y)));
+	Math::CRectangle cRect(Math::FRECT(::D3DXVECTOR2(-50.0f,50.0f),D3DXVECTOR2(0.0f,-50.0f)));
 
 	// poll every 1 seconds
 	m_fTime += dt;
@@ -291,8 +277,7 @@ void ComputerPaddle::Update(IKMInput& input, QuadTree& tree, double dt)
 
 		if(pTarget != nullptr)
 		{
-			m_fFinalPosY = Math::PongRayTrace(pTarget->GetPos(),pTarget->GetDir(),50.0f);
-
+			m_fFinalPosY = Math::PongRayTrace(pTarget->GetPos(),pTarget->GetDir(),m_pos.x);
 		}
 		else
 		{
@@ -306,6 +291,9 @@ void ComputerPaddle::Update(IKMInput& input, QuadTree& tree, double dt)
 	{
 		m_fVelocity = (m_fFinalPosY - m_pos.y);
 		m_pos.y += m_fAISpeed*m_fVelocity * dt;
+
+		//m_fVelocity = (m_fFinalPosY - m_pos.y);
+		//m_pos.y = m_fFinalPosY;
 	}
 
 	Paddle::Update(input,tree,dt);
@@ -319,7 +307,7 @@ void ComputerPaddle::Update(IKMInput& input, QuadTree& tree, double dt)
 RTTI_IMPL(Pong);
 
 Pong::Pong(PluginManager& mgr) : m_iLeftScore(0), m_iRightScore(0),
-m_pRightPaddle(nullptr), m_pLeftPaddle(nullptr), m_bDrawQuadTree(false), m_state(MENU), SerializedState("..//Scripts/pong/pong.as")
+m_pRightPaddle(nullptr), m_pLeftPaddle(nullptr), m_bDrawQuadTree(false), m_state(MENU), SerializedState("..//Scripts/pong/pong.as"), m_aiLevel(5.0f)
 {
 }
 
@@ -346,33 +334,14 @@ void Pong::Init(Game& game)
 
 	IRenderer& renderer = game.GetRenderer();
 
-	// Build the rect of the window
-	RECT R;
-	GetWindowRect(R);
-
-	R.right -= R.left;
-	R.bottom -= R.top;
-	R.top = R.left = 0;
-
-	Math::FRECT fRect(D3DXVECTOR2(R.left,R.top),D3DXVECTOR2(R.right,R.bottom));
-
 	// build the quadtree
-	m_pQuadTree = new QuadTree(fRect);
-
-	// Get the size of the texture we are using
-	TextureInfo textureInfo;
-	
-	renderer.GetTextureManager().GetTextureInfo("paddle",textureInfo);
-	Math::FRECT rect(D3DXVECTOR2(0.0f,0.0f),D3DXVECTOR2(textureInfo.uiWidth,textureInfo.uiHeight));
-	rect = D3DXVECTOR2(D3DXVECTOR2(R.right - 50.0f,(R.bottom + R.top) / 2.0f));
+	m_pQuadTree = new QuadTree(Math::FRECT(D3DXVECTOR2(-50.0f,50.0f),D3DXVECTOR2(50.0f,-50.0)));
 
 	// build paddles and add them to the quadtree
-	m_pRightPaddle = new PlayerPaddle(rect);
+	m_pRightPaddle = new PlayerPaddle(Math::Sprite(3.0f,20.0f,D3DXVECTOR2(45.0f,0.0f)));
 	m_pQuadTree->Insert(*m_pRightPaddle);
 
-	rect = D3DXVECTOR2(D3DXVECTOR2(R.left + 50.0f,(R.bottom + R.top) / 2.0f));
-
-	m_pLeftPaddle = new ComputerPaddle(rect,m_aiLevel);
+	m_pLeftPaddle = new ComputerPaddle(Math::Sprite(3.0f,20.0f,D3DXVECTOR2(-45.0f,0.0f)),m_aiLevel);
 	m_pQuadTree->Insert(*m_pLeftPaddle);
 
 	// todo: maybe implement this in the future
@@ -438,7 +407,14 @@ void Pong::Update(Game& game)
 		//game.SetNextState("PongMenu");
 	}
 
-	switch(m_state)
+	if(input.KeyDown(KeyCode::F))
+	{
+		game.GetRenderer().ToggleFullscreen();
+	}
+
+	UpdateGame(game);
+
+	/*switch(m_state)
 	{
 		case MENU:
 			UpdateMenu(game);
@@ -446,7 +422,7 @@ void Pong::Update(Game& game)
 		case GAME:
 			UpdateGame(game);
 			break;
-	}
+	}*/
  }
 
 void Pong::UpdateGame(Game& game)
@@ -465,14 +441,14 @@ void Pong::UpdateGame(Game& game)
 		// add new ball
 		POINT P = input.MousePos();
 		//float a = Math::GetRandFloat(0.0f,365.0f) * 0.01745329f;
-		float a = Math::GetRandFloat(135.0f,225.0f) * 0.01745329f;
+		float a = Math::GetRandFloat(120.0f,180.0f) * 0.01745329f;
 		//float s = Math::GetRandFloat(7.0f,10.0f);
-		float s = Math::GetRandFloat(4.0f,5.0f);
+		float s = Math::GetRandFloat(1.0f,1.5f);
 		float v = Math::GetRandFloat(m_fMinBallVelocity,m_fMaxBallVelocity);
 
 		//Ball* pBall = new Ball(D3DXVECTOR2(P.x,P.y),D3DXVECTOR2(-cosf(a),sinf(a)),0.0f,s);
 		//Ball* pBall = new Ball(D3DXVECTOR2(R.bottomRight.x/2.0f,R.bottomRight.y/8.0f),D3DXVECTOR2(-cosf(a),sinf(a)),v,s,this->m_texture);
-		Ball* pBall = new AniBall(D3DXVECTOR2(R.bottomRight.x/2.0f,R.bottomRight.y/8.0f),D3DXVECTOR2(-cosf(a),sinf(a)),v,s,"flame_sprite",6);
+		Ball* pBall = new AniBall(D3DXVECTOR2(0.0f,R.topLeft.y - 5.0f),D3DXVECTOR2(sin(a),cos(a)),v,s,"ball",6);
 		m_balls.push_back(pBall);
 		m_pQuadTree->Insert(*pBall);
 	}
@@ -495,7 +471,7 @@ void Pong::BuildMenu(Game& game)
 {
 	// todo: need to finish implementing
 
-	Menu* pMenu = new Menu();
+	/*Menu* pMenu = new Menu();
 
 	RECT R;
 	GetWindowRect(R);
@@ -509,7 +485,7 @@ void Pong::BuildMenu(Game& game)
 
 	pMenu->AddElement(pButton);
 
-	m_gui.SetMenu(pMenu);
+	m_gui.SetMenu(pMenu);*/
 	
 }
 
@@ -578,7 +554,10 @@ void Pong::UpdatePaddles(Game& game)
 
 void Pong::Draw(Game& game)
 {
-	switch(m_state)
+
+	DrawGame(game);
+
+	/*switch(m_state)
 	{
 		case MENU:
 			DrawMenu(game);
@@ -586,7 +565,7 @@ void Pong::Draw(Game& game)
 		case GAME:
 			DrawGame(game);
 			break;
-	}
+	}*/
 }
 
 void Pong::DrawGame(Game& game)
@@ -626,12 +605,14 @@ void Pong::DrawMenu(Game& game)
 void Pong::DrawScore(Game& game)
 {
 	IRenderer& renderer = game.GetRenderer();
-	const Math::FRECT& R = m_pQuadTree->GetRect();
+
+	RECT R;
+	GetClientRect(::GetActiveWindow(),&R);
 
 	const POINT POS[2] = 
 	{
-		{R.topLeft.x + 200,R.topLeft.y + 50},
-		{R.bottomRight.x - 200,R.topLeft.y + 50}
+		{R.left + 200,R.top + 50},
+		{R.right - 200,R.top + 50}
 	};
 
 	std::stringstream stream;

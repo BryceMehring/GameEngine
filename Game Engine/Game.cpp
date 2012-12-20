@@ -12,18 +12,20 @@
 
 using namespace std;
 
-Game::Game(HINSTANCE hInstance) : m_window(hInstance), m_fDT(0.0f), 
-m_pRenderer(nullptr), m_pInput(nullptr), m_bConsoleEnabled(false)
+Game::Game(HINSTANCE hInstance) : m_window(hInstance), m_fDT(0.0f), m_pRenderer(nullptr), m_pInput(nullptr), m_bConsoleEnabled(false)
 {
 	LoadAllDLL();
 
-	RECT R = {50,50,750,550};
-	//GetWindowRect(m_window.GetWindowHandle(),&R);
-	m_pConsole = new ScriptingConsole(&m_vm,"Scripting Console",R);
+	float width = 90;
+	float height = 90;
+	D3DXVECTOR3 pos(0.0f,0.0f,0.0f);
+	
+	m_pConsole = new ScriptingConsole(&m_vm,"Scripting Console",pos,width,height);
 
 	m_vm.RegisterScript(m_pConsole);
 
 	m_pConsole->RegisterScript();
+	m_window.RegisterScript(m_vm.GetScriptEngine());
 
 	RegisterScript();
 
@@ -33,7 +35,7 @@ m_pRenderer(nullptr), m_pInput(nullptr), m_bConsoleEnabled(false)
 Game::~Game()
 {
 	// destroy the current state
-	m_StateMachine.RemoveState(*this);
+	//m_StateMachine.RemoveState(*this);
 
 	/// remove the listener from the window
 	m_window.RemoveListener(m_iEventId);
@@ -161,12 +163,9 @@ void Game::DrawFPS()
 	RECT windowR;
 	::GetWindowRect(this->m_window.GetWindowHandle(),&windowR);
 
-	x += m_pInput->MouseX();
-	y += m_pInput->MouseY();
-
 	::std::ostringstream out;
 	out<<"FPS: " << GetFps() << endl << "Dt: " << setprecision (4) << GetDt() << endl;
-	out<<x << " " << y  << endl;
+	out<<m_pInput->GetTransformedMousePos().x << " " << m_pInput->GetTransformedMousePos().y  << endl;
 
 	//sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
 
