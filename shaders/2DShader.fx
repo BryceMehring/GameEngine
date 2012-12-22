@@ -35,10 +35,10 @@ sampler TexS = sampler_state
 	MagFilter = linear;
 	MipFilter = linear;
 
-	AddressU = mirror;
-	AddressV = mirror;
+	AddressU = wrap;
+	AddressV = wrap;
 
-	//MaxAnisotropy = 8;
+	//MaxAnisotropy = 16;
 };
 
 
@@ -60,12 +60,12 @@ VSOut SpriteAnimationVS(VSIn IN)
 	OUT.posH = mul(float4(IN.pos,1.0f),gWorldViewProj);
 
 	// the global UV coordinate of the current frame's upper-left corner on the texture map
-    float cellU = (gCurrentFrame % gSpriteHeight)/ (float)gSpriteHeight;
-   	float cellV = floor(gCurrentFrame / gSpriteWidth) / (float)gSpriteWidth;
+    float cellU = (gCurrentFrame % gSpriteWidth)/ (float)gSpriteWidth;
+   	float cellV = (gCurrentFrame / (float)gSpriteHeight) / (float)gSpriteHeight;
     
    	// the local UV offset inside the current frame
-    float cellDU = IN.tex.x / (float)gSpriteHeight;
-    float cellDV = IN.tex.y / (float)gSpriteWidth;
+    float cellDU = IN.tex.x / (float)gSpriteWidth;
+    float cellDV = IN.tex.y / (float)gSpriteHeight;
    	 
     OUT.tex.x = cellU + cellDU;
   	OUT.tex.y = cellV + cellDV;
@@ -84,8 +84,8 @@ technique Sprite
 {
 	pass p1
 	{
-		VertexShader = compile vs_3_0 SpriteVS();
-		PixelShader = compile ps_3_0 SpritePS();
+		VertexShader = compile vs_2_0 SpriteVS();
+		PixelShader = compile ps_2_0 SpritePS();
 	}
 }
 
@@ -94,7 +94,9 @@ technique AnimatedSprite
 	pass p1
 	{
 		VertexShader = compile vs_3_0 SpriteAnimationVS();
-		PixelShader = compile ps_3_0 SpritePS();
+		PixelShader = compile ps_3_0 SpritePS();		
+
+		CullMode = None;
 	}
 }
 

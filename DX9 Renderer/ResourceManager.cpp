@@ -68,16 +68,17 @@ void ResourceManager::LoadTexture(const std::string& file)
 
 	// try to read number of cells in the animation
 	std::fstream in(file + ".txt",ios::in);
-	unsigned int cells = 1;
+	unsigned int width = 1;
+	unsigned int height = 1;
 
 	if(in)
 	{
-		in >> cells;
+		in >> width >> height;
 		in.close();
 	}
 
 	// fill out texture structure 
-	Texture tex = {pTexture,format.Width,format.Height,cells};
+	Texture tex = {pTexture,format.Width,format.Height,width,height};
 
 	std::string name = GetFileNameFromPath(file);
 

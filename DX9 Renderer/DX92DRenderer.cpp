@@ -96,25 +96,25 @@ void DX92DRenderer::GetStringRec(const char* str, RECT& out)
 {
 	m_pFont->DrawText(0,str,-1,&out,DT_CALCRECT | DT_TOP | DT_LEFT | DT_WORDBREAK,0);
 }
-void DX92DRenderer::DrawString(const char* str, POINT P, DWORD color) // not clipped
+void DX92DRenderer::DrawString(const char* str, D3DXVECTOR2 pos, DWORD color) // not clipped
 {
-	RECT R = {P.x,P.y};
-	//DrawTextInfo info = {str,R,color,DT_NOCLIP};
-	//m_text.push_back(DrawTextInfo(str,R,color,format));
-	m_text.push_back(DrawTextInfo(str,R,color,DT_NOCLIP));
-}
-void DX92DRenderer::DrawString(const char* str, RECT& R, DWORD color, bool calcRect) // clipped to rect
-{
-	if(calcRect)
-	{
-		GetStringRec(str,R);
-	}
+	//transform point in world space into screens pace
+	D3DXVec2TransformCoord(&pos,&pos,&(m_pCamera->viewProj()));
 
+	RECT R;
+	GetClientRect(GetActiveWindow(),&R);
+
+	pos.x = (pos.x * 0.5f + 0.5f) * (R.right - R.left);
+	pos.y = (1.0f - (pos.y * 0.5f + 0.5f)) * (R.bottom - R.top);
+
+	POINT P = {pos.x,pos.y};
+	DrawString(str,P,color);
+}
+
+void DX92DRenderer::DrawString(const char* str, const POINT& pos, DWORD color) // not clipped
+{
+	RECT R = {pos.x,pos.y,0,0};
 	m_text.push_back(DrawTextInfo(str,R,color,DT_NOCLIP));
-	//int Height = this->m_pFont->DrawText(NULL,str,50,&R,DT_TOP | DT_LEFT | DT_WORDBREAK,color);
-	//DrawTextInfo info = {str,R,color,DT_TOP | DT_LEFT | DT_WORDBREAK};
-	//DrawTextInfo info = {str,R,color,DT_NOCLIP};
-	//m_text.push_back(info);
 }
 
 // sprites
@@ -140,16 +140,16 @@ void DX92DRenderer::InitializeSprite()
 
 	for(UINT i = 0; i < iNum; ++i)
 	{
-		v[i*4].pos = D3DXVECTOR3(-0.5,0.5,0.0);
+		v[i*4].pos = D3DXVECTOR3(-0.5f,0.5f,0.0);
 		v[i*4].tex = D3DXVECTOR2(0,0); // todo: to crop the texture, change the texture cords
 
-		v[i*4 + 1].pos = D3DXVECTOR3(-0.5,-0.5,0.0);
+		v[i*4 + 1].pos = D3DXVECTOR3(-0.5f,-0.5f,0.0);
 		v[i*4 + 1].tex = D3DXVECTOR2(0,1);
 
-		v[i*4 + 2].pos = D3DXVECTOR3(0.5,0.5,0.0);
+		v[i*4 + 2].pos = D3DXVECTOR3(0.5f,0.5f,0.0);
 		v[i*4 + 2].tex = D3DXVECTOR2(1,0);
 
-		v[i*4 + 3].pos = D3DXVECTOR3(0.5,-0.5,0.0);
+		v[i*4 + 3].pos = D3DXVECTOR3(0.5f,-0.5f,0.0);
 		v[i*4 + 3].tex = D3DXVECTOR2(1,1);
 	}
 
@@ -212,7 +212,7 @@ void DX92DRenderer::RenderSprites()
 {
 	ResourceManager::Shader shader;
 	m_pResourceManager->GetResource("2dshader",shader);
-	D3DXHANDLE tecHandle = shader.pEffect->GetTechniqueByName("Sprite");
+	D3DXHANDLE tecHandle = shader.pEffect->GetTechniqueByName("AnimatedSprite");
 
 	while(!m_sprites.empty())
 	{
@@ -223,6 +223,8 @@ void DX92DRenderer::RenderSprites()
 		shader.pEffect->SetTechnique(tecHandle);
 		shader.pEffect->SetTexture("gTex",tex.pTexture); 
 		shader.pEffect->SetInt("gCurrentFrame",m_sprites.back().uiCell);
+		shader.pEffect->SetInt("gSpriteWidth",tex.uiCellsWidth);
+		shader.pEffect->SetInt("gSpriteHeight",tex.uiCellsHeight);
 		shader.pEffect->SetMatrix("gWorldViewProj",&(m_sprites.back().T * m_pCamera->viewProj()));
 
 		// Start

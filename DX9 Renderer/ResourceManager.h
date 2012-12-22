@@ -8,12 +8,14 @@ class ResourceManager : public IResourceManager
 {
 public:
 
+	// todo: create a polymorphic data type?
 	struct Texture
 	{
 		struct IDirect3DTexture9* pTexture;
 		unsigned int uiWidth;
 		unsigned int uiHeight;
-		unsigned int uiCells;
+		unsigned int uiCellsWidth;
+		unsigned int uiCellsHeight;
 	};
 
 	struct Shader

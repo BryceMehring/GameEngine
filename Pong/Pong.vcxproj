@@ -82,9 +82,11 @@
     <None Include="..\Textures\flame_sprite.png">
       <FileType>Document</FileType>
     </None>
+    <None Include="..\Textures\flame_sprite.png.txt" />
     <None Include="..\Textures\paddle.png">
       <FileType>Document</FileType>
     </None>
+    <None Include="resource.r" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

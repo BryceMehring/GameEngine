@@ -36,5 +36,7 @@
     </None>
     <None Include="..\Textures\paddle.png" />
     <None Include="..\Textures\flame_sprite.png" />
+    <None Include="..\Textures\flame_sprite.png.txt" />
+    <None Include="resource.r" />
   </ItemGroup>
 </Project>

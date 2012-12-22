@@ -51,8 +51,8 @@ public:
 
 	// Fonts
 	virtual void GetStringRec(const char* str, RECT& out);
-	virtual void DrawString(const char* str, POINT P, DWORD color); // not clipped
-	virtual void DrawString(const char* str, RECT& R, DWORD color, bool calcRect = true); // clipped to rect
+	virtual void DrawString(const char* str, D3DXVECTOR2 pos, DWORD color); // world space
+	virtual void DrawString(const char* str, const POINT& P, DWORD color);  // screen space
 
 	// sprites
 	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId = 0, DWORD color = 0xffffffff);

@@ -152,7 +152,7 @@ void AniBall::Update(QuadTree& tree, double dt)
 {
 	m_AniTime += dt;
 
-	if(m_AniTime > (20.0f / m_fSpeed))
+	if(m_AniTime > (5.0f / m_fSpeed))
 	{
 		m_uiCurrentCell = (m_uiCurrentCell + 1) % (m_uiMaxCells);
 		m_AniTime = 0;
@@ -170,10 +170,14 @@ void AniBall::Render(IRenderer& renderer)
 	::D3DXMatrixScaling(&S,fScale,fScale,1.0f);
 	::D3DXMatrixRotationZ(&R,atan2(m_dir.y,m_dir.x));
 
-	//TextureInfo info;
-	//renderer.GetTextureManager().GetTextureInfo(m_texture,info);
+	::D3DXVECTOR2 pos(m_pos);
+	pos += D3DXVECTOR2(-5.0f,10.0f);
 
-	renderer.Get2DRenderer().DrawSprite(S*T,m_texture);
+	::ostringstream stream;
+	stream <<"("<< m_dir.x << "," << m_dir.y << ")" ;
+
+	renderer.Get2DRenderer().DrawSprite(R*S*T,m_texture,m_uiCurrentCell);
+	renderer.Get2DRenderer().DrawString(stream.str().c_str(),pos,0xffffffff);
 }
 
 
@@ -227,7 +231,7 @@ void ComputerPaddle::Update(IKMInput& input, QuadTree& tree, double dt)
 	const Math::FRECT& R = tree.GetRect();
 
 	// Get rect of area to poll for balls
-	Math::CRectangle cRect(Math::FRECT(::D3DXVECTOR2(-50.0f,50.0f),D3DXVECTOR2(0.0f,-50.0f)));
+	Math::CRectangle cRect(Math::FRECT(::D3DXVECTOR2(-50.0f,50.0f),D3DXVECTOR2(-5.0f,-50.0f)));
 
 	// poll every 1 seconds
 	m_fTime += dt;
@@ -443,12 +447,12 @@ void Pong::UpdateGame(Game& game)
 		//float a = Math::GetRandFloat(0.0f,365.0f) * 0.01745329f;
 		float a = Math::GetRandFloat(120.0f,180.0f) * 0.01745329f;
 		//float s = Math::GetRandFloat(7.0f,10.0f);
-		float s = Math::GetRandFloat(1.0f,1.5f);
+		float s = Math::GetRandFloat(5.0f,10.5f);
 		float v = Math::GetRandFloat(m_fMinBallVelocity,m_fMaxBallVelocity);
 
 		//Ball* pBall = new Ball(D3DXVECTOR2(P.x,P.y),D3DXVECTOR2(-cosf(a),sinf(a)),0.0f,s);
 		//Ball* pBall = new Ball(D3DXVECTOR2(R.bottomRight.x/2.0f,R.bottomRight.y/8.0f),D3DXVECTOR2(-cosf(a),sinf(a)),v,s,this->m_texture);
-		Ball* pBall = new AniBall(D3DXVECTOR2(0.0f,R.topLeft.y - 5.0f),D3DXVECTOR2(sin(a),cos(a)),v,s,"ball",6);
+		Ball* pBall = new AniBall(D3DXVECTOR2(0.0f,R.topLeft.y - 5.0f),D3DXVECTOR2(sin(a),cos(a)),v,s,"flame_sprite",6);
 		m_balls.push_back(pBall);
 		m_pQuadTree->Insert(*pBall);
 	}
@@ -626,6 +630,7 @@ void Pong::DrawScore(Game& game)
 
 		renderer.Get2DRenderer().DrawString(str.c_str(),POS[i++],0xffffffff);
 	}
+
 }
 
 void Pong::ResetScores()

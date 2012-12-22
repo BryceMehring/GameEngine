@@ -78,7 +78,7 @@ bool Node::RHasPoint() const
 
 bool Node::IsFull() const
 {
-	return (m_Objects.size()) >= 4;
+	return (m_Objects.size()) >= 3;
 }
 
 
@@ -92,7 +92,7 @@ void Node::SubDivide()
 	const D3DXVECTOR2& topLeft = rect.topLeft;
 	const D3DXVECTOR2& bottomRight = rect.bottomRight;
 
-	Node* pNodeArray = new Node[MAX_NODES];
+ 	Node* pNodeArray = new Node[MAX_NODES];
 	Math::FRECT subRects[MAX_NODES] =
 	{
 		Math::FRECT(topLeft,middle),
@@ -283,7 +283,7 @@ void Node::RInsert(ISpatialObject& obj)
 		// if the current node is full
 		// 200
 		// 400
-		if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 200.0f) 
+		if((pNode->IsFull()) /*&& (subR.bottomRight.x - subR.topLeft.x) < 5.0f*/) 
 		{
 			// subdivide the node
 			pNode->SubDivide();
