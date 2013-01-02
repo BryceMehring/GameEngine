@@ -8,7 +8,7 @@
 #include "Game.h"
 
 #include <algorithm>
-//#include "EngineHelper.h"
+#include <cassert>
 
 using namespace std;
 
@@ -187,7 +187,7 @@ bool PluginManager::LoadAllPlugins(const std::string& path, const std::string& e
 	vector<string> files;
 
 	FileManager& fm = FileManager::Instance();
-	fm.LoadAllFilesFromDictionary(files,path,ext);
+	fm.LoadAllFilesFromDirectory(files,path,ext);
 
 	for_each(files.begin(),files.end(),[&](const string& str)
 	{

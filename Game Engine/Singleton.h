@@ -11,10 +11,6 @@
 #define _SINGLETON_
 #pragma once
 
-#include <boost\scoped_ptr.hpp>
-#include <boost\thread\once.hpp>
-
-
 // Thread safe singleton
 template< class T >
 class Singleton
@@ -34,20 +30,20 @@ public:
 private:
 
 	//note: Init should never throw an exception
-	static void Init() throw()
+	/*static void Init() throw()
 	{
 		// the constructor should never call this same function again, or else it would fail 
 		s_pInstance.reset(new T());
 	}
 
 	static boost::scoped_ptr<T> s_pInstance;
-	static boost::once_flag once;
+	static boost::once_flag once;*/
 };
 
-template< class T >
+/*template< class T >
 boost::scoped_ptr<T> Singleton<T>::s_pInstance;
 
 template< class T >
-boost::once_flag Singleton<T>::once = BOOST_ONCE_INIT;
+boost::once_flag Singleton<T>::once = BOOST_ONCE_INIT;*/
 
 #endif // _SINGLETON_

@@ -24,6 +24,7 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 }
 
 IDirect3DVertexDeclaration9* VertexPT::m_pVertexDecl = nullptr;
+//IDirect3DVertexDeclaration9* VertexPTC::m_pVertexDecl = nullptr;
 
 struct DisplayMode
 {

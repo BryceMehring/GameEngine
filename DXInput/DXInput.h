@@ -10,7 +10,6 @@
 #define PLUGIN_EXPORTS
 #include "IKMInput.h"
 #include "PluginManager.h"
-#include <dinput.h>
 
 class DirectInput : public IKMInput//, public IScripted<DirectInput>
 {

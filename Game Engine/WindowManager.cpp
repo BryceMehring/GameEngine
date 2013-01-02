@@ -4,6 +4,8 @@
 #include "FileManager.h"
 #include "asVM.h"
 
+#include <cassert>
+
 using namespace std;
 
 // static variables

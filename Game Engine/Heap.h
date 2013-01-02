@@ -48,6 +48,8 @@ private:
 	typedef std::vector<Data> POOL_MAP;
 	POOL_MAP m_pool;
 
+	unsigned int m_uiAllocatedPools;
+
 	const unsigned int MULTIPLE_OF;
 
 	unsigned int m_uiTotalWastedBytes;

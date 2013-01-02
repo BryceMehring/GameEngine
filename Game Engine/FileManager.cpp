@@ -26,7 +26,7 @@ FileManager::~FileManager()
 unsigned int FileManager::CountNumberOfLines(const string& path, const string& ext) const
 {
 	std::vector<std::string> files;
-	LoadAllFilesFromDictionary(files,path,ext);
+	LoadAllFilesFromDirectory(files,path,ext);
 
 	unsigned int uiTotalLines = 0;
 	for(unsigned int i = 0; i < files.size(); ++i)
@@ -39,7 +39,7 @@ unsigned int FileManager::CountNumberOfLines(const string& path, const string& e
 }
 
 
-void FileManager::LoadAllFilesFromDictionary(std::vector<std::string>& files, const std::string& path, const std::string& ext) const
+void FileManager::LoadAllFilesFromDirectory(std::vector<std::string>& files, const std::string& path, const std::string& ext) const
 {
 	// If there is a path and ext
 	if(!path.empty() && !ext.empty())
@@ -61,7 +61,7 @@ void FileManager::LoadAllFilesFromDictionary(std::vector<std::string>& files, co
 			// Loop over all files/dict in path
 			for ( boost::filesystem::directory_iterator it( top ); it != boost::filesystem::directory_iterator(); ++it )
 			{
-				// If the current path is a dict
+				// If the current path is a directory
 				if(boost::filesystem::is_directory(it->status()))
 				{
 					// Add it to the stack

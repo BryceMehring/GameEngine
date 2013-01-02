@@ -159,13 +159,14 @@ void Game::DrawFPS()
 {
 	static float x = 0;
 	static float y = 0;
-
-	RECT windowR;
-	::GetWindowRect(this->m_window.GetWindowHandle(),&windowR);
+	static double dt = 0.0;
+	dt += GetDt();
 
 	::std::ostringstream out;
-	out<<"FPS: " << GetFps() << endl << "Dt: " << setprecision (4) << GetDt() << endl;
-	out<<m_pInput->GetTransformedMousePos().x << " " << m_pInput->GetTransformedMousePos().y  << endl;
+	out<<"FPS: " << GetFps() << '\n' <<"X:" << m_pInput->GetTransformedMousePos().x << " Y:" << m_pInput->GetTransformedMousePos().y;
+
+	x = 15*cos(dt) / 3.0f;
+	y = 15*sin(dt) / 3.0f;
 
 	//sprintf_s(buffer,"FPS: %f\nMemory Usage:%f",GetFps(),Heap::Instance().GetMemoryUsageInKb());
 
@@ -173,8 +174,19 @@ void Game::DrawFPS()
 	//RECT stringR = {0,0,0,0};
 	//this->m_pRenderer->GetStringRec(str.c_str(),stringR);
 
-	POINT point = {windowR.right - windowR.left - 100,0};
-	m_pRenderer->Get2DRenderer().DrawString(out.str().c_str(),point,0xffffffff);
+
+
+	//D3DXVECTOR2 pos(-10.0f,5.0f);
+	D3DXVECTOR2 pos = m_pInput->GetTransformedMousePos();
+	pos /= 4.0f;
+	pos += D3DXVECTOR2(-5.0f,0.0f);
+	//m_pRenderer->Get2DRenderer().DrawString(out.str().c_str(),pos);
+	m_pRenderer->Get2DRenderer().DrawString(out.str().c_str(),pos,D3DXVECTOR4(x/15.0f,0.8,y/15.0f,1.0f));
+	m_pRenderer->Get2DRenderer().DrawString("ABCDEFGHIJKLMNOPQRSTUVQXYZ\nabcdefghijklmnopqrstuvwxyz",::D3DXVECTOR2(x,y),D3DXVECTOR4(1.0f,.6f,.3f,1.0f));
+	m_pRenderer->Get2DRenderer().DrawString("Hello world",pos + ::D3DXVECTOR2(x,y));
+	
+	
+
 }
 
 IRenderer& Game::GetRenderer()
@@ -208,7 +220,7 @@ unsigned int Game::GetFps() const
 
 void Game::ReloadPlugins()
 {
-#ifdef DEBUG
+#ifdef _DEBUG
 	ReloadPlugins("..\\Debug\\");
 #else
 	ReloadPlugins("..\\Release\\");

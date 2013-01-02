@@ -336,6 +336,6 @@ void Astroids::Draw(class Game& game)
 	std::stringstream buffer;
 	buffer << "Time: "<<this->m_timer.GetTime()<<std::endl;
 
-	game.GetRenderer().Get2DRenderer().DrawString(buffer.str().c_str(),P,0xffffffff);
+	//game.GetRenderer().Get2DRenderer().DrawString(buffer.str().c_str(),P,0xffffffff);
 	//game.GetRenderer().Get2DRenderer().DrawString("Astroids",game.GetInput().MousePos(),0xffffffff);
 }

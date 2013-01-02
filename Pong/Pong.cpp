@@ -177,7 +177,7 @@ void AniBall::Render(IRenderer& renderer)
 	stream <<"("<< m_dir.x << "," << m_dir.y << ")" ;
 
 	renderer.Get2DRenderer().DrawSprite(R*S*T,m_texture,m_uiCurrentCell);
-	renderer.Get2DRenderer().DrawString(stream.str().c_str(),pos,0xffffffff);
+	//renderer.Get2DRenderer().DrawString(stream.str().c_str(),pos,0xffffffff);
 }
 
 
@@ -559,7 +559,9 @@ void Pong::UpdatePaddles(Game& game)
 void Pong::Draw(Game& game)
 {
 
-	DrawGame(game);
+	//game.GetInput().GetTransformedMousePos();
+
+	//DrawGame(game);
 
 	/*switch(m_state)
 	{
@@ -628,7 +630,7 @@ void Pong::DrawScore(Game& game)
 		std::string str;
 		stream >> str;
 
-		renderer.Get2DRenderer().DrawString(str.c_str(),POS[i++],0xffffffff);
+		//renderer.Get2DRenderer().DrawString(str.c_str(),POS[i++],0xffffffff);
 	}
 
 }

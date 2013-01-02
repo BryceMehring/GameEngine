@@ -5,8 +5,6 @@
 #include <vector>
 #include <cassert>
 
-#include <d3dx9.h>
-
 using namespace std;
 
 ResourceManager::ResourceManager(IDirect3DDevice9* pDevice) : m_pDevice(pDevice)
@@ -55,6 +53,15 @@ void ResourceManager::LoadResourceFile(const std::string& file)
 
 void ResourceManager::LoadTexture(const std::string& file)
 {
+	std::string name = GetFileNameFromPath(file);
+	StringToLower(name); // convert name to lower case
+
+	auto iter = m_textures.find(name);
+
+	// If the texture is already loaded, stop loading
+	if(iter != m_textures.end())
+		return;
+
 	// todo: I could divide this code up into smaller functions
 
 	// load the texture
@@ -62,30 +69,23 @@ void ResourceManager::LoadTexture(const std::string& file)
 	IDirect3DTexture9* pTexture = nullptr;
 	gassert(D3DXCreateTextureFromFile(m_pDevice,file.c_str(),&pTexture) == D3D_OK,"Texture could not be loaded");
 
-	// Get texture info
-	D3DSURFACE_DESC format;
-	pTexture->GetLevelDesc(0,&format);
-
 	// try to read number of cells in the animation
-	std::fstream in(file + ".txt",ios::in);
 	unsigned int width = 1;
 	unsigned int height = 1;
 
+	std::fstream in(file + ".txt",ios::in);
 	if(in)
 	{
 		in >> width >> height;
 		in.close();
 	}
 
+	// Get texture info
+	D3DSURFACE_DESC format;
+	pTexture->GetLevelDesc(0,&format);
+
 	// fill out texture structure 
 	Texture tex = {pTexture,format.Width,format.Height,width,height};
-
-	std::string name = GetFileNameFromPath(file);
-
-	// convert to lower case
-	StringToLower(name);
-
-	//ExtractNormals(tex);
 
 	// insert texture into data structure
 	AddResource(name,tex);
@@ -116,63 +116,79 @@ void ResourceManager::LoadShader(const std::string& file)
 	}
 	else
 	{
+		Shader newShader;
+		newShader.pEffect = pEffect;
+
 		std::string name = GetFileNameFromPath(file);
+
+		BuildHandleVectors(file.c_str(),pEffect,newShader.parameters,newShader.tech);
 
 		// convert to lower case
 		StringToLower(name);
 
-		AddResource(name,Shader(pEffect));
+		AddResource(name,newShader);
+		
 	}
 }
 
-// todo: move this somewhere else
-float ClampColor(unsigned int c)
+void ResourceManager::BuildHandleVectors(const char* file, ID3DXEffect* pEffect, std::vector<D3DXHANDLE>& paramaters, std::vector<D3DXHANDLE>& tech)
 {
-	return (c * 2.0f/255.0f) - 1.0f;
-}
+	fstream in(file);
 
-D3DXVECTOR2 ConvertColorToVec(unsigned int c)
-{
-	unsigned int r = ( c >> 16 ) & 255;
-	unsigned int g = ( c >> 8 ) & 255;
-	return D3DXVECTOR2(ClampColor(r), ClampColor(g));
-}
-
-void ResourceManager::ExtractNormals(Texture& texture)
-{
-	IDirect3DTexture9* pTexture = texture.pTexture;
-
-	D3DLOCKED_RECT R;
-	pTexture->LockRect(0,&R,NULL,D3DLOCK_READONLY);
-
-	/*DWORD* imgData = (DWORD*)R.pBits;
-	for(unsigned int i = 0; i < texture.uiHeight; ++i)
+	if(in.is_open())
 	{
-		for(unsigned int j = 0; j < texture.uiWidth; ++j)
-		{
-			int index = i * R.Pitch / 4 + j;
-			DWORD color = imgData[index];
+		string line;
 
-			if(!(color & 0xff000000))
+		while(getline(in,line) && line.find("Variables Start") == string::npos)
+		{
+		}
+
+		while(getline(in,line) && line.find("Variables End") == string::npos)
+		{
+			if(line.find("//") == string::npos)
 			{
-				texture.normals.insert(make_pair(D3DXVECTOR2(j,i),D3DXVECTOR2(ConvertColorToVec(color))));
+				int pos = line.find_last_of(' ');
+				if(pos != string::npos)
+				{
+					string temp = line.substr(pos+1,line.size() - pos - 2);
+					paramaters.push_back(pEffect->GetParameterByName(NULL,temp.c_str()));
+				}
 			}
 		}
-	}*/
 
-	pTexture->UnlockRect(0);
+		while(getline(in,line) && line.find("Tech Start") == string::npos)
+		{
+		}
+
+		while(getline(in,line) && line.find("Tech End") == string::npos)
+		{
+			if(line.find("//") == string::npos)
+			{
+				if(line.find("technique") != string::npos)
+				{
+					int pos = line.find_last_of(' ');
+					if(pos != string::npos)
+					{
+						tech.push_back(pEffect->GetTechniqueByName(line.substr(pos+1,line.size() - pos - 1).c_str()));
+					}
+				}
+			}
+		}
+
+		in.close();
+	}
 }
 
 void ResourceManager::LoadAllTexturesFromFolder(const std::string& folder)
 {
 	std::vector<string> textureFileNames;
-	FileManager::Instance().LoadAllFilesFromDictionary(textureFileNames,folder,".png .jpg");
+	FileManager::Instance().LoadAllFilesFromDirectory(textureFileNames,folder,".png .jpg .dds");
 
 	// loop through each file, and create the texture
-	for_each(textureFileNames.begin(),textureFileNames.end(),[&](string& file)
+	for(auto iter = textureFileNames.begin(); iter != textureFileNames.end(); ++iter)
 	{
-		LoadTexture(file);
-	});
+		LoadTexture(*iter);
+	}
 }
 
 
@@ -252,20 +268,20 @@ void ResourceManager::RemoveTexture(const std::string& name)
 
 void ResourceManager::RemoveAllTextures()
 {
-	for_each(m_textures.begin(),m_textures.end(),[&](TextureMap::value_type& data)
+	for(auto iter = m_textures.begin(); iter != m_textures.end(); ++iter)
 	{
-		data.second.pTexture->Release();
-	});
+		iter->second.pTexture->Release();
+	}
 
 	m_textures.clear();
 }
 
 void ResourceManager::RemoveAllShaders()
 {
-	for_each(m_shaders.begin(),m_shaders.end(),[&](ShaderMap::value_type& data)
+	for(auto iter = m_shaders.begin(); iter != m_shaders.end(); ++iter)
 	{
-		data.second.pEffect->Release();
-	});
+		iter->second.pEffect->Release();
+	}
 
 	m_shaders.clear();
 }

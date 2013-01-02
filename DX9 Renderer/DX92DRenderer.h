@@ -14,14 +14,16 @@ struct Sprite
 	{
 	}
 
-	Sprite(const D3DXMATRIX& T, const std::string& str, DWORD color, unsigned int cell) :
-	T(T), texture(str), Color(color), uiCell(cell)
+	Sprite(const D3DXMATRIX& T, const std::string& str, unsigned int cell, float dx, float dy, DWORD color) :
+	T(T), texture(str), Color(color), uiCell(cell), dx(dx), dy(dy)
 	{
 	}
 
 	D3DXMATRIX T;
 	DWORD Color;
 	unsigned int uiCell;
+	float dx;
+	float dy;
 	std::string texture;
 		
 };
@@ -29,13 +31,47 @@ struct Sprite
 struct DrawTextInfo
 {
 	DrawTextInfo() {}
-	DrawTextInfo(const std::string& str, const RECT& rect, DWORD c, DWORD f) 
-		: text(str), R(rect),color(c),format(f) {}
+	DrawTextInfo(const std::string& str, const D3DXVECTOR2& p, const ::D3DXVECTOR4& c) : text(str), pos(p), color(c), length(0) {}
 
-	std::string text;
-	RECT R;
-	DWORD color;
-	DWORD format;
+	string text;
+	D3DXVECTOR2 pos;
+	D3DXVECTOR4 color;
+	unsigned int length;
+};
+
+class FontEngine
+{
+public:
+
+	FontEngine(IDirect3DDevice9* pDevice, ResourceManager* pTm, int maxLength);
+	~FontEngine();
+
+	void DrawString(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR4& color);
+
+	void Render(); 
+
+	void OnLostDevice();
+	void OnResetDevice(); 
+
+	void SetCamera(Camera* pCam) { m_pCamera = pCam; }
+
+private:
+
+	IDirect3DDevice9* m_pDevice;
+	ResourceManager* m_pRM;
+	IDirect3DVertexBuffer9* m_pVertexBuffer;
+	IDirect3DIndexBuffer9* m_pIndexBuffer;
+	Camera* m_pCamera;
+	const unsigned int m_iMaxLength;
+
+	std::vector<DrawTextInfo> m_textSubsets;
+
+	void CreateVertexBuffer();
+	void CreateIndexBuffer();
+	void CreateBuffers();
+
+	void FillVertexBuffer();
+
 };
 
 class DX92DRenderer : public I2DRenderer
@@ -51,11 +87,10 @@ public:
 
 	// Fonts
 	virtual void GetStringRec(const char* str, RECT& out);
-	virtual void DrawString(const char* str, D3DXVECTOR2 pos, DWORD color); // world space
-	virtual void DrawString(const char* str, const POINT& P, DWORD color);  // screen space
+	virtual void DrawString(const char* str, D3DXVECTOR2 pos, const D3DXVECTOR4& color = D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f)); 
 
 	// sprites
-	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId = 0, DWORD color = 0xffffffff);
+	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId = 0, float dx = 1.0f, float dy = 1.0f, DWORD color = 0xffffffff);
 	
 	void Begin();
 	void End();
@@ -72,21 +107,17 @@ protected:
 
 	ID3DXMesh* m_pMesh;
 	ID3DXLine* m_pLine;
-	ID3DXFont* m_pFont;
+
+	FontEngine m_fonts;
 
 	Camera* m_pCamera;
 
-	typedef std::vector<DrawTextInfo> TextContainerType;
-	TextContainerType m_text;
-
-	std::list<Sprite/*,PooledAllocator<Sprite>*/> m_sprites;
+	std::vector<Sprite> m_sprites;
 
 	void Render();
 	void RenderSprites();
-	void RenderText();
 	void InitializeLine();
 	void InitializeSprite();
-	void InitializeFont();
 };
 
 #endif // _DX9_2DRENDERER_

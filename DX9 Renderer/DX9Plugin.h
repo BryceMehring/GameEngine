@@ -19,8 +19,6 @@ struct DisplayMode;
 
 enum InterfaceType;
 
-struct DrawTextInfo;
-
 // todo: implement a deferred renderer
 //http://www.ogre3d.org/tikiwiki/Deferred+Shading
 //http://www.catalinzima.com/tutorials/deferred-rendering-in-xna/

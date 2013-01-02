@@ -1,18 +1,27 @@
+// Programmed by Bryce Mehring
+
+// Variables Start
 
 // Animation
-uniform extern float2 gOffset;
+uniform extern float2 gOffset; 
 
 // Transformations
+uniform extern float4x4 gViewProj;
 uniform extern float4x4 gWorld;
 uniform extern float4x4 gWorldViewProj;
 uniform extern float4x4 gWorldInverseTranspose;
-uniform extern float4x4 gViewProj; 
 
 // Textures
 uniform extern texture gTex;
+uniform extern float gXScale;
+uniform extern float gYScale;
 uniform extern int gSpriteWidth;
 uniform extern int gSpriteHeight;
 uniform extern int gCurrentFrame;
+
+// Color
+uniform extern float4 gColor;
+// Variables End
 
 struct VSIn
 {
@@ -27,6 +36,12 @@ struct VSOut
 	float3 interpPos : TEXCOORD1;
 };
 
+struct TextVSOut
+{
+	float4 posH : POSITION0;
+	float2 tex : TEXCOORD0;
+};
+
 
 sampler TexS = sampler_state
 {
@@ -38,7 +53,7 @@ sampler TexS = sampler_state
 	AddressU = wrap;
 	AddressV = wrap;
 
-	//MaxAnisotropy = 16;
+	MaxAnisotropy = 16;
 };
 
 
@@ -48,6 +63,16 @@ VSOut SpriteVS(VSIn IN)
 
 	OUT.posH = mul(float4(IN.pos,1.0f),gWorldViewProj);
 	OUT.tex = IN.tex;
+
+	return OUT;
+}
+
+TextVSOut TextVS(float3 posL : POSITION0, float2 tex : TEXCOORD0)
+{
+	TextVSOut OUT = (TextVSOut)0;
+
+	OUT.posH = mul(float4(posL,1.0f),gWorldViewProj);
+	OUT.tex = tex;
 
 	return OUT;
 }
@@ -67,19 +92,33 @@ VSOut SpriteAnimationVS(VSIn IN)
     float cellDU = IN.tex.x / (float)gSpriteWidth;
     float cellDV = IN.tex.y / (float)gSpriteHeight;
    	 
-    OUT.tex.x = cellU + cellDU;
-  	OUT.tex.y = cellV + cellDV;
+    OUT.tex.x = (cellU + cellDU)*gXScale;
+  	OUT.tex.y = (cellV + cellDV)*gYScale;
+	OUT.interpPos = OUT.posH.xyz;
 
 	return OUT;
+}
+
+float4 ColorSpritePS(float2 tex : TEXCOORD0, float3 interpPos : TEXCOORD1) : COLOR
+{
+	float4 texColor = tex2D(TexS,tex);
+	texColor.r *= 0.8*cos(texColor.r+interpPos.x);
+	texColor.g *= 0.8*sin(texColor.g+2.0*interpPos.x);
+	texColor.b *= 0.8*sin(texColor.b+3.0*interpPos.y);
+
+	//texColor.rgb = 1 - texColor.xyz;
+	
+	return texColor;
 }
 
 
 float4 SpritePS(float2 tex : TEXCOORD0) : COLOR
 {
-	return tex2D(TexS,tex);
+	float4 color = tex2D(TexS,tex);
+	return color * gColor;
 }
 
-
+// Tech Start
 technique Sprite
 {
 	pass p1
@@ -89,26 +128,23 @@ technique Sprite
 	}
 }
 
-technique AnimatedSprite
+technique ColorAnimatedSprite
 {
 	pass p1
 	{
 		VertexShader = compile vs_3_0 SpriteAnimationVS();
-		PixelShader = compile ps_3_0 SpritePS();		
+		PixelShader = compile ps_3_0 ColorSpritePS();		
 
 		CullMode = None;
 	}
 }
 
-/*float4 SpritePS(float2 tex : TEXCOORD0, float3 interpPos : TEXCOORD1) : COLOR
+technique TextTech
 {
-	float4 texColor = tex2D(TexS,tex);
-	texColor.r *= sin(texColor.r+interpPos.x*0.05f);
-	texColor.g *= cos(texColor.g+interpPos.y*0.05f);
-	texColor.b *= tan(texColor.b+interpPos.z*0.05f);
-	texColor.r = 1.0f - texColor.r;
-	texColor.g = 1.0f - texColor.g;
-	texColor.b = 1.0f - texColor.b;
-	
-	return texColor;
-}*/
+	pass p1
+	{
+		VertexShader = compile vs_2_0 TextVS();
+		PixelShader = compile ps_2_0 SpritePS();		
+	}
+}
+// Tech End

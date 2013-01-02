@@ -1,11 +1,212 @@
 #include "DX92DRenderer.h"
 #include "Streams.h"
 #include "Camera.h"
+#include "ResourceManager.h"
+#include <DxErr.h>
+
+FontEngine::FontEngine(IDirect3DDevice9* pDevice, ResourceManager* pTm, int maxLength)
+	: m_pDevice(pDevice), m_pRM(pTm), m_pVertexBuffer(nullptr), m_pIndexBuffer(nullptr)
+	, m_iMaxLength(maxLength), m_pCamera(nullptr)
+{
+	CreateBuffers();
+}
+
+FontEngine::~FontEngine()
+{
+	if(m_pVertexBuffer != nullptr)
+	{
+		m_pVertexBuffer->Release();
+	}
+
+	if(m_pIndexBuffer != nullptr)
+	{
+		m_pIndexBuffer->Release();
+	}
+	//m_pDevice->Release();
+}
+
+void FontEngine::DrawString(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR4& color)
+{
+	if(str == nullptr)
+		return;
+
+	m_textSubsets.push_back(DrawTextInfo(str,pos,color));
+}
+
+void FontEngine::FillVertexBuffer()
+{
+	VertexPT* v = nullptr;
+	m_pVertexBuffer->Lock(0,0,(void**)&v,D3DLOCK_DISCARD);
+
+	unsigned int iCurrentVerts = 0;
+
+	for(auto iter = m_textSubsets.begin(); iter != m_textSubsets.end(); ++iter)
+	{
+		const char* str = iter->text.c_str();
+
+		unsigned int i = 0;
+		unsigned int j = 0;
+		unsigned int iVert = iCurrentVerts;
+
+		while((iVert < m_iMaxLength) && *str)
+		{
+			if(*str == '\n')
+			{
+				i = 0;
+				j++;
+				str++;
+				continue;
+			}
+
+			int x = *str % 16; // Column
+			int y = *str / 16; // Row
+
+			// tex coords
+			D3DXVECTOR2 topLeft(x / 16.0f,y / 16.0f);
+			D3DXVECTOR2 bottomRight((x+1) / 16.0f,(y+1) / 16.0f);
+
+			D3DXVECTOR3 posW(iter->pos.x + i / 2.0,iter->pos.y - j,0.0f);
+
+			unsigned int index = iVert * 4;
+
+			v[index].pos = D3DXVECTOR3(-0.5f,0.5f,0.0f) + posW;
+			v[index].tex = topLeft;
+
+			v[index + 1].pos = D3DXVECTOR3(-0.5f,-0.5f,0.0f) + posW;
+			v[index + 1].tex = D3DXVECTOR2(topLeft.x,bottomRight.y);
+
+			v[index + 2].pos = D3DXVECTOR3(0.5f,0.5f,0.0f) + posW;
+			v[index + 2].tex = D3DXVECTOR2(bottomRight.x,topLeft.y);
+
+			v[index + 3].pos = D3DXVECTOR3(0.5f,-0.5f,0.0f) + posW;
+			v[index + 3].tex = bottomRight;
+
+			++i;
+			++iVert;
+			++str;
+		}
+
+		iter->length = iVert - iCurrentVerts;
+		iCurrentVerts += iter->length;
+	}
+
+	m_pVertexBuffer->Unlock();
+
+}
+
+void FontEngine::Render()
+{
+	if(m_textSubsets.empty())
+		return;
+
+	FillVertexBuffer();
+
+	m_pDevice->SetStreamSource(0,m_pVertexBuffer,0,sizeof(VertexPT));
+	m_pDevice->SetIndices(m_pIndexBuffer);
+	m_pDevice->SetVertexDeclaration(VertexPT::m_pVertexDecl);
+
+	ResourceManager::Shader shader;
+	m_pRM->GetResource("2dshader",shader);
+
+	ResourceManager::Texture texture;
+	m_pRM->GetResource("font",texture);
+
+	::D3DXMATRIX S;
+	::D3DXMatrixScaling(&S,4.0f,4.0f,1.0f);
+
+	shader.pEffect->SetTechnique(shader.tech[2]);
+	shader.pEffect->SetTexture(shader.parameters[5],texture.pTexture);
+	shader.pEffect->SetMatrix(shader.parameters[3],&(S* m_pCamera->viewProj()));
+
+	UINT p = 0;
+	shader.pEffect->Begin(&p,0);
+
+	for(UINT i = 0; i < p; ++i)
+	{
+		shader.pEffect->BeginPass(i);
+
+		int uiStartingPoint = 0;
+
+		for(unsigned int j = 0; j < m_textSubsets.size(); ++j)
+		{
+			shader.pEffect->SetVector(shader.parameters[11],&m_textSubsets[j].color);
+			shader.pEffect->CommitChanges();
+
+			assert(m_pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,0,4*(m_textSubsets[j].length),6*uiStartingPoint,2*(m_textSubsets[j].length)) == S_OK);
+
+			uiStartingPoint += m_textSubsets[j].length;
+		}
+
+		shader.pEffect->EndPass();
+	}
+
+	shader.pEffect->End();
+
+	m_textSubsets.clear();
+}
+
+void FontEngine::OnLostDevice()
+{
+	if(m_pVertexBuffer != nullptr)
+	{
+		m_pVertexBuffer->Release();
+		m_pIndexBuffer->Release();
+		m_pIndexBuffer = nullptr;
+		m_pVertexBuffer = nullptr;
+	}
+}
+
+void FontEngine::OnResetDevice()
+{
+	if(m_pVertexBuffer == nullptr)
+	{
+		CreateBuffers();
+	}
+}
+
+void FontEngine::CreateVertexBuffer()
+{
+	if(m_pVertexBuffer == nullptr)
+	{
+		assert(m_pDevice->CreateVertexBuffer(m_iMaxLength*4 * sizeof(VertexPT),D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,0,D3DPOOL_DEFAULT,&m_pVertexBuffer,0) == S_OK);
+	}
+}
+
+void FontEngine::CreateIndexBuffer()
+{
+	if(m_pIndexBuffer == nullptr)
+	{
+		assert(m_pDevice->CreateIndexBuffer(m_iMaxLength*6 * sizeof(WORD),0,D3DFMT_INDEX16,D3DPOOL_DEFAULT,&m_pIndexBuffer,0) == S_OK);
+
+		WORD* index = nullptr;
+		m_pIndexBuffer->Lock(0,0,(void**)&index,0);
+
+		for(UINT i = 0; i < m_iMaxLength; ++i)
+		{ 
+			// Tri 1
+			index[i*6] = 4*i + 2;
+			index[i*6 + 1] =  4*i + 1;
+			index[i*6 + 2] = 4*i;
+
+			//Tri 2
+			//
+			index[i*6 + 3] = 4*i + 2;
+			index[i*6 + 4] = 4*i + 3;
+			index[i*6 + 5] = 4*i + 1;
+		}
+		m_pIndexBuffer->Unlock();
+	}
+}
+
+void FontEngine::CreateBuffers()
+{
+	CreateVertexBuffer();
+	CreateIndexBuffer();
+}
 
 DX92DRenderer::DX92DRenderer(IDirect3DDevice9* pDevice, ResourceManager* pTm)
-	: m_pDevice(pDevice), m_pResourceManager(pTm), m_pCamera(nullptr)
+	: m_pDevice(pDevice), m_pResourceManager(pTm), m_pCamera(nullptr), m_fonts(pDevice,pTm,200)
 {
-	InitializeFont();
 	InitializeLine();
 	InitializeSprite();
 }
@@ -16,7 +217,6 @@ DX92DRenderer::~DX92DRenderer()
 	ReleaseCamera(m_pCamera);
 	m_pMesh->Release();
 	m_pLine->Release();
-	m_pFont->Release();
 	m_pDevice->Release();
 }
 
@@ -28,32 +228,16 @@ void DX92DRenderer::InitializeLine()
 	
 }
 
-void DX92DRenderer::InitializeFont()
-{
-	D3DXFONT_DESC desc;
-	ZeroMemory(&desc,sizeof(desc));
-	desc.Height = 15; // 15
-	desc.Width = 7; // 8
-	desc.Weight = 500;
-	desc.Quality = 255;
-	desc.MipLevels = 1;
-	//::sprintf_s(desc.FaceName,"Browallia New");
-	//_tcscpy(desc.FaceName, _T("Papyrus"))
-
-	D3DXCreateFontIndirect(m_pDevice,&desc,&m_pFont);
-	
-}
-
 void DX92DRenderer::OnLostDevice()
 {
+	m_fonts.OnLostDevice();
 	m_pLine->OnLostDevice();
-	m_pFont->OnLostDevice();
 }
 
 void DX92DRenderer::OnResetDevice()
 {
+	m_fonts.OnResetDevice();
 	m_pLine->OnResetDevice();
-	m_pFont->OnResetDevice();
 }
 
 void DX92DRenderer::Begin()
@@ -72,6 +256,8 @@ void DX92DRenderer::SetCamera(Camera* pCam)
 	{
 		m_pCamera->Release();
 	}
+
+	m_fonts.SetCamera(pCam);
 
 	m_pCamera = pCam;
 	m_pCamera->AddRef();
@@ -94,12 +280,13 @@ void DX92DRenderer::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListC
 // Fonts
 void DX92DRenderer::GetStringRec(const char* str, RECT& out)
 {
-	m_pFont->DrawText(0,str,-1,&out,DT_CALCRECT | DT_TOP | DT_LEFT | DT_WORDBREAK,0);
+	//m_pFont->DrawText(0,str,-1,&out,DT_CALCRECT | DT_TOP | DT_LEFT | DT_WORDBREAK,0);
 }
-void DX92DRenderer::DrawString(const char* str, D3DXVECTOR2 pos, DWORD color) // not clipped
+void DX92DRenderer::DrawString(const char* str, D3DXVECTOR2 pos, const D3DXVECTOR4& color) // not clipped
 {
+	m_fonts.DrawString(str,pos,color);
 	//transform point in world space into screens pace
-	D3DXVec2TransformCoord(&pos,&pos,&(m_pCamera->viewProj()));
+	/*D3DXVec2TransformCoord(&pos,&pos,&(m_pCamera->viewProj()));
 
 	RECT R;
 	GetClientRect(GetActiveWindow(),&R);
@@ -108,13 +295,7 @@ void DX92DRenderer::DrawString(const char* str, D3DXVECTOR2 pos, DWORD color) //
 	pos.y = (1.0f - (pos.y * 0.5f + 0.5f)) * (R.bottom - R.top);
 
 	POINT P = {pos.x,pos.y};
-	DrawString(str,P,color);
-}
-
-void DX92DRenderer::DrawString(const char* str, const POINT& pos, DWORD color) // not clipped
-{
-	RECT R = {pos.x,pos.y,0,0};
-	m_text.push_back(DrawTextInfo(str,R,color,DT_NOCLIP));
+	DrawString(str,P,color);*/
 }
 
 // sprites
@@ -178,41 +359,17 @@ void DX92DRenderer::InitializeSprite()
 	pTempMesh->CloneMesh(D3DXMESH_MANAGED,elements,m_pDevice,&m_pMesh);
 	pTempMesh->Release();
 
-	// todo: this could be moved elsewhere
-	//ResourceManager::Shader meshShader;
-	//m_pResourceManager->GetResource("2DShader",meshShader);
-
-	/*D3DXHANDLE hTech = m_pEffect->GetTechniqueByName("Blending");
-
-	Mtrl* pMtrl =  new Mtrl;
-	pMtrl->diffuse = D3DXCOLOR(0.9f,0.9f,0.9f,0.0f);
-	pMtrl->ambient = D3DXCOLOR(0.0f,0.0f,0.0f,0.0f);
-	pMtrl->spec = D3DXCOLOR(0.2f,0.2f,0.2f,0.0f);*/
-
-	// Create Billboard object 
-	//m_pEffect->AddRef();
-	//m_Objects.push_back(new UserControlledMesh(pMesh,m_pEffect,pTex,pMtrl,hTech,pos));
+	//D3DXLoadMeshFromX("..\\textures\\sprite.x",D3DXMESH_MANAGED,m_pDevice,0,0,0,0,&m_pMesh);
 }
-void DX92DRenderer::DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId, DWORD color)
+void DX92DRenderer::DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId, float dx, float dy, DWORD color)
 {
-	m_sprites.push_back(Sprite(transformation,texture,color,iCellId));
-}
-
-void DX92DRenderer::RenderText()
-{
-	while(!m_text.empty())
-	{
-		DrawTextInfo& info = m_text.back();
-		m_pFont->DrawText(0,info.text.c_str(),-1,&info.R,info.format,info.color);
-		m_text.pop_back();
-	}
+	m_sprites.push_back(Sprite(transformation,texture,iCellId,dx,dy,color));
 }
 
 void DX92DRenderer::RenderSprites()
 {
-	ResourceManager::Shader shader;
+	static ResourceManager::Shader shader;
 	m_pResourceManager->GetResource("2dshader",shader);
-	D3DXHANDLE tecHandle = shader.pEffect->GetTechniqueByName("AnimatedSprite");
 
 	while(!m_sprites.empty())
 	{
@@ -220,12 +377,14 @@ void DX92DRenderer::RenderSprites()
 		m_pResourceManager->GetResource(m_sprites.back().texture,tex);
 
 		// Set parameters in shader
-		shader.pEffect->SetTechnique(tecHandle);
-		shader.pEffect->SetTexture("gTex",tex.pTexture); 
-		shader.pEffect->SetInt("gCurrentFrame",m_sprites.back().uiCell);
-		shader.pEffect->SetInt("gSpriteWidth",tex.uiCellsWidth);
-		shader.pEffect->SetInt("gSpriteHeight",tex.uiCellsHeight);
-		shader.pEffect->SetMatrix("gWorldViewProj",&(m_sprites.back().T * m_pCamera->viewProj()));
+		shader.pEffect->SetTechnique(shader.tech[1]);
+		shader.pEffect->SetTexture(shader.parameters[5],tex.pTexture);
+		shader.pEffect->SetFloat(shader.parameters[6],m_sprites.back().dx);
+		shader.pEffect->SetFloat(shader.parameters[7],m_sprites.back().dy);
+		shader.pEffect->SetInt(shader.parameters[10],m_sprites.back().uiCell);
+		shader.pEffect->SetInt(shader.parameters[8],tex.uiCellsWidth);
+		shader.pEffect->SetInt(shader.parameters[9],tex.uiCellsHeight);
+		shader.pEffect->SetMatrix(shader.parameters[3],&(m_sprites.back().T * m_pCamera->viewProj()));
 
 		// Start
 		UINT i = 0;
@@ -250,8 +409,8 @@ void DX92DRenderer::RenderSprites()
 
 void DX92DRenderer::Render()
 {
+	m_fonts.Render();
 	RenderSprites();
-	RenderText();
 
 	m_pLine->End();
 }

@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Heap::Heap() : m_uiTotalWastedBytes(0), MULTIPLE_OF(8)
+Heap::Heap() : m_uiTotalWastedBytes(0), MULTIPLE_OF(8), m_uiAllocatedPools(0)
 {
 	m_pool.resize(MAX_POOL_SIZE / MULTIPLE_OF);
 }
@@ -73,7 +73,7 @@ float Heap::GetMemoryUsageInMb() const
 
 unsigned int Heap::GetNumberOfPools() const
 {
-	return m_pool.size();
+	return m_uiAllocatedPools;
 }
 
 unsigned int Heap::GetWastedBytes(unsigned int pool) const
@@ -101,6 +101,8 @@ MemoryPool& Heap::GetPool(unsigned int size)
 
 		m_pool[uiIndex].pool = new MemoryPool(uiNewSize,uiBlocks);
 		m_pool[uiIndex].uiWastedBytes = uiWastedBytes;
+
+		m_uiAllocatedPools++;
 	}
 
 	// return the memory pool

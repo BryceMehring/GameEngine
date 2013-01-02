@@ -17,9 +17,8 @@ public:
 
 	~FileManager();
 
-	//note: ext can be a list of extensions delimited by spaces
-	// example: LoadAllFilesFromDictionary(... ,".h .cpp .txt .as")
-	void LoadAllFilesFromDictionary(std::vector<std::string>& files,
+	//note: ext can be a list of extensions delimited by space
+	void LoadAllFilesFromDirectory(std::vector<std::string>& files,
 	const std::string& path, const std::string& ext) const;
 
 	std::string OpenFileName() const; 

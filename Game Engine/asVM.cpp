@@ -14,6 +14,7 @@
 
 #include <sstream>
 #include <ctime>
+#include <cassert>
 //#include "asConsole.h"
 //#include "EngineHelper.h"
 

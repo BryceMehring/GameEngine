@@ -107,7 +107,7 @@ void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 void Menu::Render(IRenderer& renderer)
 {
 	// Render menu border and header
-	renderer.Get2DRenderer().DrawString(m_menuTitle.c_str(),m_point,0xffffffff);
+	//renderer.Get2DRenderer().DrawString(m_menuTitle.c_str(),m_point,0xffffffff);
 
 	if(m_pPolygon)
 	{
@@ -261,8 +261,6 @@ void TextBox::Write(const std::string& line, DWORD color, bool c)
 	
 	}*/
 
-
-
 	// calculate the rect of the line
 	/*POINT P;
 	if(!m_text.empty())
@@ -380,7 +378,7 @@ void TextBox::Render(IRenderer& renderer)
 	::D3DXVECTOR2 middle = m_sprite.Middle();
 	D3DXMatrixScaling(&S,m_sprite.Width(),m_sprite.Height(),1.0f);
 	D3DXMatrixTranslation(&T,middle.x,middle.y,0.0f);
-	renderer.Get2DRenderer().DrawSprite(S*T,"textbox3");
+	renderer.Get2DRenderer().DrawSprite(S*T,"textbox3",0,4.0f,3.0f);
 
 	BreakLastLine(renderer);
 
@@ -390,7 +388,6 @@ void TextBox::Render(IRenderer& renderer)
 		LineData& data = *iter;
 
 		// cull lines that are not on the screen
-		const RECT& R = m_square.GetRect();
 
 		// scroll lines
 		data.P.y += static_cast<int>(m_scrollSpeed);

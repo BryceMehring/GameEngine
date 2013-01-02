@@ -2,7 +2,9 @@
 #define _RESOURCEMANAGER_
 
 #include "IResourceManager.h"
+#include <d3dx9.h>
 #include <map>
+#include <vector>
 
 class ResourceManager : public IResourceManager
 {
@@ -11,7 +13,7 @@ public:
 	// todo: create a polymorphic data type?
 	struct Texture
 	{
-		struct IDirect3DTexture9* pTexture;
+		IDirect3DTexture9* pTexture;
 		unsigned int uiWidth;
 		unsigned int uiHeight;
 		unsigned int uiCellsWidth;
@@ -20,14 +22,16 @@ public:
 
 	struct Shader
 	{
-		explicit Shader(struct ID3DXEffect* effect = nullptr) : pEffect(effect) {}
+		explicit Shader(ID3DXEffect* effect = nullptr) : pEffect(effect) {}
 
 		struct ID3DXEffect* pEffect;
+		std::vector<D3DXHANDLE> parameters;
+		std::vector<D3DXHANDLE> tech;
 
 		// todo: add more
 	};
 
-	ResourceManager(struct IDirect3DDevice9* pDevice);
+	ResourceManager(IDirect3DDevice9* pDevice);
 	virtual ~ResourceManager();
 
 	virtual void LoadResourceFile(const std::string& file);
@@ -64,7 +68,7 @@ private:
 	void AddResource(const std::string& name, const Texture& tex);
 	void AddResource(const std::string& name, const Shader& tex);
 
-	void ExtractNormals(Texture& texture);
+	void BuildHandleVectors(const char* file, ID3DXEffect* pEffect, std::vector<D3DXHANDLE>& paramaters, std::vector<D3DXHANDLE>& tech);
 
 };
 

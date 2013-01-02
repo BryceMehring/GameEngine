@@ -18,11 +18,10 @@ public:
 
 	// Fonts
 	virtual void GetStringRec(const char* str, RECT& out) = 0;
-	virtual void DrawString(const char* str, D3DXVECTOR2 pos, DWORD color) = 0; // world space
-	virtual void DrawString(const char* str, const POINT& P, DWORD color); // screen space
+	virtual void DrawString(const char* str, D3DXVECTOR2 pos, const D3DXVECTOR4& color = D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f)) = 0; // world space
 
 	// sprites
-	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId = 0, DWORD color = 0xffffffff) = 0;
+	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId = 0, float dx = 1.0f, float dy = 1.0f, DWORD color = 0xffffffff) = 0;
 	//virtual void DrawSpriteAnimation(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
 
 	
