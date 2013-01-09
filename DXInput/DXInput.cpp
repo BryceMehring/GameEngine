@@ -58,11 +58,6 @@ void DirectInput::InitRawInput()
 	Rid[0].dwFlags = 0;   // adds HID mouse and also ignores legacy mouse messages
 	Rid[0].hwndTarget = m_mgr.GetWindowManager().GetWindowHandle();
 
-	/*Rid[1].usUsagePage = 0x01; 
-	Rid[1].usUsage = 0x06; 
-	Rid[1].dwFlags = 0;   // adds HID keyboard
-	Rid[1].hwndTarget = m_mgr.GetWindowManager().GetWindowHandle();*/
-
 	RegisterRawInputDevices(Rid,1,sizeof(RAWINPUTDEVICE));
 }
 
@@ -130,18 +125,16 @@ void DirectInput::Poll(const MsgProcData& data)
 			{
 
 			RECT R;
-			::GetWindowRect(::GetActiveWindow(),&R);
+			GetClientRect(GetActiveWindow(),&R);
 
 			m_bMouseMove = true;
 			m_MousePos.x  = LOWORD(data.lparam);
 			m_MousePos.y = HIWORD(data.lparam);
 
-			const float W = (R.right - R.left);
-			const float H = (R.bottom - R.top);
+			const float W = R.right - R.left;
+			const float H = R.bottom - R.top;
 
 			m_tpos = 50.0f * D3DXVECTOR2((2.0f * m_MousePos.x / W - 1.0f),-2.0f*m_MousePos.y / H + 1.0f);
-
-			//::D3DXVec2Normalize(&m_tpos,&m_tpos);
 
 			}
 
@@ -174,6 +167,7 @@ void DirectInput::ReadMouse(const RAWMOUSE& mouse)
 	{
 		case RI_MOUSE_LEFT_BUTTON_DOWN:
 			m_bMouseClick[0] = m_bMouseClickOnce[0] = true;
+			m_selectedPos = m_tpos;
 			break;
 		case RI_MOUSE_LEFT_BUTTON_UP:
 			m_bMouseClick[0] = false;
@@ -250,6 +244,15 @@ int DirectInput::MouseY()
 int DirectInput::MouseZ()
 {
 	return m_iMouseZ;
+}
+
+bool DirectInput::GetSelectedRect(Math::FRECT& out)
+{
+	if(!MouseClick(0,false))
+		return false;
+
+	D3DXVec2Minimize(&out.topLeft,&m_selectedPos,&m_tpos);
+	D3DXVec2Maximize(&out.bottomRight,&m_selectedPos,&m_tpos);
 }
 
 void DirectInput::SetMouseState(MouseCursorState state)

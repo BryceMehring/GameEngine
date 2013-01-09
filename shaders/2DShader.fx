@@ -102,9 +102,10 @@ VSOut SpriteAnimationVS(VSIn IN)
 float4 ColorSpritePS(float2 tex : TEXCOORD0, float3 interpPos : TEXCOORD1) : COLOR
 {
 	float4 texColor = tex2D(TexS,tex);
-	texColor.r *= 0.8*cos(texColor.r+interpPos.x);
-	texColor.g *= 0.8*sin(texColor.g+2.0*interpPos.x);
-	texColor.b *= 0.8*sin(texColor.b+3.0*interpPos.y);
+
+	//texColor.r *= 0.8*cos(texColor.r+interpPos.x);
+	//texColor.g *= 0.8*sin(texColor.g+2.0*interpPos.x);
+	//texColor.b *= 0.8*sin(texColor.b+3.0*interpPos.y);
 
 	//texColor.rgb = 1 - texColor.xyz;
 	
@@ -117,6 +118,22 @@ float4 SpritePS(float2 tex : TEXCOORD0) : COLOR
 	float4 color = tex2D(TexS,tex);
 	return color * gColor;
 }
+
+
+TextVSOut LineVS(float3 posL : POSITION0)
+{
+	TextVSOut OUT = (TextVSOut)0;
+
+	OUT.posH = mul(float4(posL,1.0f),gWorldViewProj);
+
+	return OUT;
+}
+
+float4 LinePS() : COLOR
+{
+	return float4(1.0f,1.0f,1.0f,1.0f);
+}
+
 
 // Tech Start
 technique Sprite
@@ -132,10 +149,12 @@ technique ColorAnimatedSprite
 {
 	pass p1
 	{
-		VertexShader = compile vs_3_0 SpriteAnimationVS();
-		PixelShader = compile ps_3_0 ColorSpritePS();		
-
-		CullMode = None;
+		VertexShader = compile vs_2_0 SpriteAnimationVS();
+		PixelShader = compile ps_2_0 ColorSpritePS();	
+		
+		AlphaTestEnable = true;
+		AlphaFunc = GreaterEqual;
+		AlphaRef = 50;		
 	}
 }
 
@@ -144,7 +163,21 @@ technique TextTech
 	pass p1
 	{
 		VertexShader = compile vs_2_0 TextVS();
-		PixelShader = compile ps_2_0 SpritePS();		
+		PixelShader = compile ps_2_0 SpritePS();
+		
+		AlphaTestEnable = true;
+		AlphaFunc = GreaterEqual;
+		AlphaRef = 50;		
+	}
+}
+
+technique LineTech
+{
+	pass p1
+	{
+		VertexShader = compile vs_2_0 LineVS();
+		PixelShader = compile ps_2_0 LinePS();
+			
 	}
 }
 // Tech End

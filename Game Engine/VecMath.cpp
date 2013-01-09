@@ -8,11 +8,6 @@
 namespace Math
 {
 
-// function declarations 
-bool Intersects(const Circle& c1, const FRECT& R1);
-bool Intersects(const Circle& c1, const Circle& c2);
-bool Intersects(const FRECT& c1, const FRECT& c2);
-
 // ----- CCircle -----
 
 CCircle::CCircle(const Circle& circle) : m_circle(circle)

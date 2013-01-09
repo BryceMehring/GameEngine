@@ -283,7 +283,7 @@ public:
 	virtual ~TextBox();
 
 	// Enters a new line
-	void Write(const std::string& line, DWORD color = 0xffffffff, bool bContinue = false);
+	void Write(const std::string& line, const D3DXVECTOR4& color, bool bContinue = false);
 	
 	virtual void Update(IKMInput&, double dt);
 	virtual void Render(IRenderer&);
@@ -302,15 +302,15 @@ protected:
 	struct LineData
 	{
 		LineData() {}
-		LineData(const std::string& str, D3DCOLOR color, const POINT& P,bool c)
-		: line(str), color(color), P(P), bContinue(c)
+		LineData(const std::string& str, const D3DXVECTOR4& color, const Math::FRECT& R,bool c)
+		: line(str), color(color), R(R), bContinue(c)
 		{
 
 		}
 
 		std::string line;
-		D3DCOLOR color;
-		POINT P;
+		Math::FRECT R;
+		D3DXVECTOR4 color;
 		bool bContinue; 
 	};
 
@@ -391,7 +391,7 @@ protected:
 		stringstream stream;
 		stream << p;
 
-		Write(stream.str(),0xff00ffff);
+		//Write(stream.str(),0xff00ffff);
 	}
 
 	// These are registered with AngelScript

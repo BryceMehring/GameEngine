@@ -223,6 +223,8 @@ void ButtonBase::Render(IRenderer& renderer)
 TextBox::TextBox(const std::string& name, const D3DXVECTOR3& pos, float w, float h)
 : m_spacePos(-1), m_scrollSpeed(0), m_scrollAccel(0), m_fScrollTime(0.0), m_sprite(w,h,D3DXVECTOR2(pos.x,pos.y))
 {
+	m_text.push_back(LineData());
+
 	Enter();
 
 	m_carrotPos.x = m_carrotPos.y = 0;
@@ -246,37 +248,9 @@ void TextBox::SaveToFile(const std::string& file) const
 	}
 }
 
-void TextBox::Write(const std::string& line, DWORD color, bool c)
+void TextBox::Write(const std::string& line, const D3DXVECTOR4& color, bool c)
 {
-	// todo: everything must go on its own line
-	// The renderer does not cull the way I want it to.
-	/*unsigned int pos = line.find('\n');
-	unsigned int start = 0;
-	while(pos != string::npos)
-	{
-		Write(line.substr(start,pos - start),color,c);
-
-		start = pos + 1;
-		pos = line.find('\n',pos + 1);
-	
-	}*/
-
-	// calculate the rect of the line
-	/*POINT P;
-	if(!m_text.empty())
-	{
-		P =  m_text.back().P;
-		P.y += 15;
-	}
-	else
-	{
-		RECT R = m_square.GetRect();
-		P.x = R.left;
-		P.y = R.top;
-	}
-	
-	// Add line to vector
-	m_text.push_back(LineData(line,color,P,c));*/
+	m_text.push_back(LineData(line,color,m_sprite,c));
 }
 
 void TextBox::Backspace()
@@ -303,25 +277,25 @@ void TextBox::AddKey(char Key)
 	// Add key to the last line
 	std::string& text = m_text.back().line;
 	text += Key;
-
-	//m_text.back().R.right += 6;
 }
 
 void TextBox::Enter()
 {
-	Write("");
+	std::string& text = m_text.back().line;
+	text += '\n';
+	//Write("",D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f));
 }
 
 void TextBox::Update(IKMInput& input, double dt)
 {
-	if(m_sprite.IsPointWithin(input.GetTransformedMousePos()))
+	/*if(m_sprite.IsPointWithin(input.GetTransformedMousePos()))
 	{
 		input.SetMouseState(Beam);
 	}
 	else
 	{
 		input.SetMouseState(Default);
-	}
+	}*/
 
 
 	if(input.KeyDown(BACKSPACE))
@@ -372,17 +346,52 @@ void TextBox::Render(IRenderer& renderer)
 	/*if(m_drawCarrot)
 	{
 		pRenderer->DrawString("|",m_carrotPos,0xffffffff);
+
 	}*/
+
+	I2DRenderer& renderer2D = renderer.Get2DRenderer();
 
 	D3DXMATRIX S, T;
 	::D3DXVECTOR2 middle = m_sprite.Middle();
 	D3DXMatrixScaling(&S,m_sprite.Width(),m_sprite.Height(),1.0f);
-	D3DXMatrixTranslation(&T,middle.x,middle.y,0.0f);
-	renderer.Get2DRenderer().DrawSprite(S*T,"textbox3",0,4.0f,3.0f);
+	D3DXMatrixTranslation(&T,middle.x,middle.y,3000.0f);
+	renderer2D.DrawSprite(S*T,"textbox3",0,2.0f,2.0f);
 
-	BreakLastLine(renderer);
+	//BreakLastLine(renderer);
 
 	// Iterate across all lines
+	for(auto iter = m_text.begin(); iter != m_text.end(); ++iter)
+	{
+		LineData& data = *iter;
+
+		Math::FRECT R;
+		renderer2D.GetStringRec(data.line.c_str(),m_sprite.topLeft,D3DXVECTOR2(4.0f,4.0f),R);
+
+		renderer2D.DrawString(data.line.c_str(),m_sprite.topLeft,D3DXVECTOR2(4.0f,4.0f),::D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f));
+		if(R.bottomRight.x > m_sprite.bottomRight.x)
+		{
+			Enter();
+		}
+
+
+		/*if(Math::Intersects(m_sprite,data.R))
+		{
+			std::string line = data.line;
+
+			// Render the '>'
+			if(!data.bContinue)
+			{
+				line = "> " + data.line;
+			}
+
+			renderer2D.DrawString(line.c_str(),data.pos,D3DXVECTOR2(3.0f,3.0f),data.color);
+
+			Math::FRECT R;
+			renderer2D.GetStringRec(line.c_str(),data.pos,D3DXVECTOR2(3.0f,3.0f),R);
+
+			data.pos = R.Middle();
+		}*/
+	}
 	/*for(TextDataType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		LineData& data = *iter;
@@ -513,10 +522,10 @@ void ScriptingConsole::Update(IKMInput& input, double dt)
 void ScriptingConsole::Enter()
 {
 	// the last line
-	const string& backLine = m_text.back().line;
+	//const string& backLine = m_text.back().line;
 
 	// if the user wants to start entering block code
-	if(backLine == "start" /*|| backLine == "function"*/)
+	/*if(backLine == "start" || backLine == "function")
 	{
 		// mark the index
 		m_uiStartIndex = m_text.size();
@@ -549,9 +558,11 @@ void ScriptingConsole::Enter()
 		m_uiBackIndex = m_text.size();
 
 		m_pVM->ExecuteScript(line,0xffffffff);
-	}
+	}*/
 
-	TextBox::Write("",0xffffffff,IsBlocked());
+	TextBox::Enter();
+
+	//TextBox::Write("",0xffffffff,IsBlocked());
 }
 
 void ScriptingConsole::Backspace()
@@ -569,7 +580,7 @@ void ScriptingConsole::MessageCallback(const asSMessageInfo *msg)
 	// asMSGTYPE_ERROR, asMSGTYPE_WARNING, asMSGTYPE_INFORMATION
 	const unsigned int COLOR[3] = {0xffff0000,0xffffff00,0xffffffff};
 
-	Write(std::string(msg->message),COLOR[msg->type]);
+	//Write(std::string(msg->message),COLOR[msg->type]);
 }
 
 void ScriptingConsole::CLS()

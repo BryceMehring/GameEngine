@@ -26,12 +26,6 @@ struct FRECT
 	{
 		return (pos.x >= topLeft.x) && (pos.x <= bottomRight.x) && (pos.y >= bottomRight.y) && (pos.y <= topLeft.y);
 	}
-	
-	RECT Rect() const
-	{
-		RECT R = {(long)topLeft.x,(long)topLeft.y,(long)bottomRight.x,(long)bottomRight.y};
-		return R;
-	}
 
 	float Width() const
 	{
@@ -82,6 +76,16 @@ struct Circle
 
 };
 
+bool Intersects(const Circle& c1, const FRECT& R1);
+bool Intersects(const Circle& c1, const Circle& c2);
+bool Intersects(const FRECT& c1, const FRECT& c2);
+
+bool Sat(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2);
+
+// ray casting algorithm
+bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P);
+bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P);
+
 // returns the reflection vector, if dir points in the dir of movement, use (-dir).
 D3DXVECTOR2 Reflect(const D3DXVECTOR2& dir, const D3DXVECTOR2& normal);
 D3DXVECTOR3 Reflect(const D3DXVECTOR3& dir, const D3DXVECTOR3& normal);
@@ -109,17 +113,9 @@ float RayCircleInsersection(const D3DXVECTOR2& c, float r, const D3DXVECTOR2& po
 
 //bool Intersects(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2);
 
-// ray casting algorithm
-bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P);
-bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P);
-
-bool Sat(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2);
-
 float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound); 
 
 bool IsPrime(unsigned int);
-
-void RegisterScriptVecMath(class asIScriptEngine* pEngine);
 
 std::string ConvertTo(unsigned int uiInputNumber, unsigned int uiTargetBase);
 
@@ -201,6 +197,8 @@ private:
 };
 
 ICollisionPolygon* CreateCollionPolygon(const std::vector<D3DXVECTOR2>& poly);
+
+void RegisterScriptVecMath(class asIScriptEngine* pEngine);
 
 } // math
 

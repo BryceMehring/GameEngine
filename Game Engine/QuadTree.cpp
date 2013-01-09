@@ -140,9 +140,9 @@ void Node::Render(IRenderer& renderer)
 	{
 		if(iter->HasPoint())
 		{
-			RECT R = iter->R.GetRect().Rect();
+			/*RECT R = iter->R.GetRect().Rect();
 			square.ConstructFromRect(R);
-			square.Render(renderer);
+			square.Render(renderer);*/
 		}
 	}
 }

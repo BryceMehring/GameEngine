@@ -3,6 +3,7 @@
 
 #include "IPlugin.h"
 #include "IResourceManager.h"
+#include "VecMath.h"
 #include <d3dx9math.h>
 #include <string>
 
@@ -13,12 +14,12 @@ public:
 	virtual ~I2DRenderer() {}
 
 	// Line
-	//virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount, D3DCOLOR color) = 0;
+	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount) = 0;
 	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, float angle, D3DCOLOR color) = 0;
 
 	// Fonts
-	virtual void GetStringRec(const char* str, RECT& out) = 0;
-	virtual void DrawString(const char* str, D3DXVECTOR2 pos, const D3DXVECTOR4& color = D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f)) = 0; // world space
+	virtual void GetStringRec(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale, Math::FRECT& out) = 0;
+	virtual void DrawString(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale = D3DXVECTOR2(4.0f,4.0f), const D3DXVECTOR4& color = D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f)) = 0; // world space
 
 	// sprites
 	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId = 0, float dx = 1.0f, float dy = 1.0f, DWORD color = 0xffffffff) = 0;

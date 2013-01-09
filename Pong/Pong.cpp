@@ -51,7 +51,7 @@ void Ball::Update(QuadTree& tree, double dt)
 	{
 		m_fTime += dt;
 
-		if(m_fTime > 0.1)
+		if(m_fTime > 0.5)
 		{
 			m_fTime = 0.0;
 			m_bChangeColor = false;
@@ -177,7 +177,7 @@ void AniBall::Render(IRenderer& renderer)
 	stream <<"("<< m_dir.x << "," << m_dir.y << ")" ;
 
 	renderer.Get2DRenderer().DrawSprite(R*S*T,m_texture,m_uiCurrentCell);
-	//renderer.Get2DRenderer().DrawString(stream.str().c_str(),pos,0xffffffff);
+	renderer.Get2DRenderer().DrawString(stream.str().c_str(),pos);
 }
 
 
@@ -558,10 +558,7 @@ void Pong::UpdatePaddles(Game& game)
 
 void Pong::Draw(Game& game)
 {
-
-	//game.GetInput().GetTransformedMousePos();
-
-	//DrawGame(game);
+	DrawGame(game);
 
 	/*switch(m_state)
 	{
@@ -615,23 +612,17 @@ void Pong::DrawScore(Game& game)
 	RECT R;
 	GetClientRect(::GetActiveWindow(),&R);
 
-	const POINT POS[2] = 
+	const D3DXVECTOR2 POS[2] = 
 	{
-		{R.left + 200,R.top + 50},
-		{R.right - 200,R.top + 50}
+		D3DXVECTOR2(-40.0f,40.0f),
+		D3DXVECTOR2(40.0f,40.0f),
 	};
 
 	std::stringstream stream;
-	stream << m_iLeftScore << " " << m_iRightScore;
+	stream << m_iLeftScore << '\t' << '\t' << '\t' << m_iRightScore;
 
-	unsigned int i = 0;
-	while(stream)
-	{
-		std::string str;
-		stream >> str;
-
-		//renderer.Get2DRenderer().DrawString(str.c_str(),POS[i++],0xffffffff);
-	}
+	renderer.Get2DRenderer().DrawString(stream.str().c_str(),POS[0]);
+	
 
 }
 

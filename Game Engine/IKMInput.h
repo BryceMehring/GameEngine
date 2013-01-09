@@ -2,6 +2,7 @@
 #define _IKMINPUT_
 
 #include "IInput.h"
+#include "VecMath.h"
 #include <Windows.h>
 
 enum KeyCode
@@ -42,6 +43,7 @@ public:
 	virtual int MouseX() = 0;
 	virtual int MouseY() = 0;
 	virtual int MouseZ() = 0;
+	virtual bool GetSelectedRect(Math::FRECT& out) = 0;
 
 	// mouse cursor states
 	virtual void SetMouseState(MouseCursorState state) = 0; 

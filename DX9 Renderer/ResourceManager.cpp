@@ -131,7 +131,7 @@ void ResourceManager::LoadShader(const std::string& file)
 	}
 }
 
-void ResourceManager::BuildHandleVectors(const char* file, ID3DXEffect* pEffect, std::vector<D3DXHANDLE>& paramaters, std::vector<D3DXHANDLE>& tech)
+void ResourceManager::BuildHandleVectors(const char* file, ID3DXEffect* pEffect, std::map<std::string,D3DXHANDLE>& paramaters, std::map<std::string,D3DXHANDLE>& tech)
 {
 	fstream in(file);
 
@@ -145,13 +145,17 @@ void ResourceManager::BuildHandleVectors(const char* file, ID3DXEffect* pEffect,
 
 		while(getline(in,line) && line.find("Variables End") == string::npos)
 		{
-			if(line.find("//") == string::npos)
+			if(!line.empty())
 			{
-				int pos = line.find_last_of(' ');
-				if(pos != string::npos)
+				if(line.find("//") == string::npos)
 				{
-					string temp = line.substr(pos+1,line.size() - pos - 2);
-					paramaters.push_back(pEffect->GetParameterByName(NULL,temp.c_str()));
+					int pos = line.find_last_of(' ');
+					if(pos != string::npos)
+					{
+						// todo: fix this, this is bugged
+						string temp = line.substr(pos+1,line.size() - pos - 2);
+						paramaters.insert(make_pair(temp,pEffect->GetParameterByName(NULL,temp.c_str())));
+					}
 				}
 			}
 		}
@@ -169,7 +173,9 @@ void ResourceManager::BuildHandleVectors(const char* file, ID3DXEffect* pEffect,
 					int pos = line.find_last_of(' ');
 					if(pos != string::npos)
 					{
-						tech.push_back(pEffect->GetTechniqueByName(line.substr(pos+1,line.size() - pos - 1).c_str()));
+						// todo: need to check this...
+						string temp = line.substr(pos+1,line.size() - pos - 1);
+						tech.insert(make_pair(temp,pEffect->GetTechniqueByName(temp.c_str())));
 					}
 				}
 			}

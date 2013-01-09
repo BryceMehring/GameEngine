@@ -20,9 +20,6 @@ public:
 	virtual const char* GetName() const { return "DirectInput"; }
 	virtual void About() const;
 	virtual int GetVersion() const;
-
-	// DirectX's version of poll 
-	
 	
 	// Keyboard
 	virtual bool KeyDown(unsigned char Key, bool once = true);
@@ -39,6 +36,8 @@ public:
 	virtual int MouseY();
 	virtual int MouseZ();
 
+	virtual bool GetSelectedRect(Math::FRECT& out);
+
 	virtual void SetMouseState(MouseCursorState state);
 
 private:
@@ -51,8 +50,6 @@ private:
 	// Plug-in Manager
 	PluginManager& m_mgr;
 
-	// Interface
-
 	// Keyboard
 	bool m_cKeyDown[256];
 	unsigned char m_cKeyDownOnce;
@@ -64,6 +61,8 @@ private:
 	int m_iMouseZ;
 	POINT m_MousePos;
 	D3DXVECTOR2 m_tpos;
+
+	D3DXVECTOR2 m_selectedPos;
 
 	bool m_bMouseClick[2];
 	bool m_bMouseClickOnce[2];

@@ -25,8 +25,8 @@ public:
 		explicit Shader(ID3DXEffect* effect = nullptr) : pEffect(effect) {}
 
 		struct ID3DXEffect* pEffect;
-		std::vector<D3DXHANDLE> parameters;
-		std::vector<D3DXHANDLE> tech;
+		std::map<std::string,D3DXHANDLE> parameters;
+		std::map<std::string,D3DXHANDLE> tech;
 
 		// todo: add more
 	};
@@ -68,7 +68,7 @@ private:
 	void AddResource(const std::string& name, const Texture& tex);
 	void AddResource(const std::string& name, const Shader& tex);
 
-	void BuildHandleVectors(const char* file, ID3DXEffect* pEffect, std::vector<D3DXHANDLE>& paramaters, std::vector<D3DXHANDLE>& tech);
+	void BuildHandleVectors(const char* file, ID3DXEffect* pEffect, std::map<std::string,D3DXHANDLE>& paramaters, std::map<std::string,D3DXHANDLE>& tech);
 
 };
 

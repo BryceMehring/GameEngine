@@ -23,6 +23,7 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 	return new DX9Render(mgr);
 }
 
+IDirect3DVertexDeclaration9* VertexP::m_pVertexDecl = nullptr;
 IDirect3DVertexDeclaration9* VertexPT::m_pVertexDecl = nullptr;
 //IDirect3DVertexDeclaration9* VertexPTC::m_pVertexDecl = nullptr;
 
@@ -118,13 +119,16 @@ void DX9Render::InitializeDirectX()
 	// todo: need to check device caps 
 
 	// Fill out the D3DPRESENT_PARAMETERS structure.
+
+	DWORD levels;
+	m_pDirect3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,true,D3DMULTISAMPLE_4_SAMPLES,&levels);
 	
 	m_D3DParameters.BackBufferWidth            = 0;
 	m_D3DParameters.BackBufferHeight           = 0;
 	m_D3DParameters.BackBufferFormat           = D3DFMT_X8R8G8B8;
 	m_D3DParameters.BackBufferCount            = 1;
-	m_D3DParameters.MultiSampleType            = D3DMULTISAMPLE_NONE;
-	m_D3DParameters.MultiSampleQuality         = 0;
+	m_D3DParameters.MultiSampleType            = D3DMULTISAMPLE_4_SAMPLES;
+	m_D3DParameters.MultiSampleQuality         = levels - 1;
 	m_D3DParameters.SwapEffect                 = D3DSWAPEFFECT_DISCARD; 
 	m_D3DParameters.hDeviceWindow              = windowHandle;
 	m_D3DParameters.Windowed                   = true;
