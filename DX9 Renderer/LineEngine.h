@@ -7,13 +7,12 @@
 
 struct LineData
 {
-	LineData() : pArray(nullptr) {}
-	LineData(const D3DXVECTOR2* p, unsigned int l, const D3DXVECTOR4& c, float a) : pArray(p), length(l), color(c), angle(a) {}
+	LineData() {}
+	LineData(const D3DXMATRIX& t, const D3DXVECTOR4& c, unsigned int l) : T(t), color(c), length(l) {}
 
-	const D3DXVECTOR2* pArray;
-	unsigned int length;
+	D3DXMATRIX T;
 	D3DXVECTOR4 color;
-	float angle;
+	unsigned int length;
 };
 
 class LineEngine
@@ -23,7 +22,7 @@ public:
 	LineEngine(IDirect3DDevice9* pDevice, ResourceManager* pTm, int maxLength);
 	~LineEngine();
 
-	void DrawLine(const D3DXVECTOR2* pArray, unsigned int length, const D3DXVECTOR4& color, float angle);
+	void DrawLine(const D3DXVECTOR3* pArray, unsigned int length, const D3DXVECTOR4& color, const D3DXMATRIX& t);
 
 	void SetCamera(Camera* pCam) { m_pCamera = pCam; }
 

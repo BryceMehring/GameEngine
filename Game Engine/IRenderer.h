@@ -14,8 +14,8 @@ public:
 	virtual ~I2DRenderer() {}
 
 	// Line
-	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount) = 0;
-	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, float angle, D3DCOLOR color) = 0;
+	virtual void DrawLine(const D3DXVECTOR3* pArray, unsigned int length) = 0;
+	virtual void DrawLine(const D3DXVECTOR3* pArray, unsigned int length, const D3DXVECTOR4& color, const D3DXMATRIX& t) = 0;
 
 	// Fonts
 	virtual void GetStringRec(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale, Math::FRECT& out) = 0;

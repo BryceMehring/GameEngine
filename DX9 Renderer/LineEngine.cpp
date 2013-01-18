@@ -18,22 +18,22 @@ void LineEngine::CreateBuffers()
 	m_pDevice->CreateVertexBuffer(m_iMaxLength * sizeof(VertexP),D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,0,D3DPOOL_DEFAULT,&m_pVertexBuffer,0);
 }
 
-void LineEngine::DrawLine(const D3DXVECTOR2* pArray, unsigned int length, const D3DXVECTOR4& color, float angle)
+void LineEngine::DrawLine(const D3DXVECTOR3* pArray, unsigned int length, const D3DXVECTOR4& color, const D3DXMATRIX& t)
 {
+	unsigned int uiNewMaxSize = m_iCurrentLength + length;
+	if(uiNewMaxSize >= m_iMaxLength)
+		return;
+
 	VertexP* pVB = nullptr;
-	m_pVertexBuffer->Lock(0,(length) * sizeof(VertexP),(void**)&pVB,D3DLOCK_NOOVERWRITE);
-	//m_pVertexBuffer->Lock((m_iCurrentLength) * sizeof(VertexP),(length) * sizeof(VertexP),(void**)&pVB,D3DLOCK_DISCARD);
+	m_pVertexBuffer->Lock(0,0,(void**)&pVB,0);
+	//m_pVertexBuffer->Lock(m_iCurrentLength * sizeof(VertexP),length * sizeof(VertexP),(void**)&pVB,D3DLOCK_NOOVERWRITE);
 
-	for(unsigned int i = 0; i < length && m_iCurrentLength < m_iMaxLength; ++i)
-	{
-		pVB[m_iCurrentLength].pos = D3DXVECTOR3(pArray[i].x,pArray[i].y,0.0f);
-
-		++m_iCurrentLength;
-	}
+	D3DXVec3TransformCoordArray((D3DXVECTOR3*)(pVB + m_iCurrentLength),sizeof(VertexP),pArray,sizeof(D3DXVECTOR3),&t,length);
 
 	m_pVertexBuffer->Unlock();
 
-	m_lines.push_back(LineData(0,length,color,angle));
+	m_iCurrentLength = uiNewMaxSize;
+	m_lines.push_back(LineData(t,color,length));
 }
 
 void LineEngine::FillVertexBuffer()
@@ -99,6 +99,9 @@ void LineEngine::Render()
 		unsigned int startVertex = 0; 
 		for(auto iter = m_lines.begin(); iter != m_lines.end(); ++iter)
 		{
+			shader.pEffect->SetVector(shader.parameters["gColor"],&iter->color);
+			shader.pEffect->CommitChanges();
+
 			m_pDevice->DrawPrimitive(D3DPT_LINESTRIP,startVertex,(iter->length - 1));
 			startVertex += iter->length;
 		}

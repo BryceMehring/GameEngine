@@ -81,6 +81,8 @@ private:
 	void ReadMouse(const RAWMOUSE& mouse);
 	void ReadKeyboard(const RAWKEYBOARD& keyboard);
 
+	void ClampMouse();
+
 	void InitRawInput();
 	void LoadCursors();
 

@@ -15,6 +15,8 @@
 #include "IRender.h"
 #include "RTTI.h"
 #include "VecMath.h"
+#include "PooledAllocator.h"
+#include <hash_set>
 
 const unsigned int MAX_NODES = 4;
 const unsigned int MAX_OBJ_PERNODE = 10;
@@ -25,8 +27,8 @@ class ISpatialObject;
 class Node
 {
 public:
-
-	typedef std::set<ISpatialObject*> LIST_DTYPE;
+	
+	typedef std::list<ISpatialObject*, PooledAllocator<ISpatialObject*>> LIST_DTYPE;
 
 	friend class NodeIterator;
 
@@ -35,13 +37,7 @@ public:
 	Node(const Math::FRECT& R);
 	~Node();
 
-	void SetRect(const Math::CRectangle& R); 
-
 	void Erase(ISpatialObject& obj);
-	void EraseFromPreviousPos(ISpatialObject& obj);
-
-	// todo: return reference
-	LIST_DTYPE* GetNearObjects() { return &m_Objects; }
 
 	// returns true if P lies within the rectangle
 	bool IsWithin(ISpatialObject& obj) const;
@@ -51,6 +47,8 @@ public:
 
 	// recursive algorithm
 	void FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>& out);
+
+	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out);
 
 	void Render(IRenderer& renderer);
 
@@ -78,14 +76,10 @@ private:
 	bool IsDivided() const;
 
 	bool HasPoint() const;
-	bool RHasPoint() const;
 	bool IsFull() const;
 
 	// Subdivides the current node/R into 4 sub nodes
 	void SubDivide();
-	void SubDivideObjects(Node& subNode);
-	void ExpandLeft();
-	void ExpandRight();
 };
 
 class ISpatialObject : public IRender
@@ -103,10 +97,6 @@ public:
 	virtual void* QueryInterface(unsigned int) const = 0; 
 
 	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const = 0;
-
-protected:
-
-	std::vector<Node*> m_nodes;
 };
 
 // todo: need to create a better public/protected/private interface
@@ -151,14 +141,12 @@ public:
 	// recursive
 	bool Insert(ISpatialObject&);
 	void Erase(ISpatialObject&);
-	void EraseFromPrev(ISpatialObject&);
 
 	bool IsWithin(ISpatialObject&) const;
 
-	void FindNearObjects(Math::ICollisionPolygon* pPoly,std::vector<ISpatialObject*>& out);
-	void FindNearNodes(Math::ICollisionPolygon* pPoly, std::vector<Node*>& out);
-	void FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out);
-	//void FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out);
+	void FindNearObjects(const Math::ICollisionPolygon* pPoly,std::vector<ISpatialObject*>& out);
+	void FindNearNodes(const Math::ICollisionPolygon* pPoly, std::vector<Node*>& out);
+	void FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out);
 
 	template< class T >
 	void Update(ISpatialObject& obj, const T& funct)
@@ -167,8 +155,6 @@ public:
 		funct();
 		Insert(obj);
 	}
-
-	void Update(ISpatialObject& obj);
 
 	void SaveToFile(std::string& file);
 	void LoadFile(const std::string& file);
@@ -180,34 +166,5 @@ public:
 private:
 	Node* m_pRoot;
 };
-
-// helper functions
-template< class T >
-void ProccessNearNodes(const std::vector<Node*>& nodes, const T& functor)
-{
-	// this set is used to only process each object once
-	std::set<ISpatialObject*> outSet;
-
-	// loop over all of the nodes the object collides with 
-	for(unsigned int i = 0; i < nodes.size(); ++i)
-	{
-		// Find the near objects to the node
-		auto theList = nodes[i]->GetNearObjects();
-
-		// Loop over all the objects in the node
-		for(auto iter = theList->begin(); iter != theList->end(); ++iter)
-		{
-			ISpatialObject* pObj = *iter;
-
-			// If this is the first pObj being processed 
-			if(outSet.insert(pObj).second == true)
-			{
-				// process this object
-				if(functor(pObj)) { return; }
-			}
-		}
-	}
-}
-
 
 #endif // _QUADTREE_

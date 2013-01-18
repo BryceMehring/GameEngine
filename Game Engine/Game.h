@@ -101,6 +101,8 @@ private:
 	void UpdateFPS();
 
 	void Draw();
+	void DrawCursor();
+	void DrawSelectionRect();
 	void DrawFPS();
 
 	// Prevent copying

@@ -355,7 +355,7 @@ void TextBox::Render(IRenderer& renderer)
 	::D3DXVECTOR2 middle = m_sprite.Middle();
 	D3DXMatrixScaling(&S,m_sprite.Width(),m_sprite.Height(),1.0f);
 	D3DXMatrixTranslation(&T,middle.x,middle.y,3000.0f);
-	renderer2D.DrawSprite(S*T,"textbox3",0,2.0f,2.0f);
+	renderer2D.DrawSprite(S*T,"textbox3",0,1.0f,1.0f);
 
 	//BreakLastLine(renderer);
 

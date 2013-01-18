@@ -125,7 +125,7 @@ void DX9Render::InitializeDirectX()
 	
 	m_D3DParameters.BackBufferWidth            = 0;
 	m_D3DParameters.BackBufferHeight           = 0;
-	m_D3DParameters.BackBufferFormat           = D3DFMT_X8R8G8B8;
+	m_D3DParameters.BackBufferFormat           = D3DFMT_UNKNOWN;
 	m_D3DParameters.BackBufferCount            = 1;
 	m_D3DParameters.MultiSampleType            = D3DMULTISAMPLE_4_SAMPLES;
 	m_D3DParameters.MultiSampleQuality         = levels - 1;
@@ -337,15 +337,14 @@ void DX9Render::SetWindowStyle()
 		RECT R = {0,0,800,600}; 
 		AdjustWindowRect(&R,WS_OVERLAPPEDWINDOW,false);
 
-		SetWindowLong(h, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+		SetWindowLongPtr(h, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 		SetWindowPos(h, HWND_TOP, 100, 100, R.right, R.bottom,
 			SWP_SHOWWINDOW | SWP_NOZORDER);
 	}
 	else
-	{
-		SetWindowLong(h, GWL_STYLE, WS_POPUPWINDOW);
-		SetWindowPos(h, HWND_TOP, 0, 0, 0, 0,
-		SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOZORDER);
+	{ 
+		SetWindowLongPtr(h, GWL_STYLE, WS_POPUP);
+		SetWindowPos(h, HWND_TOP, 0, 0, m_D3DParameters.BackBufferWidth, m_D3DParameters.BackBufferHeight, SWP_SHOWWINDOW | SWP_NOZORDER);
 	}
 }
 
@@ -353,8 +352,6 @@ void DX9Render::SetDisplayMode(UINT i)
 {
 	if( i > m_DisplayModes.size() )
 		return;
-
-	HWND h = m_mgr.GetWindowManager().GetWindowHandle();
 
 	UINT Width = m_DisplayModes[i].mode.Width;
 	UINT Height = m_DisplayModes[i].mode.Height;
@@ -375,13 +372,9 @@ void DX9Render::ToggleFullscreen()
 
 	if(m_D3DParameters.Windowed)
 	{
+		m_D3DParameters.BackBufferFormat           = D3DFMT_UNKNOWN;
 		m_D3DParameters.BackBufferWidth            = 0;
 		m_D3DParameters.BackBufferHeight           = 0;
-		m_D3DParameters.BackBufferFormat           = D3DFMT_UNKNOWN;
-		m_D3DParameters.BackBufferCount            = 1;
-		m_D3DParameters.MultiSampleType            = D3DMULTISAMPLE_NONE;
-		m_D3DParameters.MultiSampleQuality         = 0;
-		m_D3DParameters.SwapEffect                 = D3DSWAPEFFECT_DISCARD; 
 		m_D3DParameters.FullScreen_RefreshRateInHz = 0;
 	}
 	else
@@ -411,47 +404,6 @@ void DX9Render::GetWinSize(POINT& P) const
 	P.y = m_D3DParameters.BackBufferHeight;
 }
 
-
-
-/*UINT DX9Render::CreateVertexBuffer(UINT bytes,DWORD flags)
-{
-	IDirect3DVertexBuffer9* pBuffer = nullptr;
-
-	m_p3Device->CreateVertexBuffer(bytes,flags,0,D3DPOOL_DEFAULT,&pBuffer,0);
-
-	m_VertexBuffers.push_back(pBuffer);
-
-	return m_VertexBuffers.size() - 1;
-}
-
-void* DX9Render::WriteToVertexBuffer(UINT iBufferIndex)
-{
-	void* pBuffer = nullptr;
-	m_VertexBuffers[iBufferIndex]->Lock(0,0,&pBuffer,D3DLOCK_DISCARD);
-	return pBuffer;
-}
-
-void DX9Render::Unlock(UINT iIndex)
-{
-	m_VertexBuffers[iIndex]->Unlock();
-}
-
-void DX9Render::DrawVertexBuffer(UINT iIndex)
-{ 
-	// todo: need to fix:
-	//m_VertexBuffers[iIndex]->
-//	m_p3Device->DrawPrimitive(::D3DPT_POINTLIST,0,
-}
-
-UINT DX9Render::CreateVertexDecl(const VertexDeclaration& decl)
-{
-	IDirect3DVertexDeclaration9* pDecl = nullptr;
-	m_p3Device->CreateVertexDeclaration(&decl.Elements.front(),&pDecl);
-	m_VertexDecl.push_back(pDecl);
-
-	return m_VertexDecl.size() - 1;
-}*/
-
 void DX9Render::RegisterScript()
 {
 	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript().GetScriptEngine();
@@ -472,157 +424,3 @@ void DX9Render::RegisterScript()
 
 	pEngine->Release();
 }
-
-/*bool WindowManager::LoadEffect(UINT iID,const char* pFile)
-{
-	// 1. Check to see if the effect is already loaded
-	if(m_Effects.find(iID) == m_Effects.end())
-	{
-		// 2. Load the effect
-		ID3DXEffect* pEffect = 0;
-		ID3DXBuffer* pErrors = 0;
-		D3DXCreateEffectFromFile(m_p3Device,pFile,0,0,D3DXSHADER_DEBUG,m_pEffectPool,&pEffect,&pErrors);
-
-		// 3. If there are errors, deal with them
-		if(pErrors)
-		{
-			char* pMsg = static_cast<char*>(pErrors->GetBufferPointer());
-			MessageBox(0,pMsg,0,0);
-			PostQuitMessage(0);
-
-			return false;
-		}
-
-		// 4. Insert effect into data structure
-		m_Effects.insert(make_pair(iID,pEffect));
-
-		return true;
-	}
-
-	return false;
-}
- 
-void WindowManager::AddEffectTech(UINT iEffectID, const char* pName, UINT iSubset)
-{
-	Effect& effect = m_Effects[iEffectID];
-	effect.m_hTech[iSubset] = effect.pEffect->GetTechniqueByName(pName);
-}
-
-void WindowManager::AddEffectParameter(UINT iEffectID, const char* pName, const char* pKey)
-{
-	Effect& effect = m_Effects[iEffectID];
-	effect.m_hParameters[pKey] = effect.pEffect->GetParameterByName(0,pName);
-}
-
-// Load a mesh along with its mtrls and effects.
-bool WindowManager::LoadXFile(UINT iXID, UINT iEffectID, const char* pFile)
-{
-	Mesh mesh;
-
-	ID3DXMesh* temp = 0;
-	ID3DXMesh* pMesh = 0;
-
-	ID3DXBuffer* pTempMtrl = 0;
-	ID3DXBuffer* pAdj = 0;
-
-	DWORD iNumMtrl = 0;
-
-	// Load Mesh from file
-	D3DXLoadMeshFromX(pFile,D3DXMESH_SYSTEMMEM,m_p3Device,&pAdj,&pTempMtrl,0,&iNumMtrl,&pMesh);
-
-	// change vertex format
-	CloneMesh(pMesh,&temp,D3DXMESH_SYSTEMMEM);
-	
-	pMesh = temp;
-	temp = 0;
-
-	// optimize mesh
-	pMesh->Optimize(D3DXMESH_MANAGED | D3DXMESHOPT_COMPACT |
-		D3DXMESHOPT_ATTRSORT | D3DXMESHOPT_VERTEXCACHE,
-		static_cast<DWORD*>(pAdj->GetBufferPointer()),0,0,0,&temp);
-
-	pMesh = temp;
-	temp = 0;
-
-	mesh.pMesh = pMesh;
-
-	// Get the size of the attribute buffer
-	DWORD iAttribSize = 0;
-	pMesh->GetAttributeTable(0,&iAttribSize);
-
-	// alloc enough memory for all of the mtrls
-	mesh.mrtl.resize(iAttribSize + 1);
-
-	// Get Effect
-	{
-		Effect& eff = m_Effects[iEffectID];
-		mesh.pEffect->pEffect = eff.pEffect;
-	}
-
-	// Get Pointer to mtrl to extract it
-	D3DXMATERIAL* pMtrl = static_cast<D3DXMATERIAL*>(pTempMtrl->GetBufferPointer());
-
-	for(DWORD i = 0; i < iAttribSize; ++i)
-	{
-		// Load Texture
-		IDirect3DTexture9* pTexture = 0;
-
-		// If There is a texture
-		if(pMtrl[i].pTextureFilename)
-		{
-			D3DXCreateTextureFromFile(m_p3Device,pMtrl[i].pTextureFilename,&pTexture);
-		}
-
-		mesh.mrtl[i].mtrl = pMtrl[i].MatD3D;
-		mesh.mrtl[i].pTexture = pTexture;
-	}
-
-	m_Meshes.insert(make_pair(iXID,mesh));
-	return true;
-}
-
-bool WindowManager::RenderMesh(UINT iID) const
-{
-	auto& mesh = m_Meshes.find(iID)->second;
-	auto* pEffect = mesh.pEffect->pEffect;
-
-	auto& parameters = mesh.pEffect->m_hParameters;
-	auto& tech = mesh.pEffect->m_hTech;
-
-	// Create World Matrix
-	D3DXMATRIX W;
-	D3DXMatrixTranslation(&W,mesh.pos.x,mesh.pos.y,mesh.pos.z);
-
-	// World Inverse Transpose
-	D3DXMATRIX WIT;
-	D3DXMatrixInverse(&WIT,NULL,&W);
-	D3DXMatrixTranspose(&WIT,&WIT);
-
-	pEffect->SetMatrix(parameters["World"],&W);
-	pEffect->SetMatrix(parameters["WIT"],&WIT);
-	//pEffect->SetMatrix(parameters["WVP"],&(*pVP * W));
-
-	// Loop through all of the subsets
-	for(int j = 0; j < m_Meshes.size(); ++j)
-	{
-		pEffect->SetTechnique(tech[j]);
-
-		pEffect->SetValue(parameters["gObjectMrtl"],(void*)&mesh.mrtl[j].mtrl,sizeof(D3DMATERIAL9));
-		pEffect->SetTexture(parameters["gTex"],mesh.mrtl[j].pTexture);
-
-		UINT i = 0;
-		pEffect->Begin(&i,0);
-
-		for(int p = 0; p < i; ++p)
-		{
-			pEffect->BeginPass(p);
-
-			mesh.pMesh->DrawSubset(j);
-		
-			pEffect->EndPass();
-		}
-		pEffect->End();
-	}
-
-	return true;
-}*/

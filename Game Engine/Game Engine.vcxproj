@@ -118,6 +118,7 @@
     <ClCompile Include="SerializedState.cpp" />
     <ClCompile Include="SingleInstance.cpp" />
     <ClCompile Include="StringAlgorithms.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="VecMath.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>

@@ -16,6 +16,8 @@ Game::Game(HINSTANCE hInstance) : m_window(hInstance), m_fDT(0.0f), m_pRenderer(
 {
 	LoadAllDLL();
 
+	m_pRenderer->GetResourceManager().LoadTexture("..\\textures\\cursor.png");
+
 	float width = 90;
 	float height = 90;
 	D3DXVECTOR3 pos(0.0f,0.0f,0.0f);
@@ -81,7 +83,6 @@ int Game::PlayGame()
 
 		m_pInput->Reset();
 
-		// End timer 
 		EndTimer();
 	}
 
@@ -135,6 +136,8 @@ void Game::Draw()
 
 	// render fps overlay
 	DrawFPS();
+	DrawCursor();
+	DrawSelectionRect();
 
 	if(m_bConsoleEnabled)
 	{
@@ -148,8 +151,6 @@ void Game::Draw()
 
 	// end rendering
 	m_pRenderer->End();
-
-	//Sleep(2);
 
 	// Present the screen
 	m_pRenderer->Present();
@@ -166,44 +167,41 @@ void Game::DrawFPS()
 	out<<"FPS: " << GetFps();
 
 	this->m_pRenderer->Get2DRenderer().DrawString(out.str().c_str(),::D3DXVECTOR2(-49,49),D3DXVECTOR2(4,4));
-
-	//::D3DXVECTOR2 mousePos = ;
-
-
-	D3DXVECTOR2 posw[] =
-	{
-		D3DXVECTOR2(-45.0f,0.0f),
-		D3DXVECTOR2(0,45.0f),
-		D3DXVECTOR2(45,0.0f),
-	};
-
-	m_pRenderer->Get2DRenderer().DrawLine(posw,3);
 	
+}
 
+void Game::DrawCursor()
+{
+	const ::D3DXVECTOR2& pos = m_pInput->GetTransformedMousePos();
 
+	D3DXMATRIX S, T;
+	D3DXMatrixTranslation(&T,pos.x+2.0f,pos.y-2.5f,0.0f);
+	D3DXMatrixScaling(&S,6.0f,6.0f,1.0f);
+
+	m_pRenderer->Get2DRenderer().DrawSprite(S*T,"cursor");
+}
+
+void Game::DrawSelectionRect()
+{
 	Math::FRECT R;
 	if(m_pInput->GetSelectedRect(R))
 	{
-		D3DXVECTOR2 pos[] = 
+		D3DXVECTOR3 pos[] = 
 		{
-			R.bottomRight,
-			D3DXVECTOR2(R.topLeft.x,R.bottomRight.y),
-			R.topLeft,
-			D3DXVECTOR2(R.bottomRight.x,R.topLeft.y),
-			R.bottomRight,
+			D3DXVECTOR3(R.bottomRight.x,R.bottomRight.y,0.0f),
+			D3DXVECTOR3(R.topLeft.x,R.bottomRight.y,0.0f),
+			D3DXVECTOR3(R.topLeft.x,R.topLeft.y,0.0f),
+			D3DXVECTOR3(R.bottomRight.x,R.topLeft.y,0.0f),
+			D3DXVECTOR3(R.bottomRight.x,R.bottomRight.y,0.0f)
 		};
-		/*D3DXVECTOR2 pos[] =
-		{
-			D3DXVECTOR2(0.0f,0.0f),
-			D3DXVECTOR2(5.0f,0.0f),
-			D3DXVECTOR2(5.0f,5.0f),
-			this->m_pInput->GetTransformedMousePos(),
-			D3DXVECTOR2(0.0f,0.0f),
-		};*/
 
-		m_pRenderer->Get2DRenderer().DrawLine(pos,sizeof(pos) / sizeof(D3DXVECTOR2));
+		D3DXMATRIX I;
+		D3DXMatrixIdentity(&I);
+
+		D3DXVECTOR4 color(0.0f,1.0f,0.0f,1.0f);
+
+		m_pRenderer->Get2DRenderer().DrawLine(pos,sizeof(pos) / sizeof(D3DXVECTOR3),color,I);
 	}
-	
 }
 
 IRenderer& Game::GetRenderer()

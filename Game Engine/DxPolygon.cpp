@@ -55,7 +55,7 @@ std::vector<D3DXVECTOR3> DxPolygon::GetEdges() const { return m_edges; }
 
 void DxPolygon::Render(IRenderer& renderer)
 {
-	renderer.Get2DRenderer().DrawLine(&(m_edges.front()),m_edges.size(),m_fAngle,m_color);
+	//renderer.Get2DRenderer().DrawLine(&(m_edges.front()),m_edges.size(),m_fAngle);
 }
 
 // algorithm from: http://alienryderflex.com/polygon/

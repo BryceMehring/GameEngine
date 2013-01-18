@@ -81,7 +81,7 @@ void Ball::Update(QuadTree& tree, double dt)
 
 	if(!m_bChangeColor)
 	{
-		ProccessNearNodes(this->m_nodes,[&](const ::ISpatialObject* pObj) -> bool
+		/*ProccessNearNodes(this->m_nodes,[&](const ::ISpatialObject* pObj) -> bool
 		{
 			if(pObj != this)
 			{
@@ -90,7 +90,7 @@ void Ball::Update(QuadTree& tree, double dt)
 				float m2 = pObj->GetPos().y / pObj->GetPos().x;
 				{
 
-				}*/
+				}
 				::D3DXVECTOR2 oldPos = m_pos;
 				Math::CCircle oldCircle = m_CollisionPolygon;
 				for(unsigned int i = 0; i < 4; ++i)
@@ -119,7 +119,7 @@ void Ball::Update(QuadTree& tree, double dt)
 			}
 
 			return false;
-		});
+		});*/
 	}
 
 	m_pos += m_dir*m_fSpeed*dt;
@@ -194,9 +194,11 @@ const Math::ICollisionPolygon& Paddle::GetCollisionPolygon() const
 
 void Paddle::Update(IKMInput& input, QuadTree& tree, double dt)
 {
-	tree.Update(*this);
+	tree.Erase(*this);
 
 	m_CollisionPolygon.GetRect() = m_pos;
+
+	tree.Insert(*this);
 }
 
 void Paddle::Render(IRenderer& renderer)

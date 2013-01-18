@@ -76,9 +76,11 @@ struct Circle
 
 };
 
+bool Intersects(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2); 
 bool Intersects(const Circle& c1, const FRECT& R1);
 bool Intersects(const Circle& c1, const Circle& c2);
 bool Intersects(const FRECT& c1, const FRECT& c2);
+
 
 bool Sat(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2);
 
@@ -96,7 +98,7 @@ unsigned int GetRandInt(unsigned int a, unsigned int b);
 
 // clamps x into the range of [a,b]
 template< class T >
-T Clamp(T x, T a, T b)
+T Clamp(const T& x, const T& a, const T& b)
 {
 	return x < a ? a : (x > b ? b : x);
 }
@@ -187,16 +189,13 @@ public:
 	const FRECT& GetRect() const { return m_rect; }
 	FRECT& GetRect() { return m_rect; }
 
-	void Render(IRenderer&);
-
 private:
 
 	FRECT m_rect;
-	DxSquare m_polygon;
 
 };
 
-ICollisionPolygon* CreateCollionPolygon(const std::vector<D3DXVECTOR2>& poly);
+void CreateCollionPolygon(const std::vector<D3DXVECTOR3>& poly, FRECT& out);
 
 void RegisterScriptVecMath(class asIScriptEngine* pEngine);
 

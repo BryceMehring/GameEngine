@@ -51,14 +51,10 @@ void CCircle::GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const
 
 // ----- CCircle -----
 
-CRectangle::CRectangle(const FRECT& rect) : m_rect(rect), m_polygon(rect)
+CRectangle::CRectangle(const FRECT& rect) : m_rect(rect)
 {
 }
 
-void CRectangle::Render(::IRenderer& renderer)
-{
-	this->m_polygon.Render(renderer);
-}
 
 bool CRectangle::Intersects(const ICollisionPolygon& other) const
 {
@@ -115,33 +111,34 @@ void CRectangle::GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const
 	
 }
 
-ICollisionPolygon* CreateCollionPolygon(const std::vector<D3DXVECTOR2>& poly)
+void CreateCollionPolygon(const std::vector<D3DXVECTOR3>& poly, FRECT& out)
 {
-	D3DXVECTOR2 topLeft(FLT_MAX,FLT_MAX);
-	D3DXVECTOR2 bottomRight(-FLT_MAX,-FLT_MAX);
+	D3DXVECTOR2 minPoint(FLT_MAX,FLT_MAX);
+	D3DXVECTOR2 maxPoint(-FLT_MAX,-FLT_MAX);
 
 	for(auto iter = poly.begin(); iter != poly.end(); ++iter)
 	{
-		if(iter->x < topLeft.x)
+		if(iter->x < minPoint.x)
 		{
-			topLeft.x = iter->x;
+			minPoint.x = iter->x;
 		}
-		else if(iter->x > bottomRight.x)
+		else if(iter->x > maxPoint.x)
 		{
-			bottomRight.x = iter->x;
+			maxPoint.x = iter->x;
 		}
 
-		if(iter->y < topLeft.y)
+		if(iter->y < minPoint.y)
 		{
-			topLeft.y = iter->y;
+			minPoint.y = iter->y;
 		}
-		else if(iter->y > bottomRight.y)
+		else if(iter->y > maxPoint.y)
 		{
-			bottomRight.y = iter->y;
+			maxPoint.y = iter->y;
 		}
 	}
 
-	return new CRectangle(Math::FRECT(topLeft,bottomRight));
+	out.topLeft = D3DXVECTOR2(minPoint.x,maxPoint.y);
+	out.bottomRight = D3DXVECTOR2(maxPoint.x,minPoint.y);
 }
 
 
@@ -167,20 +164,18 @@ float RayCircleInsersection(const D3DXVECTOR2& center, float r, const D3DXVECTOR
 	return (v - sqrt(d));
 }
 
+bool Intersects(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2)
+{
+	return Sat(poly1,poly2) && Sat(poly2,poly1);
+}
+
 bool Intersects(const Circle& c1, const FRECT& R1)
 {
-	// todo: rewrite this with directx vectors
-
-	float closestX = Clamp(c1.center.x, R1.topLeft.x, R1.bottomRight.x);
-	float closestY = Clamp(c1.center.y, R1.bottomRight.y, R1.topLeft.y);
-
-	// Calculate the distance between the circle's center and this closest point
-	float distanceX = c1.center.x - closestX;
-	float distanceY = c1.center.y - closestY;
+	D3DXVECTOR2 closest = D3DXVECTOR2(Clamp(c1.center.x, R1.topLeft.x, R1.bottomRight.x),Clamp(c1.center.y, R1.bottomRight.y, R1.topLeft.y));
+	D3DXVECTOR2 distance = c1.center - closest;
 
 	// If the distance is less than the circle's radius, an intersection occurs
-	float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
-	return distanceSquared < (c1.r * c1.r);
+	return D3DXVec2LengthSq(&distance) < (c1.r * c1.r);
 }
 
 //Returns true if the circles are touching, or false if they are not

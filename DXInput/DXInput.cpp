@@ -7,16 +7,22 @@
 
 #pragma comment(lib,"Game Engine.lib")
 
-
 // Input plug-in implementation
 PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 {
 	return new DirectInput(mgr);
 }
 
+// DirectInput ctor
 DirectInput::DirectInput(PluginManager& mgr)
 : m_mgr(mgr), m_iMouseX(0), m_iMouseY(0), m_uiCurrentCursor(0), m_bMouseMove(false)
 {
+	// todo: clean this up
+
+	ShowCursor(FALSE);
+
+	m_MousePos.x = m_MousePos.y = 0;
+
 	WindowManager& winMgr = m_mgr.GetWindowManager();
 	m_eventId = winMgr.AddMsgListener(WindowManager::MsgDelegate(this,&DirectInput::Poll));
 
@@ -39,10 +45,12 @@ DirectInput::~DirectInput()
 	WindowManager& winMgr = m_mgr.GetWindowManager();
 	winMgr.RemoveListener(m_eventId);
 
+	// remove config group from script
 	asIScriptEngine* pEngine = pEngine = m_mgr.GetAngelScript().GetScriptEngine();
 	DBAS(pEngine->RemoveConfigGroup("Input"));
 	pEngine->Release();
 
+	// destroy all cursors
 	for(auto iter = this->m_cursors.begin(); iter != m_cursors.end(); ++iter)
 	{
 		DestroyCursor(*iter);
@@ -55,7 +63,7 @@ void DirectInput::InitRawInput()
         
 	Rid[0].usUsagePage = 0x01; 
 	Rid[0].usUsage = 0x02; 
-	Rid[0].dwFlags = 0;   // adds HID mouse and also ignores legacy mouse messages
+	Rid[0].dwFlags = RIDEV_NOLEGACY;   // adds HID mouse and also ignores legacy mouse messages
 	Rid[0].hwndTarget = m_mgr.GetWindowManager().GetWindowHandle();
 
 	RegisterRawInputDevices(Rid,1,sizeof(RAWINPUTDEVICE));
@@ -63,15 +71,10 @@ void DirectInput::InitRawInput()
 
 void DirectInput::LoadCursors()
 {
-	m_cursors.push_back(LoadCursor(NULL,IDC_ARROW));
+	/*m_cursors.push_back(LoadCursor(NULL,IDC_ARROW));
 	m_cursors.push_back(LoadCursor(NULL,IDC_HAND));
-	m_cursors.push_back(LoadCursor(NULL,IDC_IBEAM));
+	m_cursors.push_back(LoadCursor(NULL,IDC_IBEAM));*/
 }
-
-/*void DirectInput::Notify(const MsgProcData& data)
-{
-	
-}*/
 
 int DirectInput::GetVersion() const
 {
@@ -102,8 +105,7 @@ void DirectInput::Poll(const MsgProcData& data)
 			UINT dwSize = 40;
 			BYTE lpb[40];
     
-			GetRawInputData((HRAWINPUT)data.lparam, RID_INPUT, 
-			lpb, &dwSize, sizeof(RAWINPUTHEADER));
+			GetRawInputData((HRAWINPUT)data.lparam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
     
 			RAWINPUT* raw = (RAWINPUT*)lpb;
 
@@ -111,36 +113,9 @@ void DirectInput::Poll(const MsgProcData& data)
 			{
 				ReadMouse(raw->data.mouse);
 			}
-			else
-			{
-				ReadKeyboard(raw->data.keyboard);
-			}
 
 			break;
 		}
-		case WM_SETCURSOR:
-			SetCursor(m_cursors[m_uiCurrentCursor]);
-			break;
-		case WM_MOUSEMOVE:
-			{
-
-			RECT R;
-			GetClientRect(GetActiveWindow(),&R);
-
-			m_bMouseMove = true;
-			m_MousePos.x  = LOWORD(data.lparam);
-			m_MousePos.y = HIWORD(data.lparam);
-
-			const float W = R.right - R.left;
-			const float H = R.bottom - R.top;
-
-			m_tpos = 50.0f * D3DXVECTOR2((2.0f * m_MousePos.x / W - 1.0f),-2.0f*m_MousePos.y / H + 1.0f);
-
-			}
-
-			// the mouse pos in this case goes from [0,0] to [X,Y]
-			// I want the mouse to be translated to [-1,1] to [1,-1]
-			break;
 		case WM_KEYDOWN:
 			m_cKeyDownOnce = data.wParam;
 			m_cKeyDown[m_cKeyDownOnce] = true;
@@ -152,12 +127,6 @@ void DirectInput::Poll(const MsgProcData& data)
 		case WM_CHAR:
 			m_cCharDown = data.wParam;
 			break;
-		/*case WM_LBUTTONDOWN:
-			m_bMouseClick[0] = true;
-			break;
-		case WM_LBUTTONUP:
-			m_bMouseClick[0] = false;
-			break;*/
 	}
 }
 
@@ -180,7 +149,7 @@ void DirectInput::ReadMouse(const RAWMOUSE& mouse)
 			break;
 		case RI_MOUSE_WHEEL:
 		{
-			m_iMouseZ = mouse.usButtonData / 120;
+			m_iMouseZ = (short)(mouse.usButtonData) / 120;
 
 			if(m_iMouseZ > 1)
 			{
@@ -194,6 +163,46 @@ void DirectInput::ReadMouse(const RAWMOUSE& mouse)
 
 	m_iMouseX = mouse.lLastX;
 	m_iMouseY = -mouse.lLastY;
+
+	m_MousePos.x += m_iMouseX;
+	m_MousePos.y += m_iMouseY;
+
+	RECT R;
+	GetClientRect(GetActiveWindow(),&R);
+
+	const float W = R.right - R.left;
+	const float H = R.bottom - R.top;
+
+	m_tpos = 100.0f * D3DXVECTOR2(m_MousePos.x / W,m_MousePos.y / H);
+
+	SetCursorPos((int)(W / 2.0f),(int)(H / 2.0f));
+
+	ClampMouse();
+}
+
+void DirectInput::ClampMouse()
+{
+	if(m_tpos.x < -50.0f)
+	{
+		m_MousePos.x -= m_iMouseX;
+		m_tpos.x = -50.0f;
+	}
+	else if(m_tpos.x > 50.0f)
+	{
+		m_MousePos.x -= m_iMouseX;
+		m_tpos.x = 50.0f;
+	}
+
+	if(m_tpos.y < -50.0f)
+	{
+		m_MousePos.y -= m_iMouseY;
+		m_tpos.y = -50.0f;
+	}
+	else if(m_tpos.y > 50.0f)
+	{
+		m_MousePos.y -= m_iMouseY;
+		m_tpos.y = 50.0f;
+	}
 }
 
 void DirectInput::ReadKeyboard(const RAWKEYBOARD& keyboard)
@@ -251,8 +260,16 @@ bool DirectInput::GetSelectedRect(Math::FRECT& out)
 	if(!MouseClick(0,false))
 		return false;
 
-	D3DXVec2Minimize(&out.topLeft,&m_selectedPos,&m_tpos);
-	D3DXVec2Maximize(&out.bottomRight,&m_selectedPos,&m_tpos);
+	D3DXVECTOR2 minPoint;
+	D3DXVECTOR2 maxPoint;
+
+	D3DXVec2Minimize(&minPoint,&m_selectedPos,&m_tpos);
+	D3DXVec2Maximize(&maxPoint,&m_selectedPos,&m_tpos);
+
+	out.topLeft = D3DXVECTOR2(minPoint.x,maxPoint.y);
+	out.bottomRight = D3DXVECTOR2(maxPoint.x,minPoint.y);
+
+	return true;
 }
 
 void DirectInput::SetMouseState(MouseCursorState state)

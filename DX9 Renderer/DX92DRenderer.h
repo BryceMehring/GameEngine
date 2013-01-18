@@ -39,8 +39,8 @@ public:
 	virtual ~DX92DRenderer();
 
 	// Line
-	virtual void DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount);
-	virtual void DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, float angle, D3DCOLOR color);
+	virtual void DrawLine(const D3DXVECTOR3* pArray, unsigned int length);
+	virtual void DrawLine(const D3DXVECTOR3* pArray, unsigned int length, const D3DXVECTOR4& color, const D3DXMATRIX& t);
 
 	// Fonts
 	virtual void GetStringRec(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale, Math::FRECT& out);

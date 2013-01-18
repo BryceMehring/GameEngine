@@ -4,7 +4,7 @@
 #include "ResourceManager.h"
 
 DX92DRenderer::DX92DRenderer(IDirect3DDevice9* pDevice, ResourceManager* pTm)
-	: m_pDevice(pDevice), m_pResourceManager(pTm), m_pCamera(nullptr), m_fonts(pDevice,pTm,1024), m_lines(pDevice,pTm,512)
+	: m_pDevice(pDevice), m_pResourceManager(pTm), m_pCamera(nullptr), m_fonts(pDevice,pTm,1024), m_lines(pDevice,pTm,1024)
 {
 	InitializeSprite();
 }
@@ -53,13 +53,17 @@ void DX92DRenderer::SetCamera(Camera* pCam)
 }
 
 // Line
-void DX92DRenderer::DrawLine(const D3DXVECTOR2* pVertexList, DWORD dwVertexListCount)
+void DX92DRenderer::DrawLine(const D3DXVECTOR3* pArray, unsigned int length)
 {
-	m_lines.DrawLine(pVertexList,dwVertexListCount,D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f),0.0f);
+	::D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
+	::D3DXMATRIX I;
+	::D3DXMatrixIdentity(&I);
+
+	DrawLine(pArray,length,color,I);
 }
-void DX92DRenderer::DrawLine(const D3DXVECTOR3* pVertexList, DWORD dwVertexListCount, float angle, D3DCOLOR color)
+void DX92DRenderer::DrawLine(const D3DXVECTOR3* pArray, unsigned int length, const D3DXVECTOR4& color, const D3DXMATRIX& t)
 {
-	//m_lines.DrawLine(
+	m_lines.DrawLine(pArray,length,color,t);
 }
 
 // Fonts

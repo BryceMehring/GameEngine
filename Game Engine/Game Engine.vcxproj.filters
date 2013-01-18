@@ -189,5 +189,6 @@
     </ClCompile>
     <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="SingleInstance.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
 </Project>

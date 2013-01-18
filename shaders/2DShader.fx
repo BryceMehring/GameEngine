@@ -119,6 +119,27 @@ float4 SpritePS(float2 tex : TEXCOORD0) : COLOR
 	return color * gColor;
 }
 
+void ClampWrap(inout float3 vec)
+{
+	if(vec.x < -50.0f)
+	{
+		vec.x = 50.0f;
+	}
+	else if(vec.x > 50.0f)
+	{
+		vec.x = -50.0f;
+	}
+
+	if(vec.y < -50.0f)
+	{
+		vec.y = 50.0f;
+	}
+	else if(vec.y > 50.0f)
+	{
+		vec.y = -50.0f;
+	}
+}
+
 
 TextVSOut LineVS(float3 posL : POSITION0)
 {
@@ -131,7 +152,7 @@ TextVSOut LineVS(float3 posL : POSITION0)
 
 float4 LinePS() : COLOR
 {
-	return float4(1.0f,1.0f,1.0f,1.0f);
+	return gColor;
 }
 
 

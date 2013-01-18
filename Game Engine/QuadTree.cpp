@@ -4,6 +4,7 @@
 #include "IRenderer.h"
 #include <algorithm>
 #include <stack>
+#include <set>
 
 #define GET_INDEX(Node1) (Node1->m_Previous == nullptr) ? -1l : (MAX_NODES - (Node1->m_Previous->m_Nodes[MAX_NODES - 1] - Node1))
 
@@ -33,11 +34,6 @@ Node::~Node()
 	delete[] m_Nodes[0];
 }
 
-
-void Node::SetRect(const Math::CRectangle& R)
-{
-	this->R = R;
-}
 bool Node::IsWithin(ISpatialObject& obj) const
 {
 	return R.Intersects(obj.GetCollisionPolygon());
@@ -54,37 +50,14 @@ bool Node::HasPoint() const
 	return (!m_Objects.empty());
 }
 
-bool Node::RHasPoint() const
-{
-	if(IsDivided())
-	{
-		for(unsigned int i = 0; i < MAX_NODES; ++i)
-		{
-			Node* pSubNode = m_Nodes[i];
-
-			if(pSubNode->HasPoint())
-			{
-				return true;
-			}
-			else
-			{
-				return pSubNode->RHasPoint();
-			}
-		}
-	}
-
-	return HasPoint();
-}
-
 bool Node::IsFull() const
 {
-	return (m_Objects.size()) >= 3;
+	return (m_Objects.size()) >= 4;
 }
 
 
 void Node::SubDivide()
 {
-	//const GetRect& this->m
 	const Math::FRECT& rect = R.GetRect();
 
 	// this will divide the current rect into MAX_NODES new rectangles
@@ -99,95 +72,67 @@ void Node::SubDivide()
 		Math::FRECT(D3DXVECTOR2(middle.x,topLeft.y),D3DXVECTOR2(bottomRight.x,middle.y)),
 		Math::FRECT(D3DXVECTOR2(topLeft.x,middle.y),D3DXVECTOR2(middle.x,bottomRight.y)),
 		Math::FRECT(middle,bottomRight)
-		//{xMid,yMid,R.right,R.bottom}*/
 	};
 
 	// Loop over all rects, and create them
 	for(unsigned int i = 0; i < MAX_NODES; ++i)
 	{
 		Node* pSubNode = m_Nodes[i] = pNodeArray + i;
-		pSubNode->SetRect(subRects[i]);
+		pSubNode->R = subRects[i];
 		pSubNode->m_Previous = this;
-
-		SubDivideObjects(*pSubNode);
-	}
-}
-
-void Node::SubDivideObjects(Node& subNode)
-{
-	LIST_DTYPE::iterator iter = m_Objects.begin();
-	LIST_DTYPE::iterator end = m_Objects.end();
-	while(iter != end)
-	{
-		if(subNode.IsWithin(**iter))
-		{
-			subNode.m_Objects.insert(*iter);
-
-			iter = m_Objects.erase(iter);
-		}
-		else
-		{
-			++iter;
-		}
 	}
 }
 
 void Node::Render(IRenderer& renderer)
 {
-	DxSquare square;
-
 	for(NodeIterator iter = this; (*iter) != nullptr; ++iter)
 	{
 		if(iter->HasPoint())
 		{
-			/*RECT R = iter->R.GetRect().Rect();
-			square.ConstructFromRect(R);
-			square.Render(renderer);*/
+			const Math::FRECT& R = iter->GetRect();
+
+			::D3DXVECTOR3 pos[5] = 
+			{
+				D3DXVECTOR3(R.topLeft.x,R.topLeft.y,0.0f),
+				D3DXVECTOR3(R.bottomRight.x,R.topLeft.y,0.0f),
+				D3DXVECTOR3(R.bottomRight.x,R.bottomRight.y,0.0f),
+				D3DXVECTOR3(R.topLeft.x,R.bottomRight.y,0.0f),
+				D3DXVECTOR3(R.topLeft.x,R.topLeft.y,0.0f),
+			};
+
+			renderer.Get2DRenderer().DrawLine(pos,5);
 		}
 	}
 }
 
 void Node::Erase(ISpatialObject& obj)
 {
-	auto iter = m_Objects.find(&obj);
-	if(iter != m_Objects.end())
+	std::vector<Node*> nodes;
+	stack<Node*> theStack;
+
+	theStack.push(this);
+
+	while(!theStack.empty())
 	{
-		m_Objects.erase(iter);
-	}
+		Node* pTop = theStack.top();
+		theStack.pop();
 
+		pTop->FindNearNodes(obj.GetCollisionPolygon(),nodes);
 
-		/*if(m_pObjects->empty() && (m_Previous->m_Previous != nullptr) && (m_Previous->m_bUseable == false))
+		// as we iterate over the near nodes
+		for(unsigned int i = 0; i < nodes.size(); ++i)
 		{
-			bool success = false;
+			Node* pNode = nodes[i];
+			auto& objList = pNode->m_Objects;
 
-			for(unsigned int i = 0; i < MAX_NODES; ++i)
+			auto iter = std::find(objList.begin(),objList.end(),&obj);
+			if(iter != objList.end())
 			{
-				Node* pNode = m_Previous->m_Nodes[i];
-				success |= pNode->RHasPoint();
+				objList.erase(iter);
 			}
-							
-			if(!success)
-			{
-				m_Previous->m_bUseable = true;
-				m_bUseable = false;
 
-				for(unsigned int i = 0; i < MAX_NODES; ++i)
-				{
-					Node* pNode = m_Previous->m_Nodes[i];
-					pNode->m_bUseable = false;
-				}
-			}
-		}*/
-	
-}
-
-void Node::EraseFromPreviousPos(ISpatialObject& obj)
-{
-	std::vector<Node*>& nodes = obj.m_nodes;
-
-	for(unsigned int i = 0; i < nodes.size(); ++i)
-	{
-		nodes[i]->Erase(obj);
+			theStack.push(pNode);
+		}
 	}
 }
 
@@ -268,8 +213,8 @@ void Node::RInsert(ISpatialObject& obj)
 	}*/
 
 	// find the near nodes to pObj
-	std::vector<Node*>& nodes = obj.m_nodes;
-	nodes.clear();
+
+	std::vector<Node*> nodes;
 
 	FindNearNodes(obj.GetCollisionPolygon(),nodes);
 
@@ -281,22 +226,19 @@ void Node::RInsert(ISpatialObject& obj)
 		const Math::FRECT& subR = nodes[i]->R.GetRect();
 
 		// if the current node is full
-		// 200
-		// 400
-		if((pNode->IsFull()) /*&& (subR.bottomRight.x - subR.topLeft.x) < 5.0f*/) 
+		if((pNode->IsFull()) && subR.Height() > 5.0f)
 		{
-			// subdivide the node
-			pNode->SubDivide();
-			
-			// recursive call... 
-			// note: this is ok because this only happens when the node is subdividing, which does happen that often
+			if(!pNode->IsDivided())
+			{
+				pNode->SubDivide();
+			}
+
+			// recursive call
 			pNode->RInsert(obj);
 		}
-		// node is not yet full
 		else
 		{
-			// Add pObj to node
-			pNode->m_Objects.insert(&obj);
+			pNode->m_Objects.push_back(&obj);
 		}
 	}
 
@@ -305,6 +247,8 @@ void Node::RInsert(ISpatialObject& obj)
 // this method is recursive, for simplicity
 void Node::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>& out)
 {
+	out.clear();
+
 	// recursive version
 	if(IsDivided())
 	{
@@ -313,22 +257,17 @@ void Node::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>
 		{
 			Node* pSubNode = m_Nodes[i];
 
-			// todo: this is bugged, sometimes m_bUseable is false when we are at the bottom, 
-			// m_bUseable in this case should be true...
-
 			if(pSubNode->R.Intersects(poly))
 			{
-				//out.push_back(this);
-				// find the near nodes from this node
-				pSubNode->FindNearNodes(poly,out);
+				out.push_back(pSubNode);
 			}
 		}
 	}
-	else
+	/*else
 	{
 		// At the bottom of the tree, pObj collides with the node
 		out.push_back(this);
-	}
+	}*/
 	
 	// non recursive version
 	/*std::stack<Node*> theStack;
@@ -362,9 +301,43 @@ void Node::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>
 	} */
 }
 
-void Node::ExpandLeft()
+void Node::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out)
 {
-	// todo: need to implement
+	std::set<ISpatialObject*> onceFilter;
+	std::vector<Node*> nodes;
+	stack<Node*> theStack;
+
+	theStack.push(this);
+
+	while(!theStack.empty())
+	{
+		Node* pTop = theStack.top();
+		theStack.pop();
+
+		pTop->FindNearNodes(poly,nodes);
+
+		// as we iterate over the near nodes
+		for(unsigned int i = 0; i < nodes.size(); ++i)
+		{
+			Node* pNode = nodes[i];
+			auto& objList = pNode->m_Objects;
+
+			for(auto iter = objList.begin(); iter != objList.end(); ++iter)
+			{
+				if((*iter)->GetCollisionPolygon().Intersects(poly))
+				{
+					auto onceFilterIter = onceFilter.insert(*iter);
+
+					if(onceFilterIter.second)
+					{
+						out.push_back(*iter);
+					}
+				}
+			}
+
+			theStack.push(pNode);
+		}
+	}
 }
 
 NodeIterator::NodeIterator(Node* pNode) : m_pNode(pNode) {}
@@ -485,50 +458,22 @@ bool QuadTree::Insert(ISpatialObject& obj)
 
 void QuadTree::Erase(ISpatialObject& obj)
 {
-	std::vector<Node*> nodes;
-	m_pRoot->FindNearNodes(obj.GetCollisionPolygon(),nodes);
-
-	for(unsigned int i = 0; i < nodes.size(); ++i)
-	{
-		nodes[i]->Erase(obj);
-	}
-	
+	m_pRoot->Erase(obj);
 }
 
-void QuadTree::EraseFromPrev(ISpatialObject& obj)
+void QuadTree::FindNearObjects(const Math::ICollisionPolygon* pPoly, std::vector<ISpatialObject*>& out)
 {
-	m_pRoot->EraseFromPreviousPos(obj);
+	m_pRoot->QueryNearObjects(*pPoly,out);
 }
 
-void QuadTree::FindNearObjects(Math::ICollisionPolygon* pPoly, std::vector<ISpatialObject*>& out)
-{
-	std::vector<Node*> nodes;
-	FindNearNodes(pPoly,nodes);
-
-	ProccessNearNodes(nodes,[&](ISpatialObject* pObj) -> bool
-	{
-		out.push_back(pObj);
-		return false;
-	});
-	
-}
-
-void QuadTree::FindNearNodes(Math::ICollisionPolygon* pPoly, std::vector<Node*>& out)
+void QuadTree::FindNearNodes(const Math::ICollisionPolygon* pPoly, std::vector<Node*>& out)
 {
 	m_pRoot->FindNearNodes(*pPoly,out);
 }
 
-void QuadTree::FindNearNodes(ISpatialObject* pObj, std::vector<Node*>& out)
+void QuadTree::FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out)
 {
 	m_pRoot->FindNearNodes(pObj->GetCollisionPolygon(),out);
-}
-
-void QuadTree::Update(ISpatialObject& obj)
-{
-	m_pRoot->EraseFromPreviousPos(obj);
-	//Erase(obj);
-	Insert(obj);
-	//pObj->
 }
 
 void QuadTree::SaveToFile(std::string& file)

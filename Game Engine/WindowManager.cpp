@@ -44,19 +44,18 @@ void WindowManager::RemoveListener(int id)
 
 bool WindowManager::Update()
 {
-	MSG msg;
-
 	do
 	{
-		while(::PeekMessage(&msg,0,0,0,PM_REMOVE) > 0)
+		MSG msg;
+		while(PeekMessage(&msg,0,0,0,PM_REMOVE) > 0)
 		{
-			TranslateMessage( &msg );
-			DispatchMessage( &msg );
-
 			if(msg.message == WM_QUIT)
 			{
 				return false;
 			}
+
+			TranslateMessage( &msg );
+			DispatchMessage( &msg );
 		}
 		
 		if(m_bPaused)
@@ -71,15 +70,15 @@ bool WindowManager::Update()
 void WindowManager::InitializeWindows(HINSTANCE hInstance)
 {
 	WNDCLASS wc;
-	wc.style         = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
+	wc.style         = CS_DBLCLKS;
 	wc.lpfnWndProc   = MainWndProc; 
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
 	wc.hInstance     = hInstance;
-	wc.hIcon         = LoadIcon(0, IDI_APPLICATION);
+	wc.hIcon         = NULL;
 	wc.hCursor       = NULL;
-	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wc.lpszMenuName  = 0;
+	wc.hbrBackground = NULL;
+	wc.lpszMenuName  = NULL;
 	wc.lpszClassName = "D3DWndClassName";
 
 	
@@ -96,7 +95,7 @@ void WindowManager::InitializeWindows(HINSTANCE hInstance)
 		0, 0, hInstance, 0); 
 
 	ShowWindow(m_hWindowHandle, SW_SHOW);
-	assert(UpdateWindow(m_hWindowHandle) != 0);
+	//assert(UpdateWindow(m_hWindowHandle) != 0);
 }
 void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 {
@@ -115,13 +114,9 @@ void WindowManager::MsgProc(UINT msg, WPARAM wParam, LPARAM lparam)
 				m_bPaused = false;
 			}
 			break;
-
-		// WM_CLOSE is sent when the user presses the 'X' button in the
-		// caption bar menu.
 		// WM_DESTROY is sent when the window is being destroyed.
 		case WM_DESTROY:
-			PostQuitMessage(0);
-			//Quit();
+			Quit();
 			break;
 	}
 

@@ -3,6 +3,21 @@
 #include "FileManager.h"
 #include "Game.h"
 
+struct GameThreadInfo
+{
+	HINSTANCE h;
+	std::string nextState;
+};
+
+DWORD WINAPI GameThread(void* p)
+{
+	GameThreadInfo* pInfo = (GameThreadInfo*)p;
+
+	Game myGame(pInfo->h);
+	myGame.SetNextState(pInfo->nextState);
+	return myGame.PlayGame();
+}
+
 SingleInstance::SingleInstance() : m_handle(CreateEvent(NULL, TRUE, FALSE, "BEngine"))
 {
 
@@ -58,7 +73,14 @@ int SingleInstance::RunProgram(HINSTANCE h,const char* pState)
 	FileManager::Instance().WriteToLog(stream);
 
 	// start the game
-	Game myGame(h);
-	myGame.SetNextState(pState);
-	return myGame.PlayGame();
+	GameThreadInfo info = {h,pState};
+	HANDLE hGame = CreateThread(0,0,GameThread,&info,0,0);
+
+	// This thread should pump the msgs from the queue, and once the 
+
+	WaitForSingleObject(hGame,INFINITE);
+
+	CloseHandle(hGame);
+
+	return 0;
 }
