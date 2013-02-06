@@ -44,7 +44,6 @@ private:
 	std::vector<LineData> m_lines;
 
 	void CreateBuffers();
-	void FillVertexBuffer();
 
 };
 

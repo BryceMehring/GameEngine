@@ -16,9 +16,6 @@
     <Filter Include="Rendering Addons">
       <UniqueIdentifier>{eb58491a-097b-463a-88ed-b37c5ee32c4d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base Classes">
-      <UniqueIdentifier>{d558be9a-afde-46b9-83a9-dc4f24df8745}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Binding">
       <UniqueIdentifier>{f59d1e59-c885-4eef-82d3-de79c28dda96}</UniqueIdentifier>
     </Filter>
@@ -28,11 +25,14 @@
     <Filter Include="Managers">
       <UniqueIdentifier>{c62b9548-e921-4120-8d9d-a4c52282a637}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Quadtree">
-      <UniqueIdentifier>{1f4953f4-1657-4cb9-b360-81f1ac50be41}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Serialization">
       <UniqueIdentifier>{8cfcb647-7925-46dd-83a2-83fb0befc927}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interfaces">
+      <UniqueIdentifier>{d558be9a-afde-46b9-83a9-dc4f24df8745}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Spatial Data Structures">
+      <UniqueIdentifier>{1f4953f4-1657-4cb9-b360-81f1ac50be41}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -43,19 +43,19 @@
       <Filter>Managers</Filter>
     </ClInclude>
     <ClInclude Include="IInput.h">
-      <Filter>Base Classes</Filter>
+      <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="IKMInput.h">
-      <Filter>Base Classes</Filter>
+      <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="IPlugin.h">
-      <Filter>Base Classes</Filter>
+      <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="IRender.h">
-      <Filter>Base Classes</Filter>
+      <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="IRenderer.h">
-      <Filter>Base Classes</Filter>
+      <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="asVM.h">
       <Filter>Scripting</Filter>
@@ -70,24 +70,15 @@
       <Filter>State</Filter>
     </ClInclude>
     <ClInclude Include="QuadTree.h">
-      <Filter>Quadtree</Filter>
+      <Filter>Spatial Data Structures</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Camera.h">
       <Filter>Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Menu.h">
-      <Filter>GUI</Filter>
-    </ClInclude>
     <ClInclude Include="DxPolygon.h">
       <Filter>Rendering Addons</Filter>
-    </ClInclude>
-    <ClInclude Include="RefCounting.h">
-      <Filter>Base Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="Singleton.h">
-      <Filter>Base Classes</Filter>
     </ClInclude>
     <ClInclude Include="Delegates.h">
       <Filter>Binding</Filter>
@@ -129,10 +120,18 @@
       <Filter>Rendering Addons</Filter>
     </ClInclude>
     <ClInclude Include="IResourceManager.h">
-      <Filter>Base Classes</Filter>
+      <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="Sprite.h">
       <Filter>Rendering Addons</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h" />
+    <ClInclude Include="RefCounting.h" />
+    <ClInclude Include="SpatialHashTable.h">
+      <Filter>Spatial Data Structures</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -152,7 +151,7 @@
       <Filter>State</Filter>
     </ClCompile>
     <ClCompile Include="QuadTree.cpp">
-      <Filter>Quadtree</Filter>
+      <Filter>Spatial Data Structures</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Camera.cpp">
@@ -163,9 +162,6 @@
     </ClCompile>
     <ClCompile Include="DxPolygon.cpp">
       <Filter>Rendering Addons</Filter>
-    </ClCompile>
-    <ClCompile Include="RefCounting.cpp">
-      <Filter>Base Classes</Filter>
     </ClCompile>
     <ClCompile Include="Heap.cpp">
       <Filter>Memory Management</Filter>
@@ -190,5 +186,6 @@
     <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="SingleInstance.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="RefCounting.cpp" />
   </ItemGroup>
 </Project>

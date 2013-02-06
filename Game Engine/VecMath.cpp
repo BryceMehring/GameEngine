@@ -49,6 +49,12 @@ void CCircle::GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const
 	D3DXVec2Normalize(&out,&out);
 }
 
+void CCircle::GetAABB(AABB& aabb) const
+{
+	aabb.min = D3DXVECTOR2(m_circle.center.x - m_circle.r,m_circle.center.y - m_circle.r);
+	aabb.max = D3DXVECTOR2(m_circle.center.x + m_circle.r,m_circle.center.y + m_circle.r);
+}
+
 // ----- CCircle -----
 
 CRectangle::CRectangle(const FRECT& rect) : m_rect(rect)
@@ -109,6 +115,12 @@ void CRectangle::GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const
 		D3DXVec2Normalize(&out,&out);
 	}
 	
+}
+
+void CRectangle::GetAABB(AABB& aabb) const
+{
+	aabb.min = D3DXVECTOR2(m_rect.topLeft.x,m_rect.bottomRight.y);
+	aabb.max = D3DXVECTOR2(m_rect.bottomRight.x,m_rect.topLeft.y);
 }
 
 void CreateCollionPolygon(const std::vector<D3DXVECTOR3>& poly, FRECT& out)

@@ -4,10 +4,12 @@
 #include "IRenderer.h"
 #include "FontEngine.h"
 #include "LineEngine.h"
+#include "SpriteManager.h"
 #include "ResourceManager.h"
 #include "PooledAllocator.h"
 #include <list>
 #include <vector>
+#include <unordered_map>
 
 struct Sprite
 {
@@ -44,7 +46,12 @@ public:
 
 	// Fonts
 	virtual void GetStringRec(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale, Math::FRECT& out);
-	virtual void DrawString(const char* str, const D3DXVECTOR2& pos,  const D3DXVECTOR2& scale = D3DXVECTOR2(4.0f,4.0f), const D3DXVECTOR4& color = D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f)); 
+	virtual void DrawString(const char* str,
+							const D3DXVECTOR2& pos,
+							const char* font = nullptr,
+							const D3DXVECTOR4& color = D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f),
+							const D3DXVECTOR2& scale = D3DXVECTOR2(1.0f,1.0f)
+							);
 
 	// sprites
 	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId = 0, float dx = 1.0f, float dy = 1.0f, DWORD color = 0xffffffff);
@@ -62,18 +69,13 @@ protected:
 	IDirect3DDevice9* m_pDevice;
 	ResourceManager* m_pResourceManager;
 
-	ID3DXMesh* m_pMesh;
-
 	FontEngine m_fonts;
 	LineEngine m_lines;
+	SpriteManager m_sprites;
 
 	Camera* m_pCamera;
 
-	std::vector<Sprite> m_sprites;
-
 	void Render();
-	void RenderSprites();
-	void InitializeSprite();
 };
 
 #endif // _DX9_2DRENDERER_

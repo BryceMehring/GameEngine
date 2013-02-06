@@ -16,8 +16,12 @@ Game::Game(HINSTANCE hInstance) : m_window(hInstance), m_fDT(0.0f), m_pRenderer(
 {
 	LoadAllDLL();
 
+	// todo: move this code somewhere else
 	m_pRenderer->GetResourceManager().LoadTexture("..\\textures\\cursor.png");
+	m_pRenderer->GetResourceManager().LoadTexture("..\\textures\\font.png");
+	m_pRenderer->GetResourceManager().LoadShader("..\\shaders\\2DShader.fx");
 
+	// todo: init the scripting console somewhere else
 	float width = 90;
 	float height = 90;
 	D3DXVECTOR3 pos(0.0f,0.0f,0.0f);
@@ -73,7 +77,7 @@ int Game::PlayGame()
 	//QueryPerformanceCounter((LARGE_INTEGER*)&m_PrevTime);
 
 	// Loop while the use has not quit
-	while(StartTimer(),m_window.Update())
+	while(StartTimer(),m_window.Update() && !m_pInput->KeyDown(KeyCode::ESCAPE))
 	{
 		// Update the game
 		Update();
@@ -109,12 +113,13 @@ void Game::Update()
 		m_StateMachine.LoadPreviousState(*this);
 	}
 
-
-	if(m_pInput->GetKeyDown() == 96)
+	if(m_pInput->KeyDown(KeyCode::F11))
 	{
-		// todo: implement
-		//m_StateMachine.SetState("ScriptConsole",*this);
+		m_pRenderer->ToggleFullscreen();
+	}
 
+	if(m_pInput->GetKeyDown() == KeyCode::TILDE)
+	{
 		m_bConsoleEnabled = !m_bConsoleEnabled;
 		m_pInput->Reset();
 	}
@@ -166,7 +171,7 @@ void Game::DrawFPS()
 	::std::ostringstream out;
 	out<<"FPS: " << GetFps();
 
-	this->m_pRenderer->Get2DRenderer().DrawString(out.str().c_str(),::D3DXVECTOR2(-49,49),D3DXVECTOR2(4,4));
+	m_pRenderer->Get2DRenderer().DrawString(out.str().c_str(),::D3DXVECTOR2(-49,49),"font");
 	
 }
 
@@ -175,7 +180,7 @@ void Game::DrawCursor()
 	const ::D3DXVECTOR2& pos = m_pInput->GetTransformedMousePos();
 
 	D3DXMATRIX S, T;
-	D3DXMatrixTranslation(&T,pos.x+2.0f,pos.y-2.5f,0.0f);
+	D3DXMatrixTranslation(&T,pos.x+2.0f,pos.y-2.5f,-5.0f);
 	D3DXMatrixScaling(&S,6.0f,6.0f,1.0f);
 
 	m_pRenderer->Get2DRenderer().DrawSprite(S*T,"cursor");

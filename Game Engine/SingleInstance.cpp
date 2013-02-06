@@ -72,15 +72,17 @@ int SingleInstance::RunProgram(HINSTANCE h,const char* pState)
 	stream << "The random number generator seed is: "<< seed << std::endl;
 	FileManager::Instance().WriteToLog(stream);
 
+	Game myGame(h);
+	myGame.SetNextState(pState);
+	return myGame.PlayGame();
+
 	// start the game
-	GameThreadInfo info = {h,pState};
-	HANDLE hGame = CreateThread(0,0,GameThread,&info,0,0);
+	//GameThreadInfo info = {h,pState};
+	////HANDLE hGame = CreateThread(0,0,GameThread,&info,0,0);
 
 	// This thread should pump the msgs from the queue, and once the 
 
-	WaitForSingleObject(hGame,INFINITE);
+	//WaitForSingleObject(hGame,INFINITE);
 
-	CloseHandle(hGame);
-
-	return 0;
+	//CloseHandle(hGame);
 }

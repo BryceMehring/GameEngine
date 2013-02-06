@@ -11,20 +11,29 @@
 #include <Windows.h>
 #include <set>
 #include <vector>
+#include <list>
 #include <assert.h>
 #include "IRender.h"
 #include "RTTI.h"
 #include "VecMath.h"
 #include "PooledAllocator.h"
-#include <hash_set>
 
-const unsigned int MAX_NODES = 4;
-const unsigned int MAX_OBJ_PERNODE = 10;
+class ISpatialObject : public IRender
+{
+public:
 
-class NodeIterator;
-class ISpatialObject;
+	virtual ~ISpatialObject() {}
 
-class Node
+	virtual D3DXVECTOR2 GetPos() const = 0;
+	virtual D3DXVECTOR2 GetDir() const = 0;
+	virtual float GetSpeed() const = 0;
+
+	virtual void* QueryInterface(unsigned int) const = 0; 
+
+	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const = 0;
+};
+
+class QuadTree
 {
 public:
 	
@@ -33,9 +42,9 @@ public:
 	friend class NodeIterator;
 
 	// constructors
-	Node();
-	Node(const Math::FRECT& R);
-	~Node();
+	QuadTree();
+	QuadTree(const Math::FRECT& R);
+	~QuadTree();
 
 	void Erase(ISpatialObject& obj);
 
@@ -44,9 +53,6 @@ public:
 
 	// operations
 	bool Insert(ISpatialObject& obj);
-
-	// recursive algorithm
-	void FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Node*>& out);
 
 	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out);
 
@@ -58,16 +64,16 @@ private:
 
 	// The rectangle of the current node
 	Math::CRectangle R;
-	//std::list<obj*>* m_pObjects;
-	// obj
 	LIST_DTYPE m_Objects;
-	//KEY* m_pKey;
 
-	// the sub nodes of the current node
-	Node* m_Nodes[MAX_NODES];
-	Node* m_Previous;
+	std::vector<QuadTree> m_Nodes;
+	QuadTree* m_Previous;
+
+	int m_iHeight;
 
 	// --- helper functions ---
+
+	void FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<QuadTree*>& out);
 
 	// recursive insertion algorithm
 	void RInsert(ISpatialObject& obj);
@@ -82,46 +88,29 @@ private:
 	void SubDivide();
 };
 
-class ISpatialObject : public IRender
-{
-public:
-
-	friend class Node;
-
-	virtual ~ISpatialObject() {}
-
-	virtual D3DXVECTOR2 GetPos() const = 0;
-	virtual D3DXVECTOR2 GetDir() const = 0;
-	virtual float GetSpeed() const = 0;
-
-	virtual void* QueryInterface(unsigned int) const = 0; 
-
-	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const = 0;
-};
-
 // todo: need to create a better public/protected/private interface
 class NodeIterator
 {
 public:
 
-	NodeIterator(Node* pNode = nullptr);
+	NodeIterator(QuadTree* pNode = nullptr);
 		
-	NodeIterator& operator=(Node* pNode);
+	NodeIterator& operator=(QuadTree* pNode);
 	NodeIterator& operator++();
 	NodeIterator& operator++(int unused);
 
-	bool operator ==(Node* pNode);
-	bool operator !=(Node* pNode);
+	bool operator ==(QuadTree* pNode);
+	bool operator !=(QuadTree* pNode);
 
 	bool operator ==(const NodeIterator&);
 	bool operator !=(const NodeIterator&);
 
-	Node* operator*();
-	Node* operator->();
+	QuadTree* operator*();
+	QuadTree* operator->();
 
 protected:
 
-	Node* m_pNode;
+	QuadTree* m_pNode;
 
 	unsigned int GetIndex() const;
 	void Increment();
@@ -129,7 +118,7 @@ protected:
 	void LoopUp();
 };
 
-class QuadTree : public IRender
+/*class QuadTree : public IRender
 {
 public:
 
@@ -165,6 +154,6 @@ public:
 
 private:
 	Node* m_pRoot;
-};
+};*/
 
 #endif // _QUADTREE_

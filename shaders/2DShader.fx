@@ -12,7 +12,7 @@ uniform extern float4x4 gWorldViewProj;
 uniform extern float4x4 gWorldInverseTranspose;
 
 // Textures
-uniform extern texture gTex;
+extern texture gTex;
 uniform extern float gXScale;
 uniform extern float gYScale;
 uniform extern int gSpriteWidth;
@@ -27,6 +27,14 @@ struct VSIn
 {
 	float3 pos : POSITION0;
 	float2 tex : TEXCOORD0;
+};
+
+struct VSStreamIn
+{
+	float3 pos : POSITION0;
+	float2 tex : TEXCOORD0;
+	float dx : TEXCOORD1;
+	float dy : TEXCOORD2;
 };
 
 struct VSOut
@@ -56,6 +64,20 @@ sampler TexS = sampler_state
 	MaxAnisotropy = 16;
 };
 
+sampler TextSampler = sampler_state
+{
+	texture = <gTex>;
+	MinFilter = Anisotropic;
+	MagFilter = linear;
+	MipFilter = point;
+	
+
+	AddressU = wrap;
+	AddressV = wrap;
+
+	MaxAnisotropy = 16;
+};
+
 
 VSOut SpriteVS(VSIn IN)
 {
@@ -67,34 +89,29 @@ VSOut SpriteVS(VSIn IN)
 	return OUT;
 }
 
-TextVSOut TextVS(float3 posL : POSITION0, float2 tex : TEXCOORD0)
+TextVSOut TextVS(in uniform float fOffset, float3 posL : POSITION0, float2 tex : TEXCOORD0)
 {
 	TextVSOut OUT = (TextVSOut)0;
 
+
 	OUT.posH = mul(float4(posL,1.0f),gWorldViewProj);
 	OUT.tex = tex;
+
+	posL -= fOffset;
 
 	return OUT;
 }
 
 
-VSOut SpriteAnimationVS(VSIn IN)
+VSOut SpriteAnimationVS(VSStreamIn IN)
 {
 	VSOut OUT = (VSOut)0;
 
 	OUT.posH = mul(float4(IN.pos,1.0f),gWorldViewProj);
+	OUT.tex = IN.tex;
 
-	// the global UV coordinate of the current frame's upper-left corner on the texture map
-    float cellU = (gCurrentFrame % gSpriteWidth)/ (float)gSpriteWidth;
-   	float cellV = (gCurrentFrame / (float)gSpriteHeight) / (float)gSpriteHeight;
-    
-   	// the local UV offset inside the current frame
-    float cellDU = IN.tex.x / (float)gSpriteWidth;
-    float cellDV = IN.tex.y / (float)gSpriteHeight;
-   	 
-    OUT.tex.x = (cellU + cellDU)*gXScale;
-  	OUT.tex.y = (cellV + cellDV)*gYScale;
-	OUT.interpPos = OUT.posH.xyz;
+	OUT.tex.x *= IN.dx;
+	OUT.tex.y *= IN.dy;
 
 	return OUT;
 }
@@ -116,6 +133,12 @@ float4 ColorSpritePS(float2 tex : TEXCOORD0, float3 interpPos : TEXCOORD1) : COL
 float4 SpritePS(float2 tex : TEXCOORD0) : COLOR
 {
 	float4 color = tex2D(TexS,tex);
+	return color * gColor;
+}
+
+float4 TextPS(float2 tex : TEXCOORD0) : COLOR
+{
+	float4 color = tex2D(TextSampler,tex);
 	return color * gColor;
 }
 
@@ -175,7 +198,7 @@ technique ColorAnimatedSprite
 		
 		AlphaTestEnable = true;
 		AlphaFunc = GreaterEqual;
-		AlphaRef = 50;		
+		AlphaRef = 40;	
 	}
 }
 
@@ -183,13 +206,18 @@ technique TextTech
 {
 	pass p1
 	{
-		VertexShader = compile vs_2_0 TextVS();
-		PixelShader = compile ps_2_0 SpritePS();
+		VertexShader = compile vs_2_0 TextVS(0);
+		PixelShader = compile ps_2_0 TextPS();
 		
 		AlphaTestEnable = true;
 		AlphaFunc = GreaterEqual;
 		AlphaRef = 50;		
 	}
+	/*pass p2
+	{
+		VertexShader = compile vs_2_0 TextVS(0.5f);
+		PixelShader = compile ps_2_0 TextPS();
+	}*/
 }
 
 technique LineTech
@@ -198,7 +226,6 @@ technique LineTech
 	{
 		VertexShader = compile vs_2_0 LineVS();
 		PixelShader = compile ps_2_0 LinePS();
-			
 	}
 }
 // Tech End

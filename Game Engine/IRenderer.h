@@ -19,10 +19,25 @@ public:
 
 	// Fonts
 	virtual void GetStringRec(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale, Math::FRECT& out) = 0;
-	virtual void DrawString(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale = D3DXVECTOR2(4.0f,4.0f), const D3DXVECTOR4& color = D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f)) = 0; // world space
+
+	virtual void DrawString(const char* str, // the string that gets drawn
+							const D3DXVECTOR2& pos, // World pos of the text, where the text starts getting drawn from
+							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
+							const D3DXVECTOR4& color = D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f), // color of the text blended together with the texture
+							const D3DXVECTOR2& scale = D3DXVECTOR2(1.0f,1.0f) // size of the text
+							) = 0; // world space
 
 	// sprites
-	virtual void DrawSprite(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iCellId = 0, float dx = 1.0f, float dy = 1.0f, DWORD color = 0xffffffff) = 0;
+	//virtual bool CreateSpritePool(const string& tech,const std::string& texture, unsigned int& id) = 0;
+	//virtual bool DeleteSpritePool(unsigned int id) = 0;
+	//virtual void DrawSprite(unsigned int iPool, const D3DXMATRIX& transformation) = 0;
+
+	virtual void DrawSprite(const D3DXMATRIX& transformation, // transformation applied to the sprite
+							const std::string& texture, // texture used to draw the sprite
+							unsigned int iCellId = 0, // cellId if multiple frames are stored together in the same sprite image 
+							float dx = 1.0f, // the amount of tiling in the x direction, 1.0 means the texture will be stretched across the whole polygon 
+							float dy = 1.0f, // " y
+							DWORD color = 0xffffffff) = 0;
 	//virtual void DrawSpriteAnimation(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
 
 	

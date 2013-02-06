@@ -51,7 +51,7 @@ void Ball::Update(QuadTree& tree, double dt)
 	{
 		m_fTime += dt;
 
-		if(m_fTime > 0.5)
+		if(m_fTime > 0.4)
 		{
 			m_fTime = 0.0;
 			m_bChangeColor = false;
@@ -81,59 +81,41 @@ void Ball::Update(QuadTree& tree, double dt)
 
 	if(!m_bChangeColor)
 	{
-		/*ProccessNearNodes(this->m_nodes,[&](const ::ISpatialObject* pObj) -> bool
+		std::vector<::ISpatialObject*> objs;
+		tree.QueryNearObjects(GetCollisionPolygon(),objs);
+
+		for(unsigned int i = 0; i < objs.size(); ++i)
 		{
-			if(pObj != this)
+			if(objs[i] != this)
 			{
-				/*D3DXVECTOR2 velocity = m_fSpeed*this->m_dir;
-				float m = velocity.y / velocity.x;
-				float m2 = pObj->GetPos().y / pObj->GetPos().x;
+				D3DXVECTOR2 velocity = m_fSpeed*this->m_dir;
+				//D3DXVECTOR2 oldPos = m_pos;
+				//Math::CCircle oldCircle = m_CollisionPolygon;
+				//for(unsigned int j = 0; j < 4; ++j)
 				{
+					//oldPos += m_dir*(m_fSpeed / 4.0f)*dt;
+					//oldCircle.GetCircle() = oldPos;
 
-				}
-				::D3DXVECTOR2 oldPos = m_pos;
-				Math::CCircle oldCircle = m_CollisionPolygon;
-				for(unsigned int i = 0; i < 4; ++i)
-				{
-					oldPos += m_dir*(m_fSpeed / 4.0f)*dt;
-					oldCircle.GetCircle() = oldPos;
-
-					if(oldCircle.Intersects(pObj->GetCollisionPolygon()))
-					//if(abs(m-m2) < 0.5f)
+					if(m_CollisionPolygon.Intersects(objs[i]->GetCollisionPolygon()))
 					{
 						D3DXVECTOR2 normal;
-						pObj->GetCollisionPolygon().GetNormal(oldPos,normal);
-
-						//m_pCollisionPolygon->GetNormal(pObj->GetPos(),normal);
+						objs[i]->GetCollisionPolygon().GetNormal(m_pos,normal);
 
 						m_dir = Math::Reflect(-m_dir,normal);
 						m_bChangeColor = true;
 						m_bCollision = true;
-
-						return true;
+						break;
 					}
 				}
-
-				// todo: need to fix, implement ray casting
-				// note: the ray will be the ball, and the object will be the object that we are colliding with
 			}
-
-			return false;
-		});*/
+		}
 	}
 
 	m_pos += m_dir*m_fSpeed*dt;
 
-	//m_CollisionPolygon.GetCircle().center = m_pos;
-	//tree.Update(*this);
-
-	//tree.Erase(*this);
-
-	//tree.Insert(*this);
-	tree.Update(*this,[&]()
-	{
-		m_CollisionPolygon.GetCircle().center = m_pos;
-	});
+	tree.Erase(*this);
+	m_CollisionPolygon.GetCircle().center = m_pos;
+	tree.Insert(*this);
 }
 
 void Ball::Render(IRenderer& renderer)
@@ -170,14 +152,14 @@ void AniBall::Render(IRenderer& renderer)
 	::D3DXMatrixScaling(&S,fScale,fScale,1.0f);
 	::D3DXMatrixRotationZ(&R,atan2(m_dir.y,m_dir.x));
 
-	::D3DXVECTOR2 pos(m_pos);
-	pos += D3DXVECTOR2(-5.0f,10.0f);
+	//::D3DXVECTOR2 pos(m_pos);
+	//pos += D3DXVECTOR2(-5.0f,10.0f);
 
-	::ostringstream stream;
-	stream <<"("<< m_dir.x << "," << m_dir.y << ")" ;
+	//::ostringstream stream;
+	//stream <<"("<< m_dir.x << "," << m_dir.y << ")" ;
 
 	renderer.Get2DRenderer().DrawSprite(R*S*T,m_texture,m_uiCurrentCell);
-	renderer.Get2DRenderer().DrawString(stream.str().c_str(),pos);
+	//renderer.Get2DRenderer().DrawString(stream.str().c_str(),pos);
 }
 
 
@@ -244,7 +226,7 @@ void ComputerPaddle::Update(IKMInput& input, QuadTree& tree, double dt)
 		// find target
 
 		std::vector<ISpatialObject*> nodes;
-		tree.FindNearObjects(&cRect,nodes);
+		tree.QueryNearObjects(cRect,nodes);
 
 		ISpatialObject* pTarget = nullptr;
 		float fTime = FLT_MAX;
@@ -413,11 +395,6 @@ void Pong::Update(Game& game)
 		//game.SetNextState("PongMenu");
 	}
 
-	if(input.KeyDown(KeyCode::F))
-	{
-		game.GetRenderer().ToggleFullscreen();
-	}
-
 	UpdateGame(game);
 
 	/*switch(m_state)
@@ -449,7 +426,7 @@ void Pong::UpdateGame(Game& game)
 		//float a = Math::GetRandFloat(0.0f,365.0f) * 0.01745329f;
 		float a = Math::GetRandFloat(120.0f,180.0f) * 0.01745329f;
 		//float s = Math::GetRandFloat(7.0f,10.0f);
-		float s = Math::GetRandFloat(5.0f,10.5f);
+		float s = Math::GetRandFloat(3.0f,7.5f);
 		float v = Math::GetRandFloat(m_fMinBallVelocity,m_fMaxBallVelocity);
 
 		//Ball* pBall = new Ball(D3DXVECTOR2(P.x,P.y),D3DXVECTOR2(-cosf(a),sinf(a)),0.0f,s);

@@ -11,13 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C9F3F3FF-F83F-406A-81EA-B7D1A01A40CF}</ProjectGuid>
-    <RootNamespace>DX9Renderer</RootNamespace>
-    <ProjectName>DX9Renderer</ProjectName>
-    <SccProjectName>Svn</SccProjectName>
-    <SccAuxPath>Svn</SccAuxPath>
-    <SccLocalPath>Svn</SccLocalPath>
-    <SccProvider>SubversionScc</SccProvider>
+    <ProjectGuid>{23A99D4C-423A-4314-AD3A-19014B9D0D17}</ProjectGuid>
+    <RootNamespace>Pacman</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -39,45 +34,46 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\Game Plugins\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\\Game Plugins\\</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;..\\Game Engine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Users\bm4g5_000\Documents\Visual Studio 2010\Projects\Game Engine\Game Engine\Game Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;..\\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\bm4g5_000\Documents\Visual Studio 2010\Projects\Game Engine\Game Engine\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\\Game Engine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>C:\Users\bm4g5_000\Documents\Visual Studio 2010\Projects\Game Engine\Game Engine\Game Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\\Release\</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\Users\bm4g5_000\Documents\Visual Studio 2010\Projects\Game Engine\Game Engine\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DX93DRenderer.h" />
-    <ClInclude Include="DX9Plugin.h" />
-    <ClInclude Include="DX92DRenderer.h" />
-    <ClInclude Include="FontEngine.h" />
-    <ClInclude Include="LineEngine.h" />
-    <ClInclude Include="SpriteManager.h" />
-    <ClInclude Include="Streams.h" />
-    <ClInclude Include="ResourceManager.h" />
+    <ClCompile Include="pacman.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DX92DRenderer.cpp" />
-    <ClCompile Include="DX9Plugin.cpp" />
-    <ClCompile Include="FontEngine.cpp" />
-    <ClCompile Include="LineEngine.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="SpriteManager.cpp" />
+    <ClInclude Include="pacman.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\2DShader.fx" />
+    <None Include="resource.r" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

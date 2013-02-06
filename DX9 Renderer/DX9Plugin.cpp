@@ -25,7 +25,7 @@ PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr)
 
 IDirect3DVertexDeclaration9* VertexP::m_pVertexDecl = nullptr;
 IDirect3DVertexDeclaration9* VertexPT::m_pVertexDecl = nullptr;
-//IDirect3DVertexDeclaration9* VertexPTC::m_pVertexDecl = nullptr;
+IDirect3DVertexDeclaration9* SpriteVertex::m_pVertexDecl = nullptr;
 
 struct DisplayMode
 {
@@ -121,13 +121,16 @@ void DX9Render::InitializeDirectX()
 	// Fill out the D3DPRESENT_PARAMETERS structure.
 
 	DWORD levels;
-	m_pDirect3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,true,D3DMULTISAMPLE_4_SAMPLES,&levels);
+	// D3DMULTISAMPLE_NONE
+	// D3DMULTISAMPLE_2_SAMPLES
+	m_pDirect3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,true,D3DMULTISAMPLE_2_SAMPLES,&levels);
+	//m_pDirect3D->GetDeviceCaps(
 	
 	m_D3DParameters.BackBufferWidth            = 0;
 	m_D3DParameters.BackBufferHeight           = 0;
 	m_D3DParameters.BackBufferFormat           = D3DFMT_UNKNOWN;
 	m_D3DParameters.BackBufferCount            = 1;
-	m_D3DParameters.MultiSampleType            = D3DMULTISAMPLE_4_SAMPLES;
+	m_D3DParameters.MultiSampleType            = D3DMULTISAMPLE_2_SAMPLES;
 	m_D3DParameters.MultiSampleQuality         = levels - 1;
 	m_D3DParameters.SwapEffect                 = D3DSWAPEFFECT_DISCARD; 
 	m_D3DParameters.hDeviceWindow              = windowHandle;
@@ -242,7 +245,7 @@ void DX9Render::OnResetDevice()
 
 void DX9Render::ClearScreen()
 {
-	m_p3Device->Clear(0,0,m_ClearBuffers,0,1.0f,0);
+	m_p3Device->Clear(0,0,m_ClearBuffers,0x0,1.0f,0);
 }
 
 void DX9Render::Begin()
@@ -410,6 +413,7 @@ void DX9Render::RegisterScript()
 
 	pEngine->BeginConfigGroup("Renderer");
 
+	//pEngine->RegisterObjectMethod(
 	DBAS(pEngine->RegisterGlobalFunction("uint color(uint8 red, uint8 green, uint8 blue)",::asFUNCTION(color),asCALL_CDECL));
 
 	DBAS(pEngine->RegisterObjectType("DX9Render",0,asOBJ_REF | asOBJ_NOHANDLE));

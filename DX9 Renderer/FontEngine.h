@@ -8,10 +8,11 @@
 struct DrawTextInfo
 {
 	DrawTextInfo() {}
-	DrawTextInfo(const std::string& str, const D3DXVECTOR2& p, const D3DXVECTOR2& s, const ::D3DXVECTOR4& c) :
-	text(str), pos(p), scale(s), color(c), length(0) {}
+	DrawTextInfo(const std::string& str, const std::string& f, const D3DXVECTOR2& p, const D3DXVECTOR2& s, const ::D3DXVECTOR4& c) :
+	text(str), font(f), pos(p), scale(s), color(c), length(0) {}
 
 	std::string text;
+	std::string font;
 	D3DXVECTOR2 pos;
 	D3DXVECTOR2 scale;
 	D3DXVECTOR4 color;
@@ -26,7 +27,7 @@ public:
 	~FontEngine();
 
 	void GetStringRect(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale, Math::FRECT& out);
-	void DrawString(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale, const D3DXVECTOR4& color);
+	void DrawString(const char* str, const char* font, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale, const D3DXVECTOR4& color);
 
 	void Render(); 
 
@@ -48,7 +49,6 @@ private:
 
 	void CreateVertexBuffer();
 	void CreateIndexBuffer();
-	void CreateBuffers();
 
 	D3DXVECTOR2 GetTextOffset(const D3DXVECTOR2& scale, unsigned int i, unsigned int j);
 

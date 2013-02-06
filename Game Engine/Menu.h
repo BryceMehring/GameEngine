@@ -4,16 +4,12 @@
 // todo: split this header file down
 
 #include "Delegates.h"
-#include "DxPolygon.h"
+#include "IKMInput.h"
 #include "IRender.h"
 #include "GameState.h"
 #include "Sprite.h"
 
 #include "RTTI.h"
-
-
-// todo: should this be a global function or should I put this into an interface?
-bool IsClicked(class IKMInput& input, DxPolygon* pPolygon);
 
 class IUIElement : public IRender
 {
@@ -31,12 +27,6 @@ protected:
 
 	class Menu* m_pMenu;
 	
-};
-
-struct Text 
-{
-	std::string name;
-	POINT P;
 };
 
 
@@ -106,8 +96,7 @@ class ButtonBase : public IUIElement
 {
 public:
 
-	ButtonBase() : m_color(-1) {}
-	ButtonBase(const Text& name, DxPolygon* pPolygon);
+	ButtonBase(const Math::Sprite& s, const std::string& str);
 	virtual ~ButtonBase();
 
 	virtual void Render(class IRenderer&);
@@ -115,26 +104,18 @@ public:
 
 	virtual void Select()
 	{
-		m_pPolygon->SetColor(0xffff0000);
+		//m_pPolygon->SetColor(0xffff0000);
 	}
 	virtual void Deselect()
 	{
-		m_pPolygon->SetColor(0xffffffff);
+		//m_pPolygon->SetColor(0xffffffff);
 	}
-
-	void SetPolygon(DxPolygon* pPolygon) { m_pPolygon = pPolygon; }
-	void SetPolygonColor(DWORD color) { m_pPolygon->SetColor(color); }
-	void SetTextColor(DWORD color) { m_color = color; }
-	void SetName(const Text& name) { m_name = name; }
 
 protected:
 
-	Text m_name;
-	DWORD m_color;
-	DxPolygon* m_pPolygon;
-
-
-	bool m_bMouseHover;
+	Math::Sprite m_sprite;
+	std::string m_text;
+	bool m_bMouseHover; 
 
 };
 
@@ -145,8 +126,8 @@ public:
 
 	typedef Delegate<void,T> DELEGATE;
 
-	GenericButton() {}
-	GenericButton(const Text& name,DELEGATE callback, const T& type, DxPolygon* pPolygon) : ButtonBase(name,pPolygon), m_callback(callback), m_type(type)
+	GenericButton(const Math::Sprite& s, const std::string& str) : ButtonBase(s,str) {}
+	GenericButton(const Math::Sprite& s, const std::string& str, const DELEGATE& callback, const T& type) : ButtonBase(s,str), m_callback(callback), m_type(type)
 	{
 	}
 
@@ -163,13 +144,18 @@ public:
 	{
 		m_callback.Call(m_type);
 	}
-	virtual void Update(class IKMInput& input, double)
+	virtual void Update(IKMInput& input, double)
 	{
 		ButtonBase::Update(input);
 
-		if(IsClicked(input,m_pPolygon))
+		if(input.MouseClick(0))
 		{
-			Trigger();
+			const ::D3DXVECTOR2& pos = input.GetTransformedMousePos();
+
+			if(m_sprite.IsPointWithin(pos))
+			{
+				Trigger();
+			}
 		}
 	}
 
@@ -186,8 +172,8 @@ public:
 
 	typedef Delegate<void,T&> DELEGATE;
 
-	GenericButton() {}
-	GenericButton(const Text& name,DELEGATE callback, const T& type, DxPolygon* pPolygon) : ButtonBase(name,pPolygon), m_callback(callback), m_type(type)
+	GenericButton(const Math::Sprite& s, const std::string& str) : ButtonBase(s,str) {}
+	GenericButton(const Math::Sprite& s, const std::string& str, const DELEGATE& callback, const T& type) : ButtonBase(s,str), m_callback(callback), m_type(type)
 	{
 	}
 
@@ -204,13 +190,18 @@ public:
 	{
 		m_callback.Call(m_type);
 	}
-	virtual void Update(class IKMInput& input, double)
+	virtual void Update(IKMInput& input, double)
 	{
 		ButtonBase::Update(input);
 
-		if(IsClicked(input,m_pPolygon))
+		if(input.MouseClick(0))
 		{
-			Trigger();
+			const ::D3DXVECTOR2& pos = input.GetTransformedMousePos();
+
+			if(m_sprite.IsPointWithin(pos))
+			{
+				Trigger();
+			}
 		}
 	}
 
@@ -227,10 +218,8 @@ public:
 
 	typedef Delegate<void,void> DELEGATE;
 
-	GenericButton()
-	{
-	}
-	GenericButton(const Text& name, DELEGATE callback, DxPolygon* pPolygon) : ButtonBase(name,pPolygon), m_callback(callback)
+	GenericButton(const Math::Sprite& s, const std::string& str) : ButtonBase(s,str) {}
+	GenericButton(const Math::Sprite& s, const std::string& str, const DELEGATE& callback) : ButtonBase(s,str), m_callback(callback)
 	{
 	}
 
@@ -243,13 +232,18 @@ public:
 	{
 		m_callback.Call();
 	}
-	virtual void Update(class IKMInput& input, double)
+	virtual void Update(IKMInput& input, double)
 	{
 		ButtonBase::Update(input);
 
-		if(IsClicked(input,m_pPolygon))
+		if(input.MouseClick(0))
 		{
-			Trigger();
+			const ::D3DXVECTOR2& pos = input.GetTransformedMousePos();
+
+			if(m_sprite.IsPointWithin(pos))
+			{
+				Trigger();
+			}
 		}
 	}
 
@@ -335,8 +329,7 @@ protected:
 	float m_fCarrotTime;
 	double m_fScrollTime;
 
-	float m_scrollAccel;
-	float m_scrollSpeed;
+	D3DXVECTOR2 m_pos;
 
 	// ===== helper functions =====
 protected:
@@ -391,7 +384,7 @@ protected:
 		stringstream stream;
 		stream << p;
 
-		//Write(stream.str(),0xff00ffff);
+		Write(stream.str(),::D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f));
 	}
 
 	// These are registered with AngelScript

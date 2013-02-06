@@ -404,10 +404,6 @@ void asVM::RegisterScript(ScriptingConsole* pTextBox)
 	DBAS(m_pEngine->RegisterFuncdef("void UintAppCallback(uint)"));
 	//DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));
 
-	// ============= array =============
-
-	RegisterScriptArray(m_pEngine,true);
-
 	// ============= asVM =============
 	DBAS(m_pEngine->RegisterObjectType("asVM",0,asOBJ_REF | asOBJ_NOHANDLE));
 	DBAS(m_pEngine->RegisterObjectMethod("asVM","uint BuildScriptFromFile(const string& in)",asMETHOD(asVM,BuildScriptFromFile),asCALL_THISCALL));

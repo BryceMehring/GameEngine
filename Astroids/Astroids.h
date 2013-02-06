@@ -100,6 +100,7 @@ private:
 	bool m_bDestroyed;
 
 	std::list<ASpaceShipBeam> m_beams;
+	std::list<HANDLE> m_soundHandles;
 
 	void BuildShipLines(D3DXVECTOR3*);
 };
@@ -126,6 +127,19 @@ public:
 		return nullptr;
 	}
 	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const { return m_CollisionRect; }
+
+	virtual bool CanSendCollisionMsg() const { return false; }
+	virtual void SendCollisionMsg(const ISpatialObject& other)
+	{
+		void* pInterface = other.QueryInterface(IDestroyable::INTERFACE_DESTROY);
+
+		if(pInterface != nullptr)
+		{
+			IDestroyable* pDestroyable = static_cast<IDestroyable*>(pInterface);
+			pDestroyable->Destroy();
+		}
+	}
+
 
 	// Asteroid
 	bool Update(QuadTree&, double dt);
@@ -188,5 +202,6 @@ private:
 	std::vector<::Astroid*> m_selectedAstroids;
 	std::list<Astroid> m_Astroids;
 	QuadTree* m_pQuadtree;
+	int m_iScore;
 
 };

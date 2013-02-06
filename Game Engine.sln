@@ -23,6 +23,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameLauncher", "GameLaunche
 		{54FFCA3C-B292-4266-96A9-CC58E1CC444B} = {54FFCA3C-B292-4266-96A9-CC58E1CC444B}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pacman", "Pacman\Pacman.vcxproj", "{23A99D4C-423A-4314-AD3A-19014B9D0D17}"
+	ProjectSection(ProjectDependencies) = postProject
+		{54FFCA3C-B292-4266-96A9-CC58E1CC444B} = {54FFCA3C-B292-4266-96A9-CC58E1CC444B}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pong", "Pong\Pong.vcxproj", "{E863AE15-F580-4F93-97E5-2F95BC786881}"
 	ProjectSection(ProjectDependencies) = postProject
 		{54FFCA3C-B292-4266-96A9-CC58E1CC444B} = {54FFCA3C-B292-4266-96A9-CC58E1CC444B}
@@ -92,6 +97,16 @@ Global
 		{673B313B-5EB7-48F3-9212-5A20DCEE4627}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{673B313B-5EB7-48F3-9212-5A20DCEE4627}.Release|Win32.ActiveCfg = Release|Win32
 		{673B313B-5EB7-48F3-9212-5A20DCEE4627}.Release|Win32.Build.0 = Release|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Debug|Win32.ActiveCfg = Debug|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Debug|Win32.Build.0 = Debug|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Release|Any CPU.ActiveCfg = Release|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Release|Win32.ActiveCfg = Release|Win32
+		{23A99D4C-423A-4314-AD3A-19014B9D0D17}.Release|Win32.Build.0 = Release|Win32
 		{E863AE15-F580-4F93-97E5-2F95BC786881}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{E863AE15-F580-4F93-97E5-2F95BC786881}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{E863AE15-F580-4F93-97E5-2F95BC786881}.Debug|Mixed Platforms.Build.0 = Debug|Win32

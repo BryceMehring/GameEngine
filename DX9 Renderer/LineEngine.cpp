@@ -24,56 +24,24 @@ void LineEngine::DrawLine(const D3DXVECTOR3* pArray, unsigned int length, const 
 	if(uiNewMaxSize >= m_iMaxLength)
 		return;
 
-	VertexP* pVB = nullptr;
-	m_pVertexBuffer->Lock(0,0,(void**)&pVB,0);
-	//m_pVertexBuffer->Lock(m_iCurrentLength * sizeof(VertexP),length * sizeof(VertexP),(void**)&pVB,D3DLOCK_NOOVERWRITE);
+	// If this is the first DrawLine calls before rendering, we need to get a new pool of memory, to disregard the previous data in the buffer
+	// If not, we will keep appending to the buffer
+	DWORD flags = m_iCurrentLength == 0 ? D3DLOCK_DISCARD : D3DLOCK_NOOVERWRITE;
 
-	D3DXVec3TransformCoordArray((D3DXVECTOR3*)(pVB + m_iCurrentLength),sizeof(VertexP),pArray,sizeof(D3DXVECTOR3),&t,length);
+	VertexP* pVB = nullptr;
+
+	// Locking the buffer with the correct flag,
+	// note: if we are locking with the D3DLOCK_DISCARD flag, the first two parameters are ignored
+	m_pVertexBuffer->Lock(m_iCurrentLength * sizeof(VertexP),length * sizeof(VertexP),(void**)&pVB,flags);
+
+	// Transform line as we copy it to the vertex buffer
+	D3DXVec3TransformCoordArray((D3DXVECTOR3*)(&pVB->pos),sizeof(D3DXVECTOR3),pArray,sizeof(D3DXVECTOR3),&t,length);
 
 	m_pVertexBuffer->Unlock();
 
 	m_iCurrentLength = uiNewMaxSize;
 	m_lines.push_back(LineData(t,color,length));
 }
-
-void LineEngine::FillVertexBuffer()
-{
-	
-}
-
-
-/*void LineEngine::DrawLine(const D3DXVECTOR2* pArray, unsigned int length, const D3DXVECTOR4& color)
-{
-	assert(length != 0 && pArray != nullptr);
-
-	unsigned int bytes = sizeof(D3DXVECTOR2) * length;
-	D3DXVECTOR2* pMemory = (D3DXVECTOR2*)Bnew(bytes);
-	memcpy(pMemory,pArray,bytes);
-
-	m_lines.push_back(LineData(pMemory,length,color));
-}
-
-void LineEngine::FillVertexBuffer()
-{
-	VertexP* pVB = nullptr;
-	m_pVertexBuffer->Lock(0,0,(void**)&pVB,D3DLOCK_DISCARD);
-
-	unsigned int index = 0;
-
-	for(auto iter = m_lines.begin(); (index < m_iMaxLength) && iter != m_lines.end(); ++iter)
-	{
-		for(unsigned int i = 0; (index < m_iMaxLength) && (i < iter->length); ++i, ++index)
-		{
-			pVB[index].pos = D3DXVECTOR3(iter->pArray[i].x,iter->pArray[i].y,0.0f);
-		}
-
-		BDelete((void*)iter->pArray);
-	}
-
-	m_pVertexBuffer->Unlock();
-
-	m_iCurrentLength = index - 1;
-}*/
 
 void LineEngine::Render()
 {
@@ -96,14 +64,16 @@ void LineEngine::Render()
 	{
 		shader.pEffect->BeginPass(i);
 
-		unsigned int startVertex = 0; 
+		unsigned int startVertex = 0; // Index of the first Vertex to render
+
+		// Loop over all text subsets
 		for(auto iter = m_lines.begin(); iter != m_lines.end(); ++iter)
 		{
 			shader.pEffect->SetVector(shader.parameters["gColor"],&iter->color);
 			shader.pEffect->CommitChanges();
 
 			m_pDevice->DrawPrimitive(D3DPT_LINESTRIP,startVertex,(iter->length - 1));
-			startVertex += iter->length;
+			startVertex += (iter->length);
 		}
 		shader.pEffect->EndPass();
 	}

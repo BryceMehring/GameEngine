@@ -12,6 +12,12 @@
 namespace Math
 {
 
+struct AABB
+{
+	D3DXVECTOR2 min;
+	D3DXVECTOR2 max;
+};
+
 // Basic rect, using floats
 struct FRECT
 {
@@ -141,6 +147,7 @@ public:
 	// returns true if pOther interests this, else false
 	virtual bool Intersects(const ICollisionPolygon& other) const = 0;
 	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const = 0;
+	virtual void GetAABB(AABB&) const = 0;
 
 	// returns the type of the collision object
 	virtual Type GetType() const = 0;
@@ -160,6 +167,7 @@ public:
 	virtual Type GetType() const { return ICollisionPolygon::CircleType; }
 	virtual bool Intersects(const ICollisionPolygon& other) const;
 	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const;
+	virtual void GetAABB(AABB&) const;
 	
 	// circle access
 	const Circle& GetCircle() const { return m_circle; }
@@ -184,6 +192,7 @@ public:
 	virtual Type GetType() const { return ICollisionPolygon::RectangleType; }
 	virtual bool Intersects(const ICollisionPolygon& other) const;
 	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const;
+	virtual void GetAABB(AABB&) const;
 
 	// rect access
 	const FRECT& GetRect() const { return m_rect; }

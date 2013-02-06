@@ -8,22 +8,10 @@
 
 #include <sstream>
 
-
-
 using namespace std;
 
-//const RTTI Menu::s_rtti("Menu");
 RTTI_IMPL(Menu);
 
-bool IsClicked(IKMInput& input, DxPolygon* pPolygon)
-{
-	if(input.MouseClick(0))
-	{
-		return pPolygon->IsPointInPolygon(input.MousePos());
-	}
-
-	return false;
-}
 
 Menu::Menu() : m_pPrev(nullptr), m_pPolygon(nullptr)
 {
@@ -96,8 +84,7 @@ void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 			m_elements[pGUI->m_uiCurrentIndex]->Trigger();
 		}
 	}
-	
-	// fixed bug in textbox
+
 	for(unsigned int i = 0; i < m_elements.size(); ++i)
 	{
 		m_elements[i]->Update(input,dt);
@@ -170,46 +157,49 @@ Menu* GUI::GetMenu()
 	return m_pMenu;
 }
 
-ButtonBase::ButtonBase(const Text& name, DxPolygon* pPolygon) :
-m_name(name), m_pPolygon(pPolygon), m_color(-1), m_bMouseHover(false)
+ButtonBase::ButtonBase(const Math::Sprite& s, const std::string& str) : m_sprite(s), m_text(str)
 {
 }
 
 ButtonBase::~ButtonBase()
 {
-	delete m_pPolygon;
+	//delete m_pPolygon;
 }
 
 void ButtonBase::Update(IKMInput& input)
 {
 	// todo: I could optimize this by checking first if the mouse is moving
 	// then move on to check if the mouse is colliding with the button
-	if(m_pPolygon->IsPointInPolygon(input.MousePos()))
+	if(m_sprite.IsPointWithin(input.GetTransformedMousePos()))
 	{
-		m_color = 0xffffff00;
+		/*m_color = 0xffffff00;
 		input.SetMouseState(::MouseCursorState::Hand);
 
-		m_bMouseHover = true;
+		m_bMouseHover = true;*/
 	}
 	else if(m_bMouseHover)
 	{
-		m_color = 0xffffffff;
+		/*m_color = 0xffffffff;
 
 		input.SetMouseState(::MouseCursorState::Default);
 
-		m_bMouseHover = false;
+		m_bMouseHover = false;*/
 	}
 }
 
 void ButtonBase::Render(IRenderer& renderer)
 {
-	TextureInfo buttonInfo;
-	renderer.GetResourceManager().GetTextureInfo("button",buttonInfo);
+	//TextureInfo buttonInfo;
+	//renderer.GetResourceManager().GetTextureInfo("button",buttonInfo);
 
-	::D3DXMATRIX S,T;
-	//::D3DXMatrixScaling(&S,
-	::D3DXMatrixTranslation(&T,0.0f,0.0f,0.0f);
+	D3DXMATRIX S,T;
+	D3DXVECTOR2 pos = m_sprite.Middle();
+
+	D3DXMatrixScaling(&S,m_sprite.Width(),m_sprite.Height(),1.0f);
+	D3DXMatrixTranslation(&T,pos.x,pos.y,0.0f);
+
 	renderer.Get2DRenderer().DrawSprite(S*T,"button");
+	renderer.Get2DRenderer().DrawString(m_text.c_str(),D3DXVECTOR2(m_sprite.topLeft.x,pos.y));
 
 
 	//renderer.Get2DRenderer().DrawString(m_name.name.c_str(),m_name.P,m_color);
@@ -221,7 +211,7 @@ void ButtonBase::Render(IRenderer& renderer)
 
 // textbox ctor
 TextBox::TextBox(const std::string& name, const D3DXVECTOR3& pos, float w, float h)
-: m_spacePos(-1), m_scrollSpeed(0), m_scrollAccel(0), m_fScrollTime(0.0), m_sprite(w,h,D3DXVECTOR2(pos.x,pos.y))
+: m_spacePos(-1), m_fScrollTime(0.0), m_sprite(w,h,D3DXVECTOR2(pos.x,pos.y)), m_pos(-40.0f,40.0f)
 {
 	m_text.push_back(LineData());
 
@@ -281,9 +271,7 @@ void TextBox::AddKey(char Key)
 
 void TextBox::Enter()
 {
-	std::string& text = m_text.back().line;
-	text += '\n';
-	//Write("",D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f));
+	Write(string(""),D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f));
 }
 
 void TextBox::Update(IKMInput& input, double dt)
@@ -355,88 +343,36 @@ void TextBox::Render(IRenderer& renderer)
 	::D3DXVECTOR2 middle = m_sprite.Middle();
 	D3DXMatrixScaling(&S,m_sprite.Width(),m_sprite.Height(),1.0f);
 	D3DXMatrixTranslation(&T,middle.x,middle.y,3000.0f);
-	renderer2D.DrawSprite(S*T,"textbox3",0,1.0f,1.0f);
+	//renderer2D.DrawSprite(S*T,"textbox");
 
-	//BreakLastLine(renderer);
+	D3DXVECTOR2 pos = m_pos;
 
 	// Iterate across all lines
 	for(auto iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		LineData& data = *iter;
 
+		renderer2D.DrawString(">",pos);
+		renderer2D.DrawString((" " + data.line).c_str(),pos,0,data.color);
+
 		Math::FRECT R;
-		renderer2D.GetStringRec(data.line.c_str(),m_sprite.topLeft,D3DXVECTOR2(4.0f,4.0f),R);
+		renderer2D.GetStringRec((/*"> " + */data.line).c_str(),::D3DXVECTOR2(0.0f,0.0f),::D3DXVECTOR2(1.0f,1.0f),R);
 
-		renderer2D.DrawString(data.line.c_str(),m_sprite.topLeft,D3DXVECTOR2(4.0f,4.0f),::D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f));
-		if(R.bottomRight.x > m_sprite.bottomRight.x)
-		{
-			Enter();
-		}
-
-
-		/*if(Math::Intersects(m_sprite,data.R))
-		{
-			std::string line = data.line;
-
-			// Render the '>'
-			if(!data.bContinue)
-			{
-				line = "> " + data.line;
-			}
-
-			renderer2D.DrawString(line.c_str(),data.pos,D3DXVECTOR2(3.0f,3.0f),data.color);
-
-			Math::FRECT R;
-			renderer2D.GetStringRec(line.c_str(),data.pos,D3DXVECTOR2(3.0f,3.0f),R);
-
-			data.pos = R.Middle();
-		}*/
+		pos.y -= R.Height();
 	}
-	/*for(TextDataType::iterator iter = m_text.begin(); iter != m_text.end(); ++iter)
-	{
-		LineData& data = *iter;
-
-		// cull lines that are not on the screen
-
-		// scroll lines
-		data.P.y += static_cast<int>(m_scrollSpeed);
-
-		// If the line is on the screen
-		if(data.P.y >= R.top)
-		{
-			if(data.P.y <= R.bottom - 15) 
-			{
-				std::string line = data.line;
-
-				// Render the '>'
-				if(!data.bContinue)
-				{
-					line = "> " + data.line;
-				}
-
-				// draw it
-				renderer.Get2DRenderer().DrawString(line.c_str(),data.P,data.color);
-				//pRenderer->DrawString(line.c_str(),temp,data.color,false);
-			}
-		}
-	}*/
 }
 
 void TextBox::UpdateScrolling(IKMInput& input, double dt)
 {
-	static int lastPos = 0;
-	m_scrollSpeed = 0;
-	
 	if(input.MouseClick(0,false))
 	{
-		m_scrollSpeed = -input.MouseY();
+		//m_scrollSpeed = input.MouseY() / 8.0f;
 		//lastPos = newPos;
 		//m_scrollSpeed = pInput->MousePos().y;// - this->m_text.back().P.y;
 	}
 	else
 	{
-		// Use the scroll on the mouse to scroll the textbox
-		m_scrollSpeed = input.MouseZ()*8;
+		m_pos.y += 2.0f*input.MouseZ();
 	}
 
 	// Scroll Text Box using MouseY
@@ -522,10 +458,10 @@ void ScriptingConsole::Update(IKMInput& input, double dt)
 void ScriptingConsole::Enter()
 {
 	// the last line
-	//const string& backLine = m_text.back().line;
+	const string& backLine = m_text.back().line;
 
 	// if the user wants to start entering block code
-	/*if(backLine == "start" || backLine == "function")
+	if(backLine == "start" || backLine == "function")
 	{
 		// mark the index
 		m_uiStartIndex = m_text.size();
@@ -558,7 +494,7 @@ void ScriptingConsole::Enter()
 		m_uiBackIndex = m_text.size();
 
 		m_pVM->ExecuteScript(line,0xffffffff);
-	}*/
+	}
 
 	TextBox::Enter();
 
@@ -578,9 +514,9 @@ void ScriptingConsole::Backspace()
 void ScriptingConsole::MessageCallback(const asSMessageInfo *msg)
 {
 	// asMSGTYPE_ERROR, asMSGTYPE_WARNING, asMSGTYPE_INFORMATION
-	const unsigned int COLOR[3] = {0xffff0000,0xffffff00,0xffffffff};
+	const D3DXVECTOR4 COLOR[3] = { D3DXVECTOR4(1.0f,0.0f,0.0f,1.0f),D3DXVECTOR4(1.0f,1.0f,0.0f,1.0f),D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f) };
 
-	//Write(std::string(msg->message),COLOR[msg->type]);
+	Write(std::string(msg->message),COLOR[msg->type]);
 }
 
 void ScriptingConsole::CLS()

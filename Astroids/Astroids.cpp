@@ -121,37 +121,39 @@ bool ASpaceShipBeam::Update(QuadTree& tree, double dt)
 	m_collisionPoly.GetCircle() = D3DXVECTOR2(m_pos.x,m_pos.y);
 	tree.Insert(*this);
 
-	std::vector<::ISpatialObject*> nearObjs;
-	tree.FindNearObjects(&GetCollisionPolygon(),nearObjs);
+	std::vector<ISpatialObject*> nearObj;
+	tree.QueryNearObjects(GetCollisionPolygon(),nearObj);
 
-	for(unsigned int i = 0; i < nearObjs.size(); ++i)
+	for(unsigned int i = 0; i < nearObj.size(); ++i)
 	{
-		if(nearObjs[i] != this)
+		if(nearObj[i] != this)
 		{
-			void* pInterface = nearObjs[i]->QueryInterface(IDestroyable::INTERFACE_DESTROY);
-			void* pShipInterface = nearObjs[i]->QueryInterface(ASpaceShip::INTERFACE_SHIP);
+			void* pInterface = nearObj[i]->QueryInterface(IDestroyable::INTERFACE_DESTROY);
+			void* pShipInterface = nearObj[i]->QueryInterface(ASpaceShip::INTERFACE_SHIP);
 
 			if(pInterface != nullptr && pShipInterface == nullptr)
 			{
 				IDestroyable* pDestroyable = static_cast<IDestroyable*>(pInterface);
 				pDestroyable->Destroy();
-				Destroy();
+				//Destroy();
 			}
 		}
 	}
 
-	/*if(!nearObjs.empty())
-	{
-		
-	}*/
-
-	return m_bDestroyed || m_age > 1.0f;
+	return m_bDestroyed || m_age > .7f;
 }
+
 void ASpaceShipBeam::Render(IRenderer& renderer)
 {
 	D3DXMATRIX T;
 	D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,m_pos.z);
 	renderer.Get2DRenderer().DrawSprite(T,"ball");
+}
+
+DWORD WINAPI PlayGameSound(void* p)
+{
+	PlaySound((char*)p,0,SND_FILENAME);
+	return 0;
 }
 
 
@@ -170,19 +172,32 @@ ASpaceShip::~ASpaceShip()
 }
 
 bool ASpaceShip::Update(IKMInput& input, QuadTree& tree, double dt)
-{ 
+{
 	if(input.KeyDown(KeyCode::W,false) || input.KeyDown(KeyCode::UP,false))
 	{
 		m_acceleration += 500.0f * dt;
 	}
+
 	if(input.KeyDown(KeyCode::A,false) || input.KeyDown(KeyCode::LEFT,false))
 	{
-		m_dir -= 5.0f * dt;
+		m_dir -= 2.0f*dt;
 	}
+
 	if(input.KeyDown(KeyCode::D,false) || input.KeyDown(KeyCode::RIGHT,false))
 	{
-		m_dir += 5.0f * dt;
+		m_dir += 2.0f*dt;
 	}
+	
+	//m_dir += 5.0f*input.MouseX() * dt;
+	//m_pos.x += 50.0f * input.MouseX() * dt;
+	//m_pos.y += 50.0f * input.MouseY() * dt;
+
+
+	/*const D3DXVECTOR2& mousePos = input.GetTransformedMousePos();
+	D3DXVECTOR2 dir = mousePos - D3DXVECTOR2(m_pos.x,m_pos.y);
+
+	m_dir = atan2(dir.x,dir.y);*/
+
 	m_inputTime += dt;
 	if(input.KeyDown(KeyCode::SPACE,false) && m_inputTime > 0.3f)
 	{
@@ -190,10 +205,26 @@ bool ASpaceShip::Update(IKMInput& input, QuadTree& tree, double dt)
 		D3DXVECTOR3 pos = m_pos + shipDir;
 		m_beams.push_back(ASpaceShipBeam(pos,m_dir,m_acceleration + 50.0f));
 
+		m_soundHandles.push_back(CreateThread(0,0,PlayGameSound,"..\\sounds\\fire.wav",0,0));
+		//m_soundHandles.push_back(CreateThread(0,0,PlayGameSound,"..\\sounds\\explode1.wav",0,0));
+
 		tree.Insert(m_beams.back());
 
 		m_inputTime = 0.0;
 		
+	}
+
+	for(auto iter = m_soundHandles.begin(); iter != m_soundHandles.end(); )
+	{
+		if(WaitForSingleObject(*iter,0) == WAIT_OBJECT_0)
+		{
+			CloseHandle(*iter);
+			iter = m_soundHandles.erase(iter);
+		}
+		else
+		{
+			 ++iter;
+		}
 	}
 
 	for(auto iter = m_beams.begin(); iter != m_beams.end(); )
@@ -240,7 +271,16 @@ bool ASpaceShip::Update(IKMInput& input, QuadTree& tree, double dt)
 	m_CollisionRect = Rect;
 	tree.Insert(*this);
 
-	return m_bDestroyed;
+	/*std::vector<::ISpatialObject*> nearObjs;
+	tree.FindNearObjects(&this->GetCollisionPolygon(),nearObjs);
+
+	if(nearObjs.size() >= 2)
+	{
+		Destroy();
+	}*/
+
+
+	return false;
 }
 
 void ASpaceShip::Render(IRenderer& renderer)
@@ -290,20 +330,6 @@ bool Astroid::Update(QuadTree& tree, double dt)
 	UpdateCollisionPolygon();
 	tree.Insert(*this);
 
-	/*std::vector<::ISpatialObject*> nearObjs;
-	tree.FindNearObjects(&GetCollisionPolygon(),nearObjs);
-
-	for(unsigned int i = 0; i < nearObjs.size(); ++i)
-	{
-		void* pInterface = nearObjs[i]->QueryInterface(IDestroyable::INTERFACE_DESTROY);
-
-		if(pInterface != nullptr)
-		{
-			IDestroyable* pDestroyable = static_cast<IDestroyable*>(pInterface);
-			pDestroyable->Destroy();
-		}
-	}*/
-
 	return (m_iHealth < 0);
 }
 
@@ -327,7 +353,7 @@ void Astroid::Render(IRenderer& renderer)
 	renderer2D.DrawLine(&(m_Polygon.front()),m_Polygon.size(),m_color,m_Transformation);
 }
 
-Astroids::Astroids(PluginManager& pm) : m_ship(D3DXVECTOR3(-40.0f,40.0f,0.0f))
+Astroids::Astroids(PluginManager& pm) : m_ship(D3DXVECTOR3(-40.0f,40.0f,0.0f)), m_iScore(0)
 {
 	m_pQuadtree = new QuadTree(Math::FRECT(D3DXVECTOR2(-50.0f,50.0f),D3DXVECTOR2(50.0f,-50.0f)));
 	m_pQuadtree->Insert(m_ship);
@@ -342,7 +368,7 @@ Astroids::~Astroids()
 
 void Astroids::BuildAstroidsAt(const ::D3DXVECTOR2& pos)
 {
-	unsigned int size = 5 + rand() % 3;
+	unsigned int size = 5 + rand() % 10;
 	float r = Math::GetRandFloat(3.0f,5.0f);
 	float a = 0.0f; 
 	float b = 360.0f / size;
@@ -372,7 +398,7 @@ void Astroids::BuildAstroidsAt(const ::D3DXVECTOR2& pos)
 void Astroids::BuildAstroids()
 {
 	// this algorithm should build asteroids in local space rather than in world space
-	for(unsigned int n = 0; n < 40; ++n)
+	for(unsigned int n = 0; n < 10; ++n)
 	{
 		BuildAstroidsAt(D3DXVECTOR2(Math::GetRandFloat(-40.0f,40.0f),Math::GetRandFloat(-40.0f,40.0f)));
 	}
@@ -402,6 +428,7 @@ void Astroids::Update(Game& game)
 		{
 			m_pQuadtree->Erase(*iter);
 			iter = m_Astroids.erase(iter);
+			++m_iScore;
 		}
 		else
 		{
@@ -453,11 +480,30 @@ void Astroids::Update(Game& game)
 }
 void Astroids::Draw(Game& game)
 {
+	IRenderer& renderer = game.GetRenderer();
+
 	m_ship.Render(game.GetRenderer());
 	for(auto iter = m_Astroids.begin(); iter != m_Astroids.end(); ++iter)
 	{
 		iter->Render(game.GetRenderer());
 	}
 
-	//m_pQuadtree->Render(game.GetRenderer());
+	std::ostringstream stream;
+	stream << "Asteroids Destroyed: "<<m_iScore << endl;
+	stream << "Time played: "<<m_timer.GetTime()<<endl;
+
+	D3DXVECTOR2 pos(0.0f,45.0f);
+	Math::FRECT R;
+
+	//renderer.Get2DRenderer().GetStringRec(stream.str().c_str(),pos,D3DXVECTOR2(1.0f,1.5f),R);
+
+	pos.x -= R.Width() / 2.0f;
+
+	//renderer.Get2DRenderer().DrawString(stream.str().c_str(),pos,"segoe",::D3DXVECTOR4(0.0f,1.0f,0.0f,1.0f),::D3DXVECTOR2(1.0f,1.5f));
+
+
+	stream.clear();
+	stream << m_Astroids.size() << endl;
+	renderer.Get2DRenderer().DrawString(stream.str().c_str(),D3DXVECTOR2(0.0f,20.0f));
+	m_pQuadtree->Render(game.GetRenderer());
 }

@@ -23,6 +23,19 @@ struct VertexPT
 	static IDirect3DVertexDeclaration9* m_pVertexDecl;
 };
 
+struct SpriteVertex
+{
+	SpriteVertex() {}
+	SpriteVertex(const D3DXVECTOR3& p, const D3DXVECTOR3& t, float x, float y) : pos(p), tex(t), dx(x), dy(y) {}
+
+	D3DXVECTOR3 pos;
+	D3DXVECTOR2 tex;
+	float dx;
+	float dy;
+
+	static IDirect3DVertexDeclaration9* m_pVertexDecl;
+};
+
 /*struct VertexPTC
 {
 	VertexPTC() : pos(0.0f, 0.0f, 0.0f), tex(0.0f, 0.0f), color(0.0f, 0.0f,0.0f,0.0f) {}
@@ -52,23 +65,24 @@ public:
 			D3DDECL_END()
 		};
 
-		/*D3DVERTEXELEMENT9 VertexElementsPCT[] = 
+		D3DVERTEXELEMENT9 SpriteVertex[] = 
 		{
 			{0,0,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_POSITION,0},
 			{0,12,D3DDECLTYPE_FLOAT2,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TEXCOORD,0},
-			{0,20,D3DDECLTYPE_FLOAT4,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_COLOR,0},
+			{0,20,D3DDECLTYPE_FLOAT1,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TEXCOORD,1},
+			{0,24,D3DDECLTYPE_FLOAT1,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TEXCOORD,2},
 			D3DDECL_END()
-		};*/
+		};
 
 		pDevice->CreateVertexDeclaration(VertexElementsP,&VertexP::m_pVertexDecl);
 		pDevice->CreateVertexDeclaration(VertexElementsPT,&VertexPT::m_pVertexDecl);
-		//pDevice->CreateVertexDeclaration(VertexElementsPCT,&VertexPTC::m_pVertexDecl);
+		pDevice->CreateVertexDeclaration(SpriteVertex,&SpriteVertex::m_pVertexDecl);
 	}
 	static void Destroy()
 	{
 		VertexP::m_pVertexDecl->Release();
 		VertexPT::m_pVertexDecl->Release();
-		//VertexPTC::m_pVertexDecl->Release();
+		SpriteVertex::m_pVertexDecl->Release();
 	}
 };
 

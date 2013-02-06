@@ -7,10 +7,11 @@ struct TextureInfo
 {
 	unsigned int uiWidth;
 	unsigned int uiHeight;
-	unsigned int uiCells;
+	unsigned int uiCellsWidth;
+	unsigned int uiCellsHeight;
 };
 
-class IResourceManager
+class __declspec(novtable) IResourceManager
 {
 public:
 

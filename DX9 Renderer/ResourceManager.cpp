@@ -93,6 +93,15 @@ void ResourceManager::LoadTexture(const std::string& file)
 
 void ResourceManager::LoadShader(const std::string& file)
 {
+	std::string name = GetFileNameFromPath(file);
+
+	// convert to lower case
+	StringToLower(name);
+
+	// if the string is already loaded, 
+	if(m_shaders.find(name) != m_shaders.end())
+		return;
+
 	ID3DXEffect* pEffect = nullptr;
 	ID3DXBuffer* pBuffer = nullptr;
 
@@ -119,12 +128,7 @@ void ResourceManager::LoadShader(const std::string& file)
 		Shader newShader;
 		newShader.pEffect = pEffect;
 
-		std::string name = GetFileNameFromPath(file);
-
 		BuildHandleVectors(file.c_str(),pEffect,newShader.parameters,newShader.tech);
-
-		// convert to lower case
-		StringToLower(name);
 
 		AddResource(name,newShader);
 		
@@ -149,12 +153,16 @@ void ResourceManager::BuildHandleVectors(const char* file, ID3DXEffect* pEffect,
 			{
 				if(line.find("//") == string::npos)
 				{
-					int pos = line.find_last_of(' ');
-					if(pos != string::npos)
+					int semicolPos = line.find_last_of(';');
+
+					if(semicolPos != string::npos)
 					{
-						// todo: fix this, this is bugged
-						string temp = line.substr(pos+1,line.size() - pos - 2);
-						paramaters.insert(make_pair(temp,pEffect->GetParameterByName(NULL,temp.c_str())));
+						int pos = line.find_last_of(' ',semicolPos);
+						if(pos != string::npos)
+						{
+							string temp = line.substr(pos+1,line.size() - pos - 2);
+							paramaters.insert(make_pair(temp,pEffect->GetParameterByName(NULL,temp.c_str())));
+						}
 					}
 				}
 			}
@@ -206,11 +214,10 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 
 	if(success)
 	{
-		const Texture& tex = iter->second;
-		const char* pStart = (char*)&tex + sizeof(void*);
-		const unsigned int uiSize = sizeof(TextureInfo) - sizeof(void*);
-		memcpy_s((void*)&out,sizeof(TextureInfo),(void*)pStart,uiSize);
-		//memcpy((void*)&out,(void*)pStart,uiSize);
+		out.uiWidth = iter->second.uiWidth;
+		out.uiHeight = iter->second.uiHeight;
+		out.uiCellsWidth = iter->second.uiCellsWidth;
+		out.uiCellsHeight = iter->second.uiCellsHeight;
 	}
 
 	return success;
