@@ -1,7 +1,5 @@
 #ifndef _TIMER_H_
 #define _TIMER_H_
-
-#include <Windows.h>
  
 // Defines a simple High Resolution Timer
 class Timer
@@ -10,8 +8,6 @@ public:
     // Construct the timer and initialize all of the
     // members by resetting them to their zero-values.
     Timer();
-
-	~Timer();
  
     // Activate the timer and poll the counter.
     void Start();
@@ -23,8 +19,7 @@ public:
     // of the Timer's members to their initial values.
     void Reset();
  
-    // Returns the time elapsed since Start() was called
-    // in micro-seconds
+    // Returns the time elapsed since Start() was called in seconds
     double GetTime();
  
     // Returns TRUE if the Timer is currently active
@@ -34,14 +29,12 @@ private:
     // Poll the query performance counter, safely by tying
     // the polling functionality temporarily to a single
     // logical processor (identified by 0).
-    void PollCounter(LARGE_INTEGER& Out);
+    void PollCounter(double& Out);
  
 private:
     bool _Active;
-	double _Frequency;
-    LARGE_INTEGER
-        _StartCount,
-        _EndCount;
+	double m_fStart;
+	double m_fEnd;
 }; // class Timer
  
 #endif

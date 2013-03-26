@@ -11,8 +11,8 @@ class Sprite : public FRECT
 public:
 
 	Sprite() {}
-	Sprite(float width, float height, const D3DXVECTOR2& pos) 
-	: FRECT(D3DXVECTOR2(pos.x - width / 2.0f,pos.y + height / 2.0f), D3DXVECTOR2(pos.x + width / 2.0f,pos.y - height / 2.0f))
+	Sprite(float width, float height, const glm::vec2& pos) 
+	: FRECT(glm::vec2(pos.x - width / 2.0f,pos.y + height / 2.0f), glm::vec2(pos.x + width / 2.0f,pos.y - height / 2.0f))
 	{
 	}
 };

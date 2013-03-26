@@ -55,19 +55,4 @@ private:
 	unsigned int m_uiTotalWastedBytes;
 };
 
-/*#define MEMPOOL_DECLARE(CLASS) \
-	public: \
-		static void* operator new(size_t) \
-		{ \
-			Heap& heap = Heap::Instance(); \
-			MemoryPool& pool = heap.GetPool(sizeof(CLASS)); \
-			return pool.Allocate(); \
-		} \
-		static void operator delete(void* p) \
-		{ \
-			Heap& heap = Heap::Instance(); \
-			MemoryPool& pool = heap.GetPool(sizeof(CLASS)); \
-			pool.Deallocate(p); \
-		} \*/
-
 #endif

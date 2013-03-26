@@ -16,6 +16,7 @@ public:
 	friend class Singleton<FileManager>;
 
 	~FileManager();
+	
 
 	//note: ext can be a list of extensions delimited by space
 	void LoadAllFilesFromDirectory(std::vector<std::string>& files,
@@ -66,7 +67,7 @@ private:
 	std::ostringstream m_buffer;
 
 	// constructor
-	FileManager();
+	FileManager() {}
 
 	void WriteTime();
 };

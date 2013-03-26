@@ -3,7 +3,9 @@
 #ifndef _GAME_
 #define _GAME_
 
-#include "WindowManager.h"
+#define GLFW_DLL
+
+#include "PluginManager.h"
 #include "Timer.h"
 #include "GameStateMachine.h"
 #include "IKMInput.h"
@@ -34,8 +36,8 @@ class Game
 {
 public:
 
-	Game(HINSTANCE hInstance);
-	virtual ~Game();
+	Game();
+	~Game();
 
 	const std::string& GetCurrentState() const;
 	void SetNextState(const std::string& state);
@@ -46,7 +48,6 @@ public:
 	// todo: provide const overloaded versions
 	IRenderer& GetRenderer();
 	IKMInput& GetInput();
-	WindowManager& GetWindow();
 	PluginManager& GetPM();
 	asVM& GetAs();
 
@@ -55,13 +56,12 @@ public:
 	double GetDt() const;
 	unsigned int GetFps() const;
 
-	virtual int PlayGame();
+	int Run();
 
 protected:
 
 	// Data members
 	asVM m_vm;
-	WindowManager m_window;
 	PluginManager m_plugins;
 
 	class ScriptingConsole* m_pConsole;
@@ -70,6 +70,7 @@ protected:
 	GameStateMachine m_StateMachine;
 
 	double m_fDT;
+	double m_fEscTime;
 	GameInfo m_info;
 
 	// Interfaces
@@ -92,8 +93,6 @@ private:
 	void LoadAllDLL();
 
 	void RegisterScript();
-
-	void MsgProc(const struct MsgProcData& data);
 
 	void ReloadPlugins(const std::string& file);
 

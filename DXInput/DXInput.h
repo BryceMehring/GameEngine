@@ -15,43 +15,50 @@ class DirectInput : public IKMInput//, public IScripted<DirectInput>
 {
 public:
 
+	DirectInput(asIScriptEngine* as);
+	virtual ~DirectInput();
+
+	static void GLFWCALL CharCallback(int c, int action);
+	static void GLFWCALL KeyCallback(int c, int action);
+	static void GLFWCALL MouseCallback(int x, int y);
+
 	// IRender
 	virtual DLLType GetPluginType() const;
 	virtual const char* GetName() const { return "DirectInput"; }
-	virtual void About() const;
 	virtual int GetVersion() const;
 	
 	// Keyboard
-	virtual bool KeyDown(unsigned char Key, bool once = true);
-	virtual unsigned char GetKeyDown() const;
+	virtual bool KeyDown(int Key, bool once = true);
+	virtual int GetKeyDown() const;
 	virtual bool IsKeyDown() const; // true if WM_CHAR is thrown
 
 	// Mouse
-	// todo: return const ref 
-	virtual POINT MousePos();
-	virtual const D3DXVECTOR2& GetTransformedMousePos() const;
+	virtual void MousePos(int& x, int& y) const;
+	virtual const glm::vec2& GetTransformedMousePos() const;
 	virtual bool MouseClick(int Button, bool once) const;
 
-	virtual int MouseX();
-	virtual int MouseY();
-	virtual int MouseZ();
+	virtual int MouseX() const;
+	virtual int MouseY() const;
+	virtual int MouseZ() const;
 
-	virtual bool GetSelectedRect(Math::FRECT& out);
+	virtual bool GetSelectedRect(Math::AABB& out);
 
 	virtual void SetMouseState(MouseCursorState state);
 
 private:
 
-	void Poll(const struct MsgProcData& data);
+	static DirectInput* s_pThis;
 
-	DirectInput(PluginManager& mgr);
-	virtual ~DirectInput();
-
-	// Plug-in Manager
-	PluginManager& m_mgr;
+	// scripting engine
+	asIScriptEngine* m_as;
 
 	// Keyboard
-	bool m_cKeyDown[256];
+	int m_iCharKeyDown;
+	int m_iCharAction;
+
+	int m_iKeyDown;
+	int m_iKeyAction;
+
 	unsigned char m_cKeyDownOnce;
 	unsigned char m_cCharDown;
 
@@ -59,34 +66,30 @@ private:
 	int m_iMouseX;
 	int m_iMouseY;
 	int m_iMouseZ;
-	POINT m_MousePos;
-	D3DXVECTOR2 m_tpos;
+	//POINT m_MousePos;
 
-	D3DXVECTOR2 m_selectedPos;
+	glm::vec2 m_tpos;
+	glm::vec2 m_selectedPos;
 
 	bool m_bMouseClick[2];
 	bool m_bMouseClickOnce[2];
 
 	bool m_bMouseMove;
 
-	std::vector<HCURSOR> m_cursors;
 	unsigned int m_uiCurrentCursor;
 
 	int m_eventId;
 
-	friend PLUGINDECL IPlugin* CreatePlugin(PluginManager&);
-
 	// helper functions
 	void Reset();
-	void ReadMouse(const RAWMOUSE& mouse);
-	void ReadKeyboard(const RAWKEYBOARD& keyboard);
 
 	void ClampMouse();
 
-	void InitRawInput();
-	void LoadCursors();
+	void CenterMouse();
 
 	void RegisterScript();
+
+	void UpdateMouse(int x, int y);
 };
 
 #endif

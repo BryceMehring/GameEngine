@@ -7,10 +7,9 @@
 #include "scripthelper\scripthelper.h"
 #include "scriptarray\scriptarray.h"
 #include "scriptmath\scriptmath.h"
-#include "Menu.h"
-#include "VecMath.h"
 #include "FileManager.h"
 #include "StringAlgorithms.h" // todo: remove this file
+#include "Menu.h"
 
 #include <sstream>
 #include <ctime>
@@ -37,7 +36,7 @@ struct Script
 };
 
 // The line callback function is called by the VM for each statement that is executed
-void LineCallback(asIScriptContext *ctx, DWORD *timeOut)
+void LineCallback(asIScriptContext *ctx, unsigned int *timeOut)
 {
 	// If the time out is reached we suspend the script
 	if( *timeOut < clock() )
@@ -50,8 +49,8 @@ asVM::asVM() : m_iExeScript(0)
 {
 	m_pEngine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
 	assert(m_pEngine != nullptr);
-	m_pEngine->SetEngineProperty(asEP_BUILD_WITHOUT_LINE_CUES,TRUE);
-	m_pEngine->SetEngineProperty(asEP_USE_CHARACTER_LITERALS, TRUE);
+	m_pEngine->SetEngineProperty(asEP_BUILD_WITHOUT_LINE_CUES,true);
+	m_pEngine->SetEngineProperty(asEP_USE_CHARACTER_LITERALS, true);
 
 	RegisterStdString(m_pEngine);
 
@@ -160,7 +159,7 @@ void asVM::ExecuteScript(const string& script, asDWORD mask)
 	::asIScriptContext* ctx = m_pEngine->CreateContext();
 
 	// Define the timeout as 1 second
-	DWORD timeOut = clock() + 1000;
+	unsigned int timeOut = clock() + 1000;
 
 	// Set up the line callback that will timout the script
 	ctx->SetLineCallback(asFUNCTION(LineCallback), &timeOut, asCALL_CDECL);
@@ -366,38 +365,6 @@ void asVM::RegisterScript(ScriptingConsole* pTextBox)
 
 	RegisterScriptMath(m_pEngine);
 	Math::RegisterScriptVecMath(m_pEngine);
-
-
-	// ============= POD =============
-
-	// the macro offsetof should only work on pod types(no virtual methods),
-	// but it does seem to work on regular classes that use polymorphism. todo: need to look into this.
-
-	// ScriptFunction
-	//DBAS(m_pEngine->RegisterObjectType("ScriptFunction",sizeof(ScriptFunction),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
-	//DBAS(m_pEngine->RegisterObjectProperty("ScriptFunction","int funcId",offsetof(ScriptFunction,ifuncId)));
-	//DBAS(m_pEngine->RegisterObjectProperty("ScriptFunction","uint scriptIndex",offsetof(ScriptFunction,iScriptIndex)));
-
-	// Delegate
-	//DBAS(m_pEngine->RegisterObjectType("Delegate",sizeof(asDelegate),asOBJ_VALUE | asOBJ_APP_CLASS_C));
-	//DBAS(m_pEngine->RegisterObjectBehaviour("Delegate",asBEHAVE_CONSTRUCT,"void f()",asFUNCTION((EngineHelper::Construct<asDelegate>)),asCALL_CDECL_OBJLAST));
-	//DBAS(m_pEngine->RegisterObjectBehaviour("Delegate",asBEHAVE_CONSTRUCT,"void f(const VoidDelegate &in)",asFUNCTION((EngineHelper::CopyConstruct<asDelegate>)),asCALL_CDECL_OBJLAST));
-	//DBAS(m_pEngine->RegisterObjectBehaviour("Delegate",asBEHAVE_DESTRUCT,"void f()",asFUNCTION((EngineHelper::Destroy<asDelegate>)),asCALL_CDECL_OBJLAST));
-	
-	//DBAS(m_pEngine->RegisterObjectMethod("Delegate","VoidDelegate& opAssign(const VoidDelegate &in)", asMETHODPR(asDelegate, operator =, (const asDelegate&), asDelegate&), asCALL_THISCALL));
-	//DBAS(m_pEngine->RegisterObjectMethod("Delegate","void call()",asMETHOD(asDelegate,Call),asCALL_THISCALL));
-
-	// POINT
-	DBAS(m_pEngine->RegisterObjectType("POINT",sizeof(POINT),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
-	DBAS(m_pEngine->RegisterObjectProperty("POINT","int x",offsetof(POINT,x)));
-	DBAS(m_pEngine->RegisterObjectProperty("POINT","int y",offsetof(POINT,y)));
-
-	// RECT
-	DBAS(m_pEngine->RegisterObjectType("RECT",sizeof(RECT),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
-	DBAS(m_pEngine->RegisterObjectProperty("RECT","int left",offsetof(RECT,left)));
-	DBAS(m_pEngine->RegisterObjectProperty("RECT","int top",offsetof(RECT,top)));
-	DBAS(m_pEngine->RegisterObjectProperty("RECT","int right",offsetof(RECT,right)));
-	DBAS(m_pEngine->RegisterObjectProperty("RECT","int bottom",offsetof(RECT,bottom)));
 
 	// ============= Funcdefs ============= 
 	DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));

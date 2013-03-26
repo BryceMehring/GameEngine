@@ -4,31 +4,30 @@
 #ifndef _VECMATH_
 #define _VECMATH_
 
-#include "d3dx9math.h"
-#include "DxPolygon.h"
 #include <string>
 #include <vector>
+#include <glm\glm.hpp>
 
 namespace Math
 {
 
 struct AABB
 {
-	D3DXVECTOR2 min;
-	D3DXVECTOR2 max;
+	glm::vec2 min;
+	glm::vec2 max;
 };
 
 // Basic rect, using floats
 struct FRECT
 {
 	FRECT() {}
-	FRECT(const D3DXVECTOR2& topLeft, const D3DXVECTOR2& bottomRight) : topLeft(topLeft), bottomRight(bottomRight)
+	FRECT(const glm::vec2& topLeft, const glm::vec2& bottomRight) : topLeft(topLeft), bottomRight(bottomRight)
 	{
 	}
 
-	D3DXVECTOR2 Middle() const { return (topLeft + bottomRight) * 0.5f; }
+	glm::vec2 Middle() const { return (topLeft + bottomRight) * 0.5f; }
 
-	bool IsPointWithin(const D3DXVECTOR2& pos) const
+	bool IsPointWithin(const glm::vec2& pos) const
 	{
 		return (pos.x >= topLeft.x) && (pos.x <= bottomRight.x) && (pos.y >= bottomRight.y) && (pos.y <= topLeft.y);
 	}
@@ -44,9 +43,9 @@ struct FRECT
 	}
 
 	// sets new center
-	FRECT& operator =(const D3DXVECTOR2& pos)
+	FRECT& operator =(const glm::vec2& pos)
 	{
-		D3DXVECTOR2 diff = (bottomRight - topLeft)*0.5f;
+		glm::vec2 diff = (bottomRight - topLeft)*0.5f;
 		topLeft = pos - diff;
 		bottomRight = pos + diff;
 
@@ -54,60 +53,49 @@ struct FRECT
 	}
 
 	// todo: rename to leftTop, rightBottom;
-	D3DXVECTOR2 topLeft;
-	D3DXVECTOR2 bottomRight;
+	glm::vec2 topLeft;
+	glm::vec2 bottomRight;
 };
 
 // Basic circle structure
 struct Circle
 {
 	Circle() {}
-	Circle(const D3DXVECTOR2& c, float r) : center(c), r(r)
+	Circle(const glm::vec2& c, float r) : center(c), r(r)
 	{
 	}
 
-	bool IsPointWithin(const D3DXVECTOR2& pos) const
+	bool IsPointWithin(const glm::vec2& pos) const
 	{
-		 return (D3DXVec2LengthSq(&(pos - center)) < (r*r));
+		glm::vec2 temp = pos - center;
+		return (temp.x * temp.x + temp.y * temp.y) < (r*r);
 	}
 
-	Circle& operator =(const D3DXVECTOR2& c)
+	Circle& operator =(const glm::vec2& c)
 	{
 		center = c;
 		return *this;
 	}
 
-	D3DXVECTOR2 center;
+	glm::vec2 center;
 	float r;
 
 };
 
-bool Intersects(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2); 
+bool Intersects(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly2); 
 bool Intersects(const Circle& c1, const FRECT& R1);
 bool Intersects(const Circle& c1, const Circle& c2);
 bool Intersects(const FRECT& c1, const FRECT& c2);
 
 
-bool Sat(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2);
+bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly2);
 
 // ray casting algorithm
-bool IsPointInPolygon(const D3DXVECTOR2* pArray, unsigned int length, POINT P);
-bool IsPointInPolygon(const D3DXVECTOR3* pArray, unsigned int length, POINT P);
-
-// returns the reflection vector, if dir points in the dir of movement, use (-dir).
-D3DXVECTOR2 Reflect(const D3DXVECTOR2& dir, const D3DXVECTOR2& normal);
-D3DXVECTOR3 Reflect(const D3DXVECTOR3& dir, const D3DXVECTOR3& normal);
+bool IsPointInPolygon(const glm::vec2* pArray, unsigned int length, const glm::vec2& P);
 
 // returns a random float in the range of [a,b]
 float GetRandFloat(float a, float b);
 unsigned int GetRandInt(unsigned int a, unsigned int b);
-
-// clamps x into the range of [a,b]
-template< class T >
-T Clamp(const T& x, const T& a, const T& b)
-{
-	return x < a ? a : (x > b ? b : x);
-}
 
 bool InRange(float value, float min, float max);
 
@@ -116,12 +104,9 @@ bool Equals(float a, float b, float diff = 0.0001f);
 unsigned int LOG2(unsigned int i);
 unsigned int LOG10(unsigned int i);
 
-// If rays interest, the return value is not -1
-float RayCircleInsersection(const D3DXVECTOR2& c, float r, const D3DXVECTOR2& pos, const D3DXVECTOR2& dir);
-
 //bool Intersects(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2);
 
-float PongRayTrace(D3DXVECTOR2 pos, D3DXVECTOR2 dir, float fLeftBound); 
+float PongRayTrace(glm::vec2 pos, glm::vec2 dir, float fLeftBound); 
 
 bool IsPrime(unsigned int);
 
@@ -146,7 +131,7 @@ public:
 
 	// returns true if pOther interests this, else false
 	virtual bool Intersects(const ICollisionPolygon& other) const = 0;
-	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const = 0;
+	virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const = 0;
 	virtual void GetAABB(AABB&) const = 0;
 
 	// returns the type of the collision object
@@ -162,11 +147,12 @@ public:
 
 	// todo: default ctor?
 	// ctor
+	CCircle() {}
 	CCircle(const Circle& circle);
 
 	virtual Type GetType() const { return ICollisionPolygon::CircleType; }
 	virtual bool Intersects(const ICollisionPolygon& other) const;
-	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const;
+	virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
 	virtual void GetAABB(AABB&) const;
 	
 	// circle access
@@ -191,7 +177,7 @@ public:
 
 	virtual Type GetType() const { return ICollisionPolygon::RectangleType; }
 	virtual bool Intersects(const ICollisionPolygon& other) const;
-	virtual void GetNormal(const D3DXVECTOR2& pos, D3DXVECTOR2& out) const;
+	virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
 	virtual void GetAABB(AABB&) const;
 
 	// rect access
@@ -204,7 +190,7 @@ private:
 
 };
 
-void CreateCollionPolygon(const std::vector<D3DXVECTOR3>& poly, FRECT& out);
+void CreateCollionPolygon(const std::vector<glm::vec3>& poly, FRECT& out);
 
 void RegisterScriptVecMath(class asIScriptEngine* pEngine);
 

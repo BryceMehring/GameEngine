@@ -1,6 +1,5 @@
 
 #include "QuadTree.h"
-#include "DxPolygon.h"
 #include "IRenderer.h"
 #include <algorithm>
 #include <stack>
@@ -12,15 +11,6 @@
 #define GET_INDEX(Node1) (Node1->m_Previous == nullptr) ? -1l : (MAX_NODES - (&Node1->m_Previous->m_Nodes[MAX_NODES - 1] - Node1))
 
 using namespace std;
-
-bool operator == (const POINT& a, const POINT& b)
-{
-	return ((a.x == b.x) && (a.y == b.y));
-}
-bool operator != (const POINT& a, const POINT& b)
-{
-	return !::operator==(a,b);
-}
 
 QuadTree::QuadTree() : m_Previous(nullptr), m_iHeight(0)
 {
@@ -61,17 +51,17 @@ void QuadTree::SubDivide()
 	const Math::FRECT& rect = R.GetRect();
 
 	// this will divide the current rect into MAX_NODES new rectangles
-	D3DXVECTOR2 middle = rect.Middle();
-	const D3DXVECTOR2& topLeft = rect.topLeft;
-	const D3DXVECTOR2& bottomRight = rect.bottomRight;
+	glm::vec2 middle = rect.Middle();
+	const glm::vec2& topLeft = rect.topLeft;
+	const glm::vec2& bottomRight = rect.bottomRight;
 
 	m_Nodes.resize(4);
 
 	Math::FRECT subRects[] =
 	{
 		Math::FRECT(topLeft,middle),
-		Math::FRECT(D3DXVECTOR2(middle.x,topLeft.y),D3DXVECTOR2(bottomRight.x,middle.y)),
-		Math::FRECT(D3DXVECTOR2(topLeft.x,middle.y),D3DXVECTOR2(middle.x,bottomRight.y)),
+		Math::FRECT(glm::vec2(middle.x,topLeft.y),glm::vec2(bottomRight.x,middle.y)),
+		Math::FRECT(glm::vec2(topLeft.x,middle.y),glm::vec2(middle.x,bottomRight.y)),
 		Math::FRECT(middle,bottomRight)
 	};
 
@@ -92,16 +82,16 @@ void QuadTree::Render(IRenderer& renderer)
 		{
 			const Math::FRECT& R = iter->GetRect();
 
-			::D3DXVECTOR3 pos[5] = 
+			::glm::vec3 pos[5] = 
 			{
-				D3DXVECTOR3(R.topLeft.x,R.topLeft.y,0.0f),
-				D3DXVECTOR3(R.bottomRight.x,R.topLeft.y,0.0f),
-				D3DXVECTOR3(R.bottomRight.x,R.bottomRight.y,0.0f),
-				D3DXVECTOR3(R.topLeft.x,R.bottomRight.y,0.0f),
-				D3DXVECTOR3(R.topLeft.x,R.topLeft.y,0.0f),
+				glm::vec3(R.topLeft.x,R.topLeft.y,0.0f),
+				glm::vec3(R.bottomRight.x,R.topLeft.y,0.0f),
+				glm::vec3(R.bottomRight.x,R.bottomRight.y,0.0f),
+				glm::vec3(R.topLeft.x,R.bottomRight.y,0.0f),
+				glm::vec3(R.topLeft.x,R.topLeft.y,0.0f),
 			};
 
-			renderer.Get2DRenderer().DrawLine(pos,5);
+			renderer.DrawLine(pos,5);
 		}
 	}
 }
@@ -274,10 +264,9 @@ void QuadTree::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Qu
 	}
 }
 
-void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out)
+void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj)
 {
-	std::set<ISpatialObject*> onceFilter;
-	std::vector<QuadTree*> nodes;
+	//std::set<ISpatialObject*> onceFilter;
 	stack<QuadTree*> theStack;
 
 	theStack.push(this);
@@ -287,28 +276,33 @@ void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector
 		QuadTree* pTop = theStack.top();
 		theStack.pop();
 
-		pTop->FindNearNodes(poly,nodes);
-
-		// as we iterate over the near nodes
-		for(unsigned int i = 0; i < nodes.size(); ++i)
+		// Loop through all of the sub nodes
+		for(unsigned int i = 0; i < pTop->m_Nodes.size(); ++i)
 		{
-			QuadTree* pNode = nodes[i];
-			auto& objList = pNode->m_Objects;
+			QuadTree& subNode = pTop->m_Nodes[i];
 
-			for(auto iter = objList.begin(); iter != objList.end(); ++iter)
+			if(subNode.R.Intersects(poly))
 			{
-				if((*iter)->GetCollisionPolygon().Intersects(poly))
-				{
-					auto onceFilterIter = onceFilter.insert(*iter);
+				auto& objList = subNode.m_Objects;
 
-					if(onceFilterIter.second)
+				for(auto iter = objList.begin(); iter != objList.end(); ++iter)
+				{
+					if(pObj == nullptr || (pObj != nullptr && (&pObj->GetCollisionPolygon()) != (&(*iter)->GetCollisionPolygon())))
 					{
-						out.push_back(*iter);
+						if((*iter)->GetCollisionPolygon().Intersects(poly))
+						{
+							//auto onceFilterIter = onceFilter.insert(*iter);
+
+							//if(onceFilterIter.second)
+							{
+								out.push_back(*iter);
+							}
+						}
 					}
 				}
-			}
 
-			theStack.push(pNode);
+				theStack.push(&subNode);
+			}
 		}
 	}
 }

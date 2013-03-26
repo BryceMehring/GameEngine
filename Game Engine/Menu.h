@@ -29,68 +29,6 @@ protected:
 	
 };
 
-
-// Todo: change the name of this class?
-class Menu : public IRender
-{
-public:
-
-	RTTI_DECL;
-
-	// todo: make this thread safe
-
-	Menu();
-	//Menu(const std::string& str);
-	~Menu();
-
-	virtual void Update(class GUI* pGUI, class IKMInput& input, double dt);
-	virtual void Render(class IRenderer& renderer);
-
-	void SetMenuTitle(const std::string& str,const POINT& P);
-	void SetPolygon(DxPolygon* pPolygon);
-
-	void AddMenu(Menu* pMenu);
-	void AddElement(IUIElement* pElement);
-
-private:
-
-	// data members
-	POINT m_point;
-	std::string m_menuTitle;
-	std::vector<IUIElement*> m_elements;
-	std::vector<Menu*> m_menus;
-	Menu * m_pPrev;
-	DxPolygon* m_pPolygon;
-};
-
-
-class GUI : public IRender
-{
-public:
-
-	friend class Menu;
-
-	typedef Delegate<void,Menu*> ChangeMenuCallback;
-
-	explicit GUI(Menu* pMenu = nullptr);
-	~GUI();
-
-	ChangeMenuCallback CreateCallback();
-
-	void SetMenu(Menu* pMenu);
-	Menu* GetMenu();
-
-	void Update(class IKMInput& input, double dt);
-	void Render(class IRenderer& renderer);
-
-private:
-
-	Menu* m_pMenu;
-	unsigned int m_uiCurrentIndex;
-	bool m_bSetMenu;
-
-};
-
 // Buttons
 class ButtonBase : public IUIElement
 {
@@ -104,10 +42,12 @@ public:
 
 	virtual void Select()
 	{
+		m_bSelected = true;
 		//m_pPolygon->SetColor(0xffff0000);
 	}
 	virtual void Deselect()
 	{
+		m_bSelected = false;
 		//m_pPolygon->SetColor(0xffffffff);
 	}
 
@@ -115,7 +55,8 @@ protected:
 
 	Math::Sprite m_sprite;
 	std::string m_text;
-	bool m_bMouseHover; 
+	bool m_bMouseHover;
+	bool m_bSelected;
 
 };
 
@@ -150,7 +91,7 @@ public:
 
 		if(input.MouseClick(0))
 		{
-			const ::D3DXVECTOR2& pos = input.GetTransformedMousePos();
+			const glm::vec2& pos = input.GetTransformedMousePos();
 
 			if(m_sprite.IsPointWithin(pos))
 			{
@@ -164,6 +105,72 @@ private:
 	DELEGATE m_callback;
 	T m_type;
 };
+
+
+// Todo: change the name of this class?
+class Menu : public IRender
+{
+public:
+
+	RTTI_DECL;
+
+	struct MenuItem
+	{
+		IUIElement* pTrigger;
+		Menu* pMenu;
+	};
+
+	Menu();
+	//Menu(const std::string& str);
+	~Menu();
+
+	virtual void Update(class GUI* pGUI, class IKMInput& input, double dt);
+	virtual void Render(class IRenderer& renderer);
+
+	void SetMenuTitle(const std::string& str,const glm::vec2& pos);
+
+	void AddMenu(Menu* pMenu, GenericButton<Menu*>* pElement, class GUI* pGUI);
+	void AddElement(IUIElement* pElement);
+
+private:
+
+	// data members
+	std::vector<IUIElement*> m_elements;
+	std::vector<Menu*> m_menus;
+	Menu * m_pPrev;
+
+	glm::vec2 m_pos;
+	std::string m_menuTitle;
+};
+
+
+class GUI : public IRender
+{
+public:
+
+	friend class Menu;
+
+	typedef Delegate<void,Menu*> ChangeMenuCallback;
+
+	explicit GUI(Menu* pMenu = nullptr);
+	~GUI();
+
+	ChangeMenuCallback CreateCallback();
+
+	void SetMenu(Menu* pMenu);
+	Menu* GetMenu();
+
+	void Update(class IKMInput& input, double dt);
+	void Render(class IRenderer& renderer);
+
+private:
+
+	Menu* m_pMenu;
+	unsigned int m_uiCurrentIndex;
+	bool m_bSetMenu;
+
+};
+
 
 template< class T >
 class GenericButton<T&> : public ButtonBase
@@ -196,7 +203,7 @@ public:
 
 		if(input.MouseClick(0))
 		{
-			const ::D3DXVECTOR2& pos = input.GetTransformedMousePos();
+			const glm::vec2& pos = input.GetTransformedMousePos();
 
 			if(m_sprite.IsPointWithin(pos))
 			{
@@ -238,7 +245,7 @@ public:
 
 		if(input.MouseClick(0))
 		{
-			const ::D3DXVECTOR2& pos = input.GetTransformedMousePos();
+			const glm::vec2& pos = input.GetTransformedMousePos();
 
 			if(m_sprite.IsPointWithin(pos))
 			{
@@ -252,7 +259,7 @@ private:
 	DELEGATE m_callback;
 };
 
-template< class T >
+/*template< class T >
 class SquareButton : public GenericButton<T>
 {
 public:
@@ -266,18 +273,18 @@ public:
 
 private:
 
-};
+};*/
 
 // A basic ui textbox
 class TextBox : public IUIElement
 {
 public:
 
-	TextBox(const std::string& name, const D3DXVECTOR3& pos, float w, float h);
+	TextBox(const std::string& name, const glm::vec2& pos, float w, float h);
 	virtual ~TextBox();
 
 	// Enters a new line
-	void Write(const std::string& line, const D3DXVECTOR4& color, bool bContinue = false);
+	void Write(const std::string& line, const glm::vec4& color, bool bContinue = false);
 	
 	virtual void Update(IKMInput&, double dt);
 	virtual void Render(IRenderer&);
@@ -296,7 +303,7 @@ protected:
 	struct LineData
 	{
 		LineData() {}
-		LineData(const std::string& str, const D3DXVECTOR4& color, const Math::FRECT& R,bool c)
+		LineData(const std::string& str, const glm::vec4& color, const Math::FRECT& R,bool c)
 		: line(str), color(color), R(R), bContinue(c)
 		{
 
@@ -304,7 +311,7 @@ protected:
 
 		std::string line;
 		Math::FRECT R;
-		D3DXVECTOR4 color;
+		glm::vec4 color;
 		bool bContinue; 
 	};
 
@@ -323,13 +330,13 @@ protected:
 	
 	// todo: I could move the carrot into a class
 	// carrot
-	POINT m_carrotPos;
+	//POINT m_carrotPos;
 	bool m_drawCarrot;
 
 	float m_fCarrotTime;
 	double m_fScrollTime;
 
-	D3DXVECTOR2 m_pos;
+	glm::vec2 m_pos;
 
 	// ===== helper functions =====
 protected:
@@ -354,7 +361,7 @@ class ScriptingConsole : public TextBox
 {
 public:
 
-	ScriptingConsole(asVM* pVM, const std::string& name, const D3DXVECTOR3& pos, float w, float h);
+	ScriptingConsole(asVM* pVM, const std::string& name, const glm::vec2& pos, float w, float h);
 	virtual ~ScriptingConsole();
 
 	virtual void Update(IKMInput&, double dt);
@@ -384,7 +391,7 @@ protected:
 		stringstream stream;
 		stream << p;
 
-		Write(stream.str(),::D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f));
+		Write(stream.str(),::glm::vec4(1.0f,1.0f,1.0f,1.0f));
 	}
 
 	// These are registered with AngelScript

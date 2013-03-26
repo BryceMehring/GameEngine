@@ -1,8 +1,11 @@
 // Programmed By Bryce Mehring
 // 1/20/2011
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 // Read chapter 16, use the dynamic object mapper with the DLL files.
-#include "WindowManager.h"
 #include "PluginManager.h"
 #include "FileManager.h"
 #include "Game.h"
@@ -34,7 +37,6 @@ void PluginManager::FreeAllPlugins()
 	m_plugins.clear();
 }
 
-WindowManager& PluginManager::GetWindowManager() { return m_pGame->GetWindow(); }
 asVM& PluginManager::GetAngelScript() { return m_pGame->GetAs(); }
 
 //  ===== interface with dlls =====
@@ -87,7 +89,7 @@ bool PluginManager::Good(const char* pDLL) const
 		return false;
 	}
 
-	CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress(dll.mod,"CreatePlugin");
+	CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress((HMODULE)dll.mod,"CreatePlugin");
 
 	if(pFunct == nullptr)
 	{
@@ -99,7 +101,7 @@ bool PluginManager::Good(const char* pDLL) const
 		return false;
 	}
 
-	FreeLibrary(dll.mod);
+	FreeLibrary((HMODULE)dll.mod);
 
 	return true;
 }
@@ -110,7 +112,11 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 	char buffer[128];
 	PluginInfo dll = {0,0};
 
+#ifdef _WIN32
 	dll.mod = LoadLibrary(pDLL);
+#else
+	dll.mod = dlopen(pDLL,RTLD_LAZY);
+#endif
 
 	// todo: fix the error handling here
 	if(dll.mod == nullptr)
@@ -128,12 +134,22 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 		return nullptr;
 	}
 
-	CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress(dll.mod,"CreatePlugin");
+	CREATEPLUGIN pFunct = nullptr;
+
+#ifdef _WIN32
+	pFunct = (CREATEPLUGIN)GetProcAddress((HMODULE)(dll.mod),"CreatePlugin");
+#else
+	pFunct = (CREATEPLUGIN)dlsym(dll.mod,"CreatePlugin");
+#endif
 
 	if(pFunct == nullptr)
 	{
+#ifdef _WIN32
 		// error, corrupted dll
-		FreeLibrary(dll.mod);
+		FreeLibrary((HMODULE)dll.mod);
+#else
+		dlclose(dll.mod);
+#endif
 
 		sprintf_s(buffer,"CreatePlugin() function not found in: %s",pDLL);
 		fm.WriteToLog(buffer);
@@ -145,12 +161,8 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 
 		
 	// Create the plugin
-	dll.pPlugin = pFunct(*this);
+	dll.pPlugin = pFunct(GetAngelScript().GetScriptEngine());
 	assert(dll.pPlugin != nullptr);
-
-	// todo: look into this
-	//asIScriptEngine* pScriptEngine = m_pEngine->GetScriptVM()->GetScriptEngine();
-	//pScriptEngine->RegisterGlobalProperty("
 
 	// Get the type of the plugin
 	DLLType type = dll.pPlugin->GetPluginType();
@@ -200,7 +212,12 @@ bool PluginManager::LoadAllPlugins(const std::string& path, const std::string& e
 void PluginManager::FreePlugin(const PluginInfo& plugin)
 {
 	delete plugin.pPlugin;
-	FreeLibrary(plugin.mod);
+
+#ifdef _WIN32
+	FreeLibrary((HMODULE)plugin.mod);
+#else
+	dlclose(plugin.mod);
+#endif
 }
 
 void PluginManager::FreePlugin(DLLType type)

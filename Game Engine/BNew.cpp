@@ -3,7 +3,6 @@
 #include "MemoryPool.h"
 #include "gassert.h"
 #include "FileManager.h"
-#include <Windows.h>
 
 void* Bnew(unsigned int bytes)
 {

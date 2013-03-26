@@ -10,7 +10,6 @@
 
 using namespace std;
 
-FileManager::FileManager() {}
 FileManager::~FileManager()
 {
 	::fstream out(Constants::LOGFILE,ios::out);

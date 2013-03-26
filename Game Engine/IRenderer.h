@@ -4,44 +4,8 @@
 #include "IPlugin.h"
 #include "IResourceManager.h"
 #include "VecMath.h"
-#include <d3dx9math.h>
 #include <string>
-
-class __declspec(novtable) I2DRenderer
-{
-public:
-
-	virtual ~I2DRenderer() {}
-
-	// Line
-	virtual void DrawLine(const D3DXVECTOR3* pArray, unsigned int length) = 0;
-	virtual void DrawLine(const D3DXVECTOR3* pArray, unsigned int length, const D3DXVECTOR4& color, const D3DXMATRIX& t) = 0;
-
-	// Fonts
-	virtual void GetStringRec(const char* str, const D3DXVECTOR2& pos, const D3DXVECTOR2& scale, Math::FRECT& out) = 0;
-
-	virtual void DrawString(const char* str, // the string that gets drawn
-							const D3DXVECTOR2& pos, // World pos of the text, where the text starts getting drawn from
-							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
-							const D3DXVECTOR4& color = D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f), // color of the text blended together with the texture
-							const D3DXVECTOR2& scale = D3DXVECTOR2(1.0f,1.0f) // size of the text
-							) = 0; // world space
-
-	// sprites
-	//virtual bool CreateSpritePool(const string& tech,const std::string& texture, unsigned int& id) = 0;
-	//virtual bool DeleteSpritePool(unsigned int id) = 0;
-	//virtual void DrawSprite(unsigned int iPool, const D3DXMATRIX& transformation) = 0;
-
-	virtual void DrawSprite(const D3DXMATRIX& transformation, // transformation applied to the sprite
-							const std::string& texture, // texture used to draw the sprite
-							unsigned int iCellId = 0, // cellId if multiple frames are stored together in the same sprite image 
-							float dx = 1.0f, // the amount of tiling in the x direction, 1.0 means the texture will be stretched across the whole polygon 
-							float dy = 1.0f, // " y
-							DWORD color = 0xffffffff) = 0;
-	//virtual void DrawSpriteAnimation(const D3DXMATRIX& transformation, const std::string& texture, unsigned int iPriority, DWORD color = 0xffffffff);
-
-	
-};
+#include <glm\glm.hpp>
 
 class __declspec(novtable) I3DRenderer
 {
@@ -51,7 +15,7 @@ public:
 
 	// todo: need to create an abstract form of vertex declarations
 
-	virtual UINT CreateBillboarderdMesh(unsigned int n, const D3DXVECTOR3* pPosArray, unsigned int uiTech, const std::string& texture) = 0;
+	/*virtual UINT CreateBillboarderdMesh(unsigned int n, const D3DXVECTOR3* pPosArray, unsigned int uiTech, const std::string& texture) = 0;
 	virtual UINT CreateEffectFromFile(const char* file) = 0;
 	virtual UINT GetTechnique(UINT uiEffect, const char* Tech) = 0;
 	virtual void SetValue(UINT uiEffect, void* pData, UINT bytes) = 0;
@@ -59,7 +23,7 @@ public:
 	virtual UINT CreateMeshFromFile(const char* file) = 0;
 	virtual UINT CreateTriGridMesh() = 0;
 
-	virtual void RenderMesh(UINT) = 0;
+	virtual void RenderMesh(UINT) = 0;*/
 
 };
 
@@ -75,8 +39,6 @@ public:
 	virtual int LoadShader(char* pFile) = 0;
 	*/
 	virtual void ClearScreen() = 0;
-	virtual void Begin() = 0;
-	virtual void End() = 0;
 	virtual void Present() = 0;
 	//virtual void DrawSprite();
 
@@ -91,18 +53,41 @@ public:
 	// textures
 	virtual IResourceManager& GetResourceManager() = 0;
 
-	virtual I2DRenderer& Get2DRenderer() = 0;
-	//virtual I3DRenderer& Get3DRenderer() = 0;
+	// Line
+	virtual void DrawLine(const glm::vec3* pArray, unsigned int length, const glm::vec4& color = glm::vec4(1.0f), const glm::mat4& t = glm::mat4(1.0f)) = 0;
+
+	// Fonts
+	virtual void GetStringRec(const char* str, const glm::vec2& pos, const glm::vec2& scale, Math::FRECT& out) = 0;
+
+	virtual void DrawString(const char* str, // the string that gets drawn
+							const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
+							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
+							const glm::vec4& color = glm::vec4(1.0f,1.0f,1.0f,1.0f), // color of the text blended together with the texture
+							const glm::vec2& scale = glm::vec2(1.0f,1.0f) // size of the text
+							) = 0; // world space
+
+	// sprites
+	//virtual bool CreateSpritePool(const string& tech,const std::string& texture, unsigned int& id) = 0;
+	//virtual bool DeleteSpritePool(unsigned int id) = 0;
+	//virtual void DrawSprite(unsigned int iPool, const D3DXMATRIX& transformation) = 0;
+
+	virtual void DrawSprite(const glm::mat4& transformation, // transformation applied to the sprite
+							const std::string& texture, // texture used to draw the sprite
+							unsigned int iCellId = 0, // cellId if multiple frames are stored together in the same sprite image 
+							float dx = 1.0f, // the amount of tiling in the x direction, 1.0 means the texture will be stretched across the whole polygon 
+							float dy = 1.0f // " y
+							) = 0;
 
 	virtual void SetCamera(class Camera*) = 0;
 
 
 	// config
+	virtual void EnableVSync(bool) = 0;
 	virtual void EnumerateDisplayAdaptors() = 0;
-	virtual UINT GetNumDisplayAdaptors() const = 0;
-	virtual void SetDisplayMode(UINT i) = 0; // full screen mode
-	virtual const std::string& GetDisplayModeStr(UINT i) const = 0;
-	virtual void GetWinSize(POINT&) const = 0;
+	virtual unsigned int GetNumDisplayModes() const = 0;
+	virtual unsigned int GetCurrentDisplayMode() const = 0;
+	virtual void SetDisplayMode(unsigned int i) = 0; // full screen mode
+	virtual const std::string& GetDisplayModeStr(unsigned int i) const = 0;
 	virtual void ToggleFullscreen() = 0;
 	
 	///add more functions...

@@ -8,50 +8,63 @@
 #include "gassert.h"
 #include <ctime>
 #include <iomanip>
-//#include "MenuCreator.h"
+#include <iostream>
+
+#define GLFW_NO_GLU
+#include <GL\glfw.h>
+#include <glm\glm.hpp>
+#include <glm\gtx\transform.hpp>
+
 
 using namespace std;
 
-Game::Game(HINSTANCE hInstance) : m_window(hInstance), m_fDT(0.0f), m_pRenderer(nullptr), m_pInput(nullptr), m_bConsoleEnabled(false)
+#pragma comment(lib,"GLFWDLL.lib")
+#pragma comment(lib,"opengl32.lib")
+
+Game::Game() : m_fDT(0.0f), m_pRenderer(nullptr), m_pInput(nullptr), m_bConsoleEnabled(false), m_fEscTime(0.0)
 {
+	
+	// todo: reorganize this ctor
+
+	// Initialize
+	if(glfwInit() < 1)
+	{
+		throw string("Failed to init glfw");
+	}
+
 	LoadAllDLL();
+	
+	glfwDisable(GLFW_MOUSE_CURSOR); 
 
 	// todo: move this code somewhere else
-	m_pRenderer->GetResourceManager().LoadTexture("..\\textures\\cursor.png");
-	m_pRenderer->GetResourceManager().LoadTexture("..\\textures\\font.png");
-	m_pRenderer->GetResourceManager().LoadShader("..\\shaders\\2DShader.fx");
+	m_pRenderer->GetResourceManager().LoadResourceFile("..\\base.r");
 
 	// todo: init the scripting console somewhere else
 	float width = 90;
 	float height = 90;
-	D3DXVECTOR3 pos(0.0f,0.0f,0.0f);
+	glm::vec2 pos(0.0f,0.0f);
 	
 	m_pConsole = new ScriptingConsole(&m_vm,"Scripting Console",pos,width,height);
 
 	m_vm.RegisterScript(m_pConsole);
 
 	m_pConsole->RegisterScript();
-	m_window.RegisterScript(m_vm.GetScriptEngine());
+
+	
 
 	RegisterScript();
-
-	m_iEventId = m_window.AddMsgListener(WindowManager::MsgDelegate(this,&Game::MsgProc));
 }
 
 Game::~Game()
 {
-	// destroy the current state
-	//m_StateMachine.RemoveState(*this);
-
-	/// remove the listener from the window
-	m_window.RemoveListener(m_iEventId);
-
 	delete m_pConsole;
 
 	// run the garbage collector before we destroy
 	asIScriptEngine* pEngine = m_vm.GetScriptEngine();
 	pEngine->GarbageCollect();
 	pEngine->Release();
+
+	glfwTerminate();
 }
 
 const std::string& Game::GetCurrentState() const
@@ -71,14 +84,13 @@ void Game::SetNextState(const std::string& state)
 	}
 }
 
-int Game::PlayGame()
+int Game::Run()
 {
-	//m_PrevTime = m_timer.GetTimeInSeconds();
-	//QueryPerformanceCounter((LARGE_INTEGER*)&m_PrevTime);
-
 	// Loop while the use has not quit
-	while(StartTimer(),m_window.Update() && !m_pInput->KeyDown(KeyCode::ESCAPE))
+	while(glfwGetKey( GLFW_KEY_ESC ) != GLFW_PRESS && glfwGetWindowParam( GLFW_OPENED ))
 	{
+		StartTimer();
+
 		// Update the game
 		Update();
 
@@ -103,17 +115,11 @@ void Game::Update()
 		// switch states
 		m_StateMachine.SetState(m_NextState,*this);
 
-		//m_window.SetWinCaption(m_pNextState->GetType()->GetName());
-
 		// Reset next state
 		m_NextState.clear();
 	}
-	else if(!m_bConsoleEnabled && m_pInput->KeyDown(B))
-	{
-		m_StateMachine.LoadPreviousState(*this);
-	}
 
-	if(m_pInput->KeyDown(KeyCode::F11))
+	/*if(m_pInput->KeyDown(KeyCode::F11))
 	{
 		m_pRenderer->ToggleFullscreen();
 	}
@@ -124,9 +130,24 @@ void Game::Update()
 		m_pInput->Reset();
 	}
 
+	if(m_pInput->KeyDown(KeyCode::ESCAPE,false))
+	{
+		m_fEscTime += m_fDT;
+
+		if(m_fEscTime > 1.5)
+		{
+			// todo: fix this somehow
+			//PostQuitMessage(0);
+		}
+	}
+	else
+	{
+		m_fEscTime = 0.0;
+	}*/
+
 	if(m_bConsoleEnabled)
 	{
-		m_pConsole->Update(*m_pInput,m_fDT);
+		//m_pConsole->Update(*m_pInput,m_fDT);
 	}
 	else
 	{
@@ -136,14 +157,9 @@ void Game::Update()
 
 void Game::Draw()
 {
-	// tell the renderer that we are starting
-	m_pRenderer->Begin();
-
-	// render fps overlay
 	DrawFPS();
-	DrawCursor();
-	DrawSelectionRect();
-
+	//DrawSelectionRect();
+		
 	if(m_bConsoleEnabled)
 	{
 		m_pConsole->Render(*m_pRenderer);
@@ -154,58 +170,46 @@ void Game::Draw()
 		m_StateMachine.GetState().Draw(*this);
 	}
 
-	// end rendering
-	m_pRenderer->End();
-
 	// Present the screen
 	m_pRenderer->Present();
 }
 
 void Game::DrawFPS()
 {
-	static float x = 0;
-	static float y = 0;
-	static double dt = 0.0;
-	dt += GetDt();
-
-	::std::ostringstream out;
+	std::ostringstream out;
 	out<<"FPS: " << GetFps();
 
-	m_pRenderer->Get2DRenderer().DrawString(out.str().c_str(),::D3DXVECTOR2(-49,49),"font");
-	
+	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-49,49));
 }
 
 void Game::DrawCursor()
 {
-	const ::D3DXVECTOR2& pos = m_pInput->GetTransformedMousePos();
+	const ::glm::vec2& pos = m_pInput->GetTransformedMousePos();
 
-	D3DXMATRIX S, T;
-	D3DXMatrixTranslation(&T,pos.x+2.0f,pos.y-2.5f,-5.0f);
-	D3DXMatrixScaling(&S,6.0f,6.0f,1.0f);
+	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
+	glm::mat4 S = glm::scale(6.0f,6.0f,1.0f);
 
-	m_pRenderer->Get2DRenderer().DrawSprite(S*T,"cursor");
+	m_pRenderer->DrawSprite(S*T,"cursor");
 }
 
 void Game::DrawSelectionRect()
 {
-	Math::FRECT R;
+	Math::AABB R;
 	if(m_pInput->GetSelectedRect(R))
 	{
-		D3DXVECTOR3 pos[] = 
+		glm::vec3 pos[] =
 		{
-			D3DXVECTOR3(R.bottomRight.x,R.bottomRight.y,0.0f),
-			D3DXVECTOR3(R.topLeft.x,R.bottomRight.y,0.0f),
-			D3DXVECTOR3(R.topLeft.x,R.topLeft.y,0.0f),
-			D3DXVECTOR3(R.bottomRight.x,R.topLeft.y,0.0f),
-			D3DXVECTOR3(R.bottomRight.x,R.bottomRight.y,0.0f)
+			glm::vec3(R.min.x,R.min.y,0.0f),
+			glm::vec3(R.min.x,R.max.y,0.0f),
+			glm::vec3(R.max.x,R.max.y,0.0f),
+			glm::vec3(R.max.x,R.min.y,0.0f),
+			glm::vec3(R.min.x,R.min.y,0.0f)
 		};
 
-		D3DXMATRIX I;
-		D3DXMatrixIdentity(&I);
+		glm::mat4 I(1.0f);
+		glm::vec4 color(0.0f,1.0f,0.0f,1.0f);
 
-		D3DXVECTOR4 color(0.0f,1.0f,0.0f,1.0f);
-
-		m_pRenderer->Get2DRenderer().DrawLine(pos,sizeof(pos) / sizeof(D3DXVECTOR3),color,I);
+		m_pRenderer->DrawLine(pos,sizeof(pos) / sizeof(glm::vec3));
 	}
 }
 
@@ -216,10 +220,6 @@ IRenderer& Game::GetRenderer()
 IKMInput& Game::GetInput()
 {
 	return (*m_pInput);
-}
-WindowManager& Game::GetWindow()
-{
-	return m_window;
 }
 PluginManager& Game::GetPM()
 {
@@ -247,18 +247,21 @@ void Game::ReloadPlugins()
 #endif
 }
 
-void Game::ReloadPlugins(const std::string& file)
+void Game::ReloadPlugins(const std::string& path)
 {
 	m_plugins.FreeAllPlugins();
 
-	if(m_plugins.LoadAllPlugins(file,".dll"))
-	{
-		m_pRenderer = static_cast<IRenderer*>(m_plugins.GetPlugin(RenderingPlugin));
-		gassert(m_pRenderer != nullptr,"No Rendering plugin was found");
+	IPlugin* pPlugin = m_plugins.LoadDLL((path + "\\renderer.extension").c_str());
+	assert(pPlugin != nullptr);
+	assert(pPlugin->GetPluginType() == DLLType::RenderingPlugin); // check to make sure the renderer is actually the renderer
 
-		m_pInput = static_cast<IKMInput*>(m_plugins.GetPlugin(InputPlugin));
-		gassert(m_pRenderer != nullptr,"No Input plugin was found");
-	}
+	m_pRenderer = static_cast<IRenderer*>(pPlugin);
+
+	pPlugin = m_plugins.LoadDLL((path + "\\input.extension").c_str());
+	assert(pPlugin != nullptr);
+	assert(pPlugin->GetPluginType() == DLLType::InputPlugin); // check to make sure the input is actually the input plugin
+
+	m_pInput = static_cast<IKMInput*>(pPlugin);
 }
 
 void Game::LoadAllDLL()
@@ -291,7 +294,7 @@ void Game::RegisterScript()
 	pEngine->Release();
 }
 
-void Game::MsgProc(const MsgProcData& data)
+/*void Game::MsgProc(const MsgProcData& data)
 {
 	switch(data.msg)
 	{
@@ -308,7 +311,7 @@ void Game::MsgProc(const MsgProcData& data)
 		}
 		break;
 	}
-}
+}*/
 
 GameInfo::GameInfo() : m_fTimeElapsed(0.0), m_uiFrames(0), m_uiFPS(0)
 {

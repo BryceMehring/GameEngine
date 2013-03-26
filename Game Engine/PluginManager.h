@@ -3,24 +3,28 @@
 
 #ifndef _PLUGIN_MANAGER_
 #define _PLUGIN_MANAGER_
-#pragma once
 
+#ifdef _WIN32
 #ifdef PLUGIN_EXPORTS
 #define PLUGINDECL __declspec(dllexport)
 #else
 #define PLUGINDECL __declspec(dllimport)
 #endif
+#else
+#define PLUGINDECL
+#include <dlfcn.h>
+#endif
 
 #include "IPlugin.h"
 #include "Delegates.h"
 #include <hash_map>
-#include <Windows.h>
 #include <map>
 
 struct PluginInfo
 {
 	IPlugin* pPlugin;
-	HMODULE mod;
+	void* mod;
+	//HMODULE mod;
 };
 
 class PluginManager
@@ -40,7 +44,6 @@ public:
 
 	// more functions would go here as needed to work with the dlls...
 	//  ===== interface with dlls =====
-	class WindowManager& GetWindowManager();
 	class asVM& GetAngelScript();
 	//asVM& GetScriptVM() const;
 
@@ -82,8 +85,6 @@ private:
 	PluginManager& operator=(const PluginManager&);
 };
 
-typedef IPlugin* (*CREATEPLUGIN)(PluginManager& mgr);
-
-extern "C" PLUGINDECL IPlugin* CreatePlugin(PluginManager& mgr);
+typedef IPlugin* (*CREATEPLUGIN)(asIScriptEngine*);
 
 #endif // _PLUGIN_MANAGER_

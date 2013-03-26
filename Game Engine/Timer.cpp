@@ -1,33 +1,24 @@
+#define GLFW_DLL
+#define GLFW_NO_GLU
+
 #include "Timer.h"
+#include <GL\glfw.h>
 
-#pragma comment(lib,"Winmm.lib")
-
-Timer::Timer()
+Timer::Timer() : m_fStart(0.0), m_fEnd(0.0)
 {
-	timeBeginPeriod(1);
-	LARGE_INTEGER f;
-	QueryPerformanceFrequency(&f);
-
-	_Frequency = (double)f.QuadPart;
-
     Reset();
-}
-
-Timer::~Timer()
-{
-	timeEndPeriod(1);
 }
 
 void Timer::Start()
 {
 	_Active = true;
-	PollCounter(_StartCount);
+	PollCounter(m_fStart);
 }
 
 void Timer::Stop()
 {
 	_Active = false;
-	PollCounter(_EndCount);
+	PollCounter(m_fEnd);
 }
 
  // Stops the timer if it's active and resets all
@@ -37,7 +28,7 @@ void Timer::Reset()
     if (_Active)
         Stop();
 
-    _StartCount.QuadPart = (_EndCount.QuadPart = 0);
+    glfwSetTime(0.0);
     _Active = false;
 }
  
@@ -45,9 +36,9 @@ void Timer::Reset()
 // in micro-seconds
 double Timer::GetTime()
 {
-	if (_Active) { PollCounter(_EndCount); }
- 
-    return (_EndCount.QuadPart - _StartCount.QuadPart) / _Frequency;
+	if (_Active) { PollCounter(m_fEnd); }
+	
+	return m_fEnd - m_fStart;
 }
 
 // Returns TRUE if the Timer is currently active
@@ -56,12 +47,8 @@ bool Timer::IsActive() const
 	return _Active;
 }
 
-void Timer::PollCounter(LARGE_INTEGER& Out)
+void Timer::PollCounter(double& Out)
 {
-    HANDLE Thread = GetCurrentThread();
- 
-    DWORD_PTR OldMask = SetThreadAffinityMask(Thread, 0);
-        QueryPerformanceCounter(&Out);
-    SetThreadAffinityMask(Thread, OldMask);
+   Out = glfwGetTime();
 }
 

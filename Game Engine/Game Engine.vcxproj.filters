@@ -60,9 +60,6 @@
     <ClInclude Include="asVM.h">
       <Filter>Scripting</Filter>
     </ClInclude>
-    <ClInclude Include="WindowManager.h">
-      <Filter>Managers</Filter>
-    </ClInclude>
     <ClInclude Include="GameState.h">
       <Filter>State</Filter>
     </ClInclude>
@@ -76,9 +73,6 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Camera.h">
       <Filter>Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="DxPolygon.h">
-      <Filter>Rendering Addons</Filter>
     </ClInclude>
     <ClInclude Include="Delegates.h">
       <Filter>Binding</Filter>
@@ -95,9 +89,6 @@
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="VecMath.h" />
     <ClInclude Include="gassert.h" />
-    <ClInclude Include="GameStateConstants.h">
-      <Filter>State</Filter>
-    </ClInclude>
     <ClInclude Include="SerializedState.h">
       <Filter>Serialization</Filter>
     </ClInclude>
@@ -111,11 +102,7 @@
     <ClInclude Include="PooledAllocator.h">
       <Filter>Memory Management</Filter>
     </ClInclude>
-    <ClInclude Include="SingleInstance.h" />
     <ClInclude Include="StringAlgorithms.h" />
-    <ClInclude Include="IStateCreator.h">
-      <Filter>State</Filter>
-    </ClInclude>
     <ClInclude Include="Tiler.h">
       <Filter>Rendering Addons</Filter>
     </ClInclude>
@@ -133,6 +120,9 @@
     <ClInclude Include="SpatialHashTable.h">
       <Filter>Spatial Data Structures</Filter>
     </ClInclude>
+    <ClInclude Include="BaseResourceManager.h">
+      <Filter>Rendering Addons</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileManager.cpp">
@@ -143,9 +133,6 @@
     </ClCompile>
     <ClCompile Include="asVM.cpp">
       <Filter>Scripting</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowManager.cpp">
-      <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="GameStateMachine.cpp">
       <Filter>State</Filter>
@@ -159,9 +146,6 @@
     </ClCompile>
     <ClCompile Include="Menu.cpp">
       <Filter>GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="DxPolygon.cpp">
-      <Filter>Rendering Addons</Filter>
     </ClCompile>
     <ClCompile Include="Heap.cpp">
       <Filter>Memory Management</Filter>
@@ -184,8 +168,10 @@
       <Filter>State</Filter>
     </ClCompile>
     <ClCompile Include="GameConstants.cpp" />
-    <ClCompile Include="SingleInstance.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="RefCounting.cpp" />
+    <ClCompile Include="BaseResourceManager.cpp">
+      <Filter>Rendering Addons</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

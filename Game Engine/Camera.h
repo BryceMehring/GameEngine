@@ -1,31 +1,31 @@
 #ifndef _CAMERA_
 #define _CAMERA_
 
-#include <d3dx9math.h>
 #include "RefCounting.h"
+#include <glm\glm.hpp>
 
 class Camera : public RefCounting
 {
 public:
 
-	const D3DXMATRIX& view() const;
-	const D3DXMATRIX& proj() const;
-	const D3DXMATRIX& viewProj() const;
+	const glm::mat4& view() const;
+	const glm::mat4& proj() const;
+	const glm::mat4& viewProj() const;
 
-	const D3DXVECTOR3& right() const;
-	const D3DXVECTOR3& up() const;
-	const D3DXVECTOR3& look() const;
+	const glm::mat4& right() const;
+	const glm::mat4& up() const;
+	const glm::mat4& look() const;
 
 	float GetWidth() const;
 	float GetHeight() const;
 
-	D3DXVECTOR3& pos();
+	glm::vec3& pos();
 
-	void lookAt(D3DXVECTOR3& pos, D3DXVECTOR3& target, D3DXVECTOR3& up);
+	void lookAt(glm::vec3& pos, glm::vec3& target, glm::vec3& up);
 
 	void setLens(float w, float h, float nearZ, float farZ);
 
-	void setDir(const D3DXVECTOR3& dir);
+	void setDir(const glm::vec3& dir);
 
 	void update(float dt);
 
@@ -41,16 +41,16 @@ protected:
 
 protected:
 
-	D3DXMATRIX m_View;
-	D3DXMATRIX m_Proj;
-	D3DXMATRIX m_ViewProj;
+	glm::mat4 m_View;
+	glm::mat4 m_Proj;
+	glm::mat4 m_ViewProj;
 
-	D3DXVECTOR3 m_PosW;
-	D3DXVECTOR3 m_RightW;
-	D3DXVECTOR3 m_UpW;
-	D3DXVECTOR3 m_LookW;
+	glm::vec3 m_PosW;
+	glm::vec3 m_RightW;
+	glm::vec3 m_UpW;
+	glm::vec3 m_LookW;
 
-	D3DXVECTOR3 m_dir;
+	glm::vec3 m_dir;
 
 	float m_width;
 	float m_height;

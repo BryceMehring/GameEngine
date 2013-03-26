@@ -3,7 +3,6 @@
 
 #include "IInput.h"
 #include "VecMath.h"
-#include <Windows.h>
 
 enum KeyCode
 {
@@ -32,20 +31,20 @@ class __declspec(novtable) IKMInput : public IInputPlugin
 public:
 
 	// keyboard
-	virtual bool KeyDown(unsigned char Key, bool once = true) = 0;
+	virtual bool KeyDown(int Key, bool once = true) = 0;
 	virtual bool IsKeyDown() const = 0;
-	virtual unsigned char GetKeyDown() const = 0;
+	virtual int GetKeyDown() const = 0;
 
 	// mouse
 	virtual bool MouseClick(int Button, bool once = true) const = 0;
 
-	virtual POINT MousePos() = 0;
-	virtual const struct D3DXVECTOR2& GetTransformedMousePos() const = 0;
+	virtual void MousePos(int& x, int& y) const = 0;
+	virtual const glm::vec2& GetTransformedMousePos() const = 0;
 
-	virtual int MouseX() = 0;
-	virtual int MouseY() = 0;
-	virtual int MouseZ() = 0;
-	virtual bool GetSelectedRect(Math::FRECT& out) = 0;
+	virtual int MouseX() const = 0;
+	virtual int MouseY() const = 0;
+	virtual int MouseZ() const = 0;
+	virtual bool GetSelectedRect(Math::AABB& out) = 0;
 
 	// mouse cursor states
 	virtual void SetMouseState(MouseCursorState state) = 0; 

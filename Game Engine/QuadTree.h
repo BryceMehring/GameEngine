@@ -8,7 +8,6 @@
 #define _QUADTREE_
 #pragma once
 
-#include <Windows.h>
 #include <set>
 #include <vector>
 #include <list>
@@ -24,8 +23,8 @@ public:
 
 	virtual ~ISpatialObject() {}
 
-	virtual D3DXVECTOR2 GetPos() const = 0;
-	virtual D3DXVECTOR2 GetDir() const = 0;
+	virtual glm::vec2 GetPos() const = 0;
+	virtual glm::vec2 GetDir() const = 0;
 	virtual float GetSpeed() const = 0;
 
 	virtual void* QueryInterface(unsigned int) const = 0; 
@@ -54,7 +53,7 @@ public:
 	// operations
 	bool Insert(ISpatialObject& obj);
 
-	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out);
+	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj = nullptr);
 
 	void Render(IRenderer& renderer);
 

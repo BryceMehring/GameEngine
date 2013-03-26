@@ -6,6 +6,9 @@
 #include <cassert>
 #include <algorithm>
 
+#define GLFW_NO_GLU
+#include <GL\glfw.h>
+
 using namespace std;
 
 GameStateMachine::GameStateMachine() : m_pCurrentState(nullptr) {}
@@ -44,7 +47,7 @@ GameStateMachine::~GameStateMachine()
 
 void GameStateMachine::SetState(const std::string& state, Game& game)
 {
-	string path = "..\\Game Plugins\\" + state + ".dll";
+	string path = "..\\Game Plugins\\" + state + ".extension";
 	if(game.GetPM().Good(path.c_str()))
 	{
 		// remove current state
@@ -63,7 +66,7 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 		FileManager::Instance().WriteToLog(buffer);
 
 		// update window caption
-		game.GetWindow().SetWinCaption(state);
+		glfwSetWindowTitle(state.c_str());
 	}
 }
 

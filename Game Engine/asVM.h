@@ -11,8 +11,6 @@
 #define _ASMANAGER_
 #pragma once
 
-
-#include "DxPolygon.h"
 #include <scriptstdstring\scriptstdstring.h>
 #include <scriptbuilder\scriptbuilder.h>
 #include "gassert.h"

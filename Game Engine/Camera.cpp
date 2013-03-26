@@ -1,6 +1,6 @@
 
 #include "Camera.h"
-#include <dinput.h>
+#include <glm\gtx\transform.hpp>
 
 Camera* CreateCamera()
 {
@@ -16,10 +16,10 @@ void ReleaseCamera(Camera* pCam)
 
 Camera::Camera() : m_width(0.0f), m_height(0.0f)
 {
-	memset(&m_PosW,0,sizeof(D3DXVECTOR3));
-	memset(&m_LookW,0,sizeof(D3DXVECTOR3));
-	memset(&m_RightW,0,sizeof(D3DXVECTOR3));
-	memset(&m_dir,0,sizeof(D3DXVECTOR3));
+	memset(&m_PosW,0,sizeof(glm::vec3));
+	memset(&m_LookW,0,sizeof(glm::vec3));
+	memset(&m_RightW,0,sizeof(glm::vec3));
+	memset(&m_dir,0,sizeof(glm::vec3));
 
 	m_UpW.x = m_UpW.z = 0.0f;
 	m_UpW.y = 1.0f;
@@ -34,25 +34,25 @@ float Camera::GetHeight() const
 	return m_height;
 }
 
-const D3DXMATRIX& Camera::view() const
+const glm::mat4& Camera::view() const
 {
 	return m_View;
 }
-const D3DXMATRIX& Camera::proj() const
+const glm::mat4& Camera::proj() const
 {
 	return m_Proj;
 }
-const D3DXMATRIX& Camera::viewProj() const
+const glm::mat4& Camera::viewProj() const
 {
 	return m_ViewProj;
 }
 
-D3DXVECTOR3& Camera::pos()
+glm::vec3& Camera::pos()
 {
 	return m_PosW;
 }
 
-void Camera::lookAt(D3DXVECTOR3& pos, D3DXVECTOR3& target, D3DXVECTOR3& up)
+void Camera::lookAt(glm::vec3& pos, glm::vec3& target, glm::vec3& up)
 {
 	m_PosW = pos;
 	m_LookW = target;
@@ -65,48 +65,23 @@ void Camera::setLens(float w, float h, float nearZ, float farZ)
 {
 	m_width = w;
 	m_height = h;
-	D3DXMatrixOrthoLH(&m_Proj,w,h,nearZ,farZ);
-	//D3DXMatrixOrthoLH
-	//D3DXMatrixPerspectiveFovLH(&m_Proj,fov,aspect,nearZ,farZ);
+	m_Proj = glm::ortho(-m_width/2,m_width/2,-m_height/2,m_height/2,nearZ,farZ);
 }
 
-void Camera::setDir(const D3DXVECTOR3& dir)
+void Camera::setDir(const glm::vec3& dir)
 {
 	//m_dir = dir;
 }
 
 void Camera::update(float dt)
 {
-	//m_PosW += m_dir * dt;
-
-	/*float pitch = input.MouseY() / 150.0f;
-	float yAngle = input.MouseX() / 150.0f;
-
-	D3DXMATRIX R;
-
-	D3DXMatrixRotationAxis(&R,&m_RightW,pitch);
-	D3DXVec3TransformCoord(&m_LookW,&m_LookW,&R);
-	D3DXVec3TransformCoord(&m_UpW,&m_UpW,&R);
-
-	D3DXMatrixRotationY(&R,yAngle);
-	D3DXVec3TransformCoord(&m_RightW,&m_RightW,&R);
-	D3DXVec3TransformCoord(&m_UpW,&m_UpW,&R);
-	D3DXVec3TransformCoord(&m_LookW,&m_LookW,&R);*/
-	//::D3DXMatrixLookAtLH(&m_View,&m_PosW,
-
-
-	//D3DXMatrixLookAtLH(&m_View,&m_PosW,&m_LookW,&m_UpW);
-
-	//buildView();
-
-	m_ViewProj = m_View * m_Proj;
+	m_ViewProj = m_Proj * m_View;
 
 }
 
 void Camera::buildView()
 {
-	//::D3DXMatrixScaling(&m_View,.5f,.5f,.5f);
-	D3DXMatrixLookAtLH(&m_View,&m_PosW,&m_LookW,&m_UpW);
+	m_View = glm::lookAt(m_PosW,m_LookW,m_UpW);
 
 	/*D3DXVec3Normalize(&m_LookW,&m_LookW);
 	D3DXVec3Cross(&m_UpW,&m_LookW,&m_RightW);

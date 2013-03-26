@@ -7,13 +7,14 @@
 #include "GameConstants.h"
 
 #include <sstream>
+#include <glm\gtx\transform.hpp>
 
 using namespace std;
 
 RTTI_IMPL(Menu);
 
 
-Menu::Menu() : m_pPrev(nullptr), m_pPolygon(nullptr)
+Menu::Menu() : m_pPrev(nullptr)
 {
 }
 Menu::~Menu()
@@ -27,26 +28,20 @@ Menu::~Menu()
 	{
 		delete m_menus[i];
 	}
-
-	delete m_pPolygon;
 }
-void Menu::SetMenuTitle(const std::string& str,const POINT& P)
+void Menu::SetMenuTitle(const std::string& str,const glm::vec2& pos)
 {
-	m_point = P;
+	m_pos = pos;
 	m_menuTitle = str;
 }
-void Menu::SetPolygon(DxPolygon* pPolygon)
-{
-	if(pPolygon != nullptr)
-	{
-		m_pPolygon = pPolygon;
-	}
-}
 
-void Menu::AddMenu(Menu* pMenu)
+void Menu::AddMenu(Menu* pMenu, GenericButton<Menu*>* pElement, GUI* pGUI)
 {
-	if(pMenu != nullptr)
+	if(pMenu != nullptr && pElement != nullptr)
 	{
+		pElement->SetCallback(pGUI->CreateCallback());
+		pElement->SetArg(pMenu);
+
 		pMenu->m_pPrev = this;
 		m_menus.push_back(pMenu);
 	}
@@ -84,7 +79,7 @@ void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 			m_elements[pGUI->m_uiCurrentIndex]->Trigger();
 		}
 	}
-
+	
 	for(unsigned int i = 0; i < m_elements.size(); ++i)
 	{
 		m_elements[i]->Update(input,dt);
@@ -93,14 +88,6 @@ void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 }
 void Menu::Render(IRenderer& renderer)
 {
-	// Render menu border and header
-	//renderer.Get2DRenderer().DrawString(m_menuTitle.c_str(),m_point,0xffffffff);
-
-	if(m_pPolygon)
-	{
-		m_pPolygon->Render(renderer);
-	}
-
 	// Render all of the elements
 	for(unsigned int i = 0; i < m_elements.size(); ++i)
 	{
@@ -157,7 +144,7 @@ Menu* GUI::GetMenu()
 	return m_pMenu;
 }
 
-ButtonBase::ButtonBase(const Math::Sprite& s, const std::string& str) : m_sprite(s), m_text(str)
+ButtonBase::ButtonBase(const Math::Sprite& s, const std::string& str) : m_sprite(s), m_text(str), m_bSelected(false), m_bMouseHover(false)
 {
 }
 
@@ -172,18 +159,11 @@ void ButtonBase::Update(IKMInput& input)
 	// then move on to check if the mouse is colliding with the button
 	if(m_sprite.IsPointWithin(input.GetTransformedMousePos()))
 	{
-		/*m_color = 0xffffff00;
-		input.SetMouseState(::MouseCursorState::Hand);
-
-		m_bMouseHover = true;*/
+		m_bMouseHover = true;
 	}
-	else if(m_bMouseHover)
+	else
 	{
-		/*m_color = 0xffffffff;
-
-		input.SetMouseState(::MouseCursorState::Default);
-
-		m_bMouseHover = false;*/
+		m_bMouseHover = false;
 	}
 }
 
@@ -192,14 +172,14 @@ void ButtonBase::Render(IRenderer& renderer)
 	//TextureInfo buttonInfo;
 	//renderer.GetResourceManager().GetTextureInfo("button",buttonInfo);
 
-	D3DXMATRIX S,T;
-	D3DXVECTOR2 pos = m_sprite.Middle();
+	float scale = (m_bMouseHover || m_bSelected) ? 1.5f : 1.0f;
 
-	D3DXMatrixScaling(&S,m_sprite.Width(),m_sprite.Height(),1.0f);
-	D3DXMatrixTranslation(&T,pos.x,pos.y,0.0f);
+	glm::vec2 pos = m_sprite.Middle();
+	glm::mat4 S = glm::scale(m_sprite.Width() * scale,m_sprite.Height() * scale,1.0f);
+	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
 
-	renderer.Get2DRenderer().DrawSprite(S*T,"button");
-	renderer.Get2DRenderer().DrawString(m_text.c_str(),D3DXVECTOR2(m_sprite.topLeft.x,pos.y));
+	renderer.DrawSprite(S*T,"button");
+	renderer.DrawString(m_text.c_str(),glm::vec2(m_sprite.topLeft.x + 4.0f,pos.y),0,::glm::vec4(1.0f,1.0f,1.0f,1.0f),glm::vec2(scale,scale));
 
 
 	//renderer.Get2DRenderer().DrawString(m_name.name.c_str(),m_name.P,m_color);
@@ -210,14 +190,14 @@ void ButtonBase::Render(IRenderer& renderer)
 }
 
 // textbox ctor
-TextBox::TextBox(const std::string& name, const D3DXVECTOR3& pos, float w, float h)
-: m_spacePos(-1), m_fScrollTime(0.0), m_sprite(w,h,D3DXVECTOR2(pos.x,pos.y)), m_pos(-40.0f,40.0f)
+TextBox::TextBox(const std::string& name, const glm::vec2& pos, float w, float h)
+: m_spacePos(-1), m_fScrollTime(0.0), m_sprite(w,h,pos), m_pos(-40.0f,40.0f)
 {
 	m_text.push_back(LineData());
 
 	Enter();
 
-	m_carrotPos.x = m_carrotPos.y = 0;
+	//m_carrotPos.x = m_carrotPos.y = 0;
 }
 TextBox::~TextBox()
 {
@@ -238,7 +218,7 @@ void TextBox::SaveToFile(const std::string& file) const
 	}
 }
 
-void TextBox::Write(const std::string& line, const D3DXVECTOR4& color, bool c)
+void TextBox::Write(const std::string& line, const glm::vec4& color, bool c)
 {
 	m_text.push_back(LineData(line,color,m_sprite,c));
 }
@@ -271,7 +251,7 @@ void TextBox::AddKey(char Key)
 
 void TextBox::Enter()
 {
-	Write(string(""),D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f));
+	Write(string(""),glm::vec4(1.0f,1.0f,1.0f,1.0f));
 }
 
 void TextBox::Update(IKMInput& input, double dt)
@@ -337,26 +317,22 @@ void TextBox::Render(IRenderer& renderer)
 
 	}*/
 
-	I2DRenderer& renderer2D = renderer.Get2DRenderer();
+	glm::vec2 middle = m_sprite.Middle();
+	glm::mat4 S = glm::scale(m_sprite.Width(),m_sprite.Height(),1.0f);
+	glm::mat4 T = glm::translate(middle.x,middle.y,3000.0f);
 
-	D3DXMATRIX S, T;
-	::D3DXVECTOR2 middle = m_sprite.Middle();
-	D3DXMatrixScaling(&S,m_sprite.Width(),m_sprite.Height(),1.0f);
-	D3DXMatrixTranslation(&T,middle.x,middle.y,3000.0f);
-	//renderer2D.DrawSprite(S*T,"textbox");
-
-	D3DXVECTOR2 pos = m_pos;
+	glm::vec2 pos = m_pos;
 
 	// Iterate across all lines
 	for(auto iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
 		LineData& data = *iter;
 
-		renderer2D.DrawString(">",pos);
-		renderer2D.DrawString((" " + data.line).c_str(),pos,0,data.color);
+		renderer.DrawString(">",pos);
+		renderer.DrawString((" " + data.line).c_str(),pos,0,data.color);
 
 		Math::FRECT R;
-		renderer2D.GetStringRec((/*"> " + */data.line).c_str(),::D3DXVECTOR2(0.0f,0.0f),::D3DXVECTOR2(1.0f,1.0f),R);
+		renderer.GetStringRec((/*"> " + */data.line).c_str(),::glm::vec2(0.0f,0.0f),glm::vec2(1.0f,1.0f),R);
 
 		pos.y -= R.Height();
 	}
@@ -416,7 +392,7 @@ void TextBox::CLS()
 }
 
 
-ScriptingConsole::ScriptingConsole(asVM* pVM, const std::string& name, const D3DXVECTOR3& pos, float w, float h)
+ScriptingConsole::ScriptingConsole(asVM* pVM, const std::string& name, const glm::vec2& pos, float w, float h)
 : TextBox(name,pos,w,h), m_pVM(pVM), m_uiStartIndex(-1), m_uiBackIndex(0)
 {
 
@@ -447,7 +423,7 @@ void ScriptingConsole::Update(IKMInput& input, double dt)
 			m_text.back().line = m_text[m_uiBackIndex].line;
 
 			// clamp index into range
-			m_uiBackIndex = Math::Clamp(bUp ? (m_uiBackIndex - 1) : (m_uiBackIndex + 1),(unsigned int)0,m_text.size() - 2);
+			m_uiBackIndex = glm::clamp(bUp ? (m_uiBackIndex - 1) : (m_uiBackIndex + 1),(unsigned int)0,m_text.size() - 2);
 			
 		}
 	}
@@ -514,7 +490,7 @@ void ScriptingConsole::Backspace()
 void ScriptingConsole::MessageCallback(const asSMessageInfo *msg)
 {
 	// asMSGTYPE_ERROR, asMSGTYPE_WARNING, asMSGTYPE_INFORMATION
-	const D3DXVECTOR4 COLOR[3] = { D3DXVECTOR4(1.0f,0.0f,0.0f,1.0f),D3DXVECTOR4(1.0f,1.0f,0.0f,1.0f),D3DXVECTOR4(1.0f,1.0f,1.0f,1.0f) };
+	const glm::vec4 COLOR[3] = { glm::vec4(1.0f,0.0f,0.0f,1.0f),glm::vec4(1.0f,1.0f,0.0f,1.0f),glm::vec4(1.0f,1.0f,1.0f,1.0f) };
 
 	Write(std::string(msg->message),COLOR[msg->type]);
 }

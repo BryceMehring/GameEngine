@@ -5,19 +5,10 @@
 
 #include "MemoryPool.h"
 #include "Heap.h"
-#include "gassert.h"
 #include "FileManager.h"
-#include <Windows.h>
 #include <assert.h>
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-
 
 using namespace std;
-
-// these structure is the foundation of the MemoryPool.
-// MemoryBlock links together the allocated memory
 
 
 MemoryPool::MemoryPool(unsigned int size, unsigned int n) : m_pNode(nullptr),
@@ -243,10 +234,7 @@ void MemoryPool::Insert(Node* pWhere, Node* pNode)
 	{
 		// insert in the front
 		pWhere->pPrevious = pNode;
-
-		// todo: check if this is not needed
-		//m_pNodeHead->pPrevious->pNext = m_pNodeHead;
-					
+	
 		m_pNodeHead = m_pNodeHead->pPrevious; // Set m_pFirst to the new node
 	}
 	else
