@@ -4,27 +4,18 @@
 #ifndef _PLUGIN_MANAGER_
 #define _PLUGIN_MANAGER_
 
-#ifdef _WIN32
-#ifdef PLUGIN_EXPORTS
-#define PLUGINDECL __declspec(dllexport)
-#else
-#define PLUGINDECL __declspec(dllimport)
-#endif
-#else
 #define PLUGINDECL
 #include <dlfcn.h>
-#endif
 
 #include "IPlugin.h"
-#include "Delegates.h"
-#include <hash_map>
 #include <map>
+#include <vector>
+#include <string>
 
 struct PluginInfo
 {
 	IPlugin* pPlugin;
 	void* mod;
-	//HMODULE mod;
 };
 
 class PluginManager
@@ -44,33 +35,31 @@ public:
 
 	// more functions would go here as needed to work with the dlls...
 	//  ===== interface with dlls =====
-	class asVM& GetAngelScript();
+	class asIScriptEngine* GetAngelScript();
 	//asVM& GetScriptVM() const;
 
 	// Returns all of the keys for all of the dll's that are loaded
 	const std::vector<DLLType>& GetPluginKeys() const { return m_Keys; }
 
-	bool Good(const char* pFile) const;
+	//bool Good(const char* pFile) const;
 
 	// returns the plugin if found, else, it returns null
 	const IPlugin* GetPlugin(DLLType type) const;
 	IPlugin* GetPlugin(DLLType type);
 	IPlugin* LoadDLL(const char* pFile);
-
-	bool LoadAllPlugins(const std::string& path, const std::string& ext);
 	
 	void FreePlugin(DLLType type);
 	void FreeAllPlugins();
 
 	// todo: is this good to do?
-	void SetGame(class Game* pGame) { m_pGame = pGame; }
+	void SetAS(class asIScriptEngine* pAS) { m_pAS = pAS; }
 
 	// todo: need to implement this?
 	virtual void RegisterScript() {}
 
 private:
 
-	class Game* m_pGame;
+	class asIScriptEngine* m_pAS;
 	//typedef 
 	typedef std::map<DLLType,PluginInfo> plugin_type;
 	plugin_type m_plugins;
@@ -85,6 +74,6 @@ private:
 	PluginManager& operator=(const PluginManager&);
 };
 
-typedef IPlugin* (*CREATEPLUGIN)(asIScriptEngine*);
+typedef IPlugin* (*CREATEPLUGIN)(class asIScriptEngine*);
 
 #endif // _PLUGIN_MANAGER_

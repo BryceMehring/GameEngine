@@ -9,7 +9,6 @@
 
 #ifndef _SINGLETON_
 #define _SINGLETON_
-#pragma once
 
 // Thread safe singleton
 template< class T >

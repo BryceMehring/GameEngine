@@ -1,6 +1,6 @@
 
 #include "Camera.h"
-#include <glm\gtx\transform.hpp>
+#include "../glm/gtx/transform.hpp"
 
 Camera* CreateCamera()
 {
@@ -14,15 +14,11 @@ void ReleaseCamera(Camera* pCam)
 	}
 }
 
-Camera::Camera() : m_width(0.0f), m_height(0.0f)
+Camera::Camera() : m_View(1.0f), m_Proj(1.0f),
+ m_ViewProj(1.0f), m_PosW(0.0f), m_RightW(0.0f),
+ m_UpW(0.0f), m_LookW(0.0f), m_dir(0.0f),
+ m_width(0.0f), m_height(0.0f)
 {
-	memset(&m_PosW,0,sizeof(glm::vec3));
-	memset(&m_LookW,0,sizeof(glm::vec3));
-	memset(&m_RightW,0,sizeof(glm::vec3));
-	memset(&m_dir,0,sizeof(glm::vec3));
-
-	m_UpW.x = m_UpW.z = 0.0f;
-	m_UpW.y = 1.0f;
 }
 
 float Camera::GetWidth() const

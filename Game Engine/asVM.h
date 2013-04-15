@@ -9,26 +9,24 @@
 */
 #ifndef _ASMANAGER_
 #define _ASMANAGER_
-#pragma once
 
-#include <scriptstdstring\scriptstdstring.h>
-#include <scriptbuilder\scriptbuilder.h>
-#include "gassert.h"
+#include "../angelscript/scriptstdstring/scriptstdstring.h"
+#include "../angelscript/scriptbuilder/scriptbuilder.h"
+#include <cassert>
 
 // debug AngelScript macro
-#ifdef _DEBUG
+/*#ifdef _DEBUG
 #ifndef DBAS 
 #define DBAS(f) \
 { \
 	int r = f; \
-	gassert( r >= 0,"AngelScript error"); \
+	assert( r >= 0); \
 }
 #endif // DBAS
 
-#else
+#else*/
 #ifndef DBAS 
 #define DBAS(f) (f)
-#endif
 #endif
 
 struct ScriptFunctionStruct
@@ -116,7 +114,7 @@ private:
 	bool GoodScriptId(unsigned int id) const; // returns true if the id is valid
 
 	// called from the script, 
-	asDelegate GetFunc(asIScriptFunction* func);
+	//asDelegate GetFunc(asIScriptFunction* func);
 
 	//class VoidDelegate CreateDelegate(ScriptFunction func) const;
 	

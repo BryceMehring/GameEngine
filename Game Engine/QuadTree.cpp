@@ -16,7 +16,7 @@ QuadTree::QuadTree() : m_Previous(nullptr), m_iHeight(0)
 {
 }
 
-QuadTree::QuadTree(const Math::FRECT& R) : m_Previous(nullptr), R(R), m_iHeight(0)
+QuadTree::QuadTree(const Math::FRECT& R) : R(R), m_Previous(nullptr), m_iHeight(0)
 {
 	SubDivide();
 }
@@ -140,71 +140,6 @@ bool QuadTree::Insert(ISpatialObject& obj)
 
 void QuadTree::RInsert(ISpatialObject& obj)
 {
-	// non recursive version
-
-	// the stack emulates recursion
-	/*std::stack<Node*> callstack;
-	callstack.push(this);
-
-	// reference to vector of node pointers within the ISpatialObject
-	std::vector<Node*>& nodes = obj.m_nodes;
-
-	// Loop while 
-	while(!callstack.empty())
-	{
-		Node* pTop = callstack.top();
-		callstack.pop();
-
-		nodes.clear();
-
-		pTop->FindNearNodes(obj.GetCollisionPolygon(),nodes);
-
-		// as we iterate over the near nodes
-		for(unsigned int i = 0; i < nodes.size(); ++i)
-		{
-			Node* pNode = nodes[i];
-
-			const Math::FRECT& subR = nodes[i]->R.GetRect();
-
-			// if the current node is full
-			// 200
-			// 400
-			if((pNode->IsFull()) && (subR.bottomRight.x - subR.topLeft.x) > 200.0f)
-			{
-				// subdivide the node
-				pNode->SubDivide(true);
-				callstack.push(pNode);
-				
-				/*else if(m_pObjects != nullptr)
-				{
-					for(unsigned int j = 0; j < MAX_NODES; ++j)
-					{
-						Node* pSubNode = m_Nodes[j];
-						pSubNode->m_bUseable = true;
-
-						SubDivideObjects(*pSubNode);
-					}
-
-					m_bUseable = false;
-					m_pObjects->clear();
-				}
-
-				// Try to insert pObj into this sub node
-
-				
-				//pNode->RInsert(obj);
-			}
-			// node is not yet full
-			else
-			{
-				// Add pObj to node
-				pNode->m_pObjects->insert(&obj);
-			}
-		}
-	}*/
-
-	// find the near nodes to pObj
-
 	std::vector<QuadTree*> nodes;
 
 	FindNearNodes(obj.GetCollisionPolygon(),nodes);
@@ -229,18 +164,6 @@ void QuadTree::RInsert(ISpatialObject& obj)
 		}
 		else
 		{
-			/*if(obj.CanSendCollisionMsg())
-			{
-				for(auto iter = pNode->m_Objects.begin(); iter != pNode->m_Objects.end(); ++iter)
-				{
-					if((*iter)->GetCollisionPolygon().Intersects(obj.GetCollisionPolygon()))
-					{
-						obj.SendCollisionMsg(**iter);
-						//(*iter)->SendCollisionMsg(obj);
-					}
-				}
-			}*/
-
 			pNode->m_Objects.push_back(&obj);
 		}
 	}
@@ -380,10 +303,11 @@ void NodeIterator::LoopUp()
 		} while(index == MAX_NODES);				
 	}
 
-	if(index != -1)
+	// todo: fix this, it is bugged
+	/*if(index != -1)
 	{
 		LoopDown(index);
-	}
+	}*/
 }
 
 void NodeIterator::Increment()

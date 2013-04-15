@@ -40,7 +40,7 @@ public:
 	}
 
 	template< class T >
-	bool ProccessFileByLine(const char* file, T& functor) const
+    bool ProccessFileByLine(const char* file,const T& functor) const
 	{
 		std::fstream in(file,std::ios::in);
 

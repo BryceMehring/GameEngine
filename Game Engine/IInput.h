@@ -3,7 +3,7 @@
 
 #include "IPlugin.h"
 
-class __declspec(novtable) IInputPlugin : public IPlugin
+class IInputPlugin : public IPlugin
 {
 public:
 

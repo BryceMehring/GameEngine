@@ -5,29 +5,9 @@
 #include "IResourceManager.h"
 #include "VecMath.h"
 #include <string>
-#include <glm\glm.hpp>
+#include "../glm/glm.hpp"
 
-class __declspec(novtable) I3DRenderer
-{
-public:
-
-	virtual ~I3DRenderer() {}
-
-	// todo: need to create an abstract form of vertex declarations
-
-	/*virtual UINT CreateBillboarderdMesh(unsigned int n, const D3DXVECTOR3* pPosArray, unsigned int uiTech, const std::string& texture) = 0;
-	virtual UINT CreateEffectFromFile(const char* file) = 0;
-	virtual UINT GetTechnique(UINT uiEffect, const char* Tech) = 0;
-	virtual void SetValue(UINT uiEffect, void* pData, UINT bytes) = 0;
-
-	virtual UINT CreateMeshFromFile(const char* file) = 0;
-	virtual UINT CreateTriGridMesh() = 0;
-
-	virtual void RenderMesh(UINT) = 0;*/
-
-};
-
-class __declspec(novtable) IRenderer : public IPlugin
+class IRenderer : public IPlugin
 {
 public:
 

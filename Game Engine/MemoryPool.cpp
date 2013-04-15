@@ -1,21 +1,19 @@
 /*
 	Programmed by Bryce Mehring
 	1/24/2011
-	*/
+*/
 
 #include "MemoryPool.h"
 #include "Heap.h"
-#include "FileManager.h"
-#include <assert.h>
+#include <cassert>
+#include <fstream>
 
 using namespace std;
 
 
 MemoryPool::MemoryPool(unsigned int size, unsigned int n) : m_pNode(nullptr),
-	m_pNodeHead(nullptr), m_pNodeTail(nullptr), m_iBlocks(0), m_iLength(n)
+	m_pNodeHead(nullptr), m_pNodeTail(nullptr), m_iSize(size+sizeof(Node*)), m_iLength(n), m_iBlocks(0)
 {
-	m_iSize = size+sizeof(Node*);
-
 	// Create first memory block
 	LinkMemoryBlock(AllocMemoryBlock());
 }
@@ -31,7 +29,7 @@ void MemoryPool::FreePool()
 	// Iterate over all memory blocks and delete them
 	Node* pIter = m_pNodeHead;
 
-	while(pIter != NULL) 
+	while(pIter != nullptr) 
 	{
 		Node* pTemp = pIter;
 		pIter = pIter->pNext;
@@ -341,15 +339,15 @@ void MemoryPool::MemoryDump() const
 
 	if(outfile)
 	{
-		char* newLine = "\n";
+		const char* newLine = "\n";
 		
-		for(Node* pIter = m_pNodeHead; pIter != NULL; pIter = pIter->pNext)
+		for(Node* pIter = m_pNodeHead; pIter != nullptr; pIter = pIter->pNext)
 		{
 			outfile.write(newLine,sizeof(newLine));
 			outfile.write((char*)pIter,iBlockArraySize);
 		}
 
 		outfile.close();
-		system("memory_dump.txt");
+		//system("memory_dump.txt");
 	}
 }

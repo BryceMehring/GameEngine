@@ -11,7 +11,7 @@ struct TextureInfo
 	unsigned int uiCellsHeight;
 };
 
-class __declspec(novtable) IResourceManager
+class IResourceManager
 {
 public:
 

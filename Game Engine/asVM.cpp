@@ -4,9 +4,9 @@
 
 #include "asVM.h"
 #include "Delegates.h"
-#include "scripthelper\scripthelper.h"
-#include "scriptarray\scriptarray.h"
-#include "scriptmath\scriptmath.h"
+#include "../angelscript/scripthelper/scripthelper.h"
+#include "../angelscript/scriptarray/scriptarray.h"
+#include "../angelscript/scriptmath/scriptmath.h"
 #include "FileManager.h"
 #include "StringAlgorithms.h" // todo: remove this file
 #include "Menu.h"
@@ -14,14 +14,7 @@
 #include <sstream>
 #include <ctime>
 #include <cassert>
-//#include "asConsole.h"
-//#include "EngineHelper.h"
 
-#ifdef _DEBUG
-#pragma comment(lib,"angelscriptd.lib")
-#else
-#pragma comment(lib,"angelscript.lib")
-#endif
 
 using namespace std;
 
@@ -142,10 +135,10 @@ void asVM::ExecuteScript(unsigned int scriptId)
 		Script s = m_scripts[scriptId];
 		m_iExeScript = scriptId;
 
-		char buffer[100];
-		sprintf_s(buffer,"%s %s","Script Exec:",s.fileName.c_str());
+		std::stringstream stream;
+		stream << "Script Exec: " << s.fileName << endl;
 
-		DBAS(m_pEngine->WriteMessage("",0,0,asMSGTYPE_INFORMATION,buffer));
+		DBAS(m_pEngine->WriteMessage("",0,0,asMSGTYPE_INFORMATION,stream.str().c_str()));
 
 		DBAS(s.pCtx->Prepare(s.pFunction));
 	
@@ -221,7 +214,7 @@ bool asVM::GoodScriptId(unsigned int id) const
 }
 
 // Returns the Script Function Id, this is called from the script
-asVM::asDelegate asVM::GetFunc(asIScriptFunction* pFunc)
+/*asVM::asDelegate asVM::GetFunc(asIScriptFunction* pFunc)
 {
 	ScriptFunctionStruct func;
 
@@ -231,7 +224,7 @@ asVM::asDelegate asVM::GetFunc(asIScriptFunction* pFunc)
 		func.ifuncId = pFunc->GetId();
 		func.iScriptIndex = m_iExeScript;
 
-		/*
+		
 		Bug[FIXED]: In the latest AngelScript Update they added auto garbage collection
 		with calling AddRef and Release. Since I didn't update this method, two Release's were
 		being called on the function, which brings the counter down to 0 and delete's it.
@@ -239,7 +232,7 @@ asVM::asDelegate asVM::GetFunc(asIScriptFunction* pFunc)
 		manage this for us. 
 
 		AngelScript Version 2.21.0 - 2011/07/03
-		Date Found: 7/24/2011*/
+		Date Found: 7/24/2011
 		
 		//pFunc->Release();
 	}
@@ -251,7 +244,7 @@ asVM::asDelegate asVM::GetFunc(asIScriptFunction* pFunc)
 	//d.Bind(this,func);
 
 	return d;
-}
+}*/
 
 void asVM::ListVariables()
 {
@@ -278,7 +271,7 @@ void asVM::ListVariables()
 
 void asVM::ListObjects()
 {
-	for(int o = 0; o < m_pEngine->GetObjectTypeCount(); ++o)
+	for(unsigned int o = 0; o < m_pEngine->GetObjectTypeCount(); ++o)
 	{
 		ostringstream os;
 
@@ -287,7 +280,7 @@ void asVM::ListObjects()
 
 		os << pObjName << endl << "Methods: " << endl;
 
-		for(int m = 0; m < pObjType->GetMethodCount(); ++m)
+		for(unsigned int m = 0; m < pObjType->GetMethodCount(); ++m)
 		{
 			asIScriptFunction* pMethod = pObjType->GetMethodByIndex(m);
 			os << pMethod->GetName() << ", ";
@@ -355,6 +348,7 @@ void asVM::SendMessage(const std::string& msg) const
 {
 	DBAS(m_pEngine->WriteMessage("SendMessage",0,0,asMSGTYPE_INFORMATION,msg.c_str()));
 }
+
 
 void asVM::RegisterScript(ScriptingConsole* pTextBox)
 {

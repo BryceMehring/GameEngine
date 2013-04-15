@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #define GLFW_NO_GLU
-#include <GL\glfw.h>
+#include <GL/glfw.h>
 
 using namespace std;
 
@@ -48,7 +48,7 @@ GameStateMachine::~GameStateMachine()
 void GameStateMachine::SetState(const std::string& state, Game& game)
 {
 	string path = "..\\Game Plugins\\" + state + ".extension";
-	if(game.GetPM().Good(path.c_str()))
+	//if(game.GetPM().Good(path.c_str()))
 	{
 		// remove current state
 		RemoveState(game);

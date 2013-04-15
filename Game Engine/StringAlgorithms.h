@@ -15,8 +15,6 @@ std::string WrapWithQuote(const std::string& str);
 
 void GetDelimitedString(const std::string& str, std::vector<std::string>& out, char delim = ' ');
 
-float CompareFiles(const std::string& file1, const std::string& file2);
-
 void RegisterStrAlgorScript(class asVM&);
 
 #endif //_STRINGALGORITHMS_

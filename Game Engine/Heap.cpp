@@ -1,10 +1,9 @@
 #include "Heap.h"
-#include "VecMath.h"
 #include "BNew.h"
 
 using namespace std;
 
-Heap::Heap() : m_uiTotalWastedBytes(0), MULTIPLE_OF(8), m_uiAllocatedPools(0)
+Heap::Heap() : m_uiAllocatedPools(0), MULTIPLE_OF(8), m_uiTotalWastedBytes(0)
 {
 	m_pool.resize(MAX_POOL_SIZE / MULTIPLE_OF);
 }

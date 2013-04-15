@@ -26,7 +26,7 @@ enum MouseCursorState
 };
 
 // Keyboard mouse
-class __declspec(novtable) IKMInput : public IInputPlugin
+class IKMInput : public IInputPlugin
 {
 public:
 

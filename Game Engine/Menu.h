@@ -8,8 +8,9 @@
 #include "IRender.h"
 #include "GameState.h"
 #include "Sprite.h"
-
 #include "RTTI.h"
+
+#include <sstream>
 
 class IUIElement : public IRender
 {
@@ -304,7 +305,7 @@ protected:
 	{
 		LineData() {}
 		LineData(const std::string& str, const glm::vec4& color, const Math::FRECT& R,bool c)
-		: line(str), color(color), R(R), bContinue(c)
+		: line(str), R(R), color(color), bContinue(c)
 		{
 
 		}
@@ -388,7 +389,7 @@ protected:
 	template< class T >
 	void _Grab(const T& p)
 	{
-		stringstream stream;
+		std::stringstream stream;
 		stream << p;
 
 		Write(stream.str(),::glm::vec4(1.0f,1.0f,1.0f,1.0f));

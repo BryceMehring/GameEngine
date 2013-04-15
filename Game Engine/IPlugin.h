@@ -11,7 +11,7 @@ enum DLLType
 
 #define DLLTYPE decltype(DLLType)
 
-class __declspec(novtable) IPlugin
+class IPlugin
 {
 public:
 	

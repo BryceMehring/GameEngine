@@ -7,7 +7,7 @@
 
 using namespace std;
 
-		// TEMPLATE CLASS _ALLOCATOR
+// TEMPLATE CLASS _ALLOCATOR
 // note: this allocator only works if the data structure only allocs
 // note: one node at a time
 template<class _Ty>

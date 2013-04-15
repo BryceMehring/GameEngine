@@ -6,7 +6,6 @@
 
 #ifndef _QUADTREE_
 #define _QUADTREE_
-#pragma once
 
 #include <set>
 #include <vector>
@@ -15,7 +14,6 @@
 #include "IRender.h"
 #include "RTTI.h"
 #include "VecMath.h"
-#include "PooledAllocator.h"
 
 class ISpatialObject : public IRender
 {
@@ -36,7 +34,7 @@ class QuadTree
 {
 public:
 	
-	typedef std::list<ISpatialObject*, PooledAllocator<ISpatialObject*>> LIST_DTYPE;
+	typedef std::list<ISpatialObject*/*, PooledAllocator<ISpatialObject*>*/> LIST_DTYPE;
 
 	friend class NodeIterator;
 
@@ -117,42 +115,5 @@ protected:
 	void LoopUp();
 };
 
-/*class QuadTree : public IRender
-{
-public:
-
-	// constructor/destructor
-	QuadTree(const Math::FRECT& R);
-	virtual ~QuadTree();
-
-	// adds a point to the quadtree
-	// recursive
-	bool Insert(ISpatialObject&);
-	void Erase(ISpatialObject&);
-
-	bool IsWithin(ISpatialObject&) const;
-
-	void FindNearObjects(const Math::ICollisionPolygon* pPoly,std::vector<ISpatialObject*>& out);
-	void FindNearNodes(const Math::ICollisionPolygon* pPoly, std::vector<Node*>& out);
-	void FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out);
-
-	template< class T >
-	void Update(ISpatialObject& obj, const T& funct)
-	{
-		Erase(obj);
-		funct();
-		Insert(obj);
-	}
-
-	void SaveToFile(std::string& file);
-	void LoadFile(const std::string& file);
-
-	virtual void Render(class IRenderer&);
-
-	const Math::FRECT& GetRect() const { return m_pRoot->GetRect(); }
-
-private:
-	Node* m_pRoot;
-};*/
 
 #endif // _QUADTREE_

@@ -1,21 +1,21 @@
 // Programmed By Bryce Mehring
 // 1/20/2011
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
+//#ifdef _WIN32
+//#include <Windows.h>
+//#endif
 
 // Read chapter 16, use the dynamic object mapper with the DLL files.
 #include "PluginManager.h"
-#include "FileManager.h"
-#include "Game.h"
 
 #include <algorithm>
 #include <cassert>
+#include <sstream>
+#include <angelscript.h>
 
 using namespace std;
 
-PluginManager::PluginManager() : m_pGame(nullptr)
+PluginManager::PluginManager() : m_pAS(nullptr)
 {
 }
 
@@ -23,7 +23,6 @@ PluginManager::PluginManager() : m_pGame(nullptr)
 PluginManager::~PluginManager()
 {
 	FreeAllPlugins();
-	this->m_pGame = nullptr;
 }
 
 void PluginManager::FreeAllPlugins()
@@ -37,7 +36,11 @@ void PluginManager::FreeAllPlugins()
 	m_plugins.clear();
 }
 
-asVM& PluginManager::GetAngelScript() { return m_pGame->GetAs(); }
+asIScriptEngine* PluginManager::GetAngelScript()
+{ 
+ 	m_pAS->AddRef();
+ 	return m_pAS;
+}
 
 //  ===== interface with dlls =====
 
@@ -65,10 +68,8 @@ IPlugin* PluginManager::GetPlugin(DLLType type)
 	return nullptr;
 }
 
-bool PluginManager::Good(const char* pDLL) const
+/*bool PluginManager::Good(const char* pDLL) const
 {
-	FileManager& fm = FileManager::Instance();
-	char buffer[128];
 	PluginInfo dll = {0,0};
 
 	dll.mod = LoadLibrary(pDLL);
@@ -80,36 +81,42 @@ bool PluginManager::Good(const char* pDLL) const
 
 		// need to output message to log
 		// todo: should create a logging singleton that should interact with the console.
+		ostringstream stream;
+		stream <<"Could not load: " << pDLL << endl;
 
-		sprintf_s(buffer,"Could not load: %s",pDLL);
-		fm.WriteToLog(buffer);
-
-		MessageBox(0,buffer,0,0);
+		//fm.WriteToLog(stream.str());
 		
 		return false;
 	}
+	
+	CREATEPLUGIN pFunct = nullptr;
 
-	CREATEPLUGIN pFunct = (CREATEPLUGIN)GetProcAddress((HMODULE)dll.mod,"CreatePlugin");
+#ifdef _WIN32
+	pFunct = (CREATEPLUGIN)GetProcAddress((HMODULE)(dll.mod),"CreatePlugin");
+#else
+	pFunct = (CREATEPLUGIN)dlsym(dll.mod,"CreatePlugin");
+#endif
 
 	if(pFunct == nullptr)
 	{
-		sprintf_s(buffer,"CreatePlugin() function not found in: %s",pDLL);
-		fm.WriteToLog(buffer);
-
-		MessageBox(0,buffer,0,0);
+		ostringstream stream;
+		stream <<"CreatePlugin() function not found in: " << pDLL << endl;
+		fm.WriteToLog(stream.str());
 
 		return false;
 	}
 
-	FreeLibrary((HMODULE)dll.mod);
+#ifdef _WIN32
+		FreeLibrary((HMODULE)dll.mod);
+#else
+		dlclose(dll.mod);
+#endif
 
 	return true;
-}
+}*/
 
 IPlugin* PluginManager::LoadDLL(const char* pDLL)
 {
-	FileManager& fm = FileManager::Instance();
-	char buffer[128];
 	PluginInfo dll = {0,0};
 
 #ifdef _WIN32
@@ -121,16 +128,6 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 	// todo: fix the error handling here
 	if(dll.mod == nullptr)
 	{
-		// error, could not load dll
-
-		// need to output message to log
-		// todo: should create a logging singleton that should interact with the console.
-
-		sprintf_s(buffer,"Could not load: %s",pDLL);
-		fm.WriteToLog(buffer);
-
-		MessageBox(0,buffer,0,0);
-		
 		return nullptr;
 	}
 
@@ -151,17 +148,13 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 		dlclose(dll.mod);
 #endif
 
-		sprintf_s(buffer,"CreatePlugin() function not found in: %s",pDLL);
-		fm.WriteToLog(buffer);
-
-		MessageBox(0,buffer,0,0);
-
 		return nullptr;
 	}
 
 		
 	// Create the plugin
-	dll.pPlugin = pFunct(GetAngelScript().GetScriptEngine());
+	m_pAS->AddRef();
+	dll.pPlugin = pFunct(m_pAS);
 	assert(dll.pPlugin != nullptr);
 
 	// Get the type of the plugin
@@ -186,27 +179,8 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 		m_Keys.push_back(type);
 	}
 
-	// update log file
-	sprintf_s(buffer,"(%s) is loaded",pDLL);
-	fm.WriteToLog(buffer);
-
 	// return the plugin interface
 	return dll.pPlugin;
-}
-
-bool PluginManager::LoadAllPlugins(const std::string& path, const std::string& ext)
-{
-	vector<string> files;
-
-	FileManager& fm = FileManager::Instance();
-	fm.LoadAllFilesFromDirectory(files,path,ext);
-
-	for_each(files.begin(),files.end(),[&](const string& str)
-	{
-		LoadDLL(str.c_str());
-	});
-		
-	return !m_plugins.empty();
 }
 
 void PluginManager::FreePlugin(const PluginInfo& plugin)
@@ -234,11 +208,3 @@ void PluginManager::FreePlugin(DLLType type)
 	}
 }
 
-/*void PluginManager::RegisterScript()
-{
-	asVM* pVM = asVM::Instance();
-	asIScriptEngine* pEngine = pVM->GetScriptEngine();
-
-	DBAS(pEngine->RegisterObjectType("PluginManager",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(pEngine->RegisterGlobalProperty("PluginManager pm",this));
-}*/

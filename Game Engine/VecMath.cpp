@@ -3,13 +3,21 @@
 #include "asVM.h"
 #include "FileManager.h"
 
+
 namespace Math
 {
 
 // ----- CCircle -----
 
+void Function()
+{
+	// do stuff;
+}
+
 CCircle::CCircle(const Circle& circle) : m_circle(circle)
 {
+	//Delegate<void,void> testFunction;
+	
 }
 
 bool CCircle::Intersects(const ICollisionPolygon& other) const

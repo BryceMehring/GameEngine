@@ -11,17 +11,15 @@
 #include <iostream>
 
 #define GLFW_NO_GLU
-#include <GL\glfw.h>
-#include <glm\glm.hpp>
-#include <glm\gtx\transform.hpp>
+#include <GL/glfw.h>
+#include "../glm/glm.hpp"
+#include "../glm/gtx/transform.hpp"
 
 
 using namespace std;
 
-#pragma comment(lib,"GLFWDLL.lib")
-#pragma comment(lib,"opengl32.lib")
-
-Game::Game() : m_fDT(0.0f), m_pRenderer(nullptr), m_pInput(nullptr), m_bConsoleEnabled(false), m_fEscTime(0.0)
+Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
+ m_fDT(0.0f), m_fEscTime(0.0), m_pRenderer(nullptr), m_pInput(nullptr)
 {
 	
 	// todo: reorganize this ctor
@@ -266,7 +264,7 @@ void Game::ReloadPlugins(const std::string& path)
 
 void Game::LoadAllDLL()
 {
-	m_plugins.SetGame(this);
+	m_plugins.SetAS(m_vm.GetScriptEngine());
 	ReloadPlugins();
 }
 

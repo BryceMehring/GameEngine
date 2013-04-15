@@ -2,7 +2,7 @@
 #define _CAMERA_
 
 #include "RefCounting.h"
-#include <glm\glm.hpp>
+#include "../glm/glm.hpp"
 
 class Camera : public RefCounting
 {
