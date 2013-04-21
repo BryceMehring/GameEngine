@@ -1,29 +1,28 @@
 #include "FlockingAlgorithm.h"
 #include "Game.h"
-#include <glm\gtx\transform.hpp>
+#include <glm/gtx/transform.hpp>
 
-#pragma comment(lib,"Game Engine.lib")
 
 RTTI_IMPL(FlockingAlgorithm);
 
 void ClampWrap(glm::vec3& pos)
 {
-	if(pos.x < -50.0f)
+    if(pos.x < -100.0f)
 	{
-		pos.x = 50.0f;
+        pos.x = 100.0f;
 	}
-	else if(pos.x > 50.0f)
+    else if(pos.x > 100.0f)
 	{
-		pos.x = -50.0f;
+        pos.x = -100.0f;
 	}
 
-	if(pos.y < -50.0f)
+    if(pos.y < -100.0f)
 	{
-		pos.y = 50.0f;
+        pos.y = 100.0f;
 	}
-	else if(pos.y > 50.0f)
+    else if(pos.y > 100.0f)
 	{
-		pos.y = -50.0f;
+        pos.y = -100.0f;
 	}
 }
 
@@ -34,13 +33,13 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin(asIScriptEngine*)
 
 Bird::Bird()
 {
-	m_pos = glm::vec3(Math::GetRandFloat(-50.0f,50.0f),Math::GetRandFloat(-50.0f,50.0f),0.0f);
+    m_pos = glm::vec3(Math::GetRandFloat(-100.0f,100.0f),Math::GetRandFloat(-100.0f,100.0f),0.0f);
 	m_fAngle = Math::GetRandFloat(0.0f,6.2832f);
 
 	m_color = glm::vec4(Math::GetRandFloat(0.0f,1.0f),Math::GetRandFloat(0.0f,1.0f),Math::GetRandFloat(0.0f,1.0f),1.0f);
 
 	m_CollisionCircle.GetCircle().center = ::glm::vec2(m_pos.x,m_pos.y);
-	m_CollisionCircle.GetCircle().r = 2.0f;
+    m_CollisionCircle.GetCircle().r = 6.0f;
 }
 
 Bird::Bird(const glm::vec2& pos)
@@ -51,7 +50,7 @@ Bird::Bird(const glm::vec2& pos)
 	m_color = glm::vec4(Math::GetRandFloat(0.0f,1.0f),Math::GetRandFloat(0.0f,1.0f),Math::GetRandFloat(0.0f,1.0f),1.0f);
 
 	m_CollisionCircle.GetCircle().center = ::glm::vec2(m_pos.x,m_pos.y);
-	m_CollisionCircle.GetCircle().r = 2.0f;
+    m_CollisionCircle.GetCircle().r = 6.0f;
 }
 
 void Bird::Update(QuadTree& tree, const glm::vec2& avgPos, double dt)
@@ -62,25 +61,38 @@ void Bird::Update(QuadTree& tree, const glm::vec2& avgPos, double dt)
 	std::vector<ISpatialObject*> nearBirds;
 	tree.QueryNearObjects(GetCollisionPolygon(),nearBirds,this);
 
-	glm::vec3 localDir(0.0f,0.0f,0.0f);
+    glm::vec3 localDir(0.0f,0.0f,0.0f);
+
+    glm::vec3 replusion = localDir;
+    float fMinDistance = FLT_MAX;
 	// This operation should operate most of the time in constant time because the number of elements that need to be averaged is const
 	if(!nearBirds.empty())
 	{
 		glm::vec2 avgCurrentDir(0.0f,0.0f);
 		for(unsigned int i = 0; i < nearBirds.size(); ++i)
 		{
-			avgCurrentDir += nearBirds[i]->GetDir();
+            avgCurrentDir += nearBirds[i]->GetDir();
+            fMinDistance = glm::min(glm::distance(glm::vec2(m_pos.x,m_pos.y),nearBirds[i]->GetPos()),fMinDistance);
 		}
 
-		// get avg pos of the birds
-		avgCurrentDir /= nearBirds.size();
-
-		localDir = m_pos - glm::vec3(avgCurrentDir.x,avgCurrentDir.y,0.0f);
+        localDir = (glm::vec3(avgCurrentDir.x,avgCurrentDir.y,0.0f) - glm::vec3(GetDir(),0.0f)) / glm::vec3(2);
 	}
 
+    if(fMinDistance < .5f)
+    {
+        replusion = -localDir;
+        localDir = glm::vec3(0.0f,0.0f,0.0f);
+    }
+
+
+    glm::vec3 toCenter = glm::vec3(avgPos,0.0f) - m_pos;
+
 	// Calculate the avg between the two avg directions
-	glm::vec3 packDir = glm::vec3(avgPos.x,avgPos.y,0.0f) - m_pos;
-	glm::vec3 dir = (packDir + localDir) / glm::vec3(2.0f);
+    glm::vec3 dir = (glm::vec3(6.5f)*replusion +
+                     glm::vec3(5.0f)*localDir +
+                     glm::vec3(2.0f)*glm::vec3(GetDir(),0.0f) +
+                     glm::vec3(0.0001f)*toCenter);
+
 	//dir.x += ::Math::GetRandFloat(0.0f,100.0f);
 	//dir.y += ::Math::GetRandFloat(0.0f,100.0f);
 	dir = glm::normalize(dir);
@@ -128,9 +140,9 @@ void Bird::Render(IRenderer& renderer)
 
 void FlockingAlgorithm::Init(Game& game)
 {
-	m_pQuadtree = new QuadTree(Math::FRECT(glm::vec2(-50.0f,50.0f),glm::vec2(50.0f,-50.0f)));
+    m_pQuadtree = new QuadTree(Math::FRECT(glm::vec2(-100.0f,100.0f),glm::vec2(100.0f,-100.0f)));
 
-	m_birds.resize(20);
+    m_birds.resize(200);
 	for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
 		m_birds[i] = new Bird();
@@ -162,7 +174,7 @@ void FlockingAlgorithm::Update(Game& game)
 {
 	glm::vec2 avgPos(0.0f,0.0f);
 
-	/*if(game.GetInput().MouseClick(0))
+    if(game.GetInput().MouseClick(0))
 	{
 		//m_birds[i] = new Bird();
 		Bird* pBird = new Bird(game.GetInput().GetTransformedMousePos());
@@ -174,16 +186,13 @@ void FlockingAlgorithm::Update(Game& game)
 	if(game.GetInput().KeyDown(KeyCode::ENTER))
 	{
 		ClearBirds();
-	}*/
+    }
 
 	// O(n)
 	for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
 		avgPos += m_birds[i]->GetPos();
 	}
-
-	// get avg pos of the birds
-	avgPos /= m_birds.size();
 
 	// O(n*log4(n))
 	for(unsigned int i = 0; i < m_birds.size(); ++i)
@@ -200,7 +209,7 @@ void FlockingAlgorithm::Draw(Game& game)
 		m_birds[i]->Render(game.GetRenderer());
 	}
 
-	//this->m_pQuadtree->Render(game.GetRenderer());
+    this->m_pQuadtree->Render(game.GetRenderer());
 
 	//game.GetRenderer().Get2DRenderer().
 }
