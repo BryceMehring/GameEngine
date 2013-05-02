@@ -1,61 +1,52 @@
-﻿//#include <vld.h>
-#include "oglRenderer.h"
+﻿#include "oglRenderer.h"
 
 #include <sstream>
+#include <algorithm>
+#include <iostream>
 
-#pragma comment(lib,"Game Engine.lib")
+using namespace std;
 
 extern "C" PLUGINDECL IPlugin* CreatePlugin(asIScriptEngine* as)
 {
 	return new oglRenderer(as);
 }
 
-oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(CreateCamera()), m_uiCurrentDisplayMode(0), m_as(as), m_pFonts(nullptr), m_bFullscreen(false)
+oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_as(as), m_pFonts(nullptr), m_bFullscreen(false)
 {
-	m_pCamera->setLens(100.0f,100.0f,1.0f,500.0f);
-	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
+    m_pCamera = CreateCamera();
+    m_pCamera->setLens(200.0f,200.0f,1.0f,500.0f);
+    m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_pCamera->update(0.0f);
 
 	GLFWOpenWindowHints();
 
-	if(glfwOpenWindow( 800, 600, 8,8,8,8, 0,0, GLFW_WINDOW ) < 1 )
+    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 24,8, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
 	{
-		glfwTerminate();
-		throw std::string("Failed to create window");
+        glfwTerminate();
+        throw std::string("Failed to create window");
 	}
 
-	glfwSwapInterval(0);
+    int major, minor, rev;
+    glfwGetGLVersion(&major,&minor,&rev);
+
+    cout<<"major: "<<major<<endl;
+    cout<<"minor: "<<minor<<endl;
+    cout<<"rev: "<<rev<<endl;
+
+    glfwSwapInterval(1);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+   // glfwDisable(GLFW_MOUSE_CURSOR);
 
 	// Initialize GLEW
-	glewExperimental=true; // Needed in core profile
-	if (glewInit() != GLEW_OK)
+    glewExperimental=true; // Needed in core profile
+    if (glewInit() != GLEW_OK)
 	{
-		throw std::string("Failed to initialize GLEW");
-	}
+        throw std::string("Failed to initialize GLEW");
+    }
 
-	/*GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);*/
-	
-
-
-	// Enable depth test
-	//glEnable(GL_CULL_FACE);
-//	glCullFace(GL_FRONT);
-	//glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	
-
-	
-
-	//glFrontFace(GL_CCW);
-
-	// Enable depth test
-	/*glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS);*/
-
-	m_pFonts = new FontEngine(&m_rm,1024,m_pCamera);
-	m_pLines = new LineEngine(&m_rm,1024,m_pCamera);
+    //m_pFonts = new FontEngine(&m_rm,1024,m_pCamera);
+    m_pLines = new LineEngine(&m_rm,1024*20,m_pCamera);
 
 	EnumerateDisplayAdaptors();
 
@@ -64,11 +55,15 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(CreateCamera()), m_uiC
 
 oglRenderer::~oglRenderer()
 {
-	delete m_pFonts;
-	delete m_pLines;
-	ReleaseCamera(m_pCamera);
+    //delete m_pFonts;
+    delete m_pLines;
+    m_pCamera->Release();
+    m_pCamera = nullptr;
 
 	m_as->Release();
+    m_as = nullptr;
+
+    glfwCloseWindow();
 }
 
 DLLType oglRenderer::GetPluginType() const
@@ -86,25 +81,26 @@ int oglRenderer::GetVersion() const
 
 void oglRenderer::GLFWOpenWindowHints()
 {
-	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
-	//glfwOpenWindowHint(GLFW_FSAA_SAMPLES,4);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2); // We want OpenGL 2.1
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
+    glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
+    glfwOpenWindowHint(GLFW_FSAA_SAMPLES,4);
+    //glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2); // We want OpenGL 2.1
+    //glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
 }
 
 void oglRenderer::ClearScreen()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void oglRenderer::Present()
 {
-	ClearScreen();
+    ClearScreen();
 
-	m_pFonts->Render();
-	m_pLines->Render();
+    //m_pFonts->Render();
+    m_pLines->Render();
 
-	glfwSwapBuffers();
+    glfwSwapBuffers();
 }
 
 void oglRenderer::EnableVSync(bool enable)
@@ -173,7 +169,7 @@ void oglRenderer::ToggleFullscreen()
 	}
 	else
 	{
-		glfwOpenWindow(800,600,8,8,8,8,0,0,GLFW_WINDOW);
+        glfwOpenWindow(800,600,0,0,0,0,0,0,GLFW_WINDOW);
 	}
 
 }

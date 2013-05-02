@@ -15,39 +15,11 @@ GameStateMachine::GameStateMachine() : m_pCurrentState(nullptr) {}
 
 GameStateMachine::~GameStateMachine()
 {
-	/*for(auto iter = m_states.begin(); iter != m_states.end(); ++iter)
-	{
-		delete iter->second;
-	}*/
-
-	// m_pCurrentState is inserted into the map, so it already got deleted
-	//m_pCurrentState = nullptr;
 }
-
-/*void GameStateMachine::AddState(const std::string& state)
-{
-	// ignore returned value from RAddState
-	RAddState(state);
-}*/
-
-/*std::map<std::string,IGameState*>::iterator GameStateMachine::RAddState(const std::string& state)
-{
-	// find new state
-	std::map<std::string,IGameState*>::iterator iter = m_states.find(state);
-
-	// if the state is already loaded
-	if(iter == m_states.end())
-	{
-		IGameState* pNewState = GameStateFactory::Instance().CreateState(state);
-		iter = m_states.insert(make_pair(state,pNewState)).first;
-	}
-
-	return iter;
-}*/
 
 void GameStateMachine::SetState(const std::string& state, Game& game)
 {
-	string path = "..\\Game Plugins\\" + state + ".extension";
+    string path = "/home/bryce/GameEngine/lib" + state + ".so";
 	//if(game.GetPM().Good(path.c_str()))
 	{
 		// remove current state
@@ -73,7 +45,7 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 void GameStateMachine::RemoveState(Game& game)
 {
 	// If there is a state, 
-	if(m_pCurrentState)
+    if(m_pCurrentState != nullptr)
 	{
 		m_stateStack.push(m_pCurrentState->GetType()->GetName());
 

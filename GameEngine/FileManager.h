@@ -17,26 +17,14 @@ public:
 
 	~FileManager();
 	
-
-	//note: ext can be a list of extensions delimited by space
-	void LoadAllFilesFromDirectory(std::vector<std::string>& files,
-	const std::string& path, const std::string& ext) const;
-
-	std::string OpenFileName() const; 
-
 	bool GetFolder(std::string& folderpath) const;
-
-	unsigned int GetSeedFromLog() const;
-
-	unsigned int CountNumberOfLines(const std::string& path, const std::string& ext) const;
 
 	// replaced all of the overloaded versions of WriteToLog with
 	// a template version
 	template< class T >
 	void WriteToLog(const T& data)
 	{
-		WriteTime();
-		m_buffer << data << std::endl;
+        m_buffer << clock() / 1000.0f << ' ' << data << std::endl;
 	}
 
 	template< class T >
@@ -67,7 +55,7 @@ private:
 	std::ostringstream m_buffer;
 
 	// constructor
-	FileManager() {}
+    FileManager() {}
 
 	void WriteTime();
 };

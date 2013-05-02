@@ -1,4 +1,4 @@
-#version 330 core
+#version 277 core
 
 // Ouput data
 out vec4 color;

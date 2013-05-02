@@ -6,6 +6,7 @@
 
 #ifndef _QUADTREE_
 #define _QUADTREE_
+#pragma once
 
 #include <set>
 #include <vector>
@@ -19,70 +20,70 @@ class ISpatialObject : public IRender
 {
 public:
 
-	virtual ~ISpatialObject() {}
+    virtual ~ISpatialObject() {}
 
-	virtual glm::vec2 GetPos() const = 0;
-	virtual glm::vec2 GetDir() const = 0;
-	virtual float GetSpeed() const = 0;
+    virtual glm::vec2 GetPos() const = 0;
+    virtual glm::vec2 GetDir() const = 0;
+    virtual float GetSpeed() const = 0;
 
-	virtual void* QueryInterface(unsigned int) const = 0; 
+    virtual void* QueryInterface(unsigned int) const = 0;
 
-	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const = 0;
+    virtual const Math::ICollisionPolygon& GetCollisionPolygon() const = 0;
 };
 
 class QuadTree
 {
 public:
-	
-	typedef std::list<ISpatialObject*/*, PooledAllocator<ISpatialObject*>*/> LIST_DTYPE;
 
-	friend class NodeIterator;
+    typedef std::list<ISpatialObject*> LIST_DTYPE;
 
-	// constructors
-	QuadTree();
-	QuadTree(const Math::FRECT& R);
-	~QuadTree();
+    friend class NodeIterator;
 
-	void Erase(ISpatialObject& obj);
+    // constructors
+    QuadTree();
+    QuadTree(const Math::FRECT& R);
+    ~QuadTree();
 
-	// returns true if P lies within the rectangle
-	bool IsWithin(ISpatialObject& obj) const;
+    void Erase(ISpatialObject& obj);
 
-	// operations
-	bool Insert(ISpatialObject& obj);
+    // returns true if P lies within the rectangle
+    bool IsWithin(ISpatialObject& obj) const;
 
-	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj = nullptr);
+    // operations
+    bool Insert(ISpatialObject& obj);
 
-	void Render(IRenderer& renderer);
+    void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj = nullptr);
 
-	const Math::FRECT& GetRect() const { return R.GetRect(); }
-	 
+    void Render(IRenderer& renderer);
+
+    const Math::FRECT& GetRect() const { return R.GetRect(); }
+
 private:
 
-	// The rectangle of the current node
-	Math::CRectangle R;
-	LIST_DTYPE m_Objects;
+    // The rectangle of the current node
+    Math::CRectangle R;
+    LIST_DTYPE m_Objects;
 
-	std::vector<QuadTree> m_Nodes;
-	QuadTree* m_Previous;
+    std::vector<QuadTree> m_Nodes;
+    QuadTree* m_Previous;
 
-	int m_iHeight;
+    int m_iHeight;
 
-	// --- helper functions ---
+    // --- helper functions ---
 
-	void FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<QuadTree*>& out);
+    void FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<QuadTree*>& out);
 
-	// recursive insertion algorithm
-	void RInsert(ISpatialObject& obj);
+    // recursive insertion algorithm
+    void RInsert(ISpatialObject& obj);
 
-	// Returns true if this node is divided. 
-	bool IsDivided() const;
+    // Returns true if this node is divided.
+    bool IsDivided() const;
 
-	bool HasPoint() const;
-	bool IsFull() const;
+    bool HasPoint() const;
+    bool IsFull() const;
 
-	// Subdivides the current node/R into 4 sub nodes
-	void SubDivide();
+    // Subdivides the current node/R into 4 sub nodes
+    void SubDivide();
 };
 
 // todo: need to create a better public/protected/private interface
@@ -90,30 +91,67 @@ class NodeIterator
 {
 public:
 
-	NodeIterator(QuadTree* pNode = nullptr);
-		
-	NodeIterator& operator=(QuadTree* pNode);
-	NodeIterator& operator++();
-	NodeIterator& operator++(int unused);
+    NodeIterator(QuadTree* pNode = nullptr);
 
-	bool operator ==(QuadTree* pNode);
-	bool operator !=(QuadTree* pNode);
+    NodeIterator& operator=(QuadTree* pNode);
+    NodeIterator& operator++();
+    NodeIterator& operator++(int unused);
 
-	bool operator ==(const NodeIterator&);
-	bool operator !=(const NodeIterator&);
+    bool operator ==(QuadTree* pNode);
+    bool operator !=(QuadTree* pNode);
 
-	QuadTree* operator*();
-	QuadTree* operator->();
+    bool operator ==(const NodeIterator&);
+    bool operator !=(const NodeIterator&);
+
+    QuadTree* operator*();
+    QuadTree* operator->();
 
 protected:
 
-	QuadTree* m_pNode;
+    QuadTree* m_pNode;
 
-	unsigned int GetIndex() const;
-	void Increment();
-	void LoopDown(unsigned int index);
-	void LoopUp();
+    unsigned int GetIndex() const;
+    void Increment();
+    void LoopDown(unsigned int index);
+    void LoopUp();
 };
 
+/*class QuadTree : public IRender
+{
+public:
+
+    // constructor/destructor
+    QuadTree(const Math::FRECT& R);
+    virtual ~QuadTree();
+
+    // adds a point to the quadtree
+    // recursive
+    bool Insert(ISpatialObject&);
+    void Erase(ISpatialObject&);
+
+    bool IsWithin(ISpatialObject&) const;
+
+    void FindNearObjects(const Math::ICollisionPolygon* pPoly,std::vector<ISpatialObject*>& out);
+    void FindNearNodes(const Math::ICollisionPolygon* pPoly, std::vector<Node*>& out);
+    void FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out);
+
+    template< class T >
+    void Update(ISpatialObject& obj, const T& funct)
+    {
+        Erase(obj);
+        funct();
+        Insert(obj);
+    }
+
+    void SaveToFile(std::string& file);
+    void LoadFile(const std::string& file);
+
+    virtual void Render(class IRenderer&);
+
+    const Math::FRECT& GetRect() const { return m_pRoot->GetRect(); }
+
+private:
+    Node* m_pRoot;
+};*/
 
 #endif // _QUADTREE_

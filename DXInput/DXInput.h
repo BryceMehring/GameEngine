@@ -21,6 +21,7 @@ public:
 	static void GLFWCALL CharCallback(int c, int action);
 	static void GLFWCALL KeyCallback(int c, int action);
 	static void GLFWCALL MouseCallback(int x, int y);
+    static void GLFWCALL MouseClickCallback(int button, int action);
 
 	// IRender
 	virtual DLLType GetPluginType() const;

@@ -48,7 +48,7 @@ glm::vec3& Camera::pos()
 	return m_PosW;
 }
 
-void Camera::lookAt(glm::vec3& pos, glm::vec3& target, glm::vec3& up)
+void Camera::lookAt(const glm::vec3& pos,const glm::vec3& target,const glm::vec3& up)
 {
 	m_PosW = pos;
 	m_LookW = target;

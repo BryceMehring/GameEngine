@@ -2,7 +2,7 @@
 #define GLFW_NO_GLU
 
 #include "Timer.h"
-#include <GL\glfw.h>
+#include <GL/glfw.h>
 
 Timer::Timer() : m_fStart(0.0), m_fEnd(0.0)
 {

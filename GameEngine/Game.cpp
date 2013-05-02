@@ -5,15 +5,14 @@
 #include "RTTI.h"
 #include "Menu.h"
 #include <string>
-#include "gassert.h"
 #include <ctime>
 #include <iomanip>
 #include <iostream>
 
 #define GLFW_NO_GLU
 #include <GL/glfw.h>
-#include "../glm/glm.hpp"
-#include "../glm/gtx/transform.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 
 
 using namespace std;
@@ -30,38 +29,34 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 		throw string("Failed to init glfw");
 	}
 
-	LoadAllDLL();
+    m_plugins.SetAS(m_vm.GetScriptEngine());
+    LoadAllDLL();
 	
-	glfwDisable(GLFW_MOUSE_CURSOR); 
+    glfwDisable(GLFW_MOUSE_CURSOR);
+    glfwDisable(GLFW_AUTO_POLL_EVENTS);
 
 	// todo: move this code somewhere else
-	m_pRenderer->GetResourceManager().LoadResourceFile("..\\base.r");
+    m_pRenderer->GetResourceManager().LoadResourceFile("base.r");
 
 	// todo: init the scripting console somewhere else
-	float width = 90;
-	float height = 90;
-	glm::vec2 pos(0.0f,0.0f);
+    //float width = 90;
+    //float height = 90;
+    //glm::vec2 pos(0.0f,0.0f);
 	
-	m_pConsole = new ScriptingConsole(&m_vm,"Scripting Console",pos,width,height);
+    //m_pConsole = new ScriptingConsole(&m_vm,"Scripting Console",pos,width,height);
 
-	m_vm.RegisterScript(m_pConsole);
+    //m_vm.RegisterScript(m_pConsole);
 
-	m_pConsole->RegisterScript();
+    //m_pConsole->RegisterScript();
 
-	
+
 
 	RegisterScript();
 }
 
 Game::~Game()
 {
-	delete m_pConsole;
-
-	// run the garbage collector before we destroy
-	asIScriptEngine* pEngine = m_vm.GetScriptEngine();
-	pEngine->GarbageCollect();
-	pEngine->Release();
-
+    m_StateMachine.RemoveState(*this);
 	glfwTerminate();
 }
 
@@ -77,7 +72,7 @@ void Game::SetNextState(const std::string& state)
 		// If the current state is null, or if the new state is different than the current
 		if(!m_StateMachine.HasState() || m_StateMachine.GetState().GetType()->GetName() != state)
 		{
-			m_NextState = state;
+            m_NextState = state;
 		}
 	}
 }
@@ -87,13 +82,14 @@ int Game::Run()
 	// Loop while the use has not quit
 	while(glfwGetKey( GLFW_KEY_ESC ) != GLFW_PRESS && glfwGetWindowParam( GLFW_OPENED ))
 	{
+        glfwPollEvents();
 		StartTimer();
 
 		// Update the game
-		Update();
+        Update();
 
-		// Render the game
-		Draw();
+        // Render the game
+        Draw();
 
 		m_pInput->Reset();
 
@@ -149,24 +145,25 @@ void Game::Update()
 	}
 	else
 	{
-		m_StateMachine.GetState().Update(*this);
+       m_StateMachine.GetState().Update(*this);
 	}
 }
 
 void Game::Draw()
 {
-	DrawFPS();
-	//DrawSelectionRect();
+    //DrawFPS();
+    DrawSelectionRect();
 		
 	if(m_bConsoleEnabled)
 	{
-		m_pConsole->Render(*m_pRenderer);
+        //m_pConsole->Render(*m_pRenderer);
 	}
 	else
 	{
 		// render the current state
-		m_StateMachine.GetState().Draw(*this);
+        m_StateMachine.GetState().Draw(*this);
 	}
+
 
 	// Present the screen
 	m_pRenderer->Present();
@@ -241,30 +238,29 @@ void Game::ReloadPlugins()
 #ifdef _DEBUG
 	ReloadPlugins("..\\Debug\\");
 #else
-	ReloadPlugins("..\\Release\\");
+    ReloadPlugins("/");
 #endif
 }
 
 void Game::ReloadPlugins(const std::string& path)
 {
-	m_plugins.FreeAllPlugins();
+    m_plugins.FreeAllPlugins();
 
-	IPlugin* pPlugin = m_plugins.LoadDLL((path + "\\renderer.extension").c_str());
+    IPlugin* pPlugin = m_plugins.LoadDLL("/home/bryce/GameEngine/librenderer.so");
 	assert(pPlugin != nullptr);
 	assert(pPlugin->GetPluginType() == DLLType::RenderingPlugin); // check to make sure the renderer is actually the renderer
 
-	m_pRenderer = static_cast<IRenderer*>(pPlugin);
+    m_pRenderer = static_cast<IRenderer*>(pPlugin);
 
-	pPlugin = m_plugins.LoadDLL((path + "\\input.extension").c_str());
+    pPlugin = m_plugins.LoadDLL("/home/bryce/GameEngine/libinput.so");
 	assert(pPlugin != nullptr);
 	assert(pPlugin->GetPluginType() == DLLType::InputPlugin); // check to make sure the input is actually the input plugin
 
-	m_pInput = static_cast<IKMInput*>(pPlugin);
+    m_pInput = static_cast<IKMInput*>(pPlugin);
 }
 
 void Game::LoadAllDLL()
 {
-	m_plugins.SetAS(m_vm.GetScriptEngine());
 	ReloadPlugins();
 }
 
@@ -291,25 +287,6 @@ void Game::RegisterScript()
 
 	pEngine->Release();
 }
-
-/*void Game::MsgProc(const MsgProcData& data)
-{
-	switch(data.msg)
-	{
-	case WM_ACTIVATE:
-		if( LOWORD(data.wParam) == WA_INACTIVE )
-		{
-			m_timer.Stop();
-			m_pRenderer->OnLostDevice();
-		}
-		else
-		{
-			m_pRenderer->OnResetDevice();
-			m_timer.Start();
-		}
-		break;
-	}
-}*/
 
 GameInfo::GameInfo() : m_fTimeElapsed(0.0), m_uiFrames(0), m_uiFPS(0)
 {

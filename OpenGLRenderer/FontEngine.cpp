@@ -1,5 +1,5 @@
 #include "FontEngine.h"
-#include <glm\gtx\transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
 m_pRm(pRm), m_iMaxLength(maxLength), m_iFenceIndex(0), m_pCamera(pCam)
@@ -169,8 +169,8 @@ void FontEngine::Render()
 	FillVertexBuffer();
 
 	// get the shader to use
-	ResourceManager::Shader& theShader = static_cast<ResourceManager::Shader&>(m_pRm->GetResource("2dshader"));
-	ResourceManager::IResource& theTexture = m_pRm->GetResource("font");
+    Shader& theShader = static_cast<Shader&>(m_pRm->GetResource("2dshader"));
+    IResource& theTexture = m_pRm->GetResource("font");
 
 	// use the shader
 	glUseProgram(theShader.id);

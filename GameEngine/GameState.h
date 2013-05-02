@@ -8,7 +8,7 @@ class IGameState : public IPlugin
 {
 public:
 
-	IGameState();
+    IGameState() {}
 
 	virtual void Init(class Game& game) = 0;
 	virtual void Destroy(class Game& game) = 0;

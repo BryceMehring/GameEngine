@@ -34,7 +34,10 @@ public:
 	virtual IResourceManager& GetResourceManager() = 0;
 
 	// Line
-	virtual void DrawLine(const glm::vec3* pArray, unsigned int length, const glm::vec4& color = glm::vec4(1.0f), const glm::mat4& t = glm::mat4(1.0f)) = 0;
+    virtual void DrawLine(const glm::vec3* pArray,
+                          unsigned int length,
+                          const glm::vec4& color = glm::vec4(1.0f),
+                          const glm::mat4& t = glm::mat4(1.0f)) = 0;
 
 	// Fonts
 	virtual void GetStringRec(const char* str, const glm::vec2& pos, const glm::vec2& scale, Math::FRECT& out) = 0;

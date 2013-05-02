@@ -2,9 +2,9 @@
 #define _FONTENGINE_
 
 #include "ResourceManager.h"
-#include "camera.h"
-#include <GL\glew.h>
-#include <glm\glm.hpp>
+#include "Camera.h"
+#include <GL/glew.h>
+#include <glm/glm.hpp>
 
 struct DrawTextInfo
 {

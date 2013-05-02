@@ -32,8 +32,8 @@ public:
 	// Sets the last state that was called with RemoveState()
 	void LoadPreviousState(class Game&);
 
-	// todo: this is kind of bugged here
-	bool HasState() const { return m_pCurrentState != nullptr; }
+    // todo: this is kind of bugged here
+    bool HasState() const { return m_pCurrentState != nullptr; }
 
 	IGameState& GetState() { return *m_pCurrentState; }
 	const IGameState& GetState() const { return *m_pCurrentState; }
@@ -45,8 +45,6 @@ private:
 
 	std::map<std::string,IGameState*> m_states; // a list of all the states
 	std::stack<std::string> m_stateStack;
-
-	std::map<std::string,IGameState*>::iterator RAddState(const std::string& state);
 
 };
 

@@ -12,6 +12,7 @@
 #include <cassert>
 #include <sstream>
 #include <angelscript.h>
+#include <iostream>
 
 using namespace std;
 
@@ -23,6 +24,7 @@ PluginManager::PluginManager() : m_pAS(nullptr)
 PluginManager::~PluginManager()
 {
 	FreeAllPlugins();
+    m_pAS->Release();
 }
 
 void PluginManager::FreeAllPlugins()
@@ -32,14 +34,7 @@ void PluginManager::FreeAllPlugins()
 		FreePlugin(iter->second);
 	}
 
-	m_Keys.clear();
 	m_plugins.clear();
-}
-
-asIScriptEngine* PluginManager::GetAngelScript()
-{ 
- 	m_pAS->AddRef();
- 	return m_pAS;
 }
 
 //  ===== interface with dlls =====
@@ -117,17 +112,20 @@ IPlugin* PluginManager::GetPlugin(DLLType type)
 
 IPlugin* PluginManager::LoadDLL(const char* pDLL)
 {
-	PluginInfo dll = {0,0};
+    PluginInfo dll;
+    dll.mod = 0;
+    dll.pPlugin = 0;
 
 #ifdef _WIN32
 	dll.mod = LoadLibrary(pDLL);
 #else
-	dll.mod = dlopen(pDLL,RTLD_LAZY);
+    dll.mod = dlopen(pDLL,RTLD_NOW);
 #endif
 
 	// todo: fix the error handling here
 	if(dll.mod == nullptr)
 	{
+        cout << "Cannot open library: " << dlerror() << endl;
 		return nullptr;
 	}
 
@@ -149,13 +147,12 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 #endif
 
 		return nullptr;
-	}
-
+    }
 		
 	// Create the plugin
 	m_pAS->AddRef();
-	dll.pPlugin = pFunct(m_pAS);
-	assert(dll.pPlugin != nullptr);
+    dll.pPlugin = pFunct(m_pAS);
+    assert(dll.pPlugin != nullptr);
 
 	// Get the type of the plugin
 	DLLType type = dll.pPlugin->GetPluginType();
@@ -175,8 +172,6 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 
 		// insert plugin into hash table
 		m_plugins.insert(make_pair(type,dll));
-
-		m_Keys.push_back(type);
 	}
 
 	// return the plugin interface
@@ -185,7 +180,7 @@ IPlugin* PluginManager::LoadDLL(const char* pDLL)
 
 void PluginManager::FreePlugin(const PluginInfo& plugin)
 {
-	delete plugin.pPlugin;
+    delete plugin.pPlugin;
 
 #ifdef _WIN32
 	FreeLibrary((HMODULE)plugin.mod);
@@ -202,9 +197,6 @@ void PluginManager::FreePlugin(DLLType type)
 		FreePlugin(iter->second);
 
 		m_plugins.erase(iter);
-
-		auto posIter = std::find(m_Keys.begin(),m_Keys.end(),type);
-		m_Keys.erase(posIter);
 	}
 }
 

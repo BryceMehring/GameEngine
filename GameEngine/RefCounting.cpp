@@ -1,6 +1,8 @@
 
 #include "RefCounting.h"
 
+using namespace std;
+
 int RefCounting::s_iAddRef = 0;
 int RefCounting::s_iRelease = 0;
 

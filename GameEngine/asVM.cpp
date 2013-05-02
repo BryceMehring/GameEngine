@@ -11,9 +11,13 @@
 #include "StringAlgorithms.h" // todo: remove this file
 #include "Menu.h"
 
+#include <angelscript/debugger/debugger.h>
+
 #include <sstream>
 #include <ctime>
 #include <cassert>
+
+#include <iostream>
 
 
 using namespace std;
@@ -55,14 +59,17 @@ asVM::asVM() : m_iExeScript(0)
 }
 asVM::~asVM()
 {
+    m_pEngine->GarbageCollect();
 	// Release all contexts
 	for(unsigned int i = 0; i < m_scripts.size(); ++i)
 	{
 		m_scripts[i].pCtx->Release();
 	}
 
+
 	// release the Script Engine
-	m_pEngine->Release();
+    int num = m_pEngine->Release();
+    cout<<num<<endl;
 }
 
 void asVM::Save() const
@@ -353,7 +360,7 @@ void asVM::SendMessage(const std::string& msg) const
 void asVM::RegisterScript(ScriptingConsole* pTextBox)
 {
 	// logging output
-	DBAS(m_pEngine->SetMessageCallback(asMETHOD(ScriptingConsole,MessageCallback),pTextBox,asCALL_THISCALL));
+    //DBAS(m_pEngine->SetMessageCallback(asMETHOD(ScriptingConsole,MessageCallback),pTextBox,asCALL_THISCALL));
 
 	//DBAS(m_pEngine->SetDefaultAccessMask(0xffffffff));
 

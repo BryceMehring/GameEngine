@@ -38,7 +38,7 @@ public:
 					std::string fileName2;
 					stream >> fileName2;
 
-					LoadShader(id,fileName,fileName2);
+                    LoadShader(id,fileName,fileName2);
 				}
 			}
 

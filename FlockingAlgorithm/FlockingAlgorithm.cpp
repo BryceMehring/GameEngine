@@ -26,8 +26,9 @@ void ClampWrap(glm::vec3& pos)
 	}
 }
 
-extern "C" PLUGINDECL IPlugin* CreatePlugin(asIScriptEngine*)
+extern "C" PLUGINDECL IPlugin* CreatePlugin(asIScriptEngine* p)
 {
+    p->Release(); // todo: remove this
 	return new FlockingAlgorithm();
 }
 
@@ -63,8 +64,8 @@ void Bird::Update(QuadTree& tree, const glm::vec2& avgPos, double dt)
 
     glm::vec3 localDir(0.0f,0.0f,0.0f);
 
-    glm::vec3 replusion = localDir;
-    float fMinDistance = FLT_MAX;
+    glm::vec3 dir(0.0f,0.0f,0.0f);
+    float fPriorityToGroup = 4.0f;
 	// This operation should operate most of the time in constant time because the number of elements that need to be averaged is const
 	if(!nearBirds.empty())
 	{
@@ -72,31 +73,34 @@ void Bird::Update(QuadTree& tree, const glm::vec2& avgPos, double dt)
 		for(unsigned int i = 0; i < nearBirds.size(); ++i)
 		{
             avgCurrentDir += nearBirds[i]->GetDir();
-            fMinDistance = glm::min(glm::distance(glm::vec2(m_pos.x,m_pos.y),nearBirds[i]->GetPos()),fMinDistance);
+
+            glm::vec3 localDir = m_pos - glm::vec3(nearBirds[i]->GetPos(),0.0f);
+            float fLocalLength = glm::length(localDir);
+
+            if(fLocalLength < 2.0f)
+            {
+                dir += glm::vec3(6.0f)*(localDir / fLocalLength);
+            }
 		}
 
         localDir = (glm::vec3(avgCurrentDir.x,avgCurrentDir.y,0.0f) - glm::vec3(GetDir(),0.0f)) / glm::vec3(2);
-	}
 
-    if(fMinDistance < .5f)
-    {
-        replusion = -localDir;
-        localDir = glm::vec3(0.0f,0.0f,0.0f);
-    }
+        fPriorityToGroup = 0.0001f;
+	}
 
 
     glm::vec3 toCenter = glm::vec3(avgPos,0.0f) - m_pos;
 
 	// Calculate the avg between the two avg directions
-    glm::vec3 dir = (glm::vec3(6.5f)*replusion +
-                     glm::vec3(5.0f)*localDir +
-                     glm::vec3(2.0f)*glm::vec3(GetDir(),0.0f) +
-                     glm::vec3(0.0001f)*toCenter);
+    dir += (glm::vec3(5.0f)*localDir +
+            glm::vec3(2.0f)*glm::vec3(GetDir(),0.0f) +
+            glm::vec3(fPriorityToGroup)*toCenter);
+
 
 	//dir.x += ::Math::GetRandFloat(0.0f,100.0f);
 	//dir.y += ::Math::GetRandFloat(0.0f,100.0f);
 	dir = glm::normalize(dir);
-	m_pos += dir * glm::vec3(20.0f) * glm::vec3(dt);
+    m_pos += dir * glm::vec3(20.0f) * glm::vec3(dt);
 
 	float angleDiff = atan2(-dir.x,dir.y) - m_fAngle;
 	m_fAngle += angleDiff * 5.0f * dt; // this is the problem
@@ -127,9 +131,9 @@ void Bird::Render(IRenderer& renderer)
 {
 	static const glm::vec3 vertices[] = 
 	{
-		glm::vec3(0.0f,0.0f,0.0f),
-		glm::vec3(1.0f,3.0f,0.0f),
-		glm::vec3(2.0f,0.0f,0.0f)
+        glm::vec3(0.0f,0.0f,0.0f),
+        glm::vec3(1.0f,3.0f,0.0f),
+        glm::vec3(2.0f,0.0f,0.0f)
 	};
 
 	glm::mat4 T = glm::translate(m_pos);
@@ -204,12 +208,13 @@ void FlockingAlgorithm::Draw(Game& game)
 {
 	//game.GetRenderer().Get2DRenderer().DrawString("Hello World",::D3DXVECTOR2(-10.0f,0.0f));
 
-	for(unsigned int i = 0; i < m_birds.size(); ++i)
+    for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
 		m_birds[i]->Render(game.GetRenderer());
-	}
+    }
 
-    this->m_pQuadtree->Render(game.GetRenderer());
+
+   // m_pQuadtree->Render(game.GetRenderer());
 
 	//game.GetRenderer().Get2DRenderer().
 }

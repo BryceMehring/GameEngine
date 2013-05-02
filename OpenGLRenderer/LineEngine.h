@@ -1,20 +1,13 @@
 #ifndef _LINEENGINE_
 #define _LINEENGINE_
 
-#include "camera.h"
+#include "Camera.h"
 #include "ResourceManager.h"
 
 struct LineVertex
 {
 	glm::vec3 pos;
-};
-
-struct Line
-{
-	Line(unsigned int l, const glm::vec4& c) : length(l), color(c) {}
-
-	unsigned int length;
-	glm::vec4 color;
+    glm::vec4 color;
 };
 
 class LineEngine
@@ -38,7 +31,7 @@ private:
 	Camera* m_pCamera;
 	ResourceManager* m_pRM;
 
-	std::vector<Line> m_LineSubsets;
+    std::vector<unsigned int> m_LineSubsets;
 
 	void CreateVertexBuffer();
 

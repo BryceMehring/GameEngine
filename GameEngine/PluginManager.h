@@ -35,11 +35,7 @@ public:
 
 	// more functions would go here as needed to work with the dlls...
 	//  ===== interface with dlls =====
-	class asIScriptEngine* GetAngelScript();
 	//asVM& GetScriptVM() const;
-
-	// Returns all of the keys for all of the dll's that are loaded
-	const std::vector<DLLType>& GetPluginKeys() const { return m_Keys; }
 
 	//bool Good(const char* pFile) const;
 
@@ -63,8 +59,6 @@ private:
 	//typedef 
 	typedef std::map<DLLType,PluginInfo> plugin_type;
 	plugin_type m_plugins;
-
-	std::vector<DLLType> m_Keys;
 
 	// Helper functions
 	void FreePlugin(const PluginInfo& plugin);

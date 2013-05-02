@@ -2,7 +2,7 @@
 #define _CAMERA_
 
 #include "RefCounting.h"
-#include "../glm/glm.hpp"
+#include <glm/glm.hpp>
 
 class Camera : public RefCounting
 {
@@ -21,7 +21,7 @@ public:
 
 	glm::vec3& pos();
 
-	void lookAt(glm::vec3& pos, glm::vec3& target, glm::vec3& up);
+    void lookAt(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up);
 
 	void setLens(float w, float h, float nearZ, float farZ);
 

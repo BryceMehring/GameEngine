@@ -334,7 +334,7 @@ protected:
 	//POINT m_carrotPos;
 	bool m_drawCarrot;
 
-	float m_fCarrotTime;
+    //float m_fCarrotTime;
 	double m_fScrollTime;
 
 	glm::vec2 m_pos;
@@ -358,7 +358,7 @@ private:
 
 };
 
-class ScriptingConsole : public TextBox
+/*class ScriptingConsole : public TextBox
 {
 public:
 
@@ -404,7 +404,7 @@ protected:
 	void Grab(unsigned int);
 	void Grab(bool);
 
-};
+};*/
 
 class Slider : public IUIElement
 {

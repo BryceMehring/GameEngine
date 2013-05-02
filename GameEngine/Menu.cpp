@@ -7,7 +7,7 @@
 #include "GameConstants.h"
 
 #include <sstream>
-#include <glm\gtx\transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 using namespace std;
 
@@ -144,7 +144,8 @@ Menu* GUI::GetMenu()
 	return m_pMenu;
 }
 
-ButtonBase::ButtonBase(const Math::Sprite& s, const std::string& str) : m_sprite(s), m_text(str), m_bSelected(false), m_bMouseHover(false)
+ButtonBase::ButtonBase(const Math::Sprite& s, const std::string& str) :
+    m_sprite(s), m_text(str),  m_bMouseHover(false), m_bSelected(false)
 {
 }
 
@@ -191,7 +192,7 @@ void ButtonBase::Render(IRenderer& renderer)
 
 // textbox ctor
 TextBox::TextBox(const std::string& name, const glm::vec2& pos, float w, float h)
-: m_spacePos(-1), m_fScrollTime(0.0), m_sprite(w,h,pos), m_pos(-40.0f,40.0f)
+: m_sprite(w,h,pos), m_spacePos(-1), m_fScrollTime(0.0), m_pos(-40.0f,40.0f)
 {
 	m_text.push_back(LineData());
 
@@ -317,9 +318,9 @@ void TextBox::Render(IRenderer& renderer)
 
 	}*/
 
-	glm::vec2 middle = m_sprite.Middle();
-	glm::mat4 S = glm::scale(m_sprite.Width(),m_sprite.Height(),1.0f);
-	glm::mat4 T = glm::translate(middle.x,middle.y,3000.0f);
+    //glm::vec2 middle = m_sprite.Middle();
+    //glm::mat4 S = glm::scale(m_sprite.Width(),m_sprite.Height(),1.0f);
+    //glm::mat4 T = glm::translate(middle.x,middle.y,3000.0f);
 
 	glm::vec2 pos = m_pos;
 
@@ -392,7 +393,7 @@ void TextBox::CLS()
 }
 
 
-ScriptingConsole::ScriptingConsole(asVM* pVM, const std::string& name, const glm::vec2& pos, float w, float h)
+/*ScriptingConsole::ScriptingConsole(asVM* pVM, const std::string& name, const glm::vec2& pos, float w, float h)
 : TextBox(name,pos,w,h), m_pVM(pVM), m_uiStartIndex(-1), m_uiBackIndex(0)
 {
 
@@ -557,4 +558,4 @@ void ScriptingConsole::RegisterScript()
 	DBAS(asEngine->RegisterGlobalProperty("Console console",this));
 
 	asEngine->Release();
-}
+}*/

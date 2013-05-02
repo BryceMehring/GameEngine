@@ -3,7 +3,8 @@
 #define GLFW_NO_GLU
 
 //#include <vld.h>
-#include <GL\glfw.h>
+#include <GL/glfw.h>
+#include <angelscript.h>
 #include "DXInput.h"
 
 #include <iostream>
@@ -31,7 +32,7 @@ void GLFWCALL DirectInput::KeyCallback(int c, int action)
 {
 	if(s_pThis != nullptr)
 	{
-		s_pThis->m_iKeyDown;
+        //s_pThis->m_iKeyDown;
 		s_pThis->m_iKeyAction = action;
 	}
 }
@@ -42,6 +43,15 @@ void GLFWCALL DirectInput::MouseCallback(int x, int y)
 	{
 		s_pThis->UpdateMouse(x,y);
 	}
+}
+
+void GLFWCALL DirectInput::MouseClickCallback(int button, int action)
+{
+    if(s_pThis != nullptr)
+    {
+        s_pThis->m_selectedPos = s_pThis->m_tpos;
+        s_pThis->m_bMouseClickOnce[button] = action;
+    }
 }
 
 // DirectInput ctor
@@ -58,6 +68,7 @@ DirectInput::DirectInput(asIScriptEngine* as) : m_iMouseX(0), m_iMouseY(0),
 	glfwSetCharCallback(CharCallback);
 	glfwSetKeyCallback(KeyCallback);
 	glfwSetMousePosCallback(MouseCallback);
+    glfwSetMouseButtonCallback(MouseClickCallback);
 
 	glfwEnable(GLFW_KEY_REPEAT);
 
@@ -102,7 +113,9 @@ void DirectInput::Reset()
 
 	memset(m_bMouseClickOnce,0,sizeof(m_bMouseClickOnce));
 
+
 	m_iCharAction = -1;*/
+    m_bMouseClickOnce[0] = m_bMouseClickOnce[1] = false;
 }
 
 void DirectInput::UpdateMouse(int x, int y)
@@ -170,7 +183,7 @@ int DirectInput::GetKeyDown() const
 }
 bool DirectInput::MouseClick(int iButton, bool once) const
 {
-	return (once ? m_bMouseClickOnce[iButton] : m_bMouseClick[iButton]);
+    return (once ? m_bMouseClickOnce[iButton] : glfwGetMouseButton(iButton) == GLFW_PRESS);
 }
 int DirectInput::MouseX() const
 {
