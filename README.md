@@ -1,6 +1,8 @@
 GameEngine
 ==========
 
+Starting point is GameLauncher.
+
 Dependencies
 ==========
 
