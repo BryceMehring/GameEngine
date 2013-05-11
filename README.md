@@ -1,6 +1,11 @@
 GameEngine
 ==========
 
+To create the projects:
+
+Windows: cmake -g "visual studio 10" CMakeLists.txt
+Linux: cmake CMakeLists.txt
+
 Starting point is GameLauncher.
 
 Dependencies
