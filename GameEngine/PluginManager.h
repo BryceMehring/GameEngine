@@ -42,7 +42,7 @@ public:
 	// returns the plugin if found, else, it returns null
 	const IPlugin* GetPlugin(DLLType type) const;
 	IPlugin* GetPlugin(DLLType type);
-	IPlugin* LoadDLL(const char* pFile);
+    IPlugin* LoadDLL(const std::string& file);
 	
 	void FreePlugin(DLLType type);
 	void FreeAllPlugins();

@@ -32,7 +32,7 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
     m_plugins.SetAS(m_vm.GetScriptEngine());
     LoadAllDLL();
 	
-    glfwDisable(GLFW_MOUSE_CURSOR);
+    //glfwDisable(GLFW_MOUSE_CURSOR);
     glfwDisable(GLFW_AUTO_POLL_EVENTS);
 
 	// todo: move this code somewhere else
@@ -235,24 +235,36 @@ unsigned int Game::GetFps() const
 
 void Game::ReloadPlugins()
 {
-#ifdef _DEBUG
+/*#ifdef _DEBUG
 	ReloadPlugins("..\\Debug\\");
-#else
+#else*/
     ReloadPlugins("/");
-#endif
+//#endif
 }
 
 void Game::ReloadPlugins(const std::string& path)
 {
     m_plugins.FreeAllPlugins();
 
-    IPlugin* pPlugin = m_plugins.LoadDLL("/home/bryce/GameEngine/librenderer.so");
+    string renderer = "./";
+    string input = renderer;
+
+#ifdef _WIN32
+    renderer += "renderer";
+    input += "input";
+#else
+    renderer += "librenderer";
+    input += "libinput";
+#endif
+
+
+    IPlugin* pPlugin = m_plugins.LoadDLL(renderer);
 	assert(pPlugin != nullptr);
 	assert(pPlugin->GetPluginType() == DLLType::RenderingPlugin); // check to make sure the renderer is actually the renderer
 
     m_pRenderer = static_cast<IRenderer*>(pPlugin);
 
-    pPlugin = m_plugins.LoadDLL("/home/bryce/GameEngine/libinput.so");
+    pPlugin = m_plugins.LoadDLL(input);
 	assert(pPlugin != nullptr);
 	assert(pPlugin->GetPluginType() == DLLType::InputPlugin); // check to make sure the input is actually the input plugin
 

@@ -19,7 +19,12 @@ GameStateMachine::~GameStateMachine()
 
 void GameStateMachine::SetState(const std::string& state, Game& game)
 {
-    string path = "/home/bryce/GameEngine/lib" + state + ".so";
+    string path = "./";
+#ifdef _WIN32
+    path += state;
+#else
+    path += "lib" + state;
+#endif
 	//if(game.GetPM().Good(path.c_str()))
 	{
 		// remove current state

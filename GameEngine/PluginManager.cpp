@@ -110,16 +110,20 @@ IPlugin* PluginManager::GetPlugin(DLLType type)
 	return true;
 }*/
 
-IPlugin* PluginManager::LoadDLL(const char* pDLL)
+IPlugin* PluginManager::LoadDLL(const std::string& file)
 {
     PluginInfo dll;
     dll.mod = 0;
     dll.pPlugin = 0;
 
+    string dllFile = file;
+
 #ifdef _WIN32
-	dll.mod = LoadLibrary(pDLL);
+    dllFile += ".dll";
+    dll.mod = LoadLibrary(dllFile.c_str());
 #else
-    dll.mod = dlopen(pDLL,RTLD_NOW);
+    dllFile += ".so";
+    dll.mod = dlopen(dllFile.c_str(),RTLD_NOW);
 #endif
 
 	// todo: fix the error handling here

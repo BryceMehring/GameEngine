@@ -17,12 +17,16 @@ set(OPENGL_RENDERER_SOURCE
     OpenGLRenderer/LineEngine.cpp
     OpenGLRenderer/ResourceManager.cpp
     OpenGLRenderer/FontEngine.cpp
+    OpenGLRenderer/SpriteEngine.cpp
+    OpenGLRenderer/GenerateBuffers.cpp
     )
 set(OPENGL_RENDERER_HEADERS
     OpenGLRenderer/oglRenderer.h
     OpenGLRenderer/LineEngine.h
     OpenGLRenderer/ResourceManager.h
     OpenGLRenderer/FontEngine.h
+    OpenGLRenderer/SpriteEngine.h
+    OpenGLRenderer/GenerateBuffers.h
     )
 
 set(FLOCKING_ALGORITHM_SOURCE
@@ -99,18 +103,6 @@ include_directories("${CMAKE_SOURCE_DIR}/GameEngine/")
 include_directories("${CMAKE_SOURCE_DIR}/../")
 #include_directories("${CMAKE_SOURCE_DIR}/../testApp")
 
-if(WIN32)
-    if(MSVC)
-            set_target_properties(Angelscript PROPERTIES COMPILE_FLAGS "/MP")
-    endif(MSVC)
-else()
-    add_definitions( "-Wall -std=c++0x -fno-rtti -g -fPIC" )
-    #add_definitions( "-Wall -std=c++0x -fno-rtti -O2 -fPIC" )
-endif()
-
-
-#add_definitions( "-Wall -std=c++0x -fno-rtti -O2 -fPIC" )
-
 # build the game engine
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../lib/)
 add_library(GameEngine STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCE})
@@ -137,5 +129,26 @@ add_executable(GameLauncher ${GAMELAUNCHER_SOURCE})
 
 
 target_link_libraries(GameLauncher GameEngine)
+
+if(WIN32)
+    if(MSVC)
+            set(VISUAL_STUDIO_FLAGS
+                    /MP
+                    /Od
+                    /arch:SSE2
+                    /GR-
+                    /MTd
+                )
+
+            set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
+            set_target_properties(renderer PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
+            set_target_properties(input PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
+            set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
+            set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
+    endif(MSVC)
+else()
+    add_definitions( "-Wall -std=c++0x -fno-rtti -g -fPIC" )
+    #add_definitions( "-Wall -std=c++0x -fno-rtti -O2 -fPIC" )
+endif()
 
 #target_link_libraries (Tutorial test)
