@@ -146,7 +146,7 @@ void FlockingAlgorithm::Init(Game& game)
 {
     m_pQuadtree = new QuadTree(Math::FRECT(glm::vec2(-100.0f,100.0f),glm::vec2(100.0f,-100.0f)));
 
-    m_birds.resize(200);
+    m_birds.resize(500);
 	for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
 		m_birds[i] = new Bird();

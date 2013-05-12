@@ -14,6 +14,12 @@
 #include <angelscript.h>
 #include <iostream>
 
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <dlfcn.h>
+#endif
+
 using namespace std;
 
 PluginManager::PluginManager() : m_pAS(nullptr)
@@ -129,7 +135,13 @@ IPlugin* PluginManager::LoadDLL(const std::string& file)
 	// todo: fix the error handling here
 	if(dll.mod == nullptr)
 	{
-        cout << "Cannot open library: " << dlerror() << endl;
+        cout << "Cannot open library: ";
+#ifdef _WIN32
+		cout << GetLastError() << endl;
+#else
+		cout << dlerror() << endl;
+#endif
+		
 		return nullptr;
 	}
 

@@ -54,7 +54,7 @@ void LineEngine::Render()
     Shader& theShader = static_cast<Shader&>(m_pRM->GetResource("lineShader"));
     GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
     GLuint vertexColorID = glGetAttribLocation(theShader.id, "vertexColor");
-    //unsigned int colorId = theShader.uniforms["lineColor"];
+    unsigned int colorId = theShader.uniforms["lineColor"];
 
 	glUseProgram(theShader.id);
 

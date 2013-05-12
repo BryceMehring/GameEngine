@@ -18,7 +18,7 @@ set(OPENGL_RENDERER_SOURCE
     OpenGLRenderer/ResourceManager.cpp
     OpenGLRenderer/FontEngine.cpp
     OpenGLRenderer/SpriteEngine.cpp
-    OpenGLRenderer/GenerateBuffers.cpp
+    #OpenGLRenderer/GenerateBuffers.cpp
     )
 set(OPENGL_RENDERER_HEADERS
     OpenGLRenderer/oglRenderer.h
@@ -26,7 +26,7 @@ set(OPENGL_RENDERER_HEADERS
     OpenGLRenderer/ResourceManager.h
     OpenGLRenderer/FontEngine.h
     OpenGLRenderer/SpriteEngine.h
-    OpenGLRenderer/GenerateBuffers.h
+    #OpenGLRenderer/GenerateBuffers.h
     )
 
 set(FLOCKING_ALGORITHM_SOURCE
@@ -55,10 +55,10 @@ set(ENGINE_SOURCE
         GameEngine/Menu.cpp
         GameEngine/FileManager.cpp
         GameEngine/GameConstants.cpp
-        ../angelscript/scriptbuilder/scriptbuilder.cpp
-        ../angelscript/scriptstdstring/scriptstdstring.cpp
-        ../angelscript/scripthelper/scripthelper.cpp
-        ../angelscript/scriptmath/scriptmath.cpp
+        ../angelscript/add_on/scriptbuilder/scriptbuilder.cpp
+        ../angelscript/add_on/scriptstdstring/scriptstdstring.cpp
+        ../angelscript/add_on/scripthelper/scripthelper.cpp
+        ../angelscript/add_on/scriptmath/scriptmath.cpp
         )
         
 set(ENGINE_HEADERS
@@ -81,10 +81,10 @@ set(ENGINE_HEADERS
        GameEngine/Menu.h
        GameEngine/FileManager.h
        GameEngine/GameConstants.h
-       ../angelscript/scriptbuilder/scriptbuilder.h
-       ../angelscript/scriptstdstring/scriptstdstring.h
-       ../angelscript/scripthelper/scripthelper.h
-       ../angelscript/scriptmath/scriptmath.h
+       ../angelscript/add_on/scriptbuilder/scriptbuilder.h
+       ../angelscript/add_on/scriptstdstring/scriptstdstring.h
+       ../angelscript/add_on/scripthelper/scripthelper.h
+       ../angelscript/add_on/scriptmath/scriptmath.h
 
     )
 
@@ -101,51 +101,62 @@ set(GAMELAUNCHER_SOURCE
 include_directories("${CMAKE_SOURCE_DIR}")
 include_directories("${CMAKE_SOURCE_DIR}/GameEngine/")
 include_directories("${CMAKE_SOURCE_DIR}/../")
+include_directories("${CMAKE_SOURCE_DIR}/../angelscript/angelscript/include")
 #include_directories("${CMAKE_SOURCE_DIR}/../testApp")
 
 # build the game engine
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../lib/)
 add_library(GameEngine STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCE})
-target_link_libraries(GameEngine dl)
-target_link_libraries(GameEngine glfw)
-target_link_libraries(GameEngine angelscript)
+if(MSVC)
+	target_link_libraries(GameEngine ../glfw/lib-msvc100/glfwdll)
+	target_link_libraries(GameEngine ../angelscript/angelscript/lib/angelscriptd) # debug version
+else()
+	target_link_libraries(GameEngine glfw)
+	target_link_libraries(GameEngine angelscript)
+endif()
+
+
+
+
+
 
 # build the plugins
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
 add_library(renderer MODULE ${OPENGL_RENDERER_HEADERS} ${OPENGL_RENDERER_SOURCE})
-target_link_libraries(renderer GLEW)
 target_link_libraries(renderer GameEngine)
+if(MSVC)
+	target_link_libraries(renderer ../glew/lib/glew32)
+	target_link_libraries(renderer ../glfw/lib-msvc100/glfwdll)
+	target_link_libraries(renderer opengl32)
+else()
+	target_link_libraries(renderer GLEW)
+endif()
+
 
 add_library(input MODULE ${INPUT_HEADERS} ${INPUT_SOURCE})
+if(MSVC)
+	target_link_libraries(input ../glfw/lib-msvc100/glfwdll)
+else()
+	target_link_libraries(input glfw)
+endif()
+
 
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
 add_library(FlockingAlgorithm MODULE ${FLOCKING_ALGORITHM_HEADERS} ${FLOCKING_ALGORITHM_SOURCE})
 target_link_libraries(FlockingAlgorithm GameEngine)
 
-
 # build the game launcher
 set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
 add_executable(GameLauncher ${GAMELAUNCHER_SOURCE})
 
-
 target_link_libraries(GameLauncher GameEngine)
 
-if(WIN32)
-    if(MSVC)
-            set(VISUAL_STUDIO_FLAGS
-                    /MP
-                    /Od
-                    /arch:SSE2
-                    /GR-
-                    /MTd
-                )
-
-            set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
-            set_target_properties(renderer PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
-            set_target_properties(input PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
-            set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
-            set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS VISUAL_STUDIO_FLAGS)
-    endif(MSVC)
+if(MSVC)
+		set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
+		set_target_properties(renderer PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
+		set_target_properties(input PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
+		set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
+		set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
 else()
     add_definitions( "-Wall -std=c++0x -fno-rtti -g -fPIC" )
     #add_definitions( "-Wall -std=c++0x -fno-rtti -O2 -fPIC" )

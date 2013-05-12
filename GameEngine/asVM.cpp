@@ -4,14 +4,12 @@
 
 #include "asVM.h"
 #include "Delegates.h"
-#include "../angelscript/scripthelper/scripthelper.h"
-#include "../angelscript/scriptarray/scriptarray.h"
-#include "../angelscript/scriptmath/scriptmath.h"
+#include "../angelscript/add_on/scripthelper/scripthelper.h"
+#include "../angelscript/add_on/scriptarray/scriptarray.h"
+#include "../angelscript/add_on/scriptmath/scriptmath.h"
 #include "FileManager.h"
 #include "StringAlgorithms.h" // todo: remove this file
 #include "Menu.h"
-
-#include <angelscript/debugger/debugger.h>
 
 #include <sstream>
 #include <ctime>

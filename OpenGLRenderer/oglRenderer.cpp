@@ -20,7 +20,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
 
 	GLFWOpenWindowHints();
 
-    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 24,8, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
+    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 24,8, GLFW_FULLSCREEN ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
 	{
         glfwTerminate();
         throw std::string("Failed to create window");
@@ -33,7 +33,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
     cout<<"minor: "<<minor<<endl;
     cout<<"rev: "<<rev<<endl;
 
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
    // glfwDisable(GLFW_MOUSE_CURSOR);

@@ -4,8 +4,15 @@
 #ifndef _PLUGIN_MANAGER_
 #define _PLUGIN_MANAGER_
 
+#ifdef _WIN32
+#ifdef PLUGIN_EXPORTS
+#define PLUGINDECL __declspec(dllexport)
+#else
+#define PLUGINDECL __declspec(dllimport)
+#endif
+#else
 #define PLUGINDECL
-#include <dlfcn.h>
+#endif
 
 #include "IPlugin.h"
 #include <map>

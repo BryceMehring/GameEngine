@@ -2,7 +2,6 @@
 #define GLFW_DLL
 #define GLFW_NO_GLU
 
-//#include <vld.h>
 #include <GL/glfw.h>
 #include <angelscript.h>
 #include "DXInput.h"

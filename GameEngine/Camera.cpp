@@ -1,6 +1,6 @@
 
 #include "Camera.h"
-#include "../glm/gtx/transform.hpp"
+#include "glm/gtx/transform.hpp"
 
 Camera* CreateCamera()
 {

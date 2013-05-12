@@ -10,8 +10,8 @@
 #ifndef _ASMANAGER_
 #define _ASMANAGER_
 
-#include "../angelscript/scriptstdstring/scriptstdstring.h"
-#include "../angelscript/scriptbuilder/scriptbuilder.h"
+#include "../angelscript/add_on/scriptstdstring/scriptstdstring.h"
+#include "../angelscript/add_on/scriptbuilder/scriptbuilder.h"
 #include <cassert>
 
 // debug AngelScript macro

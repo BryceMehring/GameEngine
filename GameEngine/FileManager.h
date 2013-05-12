@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <ctime>
 
 class FileManager : public Singleton<FileManager>
 {

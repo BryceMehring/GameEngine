@@ -5,7 +5,7 @@
 #include "IResourceManager.h"
 #include "VecMath.h"
 #include <string>
-#include "../glm/glm.hpp"
+#include "glm/glm.hpp"
 
 class IRenderer : public IPlugin
 {
