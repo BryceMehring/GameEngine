@@ -4,8 +4,22 @@ GameEngine
 To create the projects:
 
 Windows: cmake -g "visual studio 10" CMakeLists.txt
+Set GameLauncher as the startup project, and build the solution.
 
 Linux: cmake CMakeLists.txt
+compile: make
+
+The compiled output will be in the directory above the repository. So on windows for example, in Debug mode in visual studio, all of the output will be in Debug. 
+Also, the compiler will be looking for Angelscript, GLFW, GLEW, GLM in this same directory as shown below:
+
+All within the folder GameEngine:
+
+Debug/
+GameEngine/
+angelscript/
+glew/
+glfw/
+glm/
 
 Starting point is GameLauncher.
 
