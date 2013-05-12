@@ -17,5 +17,6 @@ Dependencies
 * GLM: http://glm.g-truc.net/
 * stb_img: http://nothings.org/stb_image.c
 * AngelScript: http://www.angelcode.com/angelscript/
+* cmake: http://www.cmake.org/
 
 
