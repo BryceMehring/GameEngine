@@ -1,11 +1,10 @@
-#version 277 core
+#version 120
 
-// Ouput data
-out vec4 color;
-
-uniform vec4 lineColor;
+varying vec4 fragmentColor;
 
 void main()
 {
-	color = lineColor;
+	// Output color = color specified in the vertex shader, 
+	// interpolated between all 3 surrounding vertices
+	gl_FragColor = fragmentColor;
 }
