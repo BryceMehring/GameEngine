@@ -4,13 +4,13 @@ GameEngine
 
 ### To create projects:
 
-#### Windows: cmake -g "visual studio 10" CMakeLists.txt
+#### Windows: `cmake -g "visual studio 10" CMakeLists.txt`
 
 Set GameLauncher as the startup project, and build the solution.
 
-#### Linux: cmake CMakeLists.txt
+#### Linux: `cmake CMakeLists.txt`
 
-compile: make
+compile: `make`
 
 ==========
 
