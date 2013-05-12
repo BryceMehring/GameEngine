@@ -15,10 +15,15 @@ Also, the compiler will be looking for Angelscript, GLFW, GLEW, GLM in this same
 All within the folder GameEngine:
 
 Debug/
+
 GameEngine/
+
 angelscript/
+
 glew/
+
 glfw/
+
 glm/
 
 Starting point is GameLauncher.
