@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <algorithm>
 
 using namespace std;
@@ -56,7 +57,7 @@ void SerializedState::BuildMap(const string& line)
 		if(!getline(stream,variables[uiCounter],'=')) { break; }
 
 		string& ref = variables[uiCounter];
-		ref.erase(remove_if(ref.begin(), ref.end(),isspace), ref.end());
+        ref.erase(remove_if(ref.begin(), ref.end(),::isspace), ref.end());
 
 		++uiCounter;
 	}

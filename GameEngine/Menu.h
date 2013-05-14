@@ -6,7 +6,7 @@
 #include "Delegates.h"
 #include "IKMInput.h"
 #include "IRender.h"
-#include "GameState.h"
+#include "IGameState.h"
 #include "Sprite.h"
 #include "RTTI.h"
 

@@ -7,6 +7,7 @@
 #include "IRenderer.h"
 #include "FontEngine.h"
 #include "LineEngine.h"
+#include "SpriteEngine.h"
 #include "ResourceManager.h"
 #include "PluginManager.h"
 #include "Camera.h"
@@ -83,6 +84,7 @@ private:
 	ResourceManager m_rm;
 	FontEngine* m_pFonts;
 	LineEngine* m_pLines;
+    SpriteEngine* m_pSprites;
 
 	std::vector<GLFWvidmode> m_VideoModes;
 	std::vector<std::string> m_VideoModeStr;

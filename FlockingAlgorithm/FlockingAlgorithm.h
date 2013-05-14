@@ -3,7 +3,7 @@
 
 #define PLUGIN_EXPORTS
 #include "PluginManager.h"
-#include "GameState.h"
+#include "IGameState.h"
 #include "RTTI.h"
 #include "QuadTree.h"
 

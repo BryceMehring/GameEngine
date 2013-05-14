@@ -3,7 +3,7 @@
 #ifndef _GAMESTATEMACHINE_
 #define _GAMESTATEMACHINE_
 
-#include "GameState.h"
+#include "IGameState.h"
 #include <stack>
 #include <map>
 

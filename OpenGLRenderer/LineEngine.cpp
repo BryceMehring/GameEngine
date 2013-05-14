@@ -38,7 +38,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, const 
 
 	for(unsigned int i = 0; i < uiLength; ++i)
 	{
-		glm::vec4 pos = (T * glm::vec4(pArray[i],1.0f));
+        glm::vec4 pos = (T * glm::vec4(pArray[i],1.0f));
         pLineVertex[i].pos = glm::vec3(pos.x,pos.y,pos.z);
         pLineVertex[i].color = color;
     }
@@ -54,7 +54,6 @@ void LineEngine::Render()
     Shader& theShader = static_cast<Shader&>(m_pRM->GetResource("lineShader"));
     GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
     GLuint vertexColorID = glGetAttribLocation(theShader.id, "vertexColor");
-    unsigned int colorId = theShader.uniforms["lineColor"];
 
 	glUseProgram(theShader.id);
 

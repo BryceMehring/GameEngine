@@ -20,7 +20,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
 
 	GLFWOpenWindowHints();
 
-    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 24,8, GLFW_FULLSCREEN ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
+    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 24,8, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
 	{
         glfwTerminate();
         throw std::string("Failed to create window");
@@ -34,8 +34,8 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
     cout<<"rev: "<<rev<<endl;
 
     glfwSwapInterval(0);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    //glEnable(GL_DEPTH_TEST);
+    //glDepthFunc(GL_LESS);
    // glfwDisable(GLFW_MOUSE_CURSOR);
 
 	// Initialize GLEW
@@ -47,6 +47,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
 
     //m_pFonts = new FontEngine(&m_rm,1024,m_pCamera);
     m_pLines = new LineEngine(&m_rm,1024*20,m_pCamera);
+    m_pSprites = new SpriteEngine(&m_rm,1024,m_pCamera);
 
 	EnumerateDisplayAdaptors();
 
@@ -57,6 +58,7 @@ oglRenderer::~oglRenderer()
 {
     //delete m_pFonts;
     delete m_pLines;
+    delete m_pSprites;
     m_pCamera->Release();
     m_pCamera = nullptr;
 
@@ -89,7 +91,7 @@ void oglRenderer::GLFWOpenWindowHints()
 
 void oglRenderer::ClearScreen()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glClear(GL_DEPTH_BUFFER_BIT);
 }
 
@@ -99,6 +101,7 @@ void oglRenderer::Present()
 
     //m_pFonts->Render();
     m_pLines->Render();
+    m_pSprites->Render();
 
     glfwSwapBuffers();
 }
@@ -196,7 +199,7 @@ void oglRenderer::GetStringRec(const char* str, const glm::vec2& pos, const glm:
 
 void oglRenderer::DrawSprite(const glm::mat4& transformation, const std::string& texture, unsigned int iCellId, float dx, float dy)
 {
-	// todo: implement
+    m_pSprites->DrawSprite("sprite",transformation,texture,iCellId,dx,dy);
 }
 
 void oglRenderer::SetCamera(class Camera*)

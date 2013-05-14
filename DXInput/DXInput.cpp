@@ -130,32 +130,29 @@ void DirectInput::UpdateMouse(int x, int y)
 	m_tpos += 50.0f * glm::vec2(m_iMouseX / (float)width ,m_iMouseY / (float)height);
 
 	CenterMouse();
+    ClampMouse();
 }
 
 void DirectInput::ClampMouse()
 {
 	// todo: fix this
-	/*if(m_tpos.x < -50.0f)
+    if(m_tpos.x < -100.0f)
 	{
-		m_MousePos.x -= m_iMouseX;
-		m_tpos.x = -50.0f;
+        m_tpos.x = -100.0f;
 	}
-	else if(m_tpos.x > 50.0f)
+    else if(m_tpos.x > 100.0f)
 	{
-		m_MousePos.x -= m_iMouseX;
-		m_tpos.x = 50.0f;
+        m_tpos.x = 100.0f;
 	}
 
-	if(m_tpos.y < -50.0f)
+    if(m_tpos.y < -100.0f)
 	{
-		m_MousePos.y -= m_iMouseY;
-		m_tpos.y = -50.0f;
+        m_tpos.y = -100.0f;
 	}
-	else if(m_tpos.y > 50.0f)
+    else if(m_tpos.y > 100.0f)
 	{
-		m_MousePos.y -= m_iMouseY;
-		m_tpos.y = 50.0f;
-	}*/
+        m_tpos.y = 100.0f;
+    }
 }
 
 void DirectInput::MousePos(int& x, int& y) const

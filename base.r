@@ -1,2 +1,3 @@
 shader lineShader shaders/LineVertexShader.vert shaders/LinePixelShader.frag
-texture theTexture textures/Square.png
+shader sprite shaders/vertexShader.vert shaders/PixelShader.frag
+texture industry textures/cell.png

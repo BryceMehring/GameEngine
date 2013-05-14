@@ -1,6 +1,6 @@
 #include "ResourceManager.h"
 #include <fstream>
-//#include <stb_img.cpp>
+#include <stb_image.c>
 
 ResourceManager::ResourceManager()
 {
@@ -27,7 +27,7 @@ void ResourceManager::LoadTexture(const std::string& id, const std::string& file
     int spriteHeight = 1;
 
     int x, y, comp;
-    /*unsigned char* pImg = stbi_load(file.c_str(),&x,&y,&comp,4);
+    unsigned char* pImg = stbi_load(file.c_str(),&x,&y,&comp,4);
 
     //todo: need to notify the user that the texture cannot be loaded
     if(pImg == nullptr)
@@ -37,15 +37,8 @@ void ResourceManager::LoadTexture(const std::string& id, const std::string& file
     glGenTextures(1,&textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
-    GLuint pixelFormat = GL_RGBA;
-
-    /*if(comp == 4)
-    {
-        pixelFormat++;
-    }
-
     // Give the image to OpenGL
-    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, x, y, 0, pixelFormat, GL_UNSIGNED_BYTE, (void*)pImg);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)pImg);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
@@ -70,7 +63,7 @@ void ResourceManager::LoadTexture(const std::string& id, const std::string& file
         m_resources.insert(std::make_pair(id,new Texture(textureId,x,y,spriteWidth,spriteHeight)));
     }
 
-    stbi_image_free(pImg);*/
+    stbi_image_free(pImg);
 }
 
 void ResourceManager::LoadShader(const std::string& id, const std::string& vert, const std::string& frag)
@@ -249,6 +242,7 @@ void ResourceManager::ParseFont(std::fstream& stream, Charset& CharsetDesc)
 
 bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) const
 {
+    // todo: need to implement
     return false;
 }
 void ResourceManager::RemoveTexture(const std::string& name)

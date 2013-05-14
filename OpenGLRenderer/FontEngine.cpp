@@ -1,4 +1,5 @@
 #include "FontEngine.h"
+#include "GenerateBuffers.h"
 #include <glm/gtx/transform.hpp>
 
 FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
@@ -35,27 +36,7 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& 
 
 void FontEngine::CreateIndexBuffer()
 {
-	std::vector<unsigned short> indexBuffer;
-
-	indexBuffer.resize(6*m_iMaxLength);
-	for(unsigned int i = 0; i < m_iMaxLength; ++i)
-	{
-		// Tri 1
-		indexBuffer[i*6] = 4*i + 1;
-		indexBuffer[i*6 + 1] =  4*i + 2;
-		indexBuffer[i*6 + 2] = 4*i;
-
-		//Tri 2
-		//
-		indexBuffer[i*6 + 3] = 4*i + 2;
-		indexBuffer[i*6 + 4] = 4*i + 3;
-		indexBuffer[i*6 + 5] = 4*i + 1;
-	}
-
-	glGenBuffers(1,&m_uiIndexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiIndexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.size() * sizeof(unsigned short), &indexBuffer.front(), GL_STATIC_DRAW);
-	
+    m_uiIndexBuffer = CreateQuadIndexBuffer(m_iMaxLength);
 }
 
 void FontEngine::CreateVertexBuffer()

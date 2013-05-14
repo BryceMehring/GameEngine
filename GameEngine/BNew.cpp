@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-void* Bnew(size_t bytes)
+void* BNew(size_t bytes)
 {
 	assert(bytes <= MAX_POOL_SIZE);
 	return Heap::Instance().GetPool(bytes).Allocate();

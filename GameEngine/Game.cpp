@@ -153,6 +153,7 @@ void Game::Draw()
 {
     //DrawFPS();
     DrawSelectionRect();
+    DrawCursor();
 		
 	if(m_bConsoleEnabled)
 	{
@@ -184,7 +185,7 @@ void Game::DrawCursor()
 	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
 	glm::mat4 S = glm::scale(6.0f,6.0f,1.0f);
 
-	m_pRenderer->DrawSprite(S*T,"cursor");
+    m_pRenderer->DrawSprite(S*T,"industry");
 }
 
 void Game::DrawSelectionRect()

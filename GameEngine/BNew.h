@@ -9,7 +9,7 @@ const unsigned int MAX_POOL_SIZE = 256;
 
 // gets memory from the memory pool
 // note: max size to get from pool is 256 bytes per object
-void* Bnew(size_t bytes);
+void* BNew(size_t bytes);
 
 // return memory to the memory pool
 void BDelete(void* p);

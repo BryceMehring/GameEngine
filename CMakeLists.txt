@@ -18,7 +18,7 @@ set(OPENGL_RENDERER_SOURCE
     OpenGLRenderer/ResourceManager.cpp
     OpenGLRenderer/FontEngine.cpp
     OpenGLRenderer/SpriteEngine.cpp
-    #OpenGLRenderer/GenerateBuffers.cpp
+    OpenGLRenderer/GenerateBuffers.cpp
     )
 set(OPENGL_RENDERER_HEADERS
     OpenGLRenderer/oglRenderer.h
@@ -26,7 +26,7 @@ set(OPENGL_RENDERER_HEADERS
     OpenGLRenderer/ResourceManager.h
     OpenGLRenderer/FontEngine.h
     OpenGLRenderer/SpriteEngine.h
-    #OpenGLRenderer/GenerateBuffers.h
+    OpenGLRenderer/GenerateBuffers.h
     )
 
 set(FLOCKING_ALGORITHM_SOURCE
@@ -55,6 +55,7 @@ set(ENGINE_SOURCE
         GameEngine/Menu.cpp
         GameEngine/FileManager.cpp
         GameEngine/GameConstants.cpp
+        GameEngine/SerializedState.cpp
         ../angelscript/add_on/scriptbuilder/scriptbuilder.cpp
         ../angelscript/add_on/scriptstdstring/scriptstdstring.cpp
         ../angelscript/add_on/scripthelper/scripthelper.cpp
@@ -81,6 +82,15 @@ set(ENGINE_HEADERS
        GameEngine/Menu.h
        GameEngine/FileManager.h
        GameEngine/GameConstants.h
+       GameEngine/SerializedState.h
+       GameEngine/IGameState.h
+       GameEngine/IInput.h
+       GameEngine/IKMInput.h
+       GameEngine/SerializedState.h
+       GameEngine/IGameState.h
+       GameEngine/IPlugin.h
+       GameEngine/IRenderer.h
+       GameEngine/IResourceManager.h
        ../angelscript/add_on/scriptbuilder/scriptbuilder.h
        ../angelscript/add_on/scriptstdstring/scriptstdstring.h
        ../angelscript/add_on/scripthelper/scripthelper.h
@@ -158,8 +168,8 @@ if(MSVC)
 		set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
 		set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
 else()
-    add_definitions( "-Wall -std=c++0x -fno-rtti -g -fPIC" )
-    #add_definitions( "-Wall -std=c++0x -fno-rtti -O2 -fPIC" )
+    add_definitions( "-Wall -std=c++0x -msse2 -fno-rtti -m64 -g -fPIC" )
+    #add_definitions( "-Wall -std=c++0x -msse2 -fno-rtti -m64 -O2 -fPIC" )
 endif()
 
 #target_link_libraries (Tutorial test)

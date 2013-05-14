@@ -146,7 +146,7 @@ void FlockingAlgorithm::Init(Game& game)
 {
     m_pQuadtree = new QuadTree(Math::FRECT(glm::vec2(-100.0f,100.0f),glm::vec2(100.0f,-100.0f)));
 
-    m_birds.resize(500);
+    m_birds.resize(400);
 	for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
 		m_birds[i] = new Bird();
@@ -208,11 +208,10 @@ void FlockingAlgorithm::Draw(Game& game)
 {
 	//game.GetRenderer().Get2DRenderer().DrawString("Hello World",::D3DXVECTOR2(-10.0f,0.0f));
 
-    for(unsigned int i = 0; i < m_birds.size(); ++i)
+   /* for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
 		m_birds[i]->Render(game.GetRenderer());
-    }
-
+    }*/
 
    // m_pQuadtree->Render(game.GetRenderer());
 
