@@ -139,7 +139,7 @@ if(MSVC)
 	target_link_libraries(renderer ../glfw/lib-msvc100/glfwdll)
 	target_link_libraries(renderer opengl32)
 else()
-	target_link_libraries(renderer GLEW)
+        target_link_libraries(renderer GLEW)
 endif()
 
 

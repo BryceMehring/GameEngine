@@ -110,6 +110,10 @@ void SpriteEngine::Render()
 
     unsigned long uiStartingIndex = 0; // Starting index to the vertex buffer for rendering multiple textures within one shader pass
 
+    // Enable blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // Loop over all sprites with the same tech
     for(auto iter = m_sprites.begin(); iter != m_sprites.end(); ++iter)
     {
@@ -175,6 +179,8 @@ void SpriteEngine::Render()
             uiStartingIndex += subIter->second.size();
         }
     }
+
+    glDisable(GL_BLEND);
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);

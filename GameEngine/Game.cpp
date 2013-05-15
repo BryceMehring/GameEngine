@@ -183,7 +183,7 @@ void Game::DrawCursor()
 	const ::glm::vec2& pos = m_pInput->GetTransformedMousePos();
 
 	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
-    glm::mat4 S = glm::scale(12.0f,12.0f,1.0f);
+    glm::mat4 S = glm::scale(32.0f,32.0f,1.0f);
 
     m_pRenderer->DrawSprite(T*S,"industry",0,5,5);
 
@@ -198,11 +198,11 @@ void Game::DrawSelectionRect()
 	{
 		glm::vec3 pos[] =
 		{
-			glm::vec3(R.min.x,R.min.y,0.0f),
-			glm::vec3(R.min.x,R.max.y,0.0f),
-			glm::vec3(R.max.x,R.max.y,0.0f),
-			glm::vec3(R.max.x,R.min.y,0.0f),
-			glm::vec3(R.min.x,R.min.y,0.0f)
+            glm::vec3(R.min.x,R.min.y,-1.0f),
+            glm::vec3(R.min.x,R.max.y,-1.0f),
+            glm::vec3(R.max.x,R.max.y,-1.0f),
+            glm::vec3(R.max.x,R.min.y,-1.0f),
+            glm::vec3(R.min.x,R.min.y,-1.0f)
 		};
 
 		glm::mat4 I(1.0f);

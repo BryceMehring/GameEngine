@@ -20,7 +20,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
 
 	GLFWOpenWindowHints();
 
-    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 24,8, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
+    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 0,0, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
 	{
         glfwTerminate();
         throw std::string("Failed to create window");
@@ -33,10 +33,10 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
     cout<<"minor: "<<minor<<endl;
     cout<<"rev: "<<rev<<endl;
 
-    glfwSwapInterval(0);
-   // glEnable(GL_DEPTH_TEST);
-    //glDepthFunc(GL_LESS);
-   // glfwDisable(GLFW_MOUSE_CURSOR);
+    glfwSwapInterval(1);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    //glfwDisable(GLFW_MOUSE_CURSOR);
 
 	// Initialize GLEW
     glewExperimental=true; // Needed in core profile
@@ -84,7 +84,7 @@ int oglRenderer::GetVersion() const
 void oglRenderer::GLFWOpenWindowHints()
 {
     glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
-    glfwOpenWindowHint(GLFW_FSAA_SAMPLES,4);
+    glfwOpenWindowHint(GLFW_FSAA_SAMPLES,2);
     //glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2); // We want OpenGL 2.1
     //glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
 }
