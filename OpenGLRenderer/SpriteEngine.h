@@ -26,6 +26,7 @@ struct SpriteVertex
 {
     glm::vec3 pos;
     glm::vec2 tex;
+    glm::vec2 tiling;
 };
 
 class SpriteEngine

@@ -3,6 +3,7 @@
 #include "GenerateBuffers.h"
 
 #include <cassert>
+#include <stddef.h>
 
 SpriteEngine::SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
     m_pRM(pRm), m_pCamera(pCam), m_uiVertexBuffer(0), m_uiIndexBuffer(0), m_iCurrentLength(0), m_iMaxLength(maxLength)
@@ -68,22 +69,25 @@ void SpriteEngine::FillVertexBuffer()
                 // filling in the vertices
                 pVert[0].pos = (sprites[i].T * glm::vec4(-0.5f,0.5f,0.0f,1.0f)).xyz();
 				pVert[0].tex = topLeft;
-                //pVert[0].dx = sprites[i].dx;
+                pVert[0].tiling = glm::vec2(sprites[i].dx,sprites[i].dy);
                 //pVert[0].dy = sprites[i].dy;
 
                 
                 pVert[1].pos = (sprites[i].T * glm::vec4(-0.5f,-0.5f,0.0,1.0f)).xyz();
                 pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y);
+                pVert[1].tiling = glm::vec2(sprites[i].dx,sprites[i].dy);
                 //pVert[1].dx = sprites[i].dx;
                 //pVert[1].dy = sprites[i].dx;
 
                 pVert[2].pos = (sprites[i].T * glm::vec4(0.5f,0.5f,0.0,1.0f)).xyz();
                 pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y);
+                pVert[2].tiling = glm::vec2(sprites[i].dx,sprites[i].dy);
                 //pVert[2].dx = sprites[i].dx;
                 //pVert[2].dy = sprites[i].dx;
 
                 pVert[3].pos = (sprites[i].T * glm::vec4(0.5f,-0.5f,0.0,1.0f)).xyz();
                 pVert[3].tex = bottomRight;
+                pVert[3].tiling = glm::vec2(sprites[i].dx,sprites[i].dy);
                // pVert[3].dx = sprites[i].dx;
                // pVert[3].dy = sprites[i].dy;
 
@@ -116,6 +120,7 @@ void SpriteEngine::Render()
 
 		GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
         GLuint vertexUV = glGetAttribLocation(theShader.id, "vertexUV");
+        GLuint vertexTiling = glGetAttribLocation(theShader.id, "vertexTiling");
 
         glUseProgram(theShader.id);
 
@@ -137,6 +142,15 @@ void SpriteEngine::Render()
                GL_FALSE,           // normalized?
                sizeof(SpriteVertex),  // stride
                (void*)sizeof(glm::vec3) // array buffer offset
+            );
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(
+               vertexTiling,					// attribute 1
+               2,                  // size
+               GL_FLOAT,           // type
+               GL_FALSE,           // normalized?
+               sizeof(SpriteVertex),  // stride
+               (void*)offsetof(struct SpriteVertex, tiling) // array buffer offset
             );
 
         // set shader parameters
@@ -164,6 +178,7 @@ void SpriteEngine::Render()
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
 
     m_sprites.clear();
     m_iCurrentLength = 0;
