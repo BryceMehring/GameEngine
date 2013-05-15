@@ -145,7 +145,7 @@ void Game::Update()
 	}
 	else
 	{
-       m_StateMachine.GetState().Update(*this);
+      // m_StateMachine.GetState().Update(*this);
 	}
 }
 
@@ -162,7 +162,7 @@ void Game::Draw()
 	else
 	{
 		// render the current state
-        m_StateMachine.GetState().Draw(*this);
+       // m_StateMachine.GetState().Draw(*this);
 	}
 
 
@@ -185,7 +185,10 @@ void Game::DrawCursor()
 	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
 	glm::mat4 S = glm::scale(6.0f,6.0f,1.0f);
 
-    m_pRenderer->DrawSprite(S*T,"industry");
+    m_pRenderer->DrawSprite(T*S,"industry");
+
+	T = glm::translate(pos.x + 20,pos.y,0.0f);
+	m_pRenderer->DrawSprite(T*S,"industry");
 }
 
 void Game::DrawSelectionRect()

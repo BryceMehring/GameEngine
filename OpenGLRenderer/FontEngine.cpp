@@ -159,7 +159,6 @@ void FontEngine::Render()
 	// set shader parameters
 	glUniformMatrix4fv(theShader.uniforms["MVP"],1,false,&m_pCamera->viewProj()[0][0]);
 
-	
 	GLuint ColorId = theShader.uniforms["textColor"];
 
 	GLuint TexId = theShader.uniforms["myTextureSampler"];

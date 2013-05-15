@@ -34,7 +34,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
     cout<<"rev: "<<rev<<endl;
 
     glfwSwapInterval(0);
-    //glEnable(GL_DEPTH_TEST);
+   // glEnable(GL_DEPTH_TEST);
     //glDepthFunc(GL_LESS);
    // glfwDisable(GLFW_MOUSE_CURSOR);
 
@@ -91,7 +91,7 @@ void oglRenderer::GLFWOpenWindowHints()
 
 void oglRenderer::ClearScreen()
 {
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glClear(GL_DEPTH_BUFFER_BIT);
 }
 

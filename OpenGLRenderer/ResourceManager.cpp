@@ -38,9 +38,9 @@ void ResourceManager::LoadTexture(const std::string& id, const std::string& file
     glBindTexture(GL_TEXTURE_2D, textureId);
 
     // Give the image to OpenGL
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)pImg);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)pImg);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     std::fstream in(file + ".txt",std::ios::in);
     if(in)
@@ -242,8 +242,20 @@ void ResourceManager::ParseFont(std::fstream& stream, Charset& CharsetDesc)
 
 bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) const
 {
-    // todo: need to implement
-    return false;
+    auto iter = m_resources.find(name);
+
+	const IResource* pResource = iter->second;
+
+	if(iter == m_resources.end() || pResource->GetType() != ResourceType::Tex)
+		return false;
+
+	const Texture* pTex = static_cast<const Texture*>(pResource);
+
+	out.uiCellsHeight = pTex->iCellsHeight;
+	out.uiCellsWidth = pTex->iCellsWidth;
+	out.uiHeight = pTex->iHeight;
+	out.uiWidth = pTex->iWidth;
+
 }
 void ResourceManager::RemoveTexture(const std::string& name)
 {

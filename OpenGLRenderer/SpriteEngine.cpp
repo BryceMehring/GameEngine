@@ -50,45 +50,39 @@ void SpriteEngine::FillVertexBuffer()
     {
         for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
         {
-            //TextureInfo texInfo;
-            //m_pRM->GetTextureInfo(subIter->first,texInfo); // todo: this function is not yet implemented
+            TextureInfo texInfo;
+            m_pRM->GetTextureInfo(subIter->first,texInfo); // todo: this function is not yet implemented
 
             // get the list of all sprites that use the same tech and texture
             const std::vector<Sprite>& sprites = subIter->second;
 
             for(unsigned int i = 0; i < sprites.size(); ++i)
             {
-                //int x = (sprites[i].iCellId % texInfo.uiCellsWidth);
-               // int y = (sprites[i].iCellId / texInfo.uiCellsHeight);
+                int x = (sprites[i].iCellId % texInfo.uiCellsWidth);
+                int y = (sprites[i].iCellId / texInfo.uiCellsHeight);
 
                 // tex coords
-                //glm::vec2 topLeft((float)x / (float)texInfo.uiCellsWidth,(float)y / (float)texInfo.uiCellsHeight);
-                //glm::vec2 bottomRight((float)(x+1) / (float)texInfo.uiCellsWidth,(float)(y+1) / (float)texInfo.uiCellsHeight);
-                glm::vec2 topLeft(0.0f,0.0f);
-                glm::vec2 bottomRight(1.0f,1.0f);
+                glm::vec2 topLeft((float)x / (float)texInfo.uiCellsWidth,(float)y / (float)texInfo.uiCellsHeight);
+                glm::vec2 bottomRight((float)(x+1) / (float)texInfo.uiCellsWidth,(float)(y+1) / (float)texInfo.uiCellsHeight);
 
                 // filling in the vertices
-                //pVert[0].pos = (sprites[i].T * glm::vec4(-0.5f,0.5f,0.0f,1.0f)).xyz();
-                pVert[0].pos = glm::vec3(-50.0f,50.0f,0.0f);
-                pVert[0].tex = topLeft;
+                pVert[0].pos = (sprites[i].T * glm::vec4(-0.5f,0.5f,0.0f,1.0f)).xyz();
+				pVert[0].tex = topLeft;
                 //pVert[0].dx = sprites[i].dx;
                 //pVert[0].dy = sprites[i].dy;
 
-                //D3DXVec3TransformCoord(&pVert[1].pos,&D3DXVECTOR3(-0.5f,-0.5f,0.0),&sprites[i].T);
-                //pVert[1].pos = (sprites[i].T * glm::vec4(-0.5f,-0.5f,0.0,1.0f)).xyz();
-                pVert[1].pos = glm::vec3(-50.0f,-50.0f,0.0f);
+                
+                pVert[1].pos = (sprites[i].T * glm::vec4(-0.5f,-0.5f,0.0,1.0f)).xyz();
                 pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y);
                 //pVert[1].dx = sprites[i].dx;
                 //pVert[1].dy = sprites[i].dx;
 
-                //pVert[2].pos = (sprites[i].T * glm::vec4(0.5f,0.5f,0.0,1.0f)).xyz();
-                pVert[2].pos = glm::vec3(50.0f,50.0f,0.0f);
+                pVert[2].pos = (sprites[i].T * glm::vec4(0.5f,0.5f,0.0,1.0f)).xyz();
                 pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y);
                 //pVert[2].dx = sprites[i].dx;
                 //pVert[2].dy = sprites[i].dx;
 
-                //pVert[3].pos = (sprites[i].T * glm::vec4(0.5f,-0.5f,0.0,1.0f)).xyz();
-                pVert[3].pos = glm::vec3(50.0f,-50.0f,0.0f);
+                pVert[3].pos = (sprites[i].T * glm::vec4(0.5f,-0.5f,0.0,1.0f)).xyz();
                 pVert[3].tex = bottomRight;
                // pVert[3].dx = sprites[i].dx;
                // pVert[3].dy = sprites[i].dy;
@@ -120,10 +114,10 @@ void SpriteEngine::Render()
         Shader& theShader = static_cast<Shader&>(m_pRM->GetResource(iter->first));
         GLuint TexId = theShader.uniforms["myTextureSampler"];
 
-        glUseProgram(theShader.id);
-
-        GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
+		GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
         GLuint vertexUV = glGetAttribLocation(theShader.id, "vertexUV");
+
+        glUseProgram(theShader.id);
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(
@@ -151,7 +145,7 @@ void SpriteEngine::Render()
         // Render all sprites that use the same tech and texture
         for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
         {
-            Texture& theTexture = static_cast<Texture&>(m_pRM->GetResource(iter->first));
+            Texture& theTexture = static_cast<Texture&>(m_pRM->GetResource(subIter->first));
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, theTexture.id);
@@ -159,7 +153,7 @@ void SpriteEngine::Render()
 
             glDrawElements(
                 GL_TRIANGLES,      // mode
-                subIter->second.size() * 4,    // count 4
+                subIter->second.size() * 6,    // count 4
                 GL_UNSIGNED_SHORT,   // type
                 (GLvoid*)(uiStartingIndex * 6)  // element array buffer offset 6
             );
