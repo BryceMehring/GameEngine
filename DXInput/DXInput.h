@@ -60,8 +60,8 @@ private:
 	int m_iKeyDown;
 	int m_iKeyAction;
 
-	unsigned char m_cKeyDownOnce;
-	unsigned char m_cCharDown;
+	//unsigned char m_cKeyDownOnce;
+	//unsigned char m_cCharDown;
 
 	// Mouse
 	int m_iMouseX;
@@ -75,11 +75,10 @@ private:
 	bool m_bMouseClick[2];
 	bool m_bMouseClickOnce[2];
 
+	/*REMOVE:
 	bool m_bMouseMove;
-
-	unsigned int m_uiCurrentCursor;
-
-	int m_eventId;
+    unsigned int m_uiCurrentCursor;
+	int m_eventId;*/
 
 	// helper functions
 	void Reset();

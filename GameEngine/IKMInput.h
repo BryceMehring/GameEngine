@@ -25,28 +25,35 @@ enum MouseCursorState
 	Beam,
 };
 
-// Keyboard mouse
+// Keyboard/Mouse
 class IKMInput : public IInputPlugin
 {
 public:
 
 	// keyboard
 	virtual bool KeyDown(int Key, bool once = true) = 0;
+
+	//need to be reworked (ignore these)
 	virtual bool IsKeyDown() const = 0;
 	virtual int GetKeyDown() const = 0;
 
-	// mouse
+	// returns true if you click, button is down
 	virtual bool MouseClick(int Button, bool once = true) const = 0;
 
+	//gets the mouse position
 	virtual void MousePos(int& x, int& y) const = 0;
+
+	//gets mouse position in world space
 	virtual const glm::vec2& GetTransformedMousePos() const = 0;
 
-	virtual int MouseX() const = 0;
-	virtual int MouseY() const = 0;
-	virtual int MouseZ() const = 0;
+	virtual int MouseX() const = 0; // horizontal
+	virtual int MouseY() const = 0; // vertical
+	virtual int MouseZ() const = 0; // scroll
+
+	// selection box; returns true if user clicks
 	virtual bool GetSelectedRect(Math::AABB& out) = 0;
 
-	// mouse cursor states
+	// remove this
 	virtual void SetMouseState(MouseCursorState state) = 0; 
 
 protected:

@@ -55,7 +55,7 @@ void GLFWCALL DirectInput::MouseClickCallback(int button, int action)
 
 // DirectInput ctor
 DirectInput::DirectInput(asIScriptEngine* as) : m_iMouseX(0), m_iMouseY(0),
-	m_uiCurrentCursor(0), m_bMouseMove(false), m_as(as), m_tpos(0.0f,0.0f)
+	m_as(as), m_tpos(0.0f,0.0f)
 {
 	// todo: need to rework this: 
 	s_pThis = this;
@@ -209,7 +209,7 @@ bool DirectInput::GetSelectedRect(Math::AABB& out)
 
 void DirectInput::SetMouseState(MouseCursorState state)
 {
-	m_uiCurrentCursor = state;
+	//m_uiCurrentCursor = state;
 }
 
 void DirectInput::RegisterScript()
