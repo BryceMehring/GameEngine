@@ -11,33 +11,30 @@ class IRenderer : public IPlugin
 {
 public:
 
-	// mesh functions
-	/*virtual int LoadMesh(char* pFile) = 0;
-	virtual void DrawMesh(int id, int x, int y, int z) = 0;
-
-	//shaders
-	virtual int LoadShader(char* pFile) = 0;
-	*/
+	// clears the screen
 	virtual void ClearScreen() = 0;
-	virtual void Present() = 0;
-	//virtual void DrawSprite();
 
+	// draw everything to screen
+	virtual void Present() = 0;
+
+	//-------- TODO: REMOVE THESE, NOT USED ANYMORE -------
 	virtual void Reset() = 0;
 	virtual void OnLostDevice() = 0;
 	virtual void OnResetDevice() = 0;
 	virtual bool IsDeviceLost() = 0;
+	//-------- TODO: REMOVE THESE, NOT USED ANYMORE -------
 
 	// whenever an ISpatialObject is passed to the renderer,
 	// the renderer deals with rendering the object so the application does not have to worry about it.
 	
-	// textures
+	// Returns the resource manager
 	virtual IResourceManager& GetResourceManager() = 0;
 
-	// Line
-    virtual void DrawLine(const glm::vec3* pArray,
-                          unsigned int length,
-                          const glm::vec4& color = glm::vec4(1.0f),
-                          const glm::mat4& t = glm::mat4(1.0f)) = 0;
+	// Draws lines
+    virtual void DrawLine(const glm::vec3* pArray, // array of 3d vertices to draw
+                          unsigned int length, // number of vertices
+                          const glm::vec4& color = glm::vec4(1.0f), // color of the line
+                          const glm::mat4& t = glm::mat4(1.0f)) = 0; // transformation to apply to the line
 
 	// Fonts
 	virtual void GetStringRec(const char* str, const glm::vec2& pos, const glm::vec2& scale, Math::FRECT& out) = 0;
@@ -45,14 +42,9 @@ public:
 	virtual void DrawString(const char* str, // the string that gets drawn
 							const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
 							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
-							const glm::vec4& color = glm::vec4(1.0f,1.0f,1.0f,1.0f), // color of the text blended together with the texture
-							const glm::vec2& scale = glm::vec2(1.0f,1.0f) // size of the text
+							const glm::vec4& color = glm::vec4(1.0f), // color of the text blended together with the texture
+							const glm::vec2& scale = glm::vec2(1.0f) // size of the text
 							) = 0; // world space
-
-	// sprites
-	//virtual bool CreateSpritePool(const string& tech,const std::string& texture, unsigned int& id) = 0;
-	//virtual bool DeleteSpritePool(unsigned int id) = 0;
-	//virtual void DrawSprite(unsigned int iPool, const D3DXMATRIX& transformation) = 0;
 
 	virtual void DrawSprite(const glm::mat4& transformation, // transformation applied to the sprite
 							const std::string& texture, // texture used to draw the sprite
@@ -61,17 +53,22 @@ public:
 							float dy = 1.0f // " y
 							) = 0;
 
+	// ignore for now, working on this
 	virtual void SetCamera(class Camera*) = 0;
 
 
 	// config
-	virtual void EnableVSync(bool) = 0;
-	virtual void EnumerateDisplayAdaptors() = 0;
-	virtual unsigned int GetNumDisplayModes() const = 0;
-	virtual unsigned int GetCurrentDisplayMode() const = 0;
-	virtual void SetDisplayMode(unsigned int i) = 0; // full screen mode
-	virtual const std::string& GetDisplayModeStr(unsigned int i) const = 0;
-	virtual void ToggleFullscreen() = 0;
+	virtual void EnableVSync(bool) = 0; // todo: need to implement
+
+	// Queries the computer to get a list of valid display modes supported by their vid card
+	// 0 = Highest Res
+	// N = Lowest Res where N is the number of display modes
+	virtual void EnumerateDisplayAdaptors() = 0; 
+	virtual unsigned int GetNumDisplayModes() const = 0; // returns the number of video modes from EnumerateDisplayAdaptors()
+	virtual unsigned int GetCurrentDisplayMode() const = 0; // returns the current display mode
+	virtual void SetDisplayMode(unsigned int i) = 0; // set a display mode, i being the index into the displayModeList.
+	virtual const std::string& GetDisplayModeStr(unsigned int i) const = 0; // get the display mode str
+	virtual void ToggleFullscreen() = 0; // todo: need to implement
 	
 	///add more functions...
 protected:

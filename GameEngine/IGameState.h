@@ -10,20 +10,23 @@ public:
 
     IGameState() {}
 
+	// Called only once when the plugin is created
 	virtual void Init(class Game& game) = 0;
+
+	// Called only once when the plugin is destroyed
 	virtual void Destroy(class Game& game) = 0;
+
+	// Called every frame to update the date of the game 
 	virtual void Update(class Game& game) = 0;
+
+	// Called every frame to render the game
 	virtual void Draw(class Game& game) = 0;
+
 	virtual const class RTTI* GetType() const = 0;
-
-	//virtual void SendMsg(int msg, void* data) = 0;
-
-	// An example of the usage of SendMessage
-	// 
 
 protected:
 
-	Timer m_timer;
+	Timer m_timer; // keeps track of the time the game has been playing
 
 	virtual ~IGameState() {}
 

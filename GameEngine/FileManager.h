@@ -16,18 +16,19 @@ public:
 
 	friend class Singleton<FileManager>;
 
+	// Saves the log
 	~FileManager();
 	
-	// replaced all of the overloaded versions of WriteToLog with
-	// a template version
+	// Write data to the log file with a timestamp
 	template< class T >
 	void WriteToLog(const T& data)
 	{
         m_buffer << clock() / 1000.0f << ' ' << data << std::endl;
 	}
 
+	// Each line of the file gets passed to functor
 	template< class T >
-    bool ProccessFileByLine(const char* file,const T& functor) const
+    bool ProccessFileByLine(const char* file, const T& functor) const
 	{
 		std::fstream in(file,std::ios::in);
 

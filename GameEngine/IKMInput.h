@@ -18,6 +18,7 @@ enum KeyCode
 	DEL = 127,
 };
 
+// todo: remove this
 enum MouseCursorState
 {
 	Default,

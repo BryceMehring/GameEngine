@@ -16,6 +16,13 @@ struct MemChecker
     }
 };
 
+void Function(int a)
+{
+	cout<<a<<endl;
+}
+
+
+
 int main(int size, char** cmd)
 {
     /*if(size < 2)

@@ -6,6 +6,24 @@
 // todo: I could add support for n amount of arguments with Variadic templates when MSVS updates to the new
 // C++0x standard.
 
+/*
+
+Delegates are a C++ way of representing function pointers, but are a lot more powerful. They can point to global functions, member functions
+and even script functions
+
+Example:
+
+void Function(int a)
+{
+	cout<<a<<endl;
+}
+
+Delegate<void,int> myDelegate;
+myDelegate.Bind(Function);
+myDelegate.Call(5); // prints 5
+
+*/
+
 
 #ifndef _DELEGATES_
 #define _DELEGATES_

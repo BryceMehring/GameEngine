@@ -26,9 +26,8 @@ public:
     bool IsActive() const;
 
 private:
-    // Poll the query performance counter, safely by tying
-    // the polling functionality temporarily to a single
-    // logical processor (identified by 0).
+
+    // Poll the query performance counter
     void PollCounter(double& Out);
  
 private:

@@ -31,8 +31,8 @@ void GLFWCALL DirectInput::KeyCallback(int c, int action)
 {
 	if(s_pThis != nullptr)
 	{
-        //s_pThis->m_iKeyDown;
-		s_pThis->m_iKeyAction = action;
+        //s_pThis->m_iKeyDown = c;
+		//s_pThis->m_iKeyAction = action;
 	}
 }
 
@@ -70,6 +70,7 @@ DirectInput::DirectInput(asIScriptEngine* as) : m_iMouseX(0), m_iMouseY(0),
     glfwSetMouseButtonCallback(MouseClickCallback);
 
 	glfwEnable(GLFW_KEY_REPEAT);
+	glfwEnable(GLFW_STICKY_KEYS);
 
 	CenterMouse();
 }
@@ -167,7 +168,7 @@ const glm::vec2& DirectInput::GetTransformedMousePos() const
 
 bool DirectInput::KeyDown(int Key, bool once)
 {
-	return once ? (m_iKeyAction == GLFW_PRESS && m_iKeyDown == Key) : (glfwGetKey(Key) == GLFW_PRESS);
+	return once ? (m_iKeyAction == GLFW_PRESS && m_iKeyDown == Key) : (glfwGetKey( Key ) == GLFW_PRESS);
 }
 bool DirectInput::IsKeyDown() const
 {

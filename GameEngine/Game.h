@@ -36,12 +36,19 @@ class Game
 {
 public:
 
+	// Init GLFW, load dlls, load the base resource file 
 	Game();
+
+	// Destroy everything
 	~Game();
 
+	// change the current state
 	const std::string& GetCurrentState() const;
+
+	// Get the current state
 	void SetNextState(const std::string& state);
 
+	// ignore, working on this
 	void ReloadPlugins();
 	
 	// Get Functions
@@ -51,11 +58,10 @@ public:
 	PluginManager& GetPM();
 	asVM& GetAs();
 
-	// todo: I could just use this with handles instead of 
-	// todo: having IPlugin interfaces lying around here 
-	double GetDt() const;
+	double GetDt() const; // time diff between frames in seconds
 	unsigned int GetFps() const;
 
+	// play the game set by SetNextState
 	int Run();
 
 protected:
@@ -64,32 +70,28 @@ protected:
 	asVM m_vm;
 	PluginManager m_plugins;
 
-	class ScriptingConsole* m_pConsole;
-	bool m_bConsoleEnabled;
+	class ScriptingConsole* m_pConsole; // ignore right now, working on this
+	bool m_bConsoleEnabled;/// same as above
 
 	GameStateMachine m_StateMachine;
 
 	double m_fDT;
-	double m_fEscTime;
 	GameInfo m_info;
 
-	// Interfaces
+	// Component Interfaces
 	IRenderer* m_pRenderer;
 	IKMInput* m_pInput;
 
 private:
 
-	::std::string m_NextState;
+	std::string m_NextState;
 
 	Timer m_timer;
-
-	int m_iEventId;
 
 	// helper functions
 	void StartTimer();
 	void EndTimer();
 
-	// helper functions
 	void LoadAllDLL();
 
 	void RegisterScript();

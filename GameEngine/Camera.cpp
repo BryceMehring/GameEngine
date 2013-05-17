@@ -16,7 +16,7 @@ void ReleaseCamera(Camera* pCam)
 
 Camera::Camera() : m_View(1.0f), m_Proj(1.0f),
  m_ViewProj(1.0f), m_PosW(0.0f), m_RightW(0.0f),
- m_UpW(0.0f), m_LookW(0.0f), m_dir(0.0f),
+ m_UpW(0.0f), m_LookW(0.0f),
  m_width(0.0f), m_height(0.0f)
 {
 }

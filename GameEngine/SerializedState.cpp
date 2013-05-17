@@ -10,14 +10,14 @@
 
 using namespace std;
 
-SerializedState::SerializedState(const char* pFile) : m_pFile(pFile) {}
+SerializedState::SerializedState(const string& file) : m_file(file) {}
 
 void SerializedState::Load(asVM& vm)
 {
-	vm.SendMessage((string(m_pFile) + " Config loaded").c_str());
+	vm.SendMessage(m_file + " Config loaded");
 
 	// open the file
-	FileManager::Instance().ProccessFileByLine(m_pFile,[&](const string& line)
+	FileManager::Instance().ProccessFileByLine(m_file.c_str(),[&](const string& line)
 	{
 		if(line.empty() == false)
 		{
@@ -34,7 +34,7 @@ void SerializedState::Load(asVM& vm)
 
 void SerializedState::SaveMap() const
 {
-	std::fstream out(m_pFile,std::fstream::out);
+	std::fstream out(m_file.c_str(),std::fstream::out);
 
 	if(out.is_open())
 	{

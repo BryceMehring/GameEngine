@@ -70,54 +70,58 @@ void FontEngine::FillVertexBuffer()
 		{
 			char character = *str++;
 
+			const CharDescriptor& charToRender = font.Chars[character];
+
+			float fAdvance = (iter->scale.x * charToRender.XAdvance / (float)font.iWidth) / 2;
+
 			if((character != '\n') && (character != '\t') && (character != ' '))
 			{
-				const CharDescriptor& charToRender = font.Chars[character];
-
 				// cull characters that are off the screen
-				if(posW.x >= -50.0f && posW.x <= 50.0f && posW.y <= 50.0f && posW.y >= -50.0f)
+				if(posW.x >= -100.0f && posW.x <= 100.0f && posW.y <= 100.0f && posW.y >= -100.0f)
 				{
 					int index = iVert * 4;
+
+					//float fAdvance = (iter->scale.x * charToRender.XAdvance / (float)font.iWidth) / 2;
 
 					// tex coords
 					glm::vec2 topLeft((charToRender.x / (float)font.iWidth),charToRender.y / (float)font.iHeight);
 					glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font.iWidth),(charToRender.y+charToRender.Height) / (float)font.iHeight);
 
-					v[index].pos = glm::vec3(-0.5f * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
+					v[index].pos = glm::vec3(-fAdvance * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
 					v[index].tex = topLeft;
 					//v[index].tex = glm::vec2(0.0,0.0f);
 
-					v[index + 1].pos = glm::vec3(-0.5f * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
+					v[index + 1].pos = glm::vec3(-fAdvance * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
 					v[index + 1].tex = glm::vec2(topLeft.x,bottomRight.y);
 					//v[index + 1].tex = glm::vec2(0.0,1.0f);
 
-					v[index + 2].pos = glm::vec3(0.5f * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
+					v[index + 2].pos = glm::vec3(fAdvance * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
 					v[index + 2].tex = glm::vec2(bottomRight.x,topLeft.y);
 					//v[index + 2].tex = glm::vec2(1.0,0.0f);
 
-					v[index + 3].pos = glm::vec3(0.5f * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
+					v[index + 3].pos = glm::vec3(fAdvance * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
 					v[index + 3].tex = bottomRight;
 					//v[index + 3].tex = glm::vec2(1.0,1.0f);
 
 					++iVert;
 				}
 
-				//float fAdvance = iter->scale.x * charToRender.XAdvance / (float)font.iWidth;
+				//
 
-				  posW.x += iter->scale.x;
+				 
 				//posW.x += 20.0f * iter->scale.x * ((charToRender.XAdvance) / (float)font.iWidth); // (charToRender.x+charToRender.Width) / (float)font.iWidth
 			}
 			else if(character == '\n')
 			{
-				i = -1;
-				++j;
+				//i = -1;
+				//++j;
 			}
 			else if(character == '\t')
 			{
-				i += 10;
+				//i += 10;
 			}
 
-			++i;
+			posW.x += fAdvance * iter->scale.x * 2.0f + 1.0f; // * 10 / 2
 		}
 
 		iter->length = iVert - iCurrentVerts;

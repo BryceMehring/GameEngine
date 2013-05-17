@@ -31,27 +31,30 @@ public:
 
 	/* 
 	   This class manages all of the dll plugins. It will load and unload them when needed.
-
-	   // todo: this class could inherit from a interface which only the plugins would know about, so that the plugins would not
-	   // todo: have to link with the game engine lib
-	   // note: this would not work
 	*/
 
 	PluginManager();
 	~PluginManager();
 
-	// more functions would go here as needed to work with the dlls...
 	//  ===== interface with dlls =====
-	//asVM& GetScriptVM() const;
 
-	//bool Good(const char* pFile) const;
+	//bool Good(const char* pFile) const; // todo: need to implement again
 
 	// returns the plugin if found, else, it returns null
 	const IPlugin* GetPlugin(DLLType type) const;
 	IPlugin* GetPlugin(DLLType type);
+
+	// Loads the file dll. 
+	// returns a valid plugin if loaded
+	// returns nullptr in the case of error
+	// Note: Each plugin must export: "IPlugin* CreatePlugin(asIScriptEngine* as)" used to create the plugin
     IPlugin* LoadDLL(const std::string& file);
 	
+	// Frees the plugin given
+	// todo: need to return if this function succeeded or not
 	void FreePlugin(DLLType type);
+
+	// removes all plugins loaded
 	void FreeAllPlugins();
 
 	// todo: is this good to do?
@@ -63,9 +66,8 @@ public:
 private:
 
 	class asIScriptEngine* m_pAS;
-	//typedef 
 	typedef std::map<DLLType,PluginInfo> plugin_type;
-	plugin_type m_plugins;
+	plugin_type m_plugins; // the list of all plugins
 
 	// Helper functions
 	void FreePlugin(const PluginInfo& plugin);

@@ -10,6 +10,7 @@
 #include <iostream>
 
 #define GLFW_NO_GLU
+#define GLFW_DLL
 #include <GL/glfw.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -18,7 +19,7 @@
 using namespace std;
 
 Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
- m_fDT(0.0f), m_fEscTime(0.0), m_pRenderer(nullptr), m_pInput(nullptr)
+ m_fDT(0.0f), m_pRenderer(nullptr), m_pInput(nullptr)
 {
 	
 	// todo: reorganize this ctor
@@ -175,7 +176,8 @@ void Game::DrawFPS()
 	std::ostringstream out;
 	out<<"FPS: " << GetFps();
 
-	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-49,49));
+	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-49,49),0,glm::vec4(1.0f),glm::vec2(2.0f));
+	//m_pRenderer->DrawString("abcdefghijklmnopqrstuvwxyz",::glm::vec2(-49,-49),0,glm::vec4(1.0f),glm::vec2(2.0f));
 }
 
 void Game::DrawCursor()

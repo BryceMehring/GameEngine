@@ -26,7 +26,7 @@ public:
 	// Temporarily stops the current state
 	void RemoveState(class Game&);
 
-	// Deletes all of the states(frees all memory)
+	// Deletes all of the states(frees all state memory)
 	void ClearAllStates(class Game&);
 
 	// Sets the last state that was called with RemoveState()
