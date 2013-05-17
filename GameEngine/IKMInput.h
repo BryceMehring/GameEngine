@@ -31,6 +31,9 @@ class IKMInput : public IInputPlugin
 {
 public:
 
+	//note: the once parameter:
+	//true, to only process the event the first time you press, false, returns true the entire time of the press
+
 	// keyboard
 	virtual bool KeyDown(int Key, bool once = true) = 0;
 
