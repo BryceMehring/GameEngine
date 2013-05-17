@@ -151,7 +151,7 @@ void Game::Update()
 
 void Game::Draw()
 {
-    //DrawFPS();
+    DrawFPS();
     DrawSelectionRect();
     DrawCursor();
 		
@@ -180,15 +180,19 @@ void Game::DrawFPS()
 
 void Game::DrawCursor()
 {
-	const ::glm::vec2& pos = m_pInput->GetTransformedMousePos();
+	if(this->m_pInput->KeyDown(GLFW_KEY_ENTER,false))
+	{
 
-	glm::mat4 T = glm::translate(pos.x,pos.y,-7.0f);
-    glm::mat4 S = glm::scale(64.0f,64.0f,1.0f);
+		const ::glm::vec2& pos = m_pInput->GetTransformedMousePos();
 
-    m_pRenderer->DrawSprite(T*S,"industry");
+		glm::mat4 T = glm::translate(pos.x,pos.y,-7.0f);
+		glm::mat4 S = glm::scale(64.0f,64.0f,1.0f);
 
-    T = glm::translate(pos.x + 20,pos.y,-5.0f);
-    m_pRenderer->DrawSprite(T*S,"industry");
+		m_pRenderer->DrawSprite(T*S,"industry");
+
+		T = glm::translate(pos.x + 20,pos.y,-5.0f);
+		m_pRenderer->DrawSprite(T*S,"industry");
+	}
 }
 
 void Game::DrawSelectionRect()

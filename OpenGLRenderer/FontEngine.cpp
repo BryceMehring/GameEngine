@@ -3,24 +3,16 @@
 #include <glm/gtx/transform.hpp>
 
 FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
-m_pRm(pRm), m_iMaxLength(maxLength), m_iFenceIndex(0), m_pCamera(pCam)
+m_pRm(pRm), m_iMaxLength(maxLength), m_pCamera(pCam)
 {
-	m_VertexBuffers.resize(3);
-	m_fences.resize(3);
-
 	CreateIndexBuffer();
 	CreateVertexBuffer();
 }
 
 FontEngine::~FontEngine()
 {
-	for(unsigned int i = 0; i < m_fences.size(); ++i)
-	{
-		glDeleteSync( m_fences [i]);
-	}
-
 	glDeleteBuffers(1,&m_uiIndexBuffer);
-	glDeleteBuffers(m_VertexBuffers.size(),&m_VertexBuffers.front());
+	glDeleteBuffers(1,&m_uiVertexBuffer);
 }
 
 void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec4& color)
@@ -41,13 +33,11 @@ void FontEngine::CreateIndexBuffer()
 
 void FontEngine::CreateVertexBuffer()
 {
-	glGenBuffers(3,&m_VertexBuffers.front());
+	glGenBuffers(1,&m_uiVertexBuffer);
 
-	for(unsigned int i = 0; i < m_VertexBuffers.size(); ++i)
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffers[i]);
-		glBufferData(GL_ARRAY_BUFFER, m_iMaxLength * sizeof(FontVertex), 0, GL_DYNAMIC_DRAW);
-	}
+	glBindBuffer(GL_ARRAY_BUFFER, m_uiVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, m_iMaxLength * sizeof(FontVertex), 0, GL_DYNAMIC_DRAW);
+	
 }
 
 glm::vec2 FontEngine::GetTextOffset(const glm::vec2& scale, unsigned int i, unsigned int j) const
@@ -57,13 +47,10 @@ glm::vec2 FontEngine::GetTextOffset(const glm::vec2& scale, unsigned int i, unsi
 
 void FontEngine::FillVertexBuffer()
 {
-	GLenum result = glClientWaitSync( m_fences [ m_iFenceIndex], 0, 1 );
-	glDeleteSync( m_fences [m_iFenceIndex]);
-
-	glBindBuffer( GL_ARRAY_BUFFER , m_VertexBuffers[m_iFenceIndex]);
+	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 
 	//glMapBufferRange(
-	FontVertex* v = (FontVertex*)glMapBufferRange(GL_ARRAY_BUFFER , 0, m_iMaxLength * sizeof(FontVertex), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+	FontVertex* v = (FontVertex*)glMapBufferRange(GL_ARRAY_BUFFER , 0, m_iMaxLength * sizeof(FontVertex), GL_MAP_WRITE_BIT);
 
 	unsigned int iCurrentVerts = 0;
 
@@ -74,7 +61,10 @@ void FontEngine::FillVertexBuffer()
 		int i = 0; // x pos
 		int j = 0; // y pos
 		unsigned int iVert = iCurrentVerts; // current vertex
+		const Charset& font = static_cast<const Charset&>(m_pRm->GetResource(iter->font)); // todo: need to check if the resource is actually a font
 
+		glm::vec3 posW(iter->pos,0.0f);
+		
 		// Loop over entire string or until we have filled the buffer
 		while((iVert < m_iMaxLength) && *str)
 		{
@@ -82,47 +72,40 @@ void FontEngine::FillVertexBuffer()
 
 			if((character != '\n') && (character != '\t') && (character != ' '))
 			{
-				// World Position
-				glm::vec2 textOffset = GetTextOffset(iter->scale,i,j);
-				glm::vec3 posW(iter->pos.x + textOffset.x,iter->pos.y + textOffset.y,0.0f);
-
-				// todo: remove this, or add this functionality elsewhere
-				/*if(posW.x > 40.0f)
-				{
-					i = -1;
-					++j;
-				}*/
+				const CharDescriptor& charToRender = font.Chars[character];
 
 				// cull characters that are off the screen
 				if(posW.x >= -50.0f && posW.x <= 50.0f && posW.y <= 50.0f && posW.y >= -50.0f)
 				{
 					int index = iVert * 4;
 
-					int x = character % 16; // Column
-					int y = (character / 16); // Row
-
 					// tex coords
-					glm::vec2 topLeft((x / 16.0f),y / 16.0f);
-					glm::vec2 bottomRight(((x+1) / 16.0f),(y+1) / 16.0f);
+					glm::vec2 topLeft((charToRender.x / (float)font.iWidth),charToRender.y / (float)font.iHeight);
+					glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font.iWidth),(charToRender.y+charToRender.Height) / (float)font.iHeight);
 
 					v[index].pos = glm::vec3(-0.5f * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
 					v[index].tex = topLeft;
-					//v[index].tex = glm::vec2(1.0,1.0f);
+					//v[index].tex = glm::vec2(0.0,0.0f);
 
 					v[index + 1].pos = glm::vec3(-0.5f * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
 					v[index + 1].tex = glm::vec2(topLeft.x,bottomRight.y);
-					//v[index + 1].tex = glm::vec2(1.0,0.0f);
+					//v[index + 1].tex = glm::vec2(0.0,1.0f);
 
 					v[index + 2].pos = glm::vec3(0.5f * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
 					v[index + 2].tex = glm::vec2(bottomRight.x,topLeft.y);
-					//v[index + 2].tex = glm::vec2(0.0,1.0f);
+					//v[index + 2].tex = glm::vec2(1.0,0.0f);
 
 					v[index + 3].pos = glm::vec3(0.5f * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
 					v[index + 3].tex = bottomRight;
-					//v[index + 3].tex = glm::vec2(0.0,0.0f);
+					//v[index + 3].tex = glm::vec2(1.0,1.0f);
 
 					++iVert;
 				}
+
+				//float fAdvance = iter->scale.x * charToRender.XAdvance / (float)font.iWidth;
+
+				  posW.x += iter->scale.x;
+				//posW.x += 20.0f * iter->scale.x * ((charToRender.XAdvance) / (float)font.iWidth); // (charToRender.x+charToRender.Width) / (float)font.iWidth
 			}
 			else if(character == '\n')
 			{
@@ -150,7 +133,7 @@ void FontEngine::Render()
 	FillVertexBuffer();
 
 	// get the shader to use
-    Shader& theShader = static_cast<Shader&>(m_pRm->GetResource("2dshader"));
+    Shader& theShader = static_cast<Shader&>(m_pRm->GetResource("textShader"));
     IResource& theTexture = m_pRm->GetResource("font");
 
 	// use the shader
@@ -166,10 +149,13 @@ void FontEngine::Render()
 	glBindTexture(GL_TEXTURE_2D, theTexture.id);
 	glUniform1i(TexId,0);
 
+	GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
+    GLuint vertexUV = glGetAttribLocation(theShader.id, "vertexUV");
+
 	glEnableVertexAttribArray(0);
-	glBindBuffer( GL_ARRAY_BUFFER , m_VertexBuffers[m_iFenceIndex]);
+	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 	glVertexAttribPointer(
-		   0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+		   vertexPosition_modelspaceID,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
 		   3,                  // size
 		   GL_FLOAT,           // type
 		   GL_FALSE,           // normalized?
@@ -179,7 +165,7 @@ void FontEngine::Render()
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(
-		   1,					// attribute 1
+		   vertexUV,					// attribute 1
 		   2,                  // size
 		   GL_FLOAT,           // type
 		   GL_FALSE,           // normalized?
@@ -196,13 +182,13 @@ void FontEngine::Render()
 	unsigned int uiStartingIndex = 0;
 	for(unsigned int j = 0; j < m_textSubsets.size(); ++j)
 	{
-		glUniform3f(ColorId,m_textSubsets[j].color.x,m_textSubsets[j].color.y,m_textSubsets[j].color.z);
+		//glUniform3f(ColorId,m_textSubsets[j].color.x,m_textSubsets[j].color.y,m_textSubsets[j].color.z);
 		 
 		 glDrawElements(
 			 GL_TRIANGLES,      // mode
 			 (m_textSubsets[j].length) * 6,    // count
 			 GL_UNSIGNED_SHORT,   // type
-			 (void*)(uiStartingIndex * 12)  // element array buffer offset
+			 (void*)(uiStartingIndex * 6)  // element array buffer offset
 		 );   
 		 uiStartingIndex += m_textSubsets[j].length;
 	}
@@ -211,9 +197,6 @@ void FontEngine::Render()
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
-
-	m_fences[m_iFenceIndex] = glFenceSync( GL_SYNC_GPU_COMMANDS_COMPLETE , 0) ;
-	m_iFenceIndex = (m_iFenceIndex + 1) % m_fences.size();
 
 	m_textSubsets.clear();
 }

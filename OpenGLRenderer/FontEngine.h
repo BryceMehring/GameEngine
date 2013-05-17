@@ -46,11 +46,7 @@ private:
 	unsigned int m_iMaxLength;
 
 	std::vector<DrawTextInfo> m_textSubsets;
-	std::vector<unsigned int> m_VertexBuffers;
-
-	std::vector<GLsync> m_fences;
-	unsigned int m_iFenceIndex;
-
+	unsigned int m_uiVertexBuffer;
 	unsigned int m_uiIndexBuffer;
 
 	void FillVertexBuffer();

@@ -45,7 +45,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
         throw std::string("Failed to initialize GLEW");
     }
 
-    //m_pFonts = new FontEngine(&m_rm,1024,m_pCamera);
+    m_pFonts = new FontEngine(&m_rm,1024,m_pCamera);
     m_pLines = new LineEngine(&m_rm,1024*20,m_pCamera);
     m_pSprites = new SpriteEngine(&m_rm,1024,m_pCamera);
 
@@ -56,7 +56,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
 
 oglRenderer::~oglRenderer()
 {
-    //delete m_pFonts;
+    delete m_pFonts;
     delete m_pLines;
     delete m_pSprites;
     m_pCamera->Release();
@@ -99,7 +99,7 @@ void oglRenderer::Present()
 {
     ClearScreen();
 
-    //m_pFonts->Render();
+    m_pFonts->Render();
     m_pLines->Render();
     m_pSprites->Render();
 
