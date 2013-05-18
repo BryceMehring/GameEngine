@@ -40,11 +40,6 @@ void FontEngine::CreateVertexBuffer()
 	
 }
 
-glm::vec2 FontEngine::GetTextOffset(const glm::vec2& scale, unsigned int i, unsigned int j) const
-{
-	return glm::vec2(scale.x * i/2.0f,-scale.y * j);
-}
-
 void FontEngine::FillVertexBuffer()
 {
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
@@ -70,7 +65,7 @@ void FontEngine::FillVertexBuffer()
 
 			const CharDescriptor& charToRender = font.Chars[character];
 
-            float fAdvance = (iter->scale.x * charToRender.XAdvance / (float)font.iWidth) / 2.0f;
+            float fAdvance = (iter->scale.x * charToRender.Width / (float)font.iWidth) / 2.0f;
 
 			if((character != '\n') && (character != '\t') && (character != ' '))
 			{
@@ -120,8 +115,12 @@ void FontEngine::FillVertexBuffer()
 			{
 				//i += 10;
 			}
+            else if(character == ' ')
+            {
+                fAdvance = 0.1f;
+            }
 
-            posW.x += 2.2f * fAdvance * iter->scale.x; // * 10 / 2
+            posW.x += 2.0f*fAdvance * iter->scale.x + 1.0f; // * 10 / 2
 		}
 
 		iter->length = iVert - iCurrentVerts;

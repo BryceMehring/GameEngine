@@ -53,10 +53,6 @@ private:
 
 	void CreateVertexBuffer();
 	void CreateIndexBuffer();
-
-	// specifies how far apart each character is in a sentence
-	glm::vec2 GetTextOffset(const glm::vec2& scale, unsigned int i, unsigned int j) const;
-
 };
 
 #endif // _FONTENGINE_
