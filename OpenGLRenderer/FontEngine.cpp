@@ -70,7 +70,7 @@ void FontEngine::FillVertexBuffer()
 
 			const CharDescriptor& charToRender = font.Chars[character];
 
-			float fAdvance = (iter->scale.x * charToRender.XAdvance / (float)font.iWidth) / 2;
+            float fAdvance = (iter->scale.x * charToRender.XAdvance / (float)font.iWidth) / 2.0f;
 
 			if((character != '\n') && (character != '\t') && (character != ' '))
 			{
@@ -85,19 +85,19 @@ void FontEngine::FillVertexBuffer()
 					glm::vec2 topLeft((charToRender.x / (float)font.iWidth),charToRender.y / (float)font.iHeight);
 					glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font.iWidth),(charToRender.y+charToRender.Height) / (float)font.iHeight);
 
-					v[index].pos = glm::vec3(-fAdvance * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
+                    v[index].pos = glm::vec3(-fAdvance * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
 					v[index].tex = topLeft;
 					//v[index].tex = glm::vec2(0.0,0.0f);
 
-					v[index + 1].pos = glm::vec3(-fAdvance * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
+                    v[index + 1].pos = glm::vec3(-fAdvance * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
 					v[index + 1].tex = glm::vec2(topLeft.x,bottomRight.y);
 					//v[index + 1].tex = glm::vec2(0.0,1.0f);
 
-					v[index + 2].pos = glm::vec3(fAdvance * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
+                    v[index + 2].pos = glm::vec3(fAdvance * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
 					v[index + 2].tex = glm::vec2(bottomRight.x,topLeft.y);
 					//v[index + 2].tex = glm::vec2(1.0,0.0f);
 
-					v[index + 3].pos = glm::vec3(fAdvance * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
+                    v[index + 3].pos = glm::vec3(fAdvance * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
 					v[index + 3].tex = bottomRight;
 					//v[index + 3].tex = glm::vec2(1.0,1.0f);
 
@@ -111,15 +111,17 @@ void FontEngine::FillVertexBuffer()
 			}
 			else if(character == '\n')
 			{
-				//i = -1;
-				//++j;
+                posW.x = iter->pos.x;
+                posW.y -= 1.2f*iter->scale.y;
+                continue;
+
 			}
 			else if(character == '\t')
 			{
 				//i += 10;
 			}
 
-			posW.x += fAdvance * iter->scale.x * 2.0f + 1.0f; // * 10 / 2
+            posW.x += 2.2f * fAdvance * iter->scale.x; // * 10 / 2
 		}
 
 		iter->length = iVert - iCurrentVerts;

@@ -9,41 +9,44 @@ class BaseResourceManager : public IResourceManager
 {
 public:
 
-	virtual void LoadResourceFile(const std::string& file)
+    virtual bool LoadResourceFile(const std::string& file)
 	{
 		std::fstream in(file,std::ios::in);
 
-		if(in)
-		{
-			std::string line;
-			while(std::getline(in,line))
-			{
-				std::stringstream stream(line);
+        if(!in.is_open())
+            return false;
 
-				std::string type;
-				stream >> type;
+        std::string line;
+        while(std::getline(in,line))
+        {
+            std::stringstream stream(line);
 
-				std::string id;
-				stream >> id;
+            std::string type;
+            stream >> type;
 
-				std::string fileName;
-				stream >> fileName;
+            std::string id;
+            stream >> id;
 
-				if(type == "texture")
-				{
-					LoadTexture(id,fileName);
-				}
-				else if(type == "shader")
-				{
-					std::string fileName2;
-					stream >> fileName2;
+            std::string fileName;
+            stream >> fileName;
 
-                    LoadShader(id,fileName,fileName2);
-				}
-			}
+            if(type == "texture")
+            {
+                LoadTexture(id,fileName);
+            }
+            else if(type == "shader")
+            {
+                std::string fileName2;
+                stream >> fileName2;
 
-			in.close();
-		}
+                LoadShader(id,fileName,fileName2);
+            }
+        }
+
+        in.close();
+
+        return true;
+
 	}
 
 };

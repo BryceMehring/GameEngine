@@ -34,12 +34,4 @@ private:
 
 };
 
-class IRTTI
-{
-public:
-
-	virtual ~IRTTI() {}
-	virtual const RTTI* GetType() const = 0;
-};
-
 #endif // _RTTI_

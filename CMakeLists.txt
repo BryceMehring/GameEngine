@@ -83,6 +83,7 @@ set(ENGINE_HEADERS
        GameEngine/FileManager.h
        GameEngine/GameConstants.h
        GameEngine/SerializedState.h
+       GameEngine/RTTI.h
        GameEngine/IGameState.h
        GameEngine/IInput.h
        GameEngine/IKMInput.h

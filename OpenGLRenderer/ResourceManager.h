@@ -83,6 +83,7 @@ struct Charset : Texture
 };
 
 
+// Resource Manager implementation
 class ResourceManager : public BaseResourceManager
 {
 public:
@@ -90,15 +91,16 @@ public:
     ResourceManager();
     virtual ~ResourceManager();
 
-    virtual void LoadTexture(const std::string& id, const std::string& file);
+    virtual bool LoadTexture(const std::string& id, const std::string& file);
 
-    virtual void LoadShader(const std::string& id, const std::string& vert, const std::string& frag);
+    virtual bool LoadShader(const std::string& id, const std::string& vert, const std::string& frag);
 
     virtual bool GetTextureInfo(const std::string& id, TextureInfo& out) const;
     virtual void RemoveTexture(const std::string& id);
     virtual void RemoveAllTextures();
     virtual void RemoveAllShaders();
 
+    // method only accessable in the OpenGL function to access OpenGL specific information about the resources
     IResource& GetResource(const std::string& name);
 
 private:

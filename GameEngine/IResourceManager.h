@@ -36,18 +36,18 @@ public:
 		Texture UniqueStringID PathToImage/img.png
 		shader UniqueStringID3 PathToShader/VertexShader.vert PathToShader/FragmentShader.frag
 	*/
-	virtual void LoadResourceFile(const std::string& file) = 0;
+    virtual bool LoadResourceFile(const std::string& file) = 0;
 
 	// Loads a texture
 	// id: uniqueID to be used
 	// file: img
-	virtual void LoadTexture(const std::string& id, const std::string& file) = 0; 
+    virtual bool LoadTexture(const std::string& id, const std::string& file) = 0;
 
 	// loads a shader
 	// id: uniqueID to be used
 	// vert: vert shader file
 	// frag: frag shader file
-	virtual void LoadShader(const std::string& id, const std::string& vert, const std::string& frag) = 0; 
+    virtual bool LoadShader(const std::string& id, const std::string& vert, const std::string& frag) = 0;
 
 	// return via parameter texture info for a stringID
 	// return true if texture is found, false if not

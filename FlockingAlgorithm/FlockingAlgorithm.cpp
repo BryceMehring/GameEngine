@@ -129,24 +129,29 @@ void Bird::Update(QuadTree& tree, const glm::vec2& avgPos, double dt)
 
 void Bird::Render(IRenderer& renderer)
 {
-	static const glm::vec3 vertices[] = 
+    /*static const glm::vec3 vertices[] =
 	{
         glm::vec3(0.0f,0.0f,0.0f),
         glm::vec3(1.0f,3.0f,0.0f),
         glm::vec3(2.0f,0.0f,0.0f)
-	};
+    };*/
 
-	glm::mat4 T = glm::translate(m_pos);
-	T = glm::rotate(T,(57.2957f)*m_fAngle,0.0f,0.0f,1.0f);
+    glm::mat4 T = glm::translate(m_pos);
+    T = glm::rotate(T,(57.295f)*m_fAngle,0.0f,0.0f,1.0f);
+    T = glm::rotate(T,180.0f,0.0f,0.0f,1.0f);
 
-	renderer.DrawLine(vertices,3,m_color,T);
+    glm::mat4 S = glm::scale(4.0f,4.0f,1.0f);
+
+    renderer.DrawSprite(T * S ,"bird");
+
+    //renderer.DrawLine(vertices,3,m_color,T);
 }
 
 void FlockingAlgorithm::Init(Game& game)
 {
     m_pQuadtree = new QuadTree(Math::FRECT(glm::vec2(-100.0f,100.0f),glm::vec2(100.0f,-100.0f)));
 
-    m_birds.resize(400);
+    m_birds.resize(200);
 	for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
 		m_birds[i] = new Bird();
@@ -208,10 +213,10 @@ void FlockingAlgorithm::Draw(Game& game)
 {
 	//game.GetRenderer().Get2DRenderer().DrawString("Hello World",::D3DXVECTOR2(-10.0f,0.0f));
 
-   /* for(unsigned int i = 0; i < m_birds.size(); ++i)
+    for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
 		m_birds[i]->Render(game.GetRenderer());
-    }*/
+    }
 
    // m_pQuadtree->Render(game.GetRenderer());
 

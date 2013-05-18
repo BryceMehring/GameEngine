@@ -22,7 +22,7 @@ public:
 	// Called every frame to render the game
 	virtual void Draw(class Game& game) = 0;
 
-	virtual const class RTTI* GetType() const = 0;
+    virtual const class RTTI* GetType() const = 0;
 
 protected:
 

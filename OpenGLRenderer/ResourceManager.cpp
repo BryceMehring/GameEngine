@@ -14,13 +14,13 @@ ResourceManager::~ResourceManager()
     }
 }
 
-void ResourceManager::LoadTexture(const std::string& id, const std::string& file)
+bool ResourceManager::LoadTexture(const std::string& id, const std::string& file)
 {
     auto iter = m_resources.find(id);
     if(iter != m_resources.end() && iter->second->GetType() == Tex)
     {
         // texture already loaded
-        return;
+        return false;
     }
 
     int spriteWidth = 1;
@@ -29,9 +29,9 @@ void ResourceManager::LoadTexture(const std::string& id, const std::string& file
     int x, y, comp;
     unsigned char* pImg = stbi_load(file.c_str(),&x,&y,&comp,4);
 
-    //todo: need to notify the user that the texture cannot be loaded
+    // check if the image can be loaded
     if(pImg == nullptr)
-        return;
+        return false;
 
     GLuint textureId;
     glGenTextures(1,&textureId);
@@ -40,7 +40,7 @@ void ResourceManager::LoadTexture(const std::string& id, const std::string& file
     // Give the image to OpenGL
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)pImg);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     std::fstream in(file + ".txt",std::ios::in);
     if(in)
@@ -48,31 +48,36 @@ void ResourceManager::LoadTexture(const std::string& id, const std::string& file
         in >> spriteWidth >> spriteHeight;
         in.close();
     }
-
-    in.open(file + ".fnt");
-    if(in)
-    {
-        // Load font
-        Charset* pCharSet = new Charset(textureId,x,y,spriteWidth,spriteHeight);
-        ParseFont(in,*pCharSet);
-
-        m_resources.insert(std::make_pair(id,pCharSet));
-    }
     else
     {
-        m_resources.insert(std::make_pair(id,new Texture(textureId,x,y,spriteWidth,spriteHeight)));
+        in.open(file + ".fnt");
+        if(in)
+        {
+            // Load font
+            Charset* pCharSet = new Charset(textureId,x,y,spriteWidth,spriteHeight);
+            ParseFont(in,*pCharSet);
+
+            m_resources.insert(std::make_pair(id,pCharSet));
+        }
+        else
+        {
+            m_resources.insert(std::make_pair(id,new Texture(textureId,x,y,spriteWidth,spriteHeight)));
+        }
     }
 
     stbi_image_free(pImg);
+
+    return true;
 }
 
-void ResourceManager::LoadShader(const std::string& id, const std::string& vert, const std::string& frag)
+
+bool ResourceManager::LoadShader(const std::string& id, const std::string& vert, const std::string& frag)
 {
     auto iter = m_resources.find(id);
     if(iter != m_resources.end() && iter->second->GetType() == Shad)
     {
         // shader already loaded
-        return;
+        return false;
     }
 
     // Create the shaders
@@ -166,6 +171,8 @@ void ResourceManager::LoadShader(const std::string& id, const std::string& vert,
     }
 
     m_resources.insert(std::make_pair(id,pShader));
+
+    return true;
 }
 
 void ResourceManager::ParseFont(std::fstream& stream, Charset& CharsetDesc)

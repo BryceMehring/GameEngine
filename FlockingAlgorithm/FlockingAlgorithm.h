@@ -38,7 +38,7 @@ class FlockingAlgorithm : public IGameState
 {
 public:
 
-	RTTI_DECL;
+    RTTI_DECL;
 
 	virtual DLLType GetPluginType() const { return GamePlugin; }
 	virtual const char* GetName() const { return "FlockingAlgorithm"; }

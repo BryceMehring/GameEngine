@@ -20,7 +20,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
 
 	GLFWOpenWindowHints();
 
-    if(glfwOpenWindow( 800, 600, 8,8,8,8, 0,0, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
+    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 0,0, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
 	{
         glfwTerminate();
         throw std::string("Failed to create window");
@@ -47,7 +47,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
 
     m_pFonts = new FontEngine(&m_rm,1024,m_pCamera);
     m_pLines = new LineEngine(&m_rm,1024*20,m_pCamera);
-    m_pSprites = new SpriteEngine(&m_rm,1024,m_pCamera);
+    m_pSprites = new SpriteEngine(&m_rm,1024*20,m_pCamera);
 
 	EnumerateDisplayAdaptors();
 
