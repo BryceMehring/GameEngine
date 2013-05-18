@@ -58,8 +58,6 @@ void FontEngine::FillVertexBuffer()
 	{
 		const char* str = iter->text.c_str();
 
-		int i = 0; // x pos
-		int j = 0; // y pos
 		unsigned int iVert = iCurrentVerts; // current vertex
 		const Charset& font = static_cast<const Charset&>(m_pRm->GetResource(iter->font)); // todo: need to check if the resource is actually a font
 
@@ -133,6 +131,10 @@ void FontEngine::FillVertexBuffer()
 
 void FontEngine::Render()
 {
+    // if there is nothing to draw, do nothing
+    if(m_textSubsets.empty())
+        return;
+
 	// first we fill the vertex buffer with the text to render
 	FillVertexBuffer();
 

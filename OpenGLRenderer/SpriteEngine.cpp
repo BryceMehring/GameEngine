@@ -102,6 +102,10 @@ void SpriteEngine::FillVertexBuffer()
 
 void SpriteEngine::Render()
 {
+    // if there is nothing to draw, do nothing
+    if(m_sprites.empty())
+        return;
+
     // First we must fill the dynamic vertex buffer with all of the sprites sorted by their tech and texture
     FillVertexBuffer();
 

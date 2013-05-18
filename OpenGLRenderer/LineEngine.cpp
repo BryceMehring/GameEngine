@@ -51,6 +51,10 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, const 
 
 void LineEngine::Render()
 {
+    // if there is nothing to draw, do nothing
+    if(m_LineSubsets.empty())
+        return;
+
     Shader& theShader = static_cast<Shader&>(m_pRM->GetResource("lineShader"));
     GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
     GLuint vertexColorID = glGetAttribLocation(theShader.id, "vertexColor");
