@@ -177,7 +177,7 @@ void SpriteEngine::Render()
                 GL_TRIANGLES,      // mode
                 subIter->second.size() * 6,    // count 4
                 GL_UNSIGNED_SHORT,   // type
-                (GLvoid*)(uiStartingIndex * 6)  // element array buffer offset 6
+                (GLvoid*)(uiStartingIndex * 12)  // element array buffer offset 6
             );
             // Increment the index to the dynamic buffer for rendering a new batch of sprites
             uiStartingIndex += subIter->second.size();

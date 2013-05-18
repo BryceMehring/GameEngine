@@ -191,10 +191,10 @@ void FontEngine::Render()
 		//glUniform3f(ColorId,m_textSubsets[j].color.x,m_textSubsets[j].color.y,m_textSubsets[j].color.z);
 		 
 		 glDrawElements(
-			 GL_TRIANGLES,      // mode
+             GL_TRIANGLES,      // mode
 			 (m_textSubsets[j].length) * 6,    // count
 			 GL_UNSIGNED_SHORT,   // type
-			 (void*)(uiStartingIndex * 6)  // element array buffer offset
+             (void*)(uiStartingIndex * 12)  // element array buffer offset
 		 );   
 		 uiStartingIndex += m_textSubsets[j].length;
 	}
