@@ -30,6 +30,7 @@ public:
 	
 	// Keyboard
 	virtual bool KeyDown(int Key, bool once = true);
+    virtual bool KeyUp(int Key, bool once = true);
 	virtual int GetKeyDown() const;
 	virtual bool IsKeyDown() const; // true if WM_CHAR is thrown
 

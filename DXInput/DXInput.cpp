@@ -31,8 +31,8 @@ void GLFWCALL DirectInput::KeyCallback(int c, int action)
 {
 	if(s_pThis != nullptr)
 	{
-        //s_pThis->m_iKeyDown = c;
-		//s_pThis->m_iKeyAction = action;
+        s_pThis->m_iKeyDown = c;
+        s_pThis->m_iKeyAction = action;
 	}
 }
 
@@ -104,18 +104,8 @@ void DirectInput::CenterMouse()
 
 void DirectInput::Reset()
 {
-	// todo: clean this up
-
-	/*m_cKeyDownOnce = m_cCharDown = -1;
-	m_iMouseX = m_iMouseY = m_iMouseZ = 0;
-
-	m_bMouseMove = false;
-
-	memset(m_bMouseClickOnce,0,sizeof(m_bMouseClickOnce));
-
-
-	m_iCharAction = -1;*/
     m_bMouseClickOnce[0] = m_bMouseClickOnce[1] = false;
+    m_iKeyAction = m_iKeyDown = -1;
 }
 
 void DirectInput::UpdateMouse(int x, int y)
@@ -169,6 +159,10 @@ const glm::vec2& DirectInput::GetTransformedMousePos() const
 bool DirectInput::KeyDown(int Key, bool once)
 {
 	return once ? (m_iKeyAction == GLFW_PRESS && m_iKeyDown == Key) : (glfwGetKey( Key ) == GLFW_PRESS);
+}
+bool DirectInput::KeyUp(int Key, bool once)
+{
+    return once ? (m_iKeyAction == GLFW_RELEASE && m_iKeyDown == Key) : (glfwGetKey( Key ) == GLFW_RELEASE);
 }
 bool DirectInput::IsKeyDown() const
 {

@@ -36,6 +36,8 @@ public:
 
 	// keyboard
 	virtual bool KeyDown(int Key, bool once = true) = 0;
+    virtual bool KeyUp(int Key, bool once = true) = 0;
+
 
 	//need to be reworked (ignore these)
 	virtual bool IsKeyDown() const = 0;
@@ -43,6 +45,7 @@ public:
 
 	// returns true if you click, button is down
 	virtual bool MouseClick(int Button, bool once = true) const = 0;
+
 
 	//gets the mouse position
 	virtual void MousePos(int& x, int& y) const = 0;

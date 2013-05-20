@@ -180,13 +180,19 @@ void Game::DrawFPS()
     out<<"FPS: " << GetFps();
 
     m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),0,glm::vec3(0.0f,1.0f,0.0f),glm::vec2(2.5f,2.5f));
-    m_pRenderer->DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,0),0,glm::vec3(1.0f,1.0f,1.0f),glm::vec2(2.5f,2.5f));
+    m_pRenderer->DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,0),0,glm::vec3(1.0f),glm::vec2(2.5f));
 }
 
 void Game::DrawCursor()
 {
-	if(this->m_pInput->KeyDown(GLFW_KEY_ENTER,false))
+    static double counter = 6.0;
+
+    if(m_pInput->KeyUp(GLFW_KEY_ENTER))
+        counter = 0.0f;
+
+    if(counter < 5.0)
 	{
+        counter += this->m_fDT;
 
 		const ::glm::vec2& pos = m_pInput->GetTransformedMousePos();
 

@@ -78,7 +78,7 @@ void FontEngine::FillVertexBuffer()
                 const CharDescriptor& charToRender = font.Chars[character];
 
                 // How much we will advance from the current character
-                float fAdvance = (subIter->scale.x * charToRender.Width / (float)font.iWidth) / 2.0f;
+                float fAdvance = (subIter->scale.x * charToRender.Width / (float)font.iWidth);
 
                 if((character != '\n') && (character != '\t') && (character != ' '))
                 {
@@ -91,11 +91,11 @@ void FontEngine::FillVertexBuffer()
                         glm::vec2 topLeft((charToRender.x / (float)font.iWidth),charToRender.y / (float)font.iHeight);
                         glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font.iWidth),(charToRender.y+charToRender.Height) / (float)font.iHeight);
 
-                        v[index].pos = glm::vec3(-fAdvance * subIter->scale.x,0.5f * subIter->scale.y,0.0f) + posW;
+                        v[index].pos = glm::vec3(posW.x,0.5f * subIter->scale.y + posW.y,0.0f);
                         v[index].tex = topLeft;
                         //v[index].tex = glm::vec2(0.0,0.0f);
 
-                        v[index + 1].pos = glm::vec3(-fAdvance * subIter->scale.x,-0.5f * subIter->scale.y,0.0f) + posW;
+                        v[index + 1].pos = glm::vec3(posW.x,-0.5f * subIter->scale.y + posW.y,0.0f);
                         v[index + 1].tex = glm::vec2(topLeft.x,bottomRight.y);
                         //v[index + 1].tex = glm::vec2(0.0,1.0f);
 
@@ -128,10 +128,11 @@ void FontEngine::FillVertexBuffer()
                 }
                 else if(character == ' ')
                 {
-                    fAdvance = 0.1f;
+                    fAdvance = 0.4f;
                 }
 
-                posW.x += 2.0f*fAdvance * subIter->scale.x + 1.0f; // * 10 / 2
+                posW.x += fAdvance * subIter->scale.x + 1.0f;
+                //posW.x += 2.0f * fAdvance * subIter->scale.x; // * 10 / 2
             }
 
             subIter->length = iVert - iCurrentVerts;
@@ -192,7 +193,7 @@ void FontEngine::Render()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_uiIndexBuffer);	
 
 	// Enable blending
-	glEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
@@ -222,7 +223,7 @@ void FontEngine::Render()
         }
     }
 
-	glDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 
 	glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
