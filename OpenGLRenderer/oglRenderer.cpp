@@ -20,7 +20,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
 
 	GLFWOpenWindowHints();
 
-    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 0,0, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
+    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 24,8, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
 	{
         glfwTerminate();
         throw std::string("Failed to create window");
@@ -33,7 +33,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
     cout<<"minor: "<<minor<<endl;
     cout<<"rev: "<<rev<<endl;
 
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     //glfwDisable(GLFW_MOUSE_CURSOR);
@@ -84,7 +84,7 @@ int oglRenderer::GetVersion() const
 void oglRenderer::GLFWOpenWindowHints()
 {
     glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
-    glfwOpenWindowHint(GLFW_FSAA_SAMPLES,2);
+    //glfwOpenWindowHint(GLFW_FSAA_SAMPLES,2);
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2); // We want OpenGL 2.1
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
 }
@@ -102,6 +102,7 @@ void oglRenderer::Present()
     m_pFonts->Render();
     m_pLines->Render();
     m_pSprites->Render();
+
 
     glfwSwapBuffers();
 }
@@ -182,9 +183,9 @@ IResourceManager& oglRenderer::GetResourceManager()
 	return m_rm;
 }
 
-void oglRenderer::DrawString(const char* str, const glm::vec2& pos, const char* font, const glm::vec4& color, const glm::vec2& scale)
+void oglRenderer::DrawString(const char* str, const glm::vec2& pos, const char* font, const glm::vec3& color, const glm::vec2& scale)
 {
-	m_pFonts->DrawString(str,font,pos,scale,color);
+    m_pFonts->DrawString(str,font,pos,scale,color);
 }
 
 void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, const glm::vec4& color, const glm::mat4& T)

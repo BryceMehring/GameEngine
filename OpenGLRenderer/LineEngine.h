@@ -19,7 +19,7 @@ public:
 
 	void SetLineWidth(float width);
 
-	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, const glm::vec4& color, const glm::mat4& T);
+    void DrawLine(const glm::vec3* pArray, unsigned int uiLength, const glm::vec4& color, const glm::mat4& T);
 
 	void Render();
 

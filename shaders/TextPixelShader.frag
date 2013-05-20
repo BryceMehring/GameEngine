@@ -5,7 +5,7 @@ varying vec2 UV;
 
 // Values that stay constant for the whole mesh.
 uniform sampler2D myTextureSampler;
-uniform vec4 textColor;
+uniform vec3 textColor;
 
 void main(){
 
@@ -14,8 +14,9 @@ void main(){
 	// Output color = color of the texture at the specified UV
 	vec4 color = texture2D( myTextureSampler, UV );
 
-	/*if(color.r <= 0)
+	gl_FragColor = color * vec4(textColor,1.0f) ; // gl_FragColor
+	
+	/*if(gl_FragColor.a <= 0)
 		discard;*/
-	gl_FragColor = color ; // gl_FragColor
 
 }

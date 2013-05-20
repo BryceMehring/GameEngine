@@ -180,7 +180,7 @@ void ButtonBase::Render(IRenderer& renderer)
 	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
 
 	renderer.DrawSprite(S*T,"button");
-	renderer.DrawString(m_text.c_str(),glm::vec2(m_sprite.topLeft.x + 4.0f,pos.y),0,::glm::vec4(1.0f,1.0f,1.0f,1.0f),glm::vec2(scale,scale));
+    renderer.DrawString(m_text.c_str(),glm::vec2(m_sprite.topLeft.x + 4.0f,pos.y),0,::glm::vec3(1.0f,1.0f,1.0f),glm::vec2(scale,scale));
 
 
 	//renderer.Get2DRenderer().DrawString(m_name.name.c_str(),m_name.P,m_color);
@@ -219,7 +219,7 @@ void TextBox::SaveToFile(const std::string& file) const
 	}
 }
 
-void TextBox::Write(const std::string& line, const glm::vec4& color, bool c)
+void TextBox::Write(const std::string& line, const glm::vec3& color, bool c)
 {
 	m_text.push_back(LineData(line,color,m_sprite,c));
 }
@@ -252,7 +252,7 @@ void TextBox::AddKey(char Key)
 
 void TextBox::Enter()
 {
-	Write(string(""),glm::vec4(1.0f,1.0f,1.0f,1.0f));
+    Write(string(""),glm::vec3(1.0f));
 }
 
 void TextBox::Update(IKMInput& input, double dt)

@@ -9,14 +9,13 @@
 struct DrawTextInfo
 {
 	DrawTextInfo() {}
-	DrawTextInfo(const std::string& str, const std::string& f, const glm::vec2& p, const glm::vec2& s, const glm::vec4& c) :
-	text(str), font(f), pos(p), scale(s), color(c), length(0) {}
+    DrawTextInfo(const std::string& str, const glm::vec2& p, const glm::vec2& s, const glm::vec3& c) :
+    text(str), pos(p), scale(s), color(c), length(0) {}
 
 	std::string text;
-	std::string font;
 	glm::vec2 pos;
 	glm::vec2 scale;
-	glm::vec4 color;
+    glm::vec3 color;
 	unsigned int length;
 };
 
@@ -27,7 +26,7 @@ struct FontVertex
 	glm::vec2 tex;
 };
 
-
+// This class manages the rendering of fonts
 class FontEngine
 {
 public:
@@ -35,9 +34,9 @@ public:
 	FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam);
 	~FontEngine();
 
-	void Render();
+    void DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color);
 
-	void DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec4& color);
+    void Render();
 
 private:
 
@@ -45,7 +44,7 @@ private:
 	Camera* m_pCamera;
 	unsigned int m_iMaxLength;
 
-	std::vector<DrawTextInfo> m_textSubsets;
+    std::map<std::string,std::vector<DrawTextInfo> > m_textSubsets; // the key is the texture for the vector of DrawTextInfo
 	unsigned int m_uiVertexBuffer;
 	unsigned int m_uiIndexBuffer;
 

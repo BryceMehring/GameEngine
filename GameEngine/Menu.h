@@ -285,7 +285,7 @@ public:
 	virtual ~TextBox();
 
 	// Enters a new line
-	void Write(const std::string& line, const glm::vec4& color, bool bContinue = false);
+    void Write(const std::string& line, const glm::vec3& color, bool bContinue = false);
 	
 	virtual void Update(IKMInput&, double dt);
 	virtual void Render(IRenderer&);
@@ -304,7 +304,7 @@ protected:
 	struct LineData
 	{
 		LineData() {}
-		LineData(const std::string& str, const glm::vec4& color, const Math::FRECT& R,bool c)
+        LineData(const std::string& str, const glm::vec3& color, const Math::FRECT& R,bool c)
 		: line(str), R(R), color(color), bContinue(c)
 		{
 
@@ -312,7 +312,7 @@ protected:
 
 		std::string line;
 		Math::FRECT R;
-		glm::vec4 color;
+        glm::vec3 color;
 		bool bContinue; 
 	};
 

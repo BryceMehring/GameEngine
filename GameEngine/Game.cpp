@@ -152,9 +152,11 @@ void Game::Update()
 
 void Game::Draw()
 {
+
     DrawFPS();
-    //DrawSelectionRect();
     DrawCursor();
+    DrawSelectionRect();
+
 		
 	if(m_bConsoleEnabled)
 	{
@@ -177,8 +179,8 @@ void Game::DrawFPS()
 	std::ostringstream out;
     out<<"FPS: " << GetFps();
 
-    m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),0,glm::vec4(1.0f),glm::vec2(2.5f,2.5f));
-    m_pRenderer->DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,0),0,glm::vec4(1.0f),glm::vec2(2.5f,2.5f));
+    m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),0,glm::vec3(0.0f,1.0f,0.0f),glm::vec2(2.5f,2.5f));
+    m_pRenderer->DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,0),0,glm::vec3(1.0f,1.0f,1.0f),glm::vec2(2.5f,2.5f));
 }
 
 void Game::DrawCursor()
@@ -188,7 +190,7 @@ void Game::DrawCursor()
 
 		const ::glm::vec2& pos = m_pInput->GetTransformedMousePos();
 
-		glm::mat4 T = glm::translate(pos.x,pos.y,-7.0f);
+        glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
         glm::mat4 S = glm::scale(32.0f,32.0f,1.0f);
 
         m_pRenderer->DrawSprite(T*S,"bird",0,2,2);

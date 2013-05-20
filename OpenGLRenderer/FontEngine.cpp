@@ -11,11 +11,11 @@ m_pRm(pRm), m_iMaxLength(maxLength), m_pCamera(pCam)
 
 FontEngine::~FontEngine()
 {
-	glDeleteBuffers(1,&m_uiIndexBuffer);
-	glDeleteBuffers(1,&m_uiVertexBuffer);
+    glDeleteBuffers(1,&m_uiIndexBuffer);
+    glDeleteBuffers(1,&m_uiVertexBuffer);
 }
 
-void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec4& color)
+void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color)
 {
 	if(str == nullptr)
 		return;
@@ -23,7 +23,8 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& 
 	if(font == nullptr)
 		font = "font";
 
-	m_textSubsets.push_back(DrawTextInfo(str,font,pos,glm::vec2(5.0f,5.0f)*scale,color));
+
+    m_textSubsets[font].push_back(DrawTextInfo(str,pos,glm::vec2(5.0f,5.0f)*scale,color));
 }
 
 void FontEngine::CreateIndexBuffer()
@@ -42,89 +43,102 @@ void FontEngine::CreateVertexBuffer()
 
 void FontEngine::FillVertexBuffer()
 {
+    // bind the vertex buffer that we are going to write to
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 
-	//glMapBufferRange(
+    // get the vertex buffer memory to write to
 	FontVertex* v = (FontVertex*)glMapBufferRange(GL_ARRAY_BUFFER , 0, m_iMaxLength * sizeof(FontVertex), GL_MAP_WRITE_BIT);
 
-	unsigned int iCurrentVerts = 0;
+    unsigned int iCurrentVerts = 0;
 
+    // Loop over all texture subsets and write them to the vertex buffer
 	for(auto iter = m_textSubsets.begin(); iter != m_textSubsets.end(); ++iter)
 	{
-		const char* str = iter->text.c_str();
+        // Get the current font
+        const Charset& font = static_cast<const Charset&>(m_pRm->GetResource(iter->first)); // todo: need to check if the resource is actually a font
 
-		unsigned int iVert = iCurrentVerts; // current vertex
-		const Charset& font = static_cast<const Charset&>(m_pRm->GetResource(iter->font)); // todo: need to check if the resource is actually a font
+        // Loop over all fonts with the current texture
+        for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
+        {
+            const char* str = subIter->text.c_str();
 
-		glm::vec3 posW(iter->pos,0.0f);
-		
-		// Loop over entire string or until we have filled the buffer
-		while((iVert < m_iMaxLength) && *str)
-		{
-			char character = *str++;
+            // current vertex
+            unsigned int iVert = iCurrentVerts;
 
-			const CharDescriptor& charToRender = font.Chars[character];
+            // World pos of where the text will be drawn
+            glm::vec3 posW(subIter->pos,0.0f);
 
-            float fAdvance = (iter->scale.x * charToRender.Width / (float)font.iWidth) / 2.0f;
-
-			if((character != '\n') && (character != '\t') && (character != ' '))
-			{
-				// cull characters that are off the screen
-				if(posW.x >= -100.0f && posW.x <= 100.0f && posW.y <= 100.0f && posW.y >= -100.0f)
-				{
-					int index = iVert * 4;
-
-					//float fAdvance = (iter->scale.x * charToRender.XAdvance / (float)font.iWidth) / 2;
-
-					// tex coords
-					glm::vec2 topLeft((charToRender.x / (float)font.iWidth),charToRender.y / (float)font.iHeight);
-					glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font.iWidth),(charToRender.y+charToRender.Height) / (float)font.iHeight);
-
-                    v[index].pos = glm::vec3(-fAdvance * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
-					v[index].tex = topLeft;
-					//v[index].tex = glm::vec2(0.0,0.0f);
-
-                    v[index + 1].pos = glm::vec3(-fAdvance * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
-					v[index + 1].tex = glm::vec2(topLeft.x,bottomRight.y);
-					//v[index + 1].tex = glm::vec2(0.0,1.0f);
-
-                    v[index + 2].pos = glm::vec3(fAdvance * iter->scale.x,0.5f * iter->scale.y,0.0f) + posW;
-					v[index + 2].tex = glm::vec2(bottomRight.x,topLeft.y);
-					//v[index + 2].tex = glm::vec2(1.0,0.0f);
-
-                    v[index + 3].pos = glm::vec3(fAdvance * iter->scale.x,-0.5f * iter->scale.y,0.0f) + posW;
-					v[index + 3].tex = bottomRight;
-					//v[index + 3].tex = glm::vec2(1.0,1.0f);
-
-					++iVert;
-				}
-
-				//
-
-				 
-				//posW.x += 20.0f * iter->scale.x * ((charToRender.XAdvance) / (float)font.iWidth); // (charToRender.x+charToRender.Width) / (float)font.iWidth
-			}
-			else if(character == '\n')
-			{
-                posW.x = iter->pos.x;
-                posW.y -= 1.2f*iter->scale.y;
-                continue;
-
-			}
-			else if(character == '\t')
-			{
-				//i += 10;
-			}
-            else if(character == ' ')
+            // Loop over entire string and write to the vertex buffer
+            while((iVert < m_iMaxLength) && *str)
             {
-                fAdvance = 0.1f;
+                // character to draw
+                char character = *str++;
+
+                // font info about the character to draw
+                const CharDescriptor& charToRender = font.Chars[character];
+
+                // How much we will advance from the current character
+                float fAdvance = (subIter->scale.x * charToRender.Width / (float)font.iWidth) / 2.0f;
+
+                if((character != '\n') && (character != '\t') && (character != ' '))
+                {
+                    // cull characters that are off the screen
+                    if(posW.x >= -100.0f && posW.x <= 100.0f && posW.y <= 100.0f && posW.y >= -100.0f)
+                    {
+                        int index = iVert * 4;
+
+                        // calc tex coords
+                        glm::vec2 topLeft((charToRender.x / (float)font.iWidth),charToRender.y / (float)font.iHeight);
+                        glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font.iWidth),(charToRender.y+charToRender.Height) / (float)font.iHeight);
+
+                        v[index].pos = glm::vec3(-fAdvance * subIter->scale.x,0.5f * subIter->scale.y,0.0f) + posW;
+                        v[index].tex = topLeft;
+                        //v[index].tex = glm::vec2(0.0,0.0f);
+
+                        v[index + 1].pos = glm::vec3(-fAdvance * subIter->scale.x,-0.5f * subIter->scale.y,0.0f) + posW;
+                        v[index + 1].tex = glm::vec2(topLeft.x,bottomRight.y);
+                        //v[index + 1].tex = glm::vec2(0.0,1.0f);
+
+                        v[index + 2].pos = glm::vec3(fAdvance * subIter->scale.x,0.5f * subIter->scale.y,0.0f) + posW;
+                        v[index + 2].tex = glm::vec2(bottomRight.x,topLeft.y);
+                        //v[index + 2].tex = glm::vec2(1.0,0.0f);
+
+                        v[index + 3].pos = glm::vec3(fAdvance * subIter->scale.x,-0.5f * subIter->scale.y,0.0f) + posW;
+                        v[index + 3].tex = bottomRight;
+                        //v[index + 3].tex = glm::vec2(1.0,1.0f);
+
+                        ++iVert;
+                    }
+
+                    //
+
+
+                    //posW.x += 20.0f * iter->scale.x * ((charToRender.XAdvance) / (float)font.iWidth); // (charToRender.x+charToRender.Width) / (float)font.iWidth
+                }
+                else if(character == '\n')
+                {
+                    posW.x = subIter->pos.x;
+                    posW.y -= 1.2f*subIter->scale.y;
+                    continue;
+
+                }
+                else if(character == '\t')
+                {
+                    //i += 10;
+                }
+                else if(character == ' ')
+                {
+                    fAdvance = 0.1f;
+                }
+
+                posW.x += 2.0f*fAdvance * subIter->scale.x + 1.0f; // * 10 / 2
             }
 
-            posW.x += 2.0f*fAdvance * iter->scale.x + 1.0f; // * 10 / 2
-		}
+            subIter->length = iVert - iCurrentVerts;
+            iCurrentVerts += subIter->length;
+        }
 
-		iter->length = iVert - iCurrentVerts;
-		iCurrentVerts += iter->length;
+
 	}
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -137,11 +151,10 @@ void FontEngine::Render()
         return;
 
 	// first we fill the vertex buffer with the text to render
-	FillVertexBuffer();
+    FillVertexBuffer();
 
 	// get the shader to use
     Shader& theShader = static_cast<Shader&>(m_pRm->GetResource("textShader"));
-    IResource& theTexture = m_pRm->GetResource("font");
 
 	// use the shader
 	glUseProgram(theShader.id);
@@ -149,15 +162,11 @@ void FontEngine::Render()
 	// set shader parameters
 	glUniformMatrix4fv(theShader.uniforms["MVP"],1,false,&m_pCamera->viewProj()[0][0]);
 
-	GLuint ColorId = theShader.uniforms["textColor"];
-
+    GLuint ColorId = theShader.uniforms["textColor"];
 	GLuint TexId = theShader.uniforms["myTextureSampler"];
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, theTexture.id);
-	glUniform1i(TexId,0);
-
-	GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
+    GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
     GLuint vertexUV = glGetAttribLocation(theShader.id, "vertexUV");
+
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
@@ -184,26 +193,39 @@ void FontEngine::Render()
 
 	// Enable blending
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
 	unsigned int uiStartingIndex = 0;
-	for(unsigned int j = 0; j < m_textSubsets.size(); ++j)
-	{
-		//glUniform3f(ColorId,m_textSubsets[j].color.x,m_textSubsets[j].color.y,m_textSubsets[j].color.z);
-		 
-		 glDrawElements(
+    for(auto iter = m_textSubsets.begin(); iter != m_textSubsets.end(); ++iter)
+    {
+        IResource& currentTexture = m_pRm->GetResource(iter->first);
+
+        // Set the texture to use
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, currentTexture.id);
+        glUniform1i(TexId,0);
+
+        // Loop over all fonts with the current texture
+        for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
+        {
+            glUniform3f(ColorId,subIter->color.x,subIter->color.y,subIter->color.z);
+
+            glDrawElements(
              GL_TRIANGLES,      // mode
-			 (m_textSubsets[j].length) * 6,    // count
-			 GL_UNSIGNED_SHORT,   // type
+             subIter->length * 6,    // count
+             GL_UNSIGNED_SHORT,   // type
              (void*)(uiStartingIndex * 12)  // element array buffer offset
-		 );   
-		 uiStartingIndex += m_textSubsets[j].length;
-	}
+            );
+
+            uiStartingIndex += subIter->length;
+        }
+    }
 
 	glDisable(GL_BLEND);
 
 	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(1);
 
 	m_textSubsets.clear();
 }

@@ -116,7 +116,8 @@ void SpriteEngine::Render()
 
     // Enable blending
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc (GL_ONE, GL_ONE);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
     // Loop over all sprites with the same tech
     for(auto iter = m_sprites.begin(); iter != m_sprites.end(); ++iter)
