@@ -42,10 +42,10 @@ public:
 	// Destroy everything
 	~Game();
 
-	// change the current state
+    // Get the current state
 	const std::string& GetCurrentState() const;
 
-	// Get the current state
+    // change the current state
 	void SetNextState(const std::string& state);
 
 	// ignore, working on this
