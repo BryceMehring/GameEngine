@@ -7,6 +7,7 @@ attribute vec2 vertexTiling;
 
 // Output data ; will be interpolated for each fragment.
 varying vec2 UV;
+varying vec2 pos;
 
 // Values that stay constant for the whole mesh.
 uniform mat4 MVP;
@@ -19,5 +20,6 @@ void main()
 	
 	// UV of the vertex. No special space for this one.
 	UV = vertexUV * vertexTiling;
+	pos = vec2(gl_Position.x,gl_Position.y);
 }
 

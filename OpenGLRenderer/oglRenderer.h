@@ -63,6 +63,10 @@ public:
                             unsigned int iCellId = 0 // cellId if multiple frames are stored together in the same sprite image
                             );
 
+    virtual void SetShaderValue(const std::string& shader, const std::string& location, float value );
+    virtual void SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value );
+
+
 	virtual void SetCamera(class Camera*);
 
 	// config

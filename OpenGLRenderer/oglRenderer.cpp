@@ -204,6 +204,22 @@ void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transf
     m_pSprites->DrawSprite("sprite",texture,transformation,tiling,iCellId);
 }
 
+void oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value )
+{
+    // todo: need todo error checking
+    Shader& resource = static_cast<Shader&>(m_rm.GetResource(shader));
+    glUseProgram(resource.id);
+    glUniform1f(resource.uniforms[location],value);
+}
+
+void oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value )
+{
+    // todo: need todo error checking
+    Shader& resource = static_cast<Shader&>(m_rm.GetResource(shader));
+    glUseProgram(resource.id);
+    glUniform2f(resource.uniforms[location],value.x / 100.0f,value.y / 100.0f);
+}
+
 void oglRenderer::SetCamera(class Camera*)
 {
 	// todo: implement

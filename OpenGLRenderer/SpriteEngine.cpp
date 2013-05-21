@@ -142,7 +142,7 @@ void SpriteEngine::Render()
 
         glUseProgram(theShader.id);
 
-        glUniform1f(scalarValue,0.5f*sin(0.2f*counter)+0.5f);
+        glUniform1f(scalarValue,counter); // 0.5f*sin(0.2f*counter)+0.5f
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(

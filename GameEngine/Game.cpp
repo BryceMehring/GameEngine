@@ -33,7 +33,7 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
     m_plugins.SetAS(m_vm.GetScriptEngine());
     LoadAllDLL();
 	
-    //glfwDisable(GLFW_MOUSE_CURSOR);
+    glfwDisable(GLFW_MOUSE_CURSOR);
     glfwDisable(GLFW_AUTO_POLL_EVENTS);
 
 	// todo: move this code somewhere else
@@ -153,18 +153,8 @@ void Game::Draw()
 {
 
     DrawFPS();
-    DrawCursor();
+    //DrawCursor();
     DrawSelectionRect();
-
-    static float angle = 0.0;
-    angle += 3.0f*this->m_fDT;
-
-    glm::mat4 T = glm::translate(0.0f,0.0f,-50.0f);
-    glm::mat4 S = glm::scale(200.0f,200.0f,1.0f);
-   // glm::mat4 R = glm::rotate(angle,1.0f,1.0f,1.0f);
-
-    this->m_pRenderer->DrawSprite("background",T*S);
-
 		
 	if(m_bConsoleEnabled)
 	{

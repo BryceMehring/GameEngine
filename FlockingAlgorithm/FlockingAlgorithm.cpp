@@ -143,8 +143,6 @@ void Bird::Render(IRenderer& renderer)
     glm::mat4 S = glm::scale(4.0f,4.0f,1.0f);
 
     renderer.DrawSprite("bird", T * S);
-
-    //renderer.DrawLine(vertices,3,m_color,T);
 }
 
 void FlockingAlgorithm::Init(Game& game)
@@ -217,6 +215,15 @@ void FlockingAlgorithm::Draw(Game& game)
 	{
 		m_birds[i]->Render(game.GetRenderer());
     }
+
+    static float angle = 0.0;
+    angle += 3.0f*game.GetDt();
+
+    glm::mat4 T = glm::translate(0.0f,0.0f,-50.0f);
+    glm::mat4 S = glm::scale(200.0f,200.0f,1.0f);
+
+    game.GetRenderer().DrawSprite("background",T*S);
+    game.GetRenderer().SetShaderValue("sprite","mousePos",game.GetInput().GetTransformedMousePos());
 
     //m_pQuadtree->Render(game.GetRenderer());
 
