@@ -81,10 +81,9 @@ void Game::SetNextState(const std::string& state)
 int Game::Run()
 {
 	// Loop while the use has not quit
-	while(glfwGetKey( GLFW_KEY_ESC ) != GLFW_PRESS && glfwGetWindowParam( GLFW_OPENED ))
+    while(StartTimer(), glfwGetKey( GLFW_KEY_ESC ) != GLFW_PRESS && glfwGetWindowParam( GLFW_OPENED ))
 	{
         glfwPollEvents();
-		StartTimer();
 
 		// Update the game
         Update();
@@ -157,6 +156,15 @@ void Game::Draw()
     DrawCursor();
     DrawSelectionRect();
 
+    static float angle = 0.0;
+    angle += 3.0f*this->m_fDT;
+
+    glm::mat4 T = glm::translate(0.0f,0.0f,-50.0f);
+    glm::mat4 S = glm::scale(200.0f,200.0f,1.0f);
+   // glm::mat4 R = glm::rotate(angle,1.0f,1.0f,1.0f);
+
+    this->m_pRenderer->DrawSprite("background",T*S);
+
 		
 	if(m_bConsoleEnabled)
 	{
@@ -176,11 +184,14 @@ void Game::Draw()
 
 void Game::DrawFPS()
 {
+    static double counter = 0;
+    counter += m_fDT;
+
 	std::ostringstream out;
-    out<<"FPS: " << GetFps();
+    out<<"FPS: " << GetFps() << endl << int(counter);
 
     m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),0,glm::vec3(0.0f,1.0f,0.0f),glm::vec2(2.5f,2.5f));
-    m_pRenderer->DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,0),0,glm::vec3(1.0f),glm::vec2(2.5f));
+    m_pRenderer->DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,50),0,glm::vec3(1.0f),glm::vec2(2.5f));
 }
 
 void Game::DrawCursor()
@@ -199,7 +210,7 @@ void Game::DrawCursor()
         glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
         glm::mat4 S = glm::scale(32.0f,32.0f,1.0f);
 
-        m_pRenderer->DrawSprite(T*S,"bird",0,2,2);
+        m_pRenderer->DrawSprite("bird",T*S,glm::vec2(2.0f));
 
         //T = glm::translate(pos.x + 20,pos.y,-5.0f);
         //m_pRenderer->DrawSprite(T*S,"industry");

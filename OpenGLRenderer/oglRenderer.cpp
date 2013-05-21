@@ -14,7 +14,7 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin(asIScriptEngine* as)
 oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_as(as), m_pFonts(nullptr), m_bFullscreen(false)
 {
     m_pCamera = CreateCamera();
-    m_pCamera->setLens(200.0f,200.0f,1.0f,500.0f);
+    m_pCamera->setLens(200.0f,200.0f,0.0f,5000.0f);
     m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_pCamera->update(0.0f);
 
@@ -34,6 +34,7 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
     cout<<"rev: "<<rev<<endl;
 
     glfwSwapInterval(1);
+    glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     //glfwDisable(GLFW_MOUSE_CURSOR);
@@ -99,9 +100,9 @@ void oglRenderer::Present()
 {
     ClearScreen();
 
-    m_pFonts->Render();
     m_pLines->Render();
     m_pSprites->Render();
+    m_pFonts->Render();
 
 
     glfwSwapBuffers();
@@ -198,9 +199,9 @@ void oglRenderer::GetStringRec(const char* str, const glm::vec2& pos, const glm:
 	// todo: implement
 }
 
-void oglRenderer::DrawSprite(const glm::mat4& transformation, const std::string& texture, unsigned int iCellId, float dx, float dy)
+void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec2& tiling, unsigned int iCellId)
 {
-    m_pSprites->DrawSprite("sprite",transformation,texture,iCellId,dx,dy);
+    m_pSprites->DrawSprite("sprite",texture,transformation,tiling,iCellId);
 }
 
 void oglRenderer::SetCamera(class Camera*)

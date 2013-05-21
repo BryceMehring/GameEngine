@@ -179,7 +179,7 @@ void ButtonBase::Render(IRenderer& renderer)
 	glm::mat4 S = glm::scale(m_sprite.Width() * scale,m_sprite.Height() * scale,1.0f);
 	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
 
-	renderer.DrawSprite(S*T,"button");
+    renderer.DrawSprite("button",S*T);
     renderer.DrawString(m_text.c_str(),glm::vec2(m_sprite.topLeft.x + 4.0f,pos.y),0,::glm::vec3(1.0f,1.0f,1.0f),glm::vec2(scale,scale));
 
 

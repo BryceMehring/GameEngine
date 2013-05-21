@@ -142,7 +142,7 @@ void Bird::Render(IRenderer& renderer)
 
     glm::mat4 S = glm::scale(4.0f,4.0f,1.0f);
 
-    renderer.DrawSprite(T * S ,"bird");
+    renderer.DrawSprite("bird", T * S);
 
     //renderer.DrawLine(vertices,3,m_color,T);
 }
@@ -218,7 +218,7 @@ void FlockingAlgorithm::Draw(Game& game)
 		m_birds[i]->Render(game.GetRenderer());
     }
 
-   // m_pQuadtree->Render(game.GetRenderer());
+    //m_pQuadtree->Render(game.GetRenderer());
 
 	//game.GetRenderer().Get2DRenderer().
 }

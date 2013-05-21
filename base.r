@@ -4,3 +4,4 @@ shader sprite shaders/vertexShader.vert shaders/PixelShader.frag
 texture industry textures/cell.png
 texture font textures/font.png
 texture bird textures/bird.png
+texture background textures/sc2.jpg

@@ -12,7 +12,7 @@ void main(){
 
 
 	// Output color = color of the texture at the specified UV
-	vec4 color = texture2D( myTextureSampler, UV );
+	vec4 color = texture2D( myTextureSampler, vec2(UV.x,UV.y) );
 
 	gl_FragColor = color * vec4(textColor,1.0f) ; // gl_FragColor
 	

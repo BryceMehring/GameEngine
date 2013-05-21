@@ -27,7 +27,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
     int spriteHeight = 1;
 
     int x, y, comp;
-    unsigned char* pImg = stbi_load(file.c_str(),&x,&y,&comp,4);
+    unsigned char* pImg = stbi_load(file.c_str(),&x,&y,&comp,0);
 
     // check if the image can be loaded
     if(pImg == nullptr)
@@ -37,8 +37,12 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
     glGenTextures(1,&textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
+    GLenum format = GL_RGB;
+    if(comp == 4)
+        format = GL_RGBA;
+
     // Give the image to OpenGL
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)pImg);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 

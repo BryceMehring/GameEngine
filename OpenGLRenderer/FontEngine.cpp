@@ -92,19 +92,19 @@ void FontEngine::FillVertexBuffer()
                         glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font.iWidth),(charToRender.y+charToRender.Height) / (float)font.iHeight);
 
                         v[index].pos = glm::vec3(posW.x,0.5f * subIter->scale.y + posW.y,0.0f);
-                        v[index].tex = topLeft;
+                        v[index].tex = topLeft; // topLeft
                         //v[index].tex = glm::vec2(0.0,0.0f);
 
                         v[index + 1].pos = glm::vec3(posW.x,-0.5f * subIter->scale.y + posW.y,0.0f);
-                        v[index + 1].tex = glm::vec2(topLeft.x,bottomRight.y);
+                        v[index + 1].tex = glm::vec2(topLeft.x,bottomRight.y); // glm::vec2(topLeft.x,bottomRight.y) bottom left
                         //v[index + 1].tex = glm::vec2(0.0,1.0f);
 
                         v[index + 2].pos = glm::vec3(fAdvance * subIter->scale.x,0.5f * subIter->scale.y,0.0f) + posW;
-                        v[index + 2].tex = glm::vec2(bottomRight.x,topLeft.y);
+                        v[index + 2].tex = glm::vec2(bottomRight.x,topLeft.y) ; // glm::vec2(bottomRight.x,topLeft.y) top right
                         //v[index + 2].tex = glm::vec2(1.0,0.0f);
 
                         v[index + 3].pos = glm::vec3(fAdvance * subIter->scale.x,-0.5f * subIter->scale.y,0.0f) + posW;
-                        v[index + 3].tex = bottomRight;
+                        v[index + 3].tex = bottomRight   ; // bottomRight
                         //v[index + 3].tex = glm::vec2(1.0,1.0f);
 
                         ++iVert;
@@ -131,7 +131,7 @@ void FontEngine::FillVertexBuffer()
                     fAdvance = 0.4f;
                 }
 
-                posW.x += fAdvance * subIter->scale.x + 1.0f;
+                posW.x += fAdvance * subIter->scale.x + 0.5f;
                 //posW.x += 2.0f * fAdvance * subIter->scale.x; // * 10 / 2
             }
 

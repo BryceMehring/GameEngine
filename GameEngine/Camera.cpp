@@ -61,7 +61,7 @@ void Camera::setLens(float w, float h, float nearZ, float farZ)
 {
 	m_width = w;
 	m_height = h;
-	m_Proj = glm::ortho(-m_width/2,m_width/2,-m_height/2,m_height/2,nearZ,farZ);
+    m_Proj = glm::ortho(-m_width/2,m_width/2,-m_height/2,m_height/2,nearZ,farZ);
 }
 
 void Camera::setDir(const glm::vec3& dir)

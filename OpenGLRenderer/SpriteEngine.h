@@ -10,15 +10,14 @@
 
 struct Sprite
 {
-    Sprite(const glm::mat4& transform, unsigned int cell, float fDx, float fDy)
-    : T(transform), iCellId(cell), dx(fDx), dy(fDy)
+    Sprite(const glm::mat4& transform, const glm::vec2& tile, unsigned int cell)
+        : T(transform), iCellId(cell), tiling(tile)
     {
     }
 
     glm::mat4 T;
+    glm::vec2 tiling;
     unsigned int iCellId;
-    float dx;
-    float dy;
 };
 
 // todo: move these to another header file
@@ -37,11 +36,11 @@ public:
     ~SpriteEngine();
 
     void DrawSprite(const std::string& tech,
-                    const glm::mat4& transformation,
                     const std::string& texture,
-                    unsigned int iCellId = 0,
-                    float dx = 1.0f,
-                    float dy = 1.0f);
+                    const glm::mat4& transformation,
+                    const glm::vec2& tiling,
+                    unsigned int iCellId
+                    );
 
     void Render();
 

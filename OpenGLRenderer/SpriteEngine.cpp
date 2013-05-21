@@ -27,11 +27,15 @@ void SpriteEngine::CreateVertexBuffer()
     glBufferData(GL_ARRAY_BUFFER,sizeof(SpriteVertex) * m_iMaxLength,0,GL_DYNAMIC_DRAW);
 }
 
-void SpriteEngine::DrawSprite(const std::string& tech, const glm::mat4& transformation, const std::string& texture, unsigned int iCellId, float dx, float dy)
+void SpriteEngine::DrawSprite(const std::string& tech,
+                              const std::string& texture,
+                              const glm::mat4& transformation,
+                              const glm::vec2& tiling,
+                              unsigned int iCellId)
 {
     if(m_iCurrentLength < m_iMaxLength)
     {
-        m_sprites[tech][texture].push_back(Sprite(transformation,iCellId,dx,dy));
+        m_sprites[tech][texture].push_back(Sprite(transformation,tiling,iCellId));
         ++m_iCurrentLength;
     }
     else
@@ -69,25 +73,25 @@ void SpriteEngine::FillVertexBuffer()
                 // filling in the vertices
                 pVert[0].pos = (sprites[i].T * glm::vec4(-0.5f,0.5f,0.0f,1.0f)).xyz();
 				pVert[0].tex = topLeft;
-                pVert[0].tiling = glm::vec2(sprites[i].dx,sprites[i].dy);
+                pVert[0].tiling = sprites[i].tiling;
                 //pVert[0].dy = sprites[i].dy;
 
                 
                 pVert[1].pos = (sprites[i].T * glm::vec4(-0.5f,-0.5f,0.0,1.0f)).xyz();
                 pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y);
-                pVert[1].tiling = glm::vec2(sprites[i].dx,sprites[i].dy);
+                pVert[1].tiling = sprites[i].tiling;
                 //pVert[1].dx = sprites[i].dx;
                 //pVert[1].dy = sprites[i].dx;
 
                 pVert[2].pos = (sprites[i].T * glm::vec4(0.5f,0.5f,0.0,1.0f)).xyz();
                 pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y);
-                pVert[2].tiling = glm::vec2(sprites[i].dx,sprites[i].dy);
+                pVert[2].tiling = sprites[i].tiling;
                 //pVert[2].dx = sprites[i].dx;
                 //pVert[2].dy = sprites[i].dx;
 
                 pVert[3].pos = (sprites[i].T * glm::vec4(0.5f,-0.5f,0.0,1.0f)).xyz();
                 pVert[3].tex = bottomRight;
-                pVert[3].tiling = glm::vec2(sprites[i].dx,sprites[i].dy);
+                pVert[3].tiling = sprites[i].tiling;
                // pVert[3].dx = sprites[i].dx;
                // pVert[3].dy = sprites[i].dy;
 
@@ -102,6 +106,9 @@ void SpriteEngine::FillVertexBuffer()
 
 void SpriteEngine::Render()
 {
+    static float counter = 0.0f;
+    counter += 0.01f;
+
     // if there is nothing to draw, do nothing
     if(m_sprites.empty())
         return;
@@ -126,12 +133,16 @@ void SpriteEngine::Render()
 
         Shader& theShader = static_cast<Shader&>(m_pRM->GetResource(iter->first));
         GLuint TexId = theShader.uniforms["myTextureSampler"];
+        GLuint scalarValue = theShader.uniforms["scalarValue"];
 
 		GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
         GLuint vertexUV = glGetAttribLocation(theShader.id, "vertexUV");
         GLuint vertexTiling = glGetAttribLocation(theShader.id, "vertexTiling");
 
+
         glUseProgram(theShader.id);
+
+        glUniform1f(scalarValue,0.5f*sin(0.2f*counter)+0.5f);
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(
