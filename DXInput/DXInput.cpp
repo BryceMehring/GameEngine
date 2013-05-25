@@ -11,9 +11,9 @@
 using namespace std;
 
 // Input plug-in implementation
-extern "C" PLUGINDECL IPlugin* CreatePlugin(asIScriptEngine* as)
+extern "C" PLUGINDECL IPlugin* CreatePlugin()
 {
-	return new DirectInput(as);
+    return new DirectInput();
 }
 
 DirectInput* DirectInput::s_pThis = nullptr;
@@ -49,18 +49,15 @@ void GLFWCALL DirectInput::MouseClickCallback(int button, int action)
     if(s_pThis != nullptr)
     {
         s_pThis->m_selectedPos = s_pThis->m_tpos;
-        s_pThis->m_bMouseClickOnce[button] = action;
+        s_pThis->m_MouseClickOnce[button] = action;
     }
 }
 
 // DirectInput ctor
-DirectInput::DirectInput(asIScriptEngine* as) : m_iMouseX(0), m_iMouseY(0),
-	m_as(as), m_tpos(0.0f,0.0f)
+DirectInput::DirectInput() : m_iMouseX(0), m_iMouseY(0), m_tpos(0.0f,0.0f)
 {
 	// todo: need to rework this: 
 	s_pThis = this;
-
-	RegisterScript();
 
 	Reset();
 
@@ -75,12 +72,15 @@ DirectInput::DirectInput(asIScriptEngine* as) : m_iMouseX(0), m_iMouseY(0),
 	CenterMouse();
 }
 
-
-DirectInput::~DirectInput()
+void DirectInput::Init(asIScriptEngine* pAS)
 {
-	// remove config group from script
-	m_as->RemoveConfigGroup("Input");
-	m_as->Release();
+    RegisterScript(pAS);
+}
+
+void DirectInput::Destroy(asIScriptEngine* pAS)
+{
+    // remove config group from script
+    pAS->RemoveConfigGroup("Input");
 }
 
 int DirectInput::GetVersion() const
@@ -104,7 +104,7 @@ void DirectInput::CenterMouse()
 
 void DirectInput::Reset()
 {
-    m_bMouseClickOnce[0] = m_bMouseClickOnce[1] = false;
+    m_MouseClickOnce[0] = m_MouseClickOnce[1] = -1;
     m_iKeyAction = m_iKeyDown = -1;
 }
 
@@ -118,7 +118,7 @@ void DirectInput::UpdateMouse(int x, int y)
 	m_iMouseX = x - (width / 2);
 	m_iMouseY = -y + (height / 2);
 
-	m_tpos += 50.0f * glm::vec2(m_iMouseX / (float)width ,m_iMouseY / (float)height);
+    m_tpos += 100.0f * glm::vec2(m_iMouseX / (float)width ,m_iMouseY / (float)height);
 
 	CenterMouse();
     ClampMouse();
@@ -126,7 +126,6 @@ void DirectInput::UpdateMouse(int x, int y)
 
 void DirectInput::ClampMouse()
 {
-	// todo: fix this
     if(m_tpos.x < -100.0f)
 	{
         m_tpos.x = -100.0f;
@@ -166,7 +165,7 @@ bool DirectInput::KeyUp(int Key, bool once)
 }
 bool DirectInput::IsKeyDown() const
 {
-	return m_iCharAction != -1 && m_iCharAction == GLFW_PRESS;
+    return m_iCharAction != -1 && m_iCharAction == GLFW_PRESS;
 }
 int DirectInput::GetKeyDown() const
 {
@@ -174,7 +173,17 @@ int DirectInput::GetKeyDown() const
 }
 bool DirectInput::MouseClick(int iButton, bool once) const
 {
-    return (once ? m_bMouseClickOnce[iButton] : glfwGetMouseButton(iButton) == GLFW_PRESS);
+    if(iButton > 1)
+        return false;
+
+    return (once ? (m_MouseClickOnce[iButton] == GLFW_PRESS) : glfwGetMouseButton(iButton) == GLFW_PRESS);
+}
+bool DirectInput::MouseRelease(int iButton, bool once) const
+{
+    if(iButton > 1)
+        return false;
+
+    return (once ? (m_MouseClickOnce[iButton] == GLFW_RELEASE) : glfwGetMouseButton(iButton) == GLFW_RELEASE);
 }
 int DirectInput::MouseX() const
 {
@@ -188,7 +197,7 @@ int DirectInput::MouseY() const
 
 int DirectInput::MouseZ() const
 {
-	return m_iMouseZ;
+    return glfwGetMouseWheel();
 }
 
 bool DirectInput::GetSelectedRect(Math::AABB& out)
@@ -202,21 +211,15 @@ bool DirectInput::GetSelectedRect(Math::AABB& out)
 	return true;
 }
 
-void DirectInput::SetMouseState(MouseCursorState state)
+void DirectInput::RegisterScript(asIScriptEngine* pAS)
 {
-	//m_uiCurrentCursor = state;
-}
+    pAS->BeginConfigGroup("Input");
 
-void DirectInput::RegisterScript()
-{
-	m_as->BeginConfigGroup("Input");
+    (pAS->RegisterObjectType("IKMInput",0,asOBJ_REF | asOBJ_NOHANDLE));
+    (pAS->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
+    (pAS->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
+    (pAS->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
+    (pAS->RegisterGlobalProperty("IKMInput input",this));
 
-	(m_as->RegisterObjectType("IKMInput",0,asOBJ_REF | asOBJ_NOHANDLE));
-	(m_as->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
-	(m_as->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
-	(m_as->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
-	(m_as->RegisterObjectMethod("IKMInput","void SetMouseState(int)",asMETHOD(DirectInput,SetMouseState),asCALL_THISCALL));
-	(m_as->RegisterGlobalProperty("IKMInput input",this));
-
-	m_as->EndConfigGroup();
+    pAS->EndConfigGroup();
 }

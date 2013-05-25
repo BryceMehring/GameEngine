@@ -3,27 +3,26 @@
 
 #ifndef _DINPUT_
 #define _DINPUT_
-#pragma once
 
-// This is the DirectX Input Plug-in class
+// This is the GLFW Input Plug-in class
 // All that's needed is too implement the functions provided in the abstract interface
 #define PLUGIN_EXPORTS
 #include "IKMInput.h"
 #include "PluginManager.h"
 
-class DirectInput : public IKMInput//, public IScripted<DirectInput>
+class DirectInput : public IKMInput //, public IScripted<DirectInput>
 {
 public:
 
-	DirectInput(asIScriptEngine* as);
-	virtual ~DirectInput();
+    DirectInput();
 
+    // Callbacks
 	static void GLFWCALL CharCallback(int c, int action);
 	static void GLFWCALL KeyCallback(int c, int action);
 	static void GLFWCALL MouseCallback(int x, int y);
     static void GLFWCALL MouseClickCallback(int button, int action);
 
-	// IRender
+    // IPlugin
 	virtual DLLType GetPluginType() const;
 	virtual const char* GetName() const { return "DirectInput"; }
 	virtual int GetVersion() const;
@@ -32,65 +31,49 @@ public:
 	virtual bool KeyDown(int Key, bool once = true);
     virtual bool KeyUp(int Key, bool once = true);
 	virtual int GetKeyDown() const;
-	virtual bool IsKeyDown() const; // true if WM_CHAR is thrown
+    virtual bool IsKeyDown() const;
 
 	// Mouse
 	virtual void MousePos(int& x, int& y) const;
 	virtual const glm::vec2& GetTransformedMousePos() const;
-	virtual bool MouseClick(int Button, bool once) const;
+    virtual bool MouseClick(int Button, bool once) const;
+    virtual bool MouseRelease(int Button, bool once) const;
 
 	virtual int MouseX() const;
 	virtual int MouseY() const;
 	virtual int MouseZ() const;
 
-	virtual bool GetSelectedRect(Math::AABB& out);
+    virtual bool GetSelectedRect(Math::AABB& out);
 
-	virtual void SetMouseState(MouseCursorState state);
+    virtual void Init(class asIScriptEngine*);
+    virtual void Destroy(class asIScriptEngine*);
 
 private:
 
 	static DirectInput* s_pThis;
 
-	// scripting engine
-	asIScriptEngine* m_as;
-
 	// Keyboard
+    int m_iKeyDown;
+    int m_iKeyAction;
+
 	int m_iCharKeyDown;
 	int m_iCharAction;
-
-	int m_iKeyDown;
-	int m_iKeyAction;
-
-	//unsigned char m_cKeyDownOnce;
-	//unsigned char m_cCharDown;
 
 	// Mouse
 	int m_iMouseX;
 	int m_iMouseY;
-	int m_iMouseZ;
-	//POINT m_MousePos;
 
 	glm::vec2 m_tpos;
 	glm::vec2 m_selectedPos;
 
-	bool m_bMouseClick[2];
-	bool m_bMouseClickOnce[2];
-
-	/*REMOVE:
-	bool m_bMouseMove;
-    unsigned int m_uiCurrentCursor;
-	int m_eventId;*/
+    int m_MouseClickOnce[2];
 
 	// helper functions
 	void Reset();
-
 	void ClampMouse();
-
 	void CenterMouse();
-
-	void RegisterScript();
-
 	void UpdateMouse(int x, int y);
+    void RegisterScript(class asIScriptEngine*);
 };
 
 #endif

@@ -104,10 +104,6 @@ bool Equals(float a, float b, float diff = 0.0001f);
 unsigned int LOG2(unsigned int i);
 unsigned int LOG10(unsigned int i);
 
-//bool Intersects(const std::vector<D3DXVECTOR3>& poly1, const std::vector<D3DXVECTOR3>& poly2);
-
-float PongRayTrace(glm::vec2 pos, glm::vec2 dir, float fLeftBound); 
-
 bool IsPrime(unsigned int);
 
 std::string ConvertTo(unsigned int uiInputNumber, unsigned int uiTargetBase);

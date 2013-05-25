@@ -58,7 +58,7 @@ void GameStateMachine::RemoveState(Game& game)
 		game.GetPM().FreePlugin(DLLType::GamePlugin);
 
 		// todo: need to mark some textures as being perminate between dlls
-		game.GetRenderer().GetResourceManager().RemoveAllTextures();
+        //game.GetRenderer().GetResourceManager().Clear();
 	}
 }
 

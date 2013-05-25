@@ -53,7 +53,10 @@ public:
 	virtual void Update(class Game& game);
 	virtual void Draw(class Game& game);
 
-	void ClearBirds();
+    virtual void Init(class asIScriptEngine*) {}
+    virtual void Destroy(class asIScriptEngine*) {}
+
+    void ClearBirds();
 
 private:
 

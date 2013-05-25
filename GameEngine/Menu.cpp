@@ -113,8 +113,6 @@ void GUI::Update(IKMInput& input, double dt)
 {
 	if(m_bSetMenu)
 	{
-		input.SetMouseState(Default);
-
 		m_bSetMenu = false;
 	}
 
@@ -180,7 +178,7 @@ void ButtonBase::Render(IRenderer& renderer)
 	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
 
     renderer.DrawSprite("button",S*T);
-    renderer.DrawString(m_text.c_str(),glm::vec2(m_sprite.topLeft.x + 4.0f,pos.y),0,::glm::vec3(1.0f,1.0f,1.0f),glm::vec2(scale,scale));
+    renderer.DrawString(m_text.c_str(),glm::vec2(m_sprite.topLeft.x + 4.0f,pos.y),glm::vec2(scale,scale));
 
 
 	//renderer.Get2DRenderer().DrawString(m_name.name.c_str(),m_name.P,m_color);
@@ -330,7 +328,9 @@ void TextBox::Render(IRenderer& renderer)
 		LineData& data = *iter;
 
 		renderer.DrawString(">",pos);
-		renderer.DrawString((" " + data.line).c_str(),pos,0,data.color);
+
+        // todo: fix this later
+        //renderer.DrawString((" " + data.line).c_str(),pos,0,data.color);
 
 		Math::FRECT R;
 		renderer.GetStringRec((/*"> " + */data.line).c_str(),::glm::vec2(0.0f,0.0f),glm::vec2(1.0f,1.0f),R);

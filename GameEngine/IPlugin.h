@@ -5,7 +5,7 @@ enum DLLType
 {
 	RenderingPlugin,
 	InputPlugin,
-	GamePlugin,
+    GamePlugin
 	// more dll types here
 };
 
@@ -31,9 +31,11 @@ public:
 	// returns the version number of the plugin
 	virtual int GetVersion() const = 0;
 
+    virtual void Init(class asIScriptEngine*) = 0;
+    virtual void Destroy(class asIScriptEngine*) = 0;
+
 protected:
 
-	//IPlugin() {}
 	virtual ~IPlugin() {}
 	
 };

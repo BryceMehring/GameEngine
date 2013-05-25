@@ -5,8 +5,7 @@
 FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
 m_pRm(pRm), m_iMaxLength(maxLength), m_pCamera(pCam)
 {
-	CreateIndexBuffer();
-	CreateVertexBuffer();
+    OnReset();
 }
 
 FontEngine::~FontEngine()
@@ -27,6 +26,13 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& 
     m_textSubsets[font].push_back(DrawTextInfo(str,pos,glm::vec2(5.0f,5.0f)*scale,color));
 }
 
+void FontEngine::OnReset()
+{
+    CreateVertexBuffer();
+    CreateIndexBuffer();
+}
+
+
 void FontEngine::CreateIndexBuffer()
 {
     m_uiIndexBuffer = CreateQuadIndexBuffer(m_iMaxLength);
@@ -34,7 +40,7 @@ void FontEngine::CreateIndexBuffer()
 
 void FontEngine::CreateVertexBuffer()
 {
-	glGenBuffers(1,&m_uiVertexBuffer);
+    glGenBuffers(1,&m_uiVertexBuffer);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_uiVertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, m_iMaxLength * sizeof(FontVertex), 0, GL_DYNAMIC_DRAW);

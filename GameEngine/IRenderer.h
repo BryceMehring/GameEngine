@@ -41,9 +41,9 @@ public:
 
 	virtual void DrawString(const char* str, // the string that gets drawn
 							const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
-							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
+                            const glm::vec2& scale = glm::vec2(1.0f), // size of the text
                             const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
-							const glm::vec2& scale = glm::vec2(1.0f) // size of the text
+                            const char* font = nullptr // the desired font, may be null if you wish to use the default font
 							) = 0; // world space
 
     virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite

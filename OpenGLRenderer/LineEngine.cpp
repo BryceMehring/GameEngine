@@ -49,6 +49,12 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, const 
     m_iCurrentLength = uiNewLength;
 }
 
+void LineEngine::OnReset()
+{
+    glDeleteBuffers(1,&m_uiVertexBuffer);
+    CreateVertexBuffer();
+}
+
 void LineEngine::Render()
 {
     // if there is nothing to draw, do nothing

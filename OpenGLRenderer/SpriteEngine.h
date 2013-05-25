@@ -44,6 +44,8 @@ public:
 
     void Render();
 
+    void OnReset();
+
 private:
 
 

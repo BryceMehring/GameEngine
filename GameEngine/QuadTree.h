@@ -6,7 +6,6 @@
 
 #ifndef _QUADTREE_
 #define _QUADTREE_
-#pragma once
 
 #include <set>
 #include <vector>

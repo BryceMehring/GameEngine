@@ -6,25 +6,31 @@
 
 using namespace std;
 
-extern "C" PLUGINDECL IPlugin* CreatePlugin(asIScriptEngine* as)
+extern "C" PLUGINDECL IPlugin* CreatePlugin()
 {
-	return new oglRenderer(as);
+    return new oglRenderer();
 }
 
-oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_as(as), m_pFonts(nullptr), m_bFullscreen(false)
+oglRenderer::oglRenderer() : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_pFonts(nullptr), m_bFullscreen(false)
 {
     m_pCamera = CreateCamera();
     m_pCamera->setLens(200.0f,200.0f,0.0f,5000.0f);
     m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
-	m_pCamera->update(0.0f);
+    m_pCamera->update(0.0f);
 
-	GLFWOpenWindowHints();
+    EnumerateDisplayAdaptors();
 
-    if(glfwOpenWindow( 1366, 768, 8,8,8,8, 24,8, GLFW_WINDOW ) < 1 ) // GLFW_WINDOW, GLFW_FULLSCREEN
+    GLFWOpenWindowHints();
+    if(glfwOpenWindow( m_VideoModes[0].Width,
+                       m_VideoModes[0].Height,
+                       m_VideoModes[0].RedBits,
+                       m_VideoModes[0].GreenBits,
+                       m_VideoModes[0].BlueBits,
+                       8,24,0,GLFW_FULLSCREEN ) < 1) // // GLFW_WINDOW, GLFW_FULLSCREEN
 	{
         glfwTerminate();
         throw std::string("Failed to create window");
-	}
+    }
 
     int major, minor, rev;
     glfwGetGLVersion(&major,&minor,&rev);
@@ -37,12 +43,13 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
     glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+
     //glfwDisable(GLFW_MOUSE_CURSOR);
 
-	// Initialize GLEW
+    // Initialize GLEW
     glewExperimental=true; // Needed in core profile
     if (glewInit() != GLEW_OK)
-	{
+    {
         throw std::string("Failed to initialize GLEW");
     }
 
@@ -50,7 +57,9 @@ oglRenderer::oglRenderer(asIScriptEngine* as) : m_pCamera(nullptr), m_uiCurrentD
     m_pLines = new LineEngine(&m_rm,1024*20,m_pCamera);
     m_pSprites = new SpriteEngine(&m_rm,1024*20,m_pCamera);
 
-	EnumerateDisplayAdaptors();
+
+
+    //this->ToggleFullscreen();
 
 	//::glClearColor(1.0f,0.0f,0.0f,0.0f);
 }
@@ -63,10 +72,17 @@ oglRenderer::~oglRenderer()
     m_pCamera->Release();
     m_pCamera = nullptr;
 
-	m_as->Release();
-    m_as = nullptr;
-
     glfwCloseWindow();
+}
+
+void oglRenderer::Init(asIScriptEngine* pAS)
+{
+    // todo: implement this later
+}
+
+void oglRenderer::Destroy(asIScriptEngine* pAS)
+{
+    // todo: implement this later
 }
 
 DLLType oglRenderer::GetPluginType() const
@@ -161,7 +177,7 @@ const std::string& oglRenderer::GetDisplayModeStr(unsigned int i) const
 
 void oglRenderer::ToggleFullscreen()
 {
-	m_bFullscreen = !m_bFullscreen;
+    /*m_bFullscreen = !m_bFullscreen;
 
 	glfwCloseWindow();
 
@@ -169,13 +185,18 @@ void oglRenderer::ToggleFullscreen()
 
 	if(m_bFullscreen)
 	{
-		glfwOpenWindow(m_VideoModes[m_uiCurrentDisplayMode].Width,
-					   m_VideoModes[m_uiCurrentDisplayMode].Height,8,8,8,8,0,0,GLFW_WINDOW);
+        CreateWindow(m_VideoModes[m_uiCurrentDisplayMode].Width,
+                       m_VideoModes[m_uiCurrentDisplayMode].Height,GLFW_FULLSCREEN);
 	}
 	else
-	{
-        glfwOpenWindow(800,600,0,0,0,0,0,0,GLFW_WINDOW);
-	}
+    {
+        CreateWindow(800,600,GLFW_WINDOW);
+    }
+
+    m_pFonts->OnReset();
+    m_pLines->OnReset();
+    m_pSprites->OnReset();
+    m_rm.Clear();*/
 
 }
 
@@ -184,7 +205,7 @@ IResourceManager& oglRenderer::GetResourceManager()
 	return m_rm;
 }
 
-void oglRenderer::DrawString(const char* str, const glm::vec2& pos, const char* font, const glm::vec3& color, const glm::vec2& scale)
+void oglRenderer::DrawString(const char* str, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color, const char* font)
 {
     m_pFonts->DrawString(str,font,pos,scale,color);
 }
@@ -206,18 +227,22 @@ void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transf
 
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value )
 {
-    // todo: need todo error checking
-    Shader& resource = static_cast<Shader&>(m_rm.GetResource(shader));
-    glUseProgram(resource.id);
-    glUniform1f(resource.uniforms[location],value);
+    IResource& resource = m_rm.GetResource(shader);
+    assert(resource.GetType() == Shad);
+
+    Shader& resourceShader = static_cast<Shader&>(m_rm.GetResource(shader));
+    glUseProgram(resourceShader.id);
+    glUniform1f(resourceShader.uniforms[location],value);
 }
 
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value )
 {
-    // todo: need todo error checking
-    Shader& resource = static_cast<Shader&>(m_rm.GetResource(shader));
-    glUseProgram(resource.id);
-    glUniform2f(resource.uniforms[location],value.x / 100.0f,value.y / 100.0f);
+    IResource& resource = m_rm.GetResource(shader);
+    assert(resource.GetType() == Shad);
+
+    Shader& resourceShader = static_cast<Shader&>(m_rm.GetResource(shader));
+    glUseProgram(resourceShader.id);
+    glUniform2f(resourceShader.uniforms[location],value.x,value.y);
 }
 
 void oglRenderer::SetCamera(class Camera*)

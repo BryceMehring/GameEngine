@@ -22,13 +22,16 @@ class oglRenderer : public IRenderer
 {
 public:
 
-	oglRenderer(asIScriptEngine*);
+    oglRenderer();
 	virtual ~oglRenderer();
 
 	// IPlugin
 	virtual DLLType GetPluginType() const;
 	virtual const char* GetName() const;
 	virtual int GetVersion() const;
+
+    virtual void Init(class asIScriptEngine*);
+    virtual void Destroy(class asIScriptEngine*);
 
 	// IRenderer
 
@@ -50,12 +53,12 @@ public:
 	// Fonts
 	virtual void GetStringRec(const char* str, const glm::vec2& pos, const glm::vec2& scale, Math::FRECT& out);
 
-	virtual void DrawString(const char* str, // the string that gets drawn
-							const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
-							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
+    virtual void DrawString(const char* str, // the string that gets drawn
+                            const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
+                            const glm::vec2& scale = glm::vec2(1.0f), // size of the text
                             const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
-                            const glm::vec2& scale = glm::vec2(1.0f) // size of the text
-							); // world space
+                            const char* font = nullptr // the desired font, may be null if you wish to use the default font
+                            ); // world space
 
     virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
                             const glm::mat4& transformation, // transformation applied to the sprite
@@ -79,8 +82,6 @@ public:
 	virtual void ToggleFullscreen();
 
 private:
-
-	asIScriptEngine* m_as;
 
 	Camera* m_pCamera;
 

@@ -251,55 +251,6 @@ bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly
     return ret;
 }
 
-
-float PongRayTrace(glm::vec2 pos, glm::vec2 dir, float fLeftBound)
-{
-	float b = 0.0f;
-	float m = 0.0f;
-	float x = 0.0f;
-
-	// Loop while pos is within the window
-	while(pos.x > fLeftBound)
-	{
-		float c = 50.0f;
-		float n = -1.0f; // normal vector
-
-		// If the object is heading down
-		if(dir.y < 0.0f)
-		{
-			// Set the constant to solve for
-			c = -50.0f;
-
-			// set the normal vector
-			n = -n;
-		}
-
-		// calculate the slope
-		m = dir.y / dir.x;
-
-		// calculate y-intercept
-		b = -m*pos.x + pos.y;
-
-		// calculate where the object will hit
-		x = ((c - b)) / m;
-
-		// update pos
-		pos = glm::vec2(x,m*x + b);
-
-		// reflect dir
-		dir = glm::reflect(-dir,glm::vec2(0.0f,n));
-	}
-
-	// y = mx + b
-
-	// when the object out of the bound
-	// we need to return the y pos when x = 50, 
-	// just plug 50 into the equation above and return the result
-
-	return m*fLeftBound + b;
-	//return b;
-}
-
 float GetRandFloat(float a, float b)
 {
 	// todo: need to check this
@@ -322,123 +273,6 @@ bool Equals(float a, float b, float diff)
 	return fabsf(a - b) < diff;
 }
 
-// todo: write this as a static comp.
-bool IsPrime(unsigned int n)
-{
-	// 0 - not
-	// 1 - not
-	//- 2 - is
-	// 3 - is
-
-	if(((n % 2 == 0) && (n != 2)) || n < 2)
-	{
-		return false;
-	}
-	else if( n < 4)
-	{
-		return true;
-	}
-
-	unsigned int i = 3;
-	bool success = true;
-	while((success = ((n % i) != 0)) && ((i * i) < n))
-	{
-		i += 2;
-	}
-
-	return success;
-}
-
-unsigned int LOG2(unsigned int v)
-{
-	const unsigned int b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
-	const unsigned int S[] = {1, 2, 4, 8, 16};
-	
-	unsigned int r = 0; // result of log2(v) will go here
-	for (int i = 4; i >= 0; i--) // unroll for speed...
-	{
-		if (v & b[i])
-		{
-			v >>= S[i];
-			r |= S[i];
-		} 
-	}
-
-	return r;
-}
-
-unsigned int LOG10(unsigned int i)
-{
-	static const unsigned int PowersOf10[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
-
-	int t = (LOG2(i) + 1) * 1233 >> 12; // temp
-	int r = t - (i < PowersOf10[t]);
-	return r;
-}
-
-unsigned int NumDigits(unsigned int uiNumber)
-{
-	if(uiNumber == 0)
-		return 1;
-
-	return LOG10(uiNumber) + 1;
-}
-
-// uiNumber: base 10, uiBase: base of the output 
-/*unsigned int NumDigits(unsigned int uiNumber, unsigned int uiBase)
-{
-	return ((unsigned int)(log((float)uiNumber) / log((float)uiBase))) + 1;
-}*/
-
-unsigned int NumDigits(unsigned int uiNumber, unsigned int uiBase)
-{
-	if(uiNumber == 0)
-		return 1;
-
-	unsigned int uiCount = 0;
-	while(uiNumber != 0)
-	{
-		uiNumber /= uiBase;
-		uiCount++;
-	}
-
-	return uiCount;
-}
-
-std::string ConvertTo(unsigned int uiInputNumber, unsigned int uiTargetBase)
-{
-	std::string targetNumber;
-
-	if(uiTargetBase > 1)
-	{
-		// num of characters in target base
-		const unsigned int uiTotalDigits = NumDigits(uiInputNumber,uiTargetBase);
-		unsigned int i = uiTotalDigits - 1;
-
-		// resize string to final size
-		targetNumber.resize(uiTotalDigits);
-
-		do
-		{
-			unsigned int uiNewDigit = (uiInputNumber % uiTargetBase);
-
-			if(uiNewDigit >= 10)
-			{
-				char hexChar = (uiNewDigit - 10) + 'A';
-				targetNumber[i] = hexChar;
-			}
-			else
-			{
-				targetNumber[i] = '0' + uiNewDigit;
-			}
-
-			uiInputNumber /= uiTargetBase;
-			i--;
-		} while(uiInputNumber > 0);
-	}
-	
-	return targetNumber;
-}
 
 void RegisterScriptVecMath(::asIScriptEngine* pEngine)
 {
@@ -447,11 +281,6 @@ void RegisterScriptVecMath(::asIScriptEngine* pEngine)
 	DBAS(pEngine->RegisterObjectProperty("vec2","float x",offsetof(glm::vec2,x)));
 	DBAS(pEngine->RegisterObjectProperty("vec2","float y",offsetof(glm::vec2,y)));
 
-	DBAS(pEngine->RegisterGlobalFunction("bool IsPrime(uint)",asFUNCTION(IsPrime),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("string ConvertTo(uint,uint)",asFUNCTION(ConvertTo),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("uint NumDigits(uint)",asFUNCTIONPR(NumDigits,(unsigned int),unsigned int),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("uint NumDigits(uint,uint)",asFUNCTIONPR(NumDigits,(unsigned int,unsigned int),unsigned int),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("uint log2(uint)",asFUNCTION(LOG2),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("bool InRange(float,float,float)",asFUNCTION(InRange),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("float rand(float,float)",asFUNCTION(GetRandFloat),asCALL_CDECL));
 	DBAS(pEngine->RegisterGlobalFunction("uint rand(uint,uint)",asFUNCTION(GetRandInt),asCALL_CDECL));

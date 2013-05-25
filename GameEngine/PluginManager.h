@@ -77,6 +77,6 @@ private:
 	PluginManager& operator=(const PluginManager&);
 };
 
-typedef IPlugin* (*CREATEPLUGIN)(class asIScriptEngine*);
+typedef IPlugin* (*CREATEPLUGIN)();
 
 #endif // _PLUGIN_MANAGER_

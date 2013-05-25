@@ -100,6 +100,8 @@ public:
     virtual void RemoveAllTextures();
     virtual void RemoveAllShaders();
 
+    virtual void Clear();
+
     // method only accessable in the OpenGL function to access OpenGL specific information about the resources
     IResource& GetResource(const std::string& name);
 

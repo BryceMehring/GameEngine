@@ -44,8 +44,8 @@ public:
 	virtual int GetKeyDown() const = 0;
 
 	// returns true if you click, button is down
-	virtual bool MouseClick(int Button, bool once = true) const = 0;
-
+    virtual bool MouseClick(int Button, bool once = true) const = 0;
+    virtual bool MouseRelease(int Button, bool once = true) const = 0;
 
 	//gets the mouse position
 	virtual void MousePos(int& x, int& y) const = 0;
@@ -58,10 +58,7 @@ public:
 	virtual int MouseZ() const = 0; // scroll
 
 	// selection box; returns true if user clicks
-	virtual bool GetSelectedRect(Math::AABB& out) = 0;
-
-	// remove this
-	virtual void SetMouseState(MouseCursorState state) = 0; 
+	virtual bool GetSelectedRect(Math::AABB& out) = 0; 
 
 protected:
 

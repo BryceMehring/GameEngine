@@ -8,8 +8,7 @@
 SpriteEngine::SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
     m_pRM(pRm), m_pCamera(pCam), m_uiVertexBuffer(0), m_uiIndexBuffer(0), m_iCurrentLength(0), m_iMaxLength(maxLength)
 {
-    CreateIndexBuffer();
-    CreateVertexBuffer();
+    OnReset();
 }
 
 SpriteEngine::~SpriteEngine()
@@ -102,6 +101,12 @@ void SpriteEngine::FillVertexBuffer()
 
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
+}
+
+void SpriteEngine::OnReset()
+{
+    CreateIndexBuffer();
+    CreateVertexBuffer();
 }
 
 void SpriteEngine::Render()

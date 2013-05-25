@@ -41,12 +41,14 @@ public:
 	// Loads a texture
 	// id: uniqueID to be used
 	// file: img
+    // return: true if the texture was loaded, false on error
     virtual bool LoadTexture(const std::string& id, const std::string& file) = 0;
 
 	// loads a shader
 	// id: uniqueID to be used
 	// vert: vert shader file
 	// frag: frag shader file
+    // return: true if the shader was loaded, false on error
     virtual bool LoadShader(const std::string& id, const std::string& vert, const std::string& frag) = 0;
 
 	// return via parameter texture info for a stringID
@@ -54,9 +56,10 @@ public:
 	virtual bool GetTextureInfo(const std::string& id, TextureInfo& out) const = 0;
 
 	// todo: need to implement these, do not use
-	virtual void RemoveTexture(const std::string& id) = 0;
+    virtual void Clear() = 0;
+    /*virtual void RemoveTexture(const std::string& id) = 0;
 	virtual void RemoveAllTextures() = 0;
-	virtual void RemoveAllShaders() = 0;
+    virtual void RemoveAllShaders() = 0;*/
 
 };
 

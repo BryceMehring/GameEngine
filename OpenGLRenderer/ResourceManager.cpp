@@ -8,10 +8,7 @@ ResourceManager::ResourceManager()
 
 ResourceManager::~ResourceManager()
 {
-    for(auto iter = m_resources.begin(); iter != m_resources.end(); ++iter)
-    {
-        delete iter->second;
-    }
+    Clear();
 }
 
 bool ResourceManager::LoadTexture(const std::string& id, const std::string& file)
@@ -268,6 +265,16 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 	out.uiWidth = pTex->iWidth;
 
 }
+void ResourceManager::Clear()
+{
+    for(auto iter = m_resources.begin(); iter != m_resources.end(); ++iter)
+    {
+        delete iter->second;
+    }
+
+    m_resources.clear();
+}
+
 void ResourceManager::RemoveTexture(const std::string& name)
 {
 }

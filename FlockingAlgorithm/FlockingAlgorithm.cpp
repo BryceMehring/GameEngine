@@ -26,9 +26,8 @@ void ClampWrap(glm::vec3& pos)
 	}
 }
 
-extern "C" PLUGINDECL IPlugin* CreatePlugin(asIScriptEngine* p)
+extern "C" PLUGINDECL IPlugin* CreatePlugin()
 {
-    p->Release(); // todo: remove this
 	return new FlockingAlgorithm();
 }
 
@@ -181,18 +180,18 @@ void FlockingAlgorithm::Update(Game& game)
 {
 	glm::vec2 avgPos(0.0f,0.0f);
 
-    if(game.GetInput().MouseClick(0))
-	{
-		//m_birds[i] = new Bird();
-		Bird* pBird = new Bird(game.GetInput().GetTransformedMousePos());
-		m_birds.push_back(pBird);
-
-		m_pQuadtree->Insert(*pBird);
-	}
-
 	if(game.GetInput().KeyDown(KeyCode::ENTER))
 	{
 		ClearBirds();
+    }
+
+    if(game.GetInput().MouseClick(0))
+    {
+        //m_birds[i] = new Bird();
+        /*Bird* pBird = new Bird(game.GetInput().GetTransformedMousePos());
+        m_birds.push_back(pBird);
+
+        m_pQuadtree->Insert(*pBird);*/
     }
 
 	// O(n)
@@ -220,10 +219,10 @@ void FlockingAlgorithm::Draw(Game& game)
     angle += 3.0f*game.GetDt();
 
     glm::mat4 T = glm::translate(0.0f,0.0f,-50.0f);
-    glm::mat4 S = glm::scale(200.0f,200.0f,1.0f);
+    T = glm::scale(T,200.0f,200.0f,1.0f);
 
-    game.GetRenderer().DrawSprite("background",T*S);
-    game.GetRenderer().SetShaderValue("sprite","mousePos",game.GetInput().GetTransformedMousePos());
+    game.GetRenderer().DrawSprite("background",T);
+    game.GetRenderer().SetShaderValue("sprite","mousePos",game.GetInput().GetTransformedMousePos() / 100.0f);
 
     //m_pQuadtree->Render(game.GetRenderer());
 

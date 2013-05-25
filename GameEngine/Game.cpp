@@ -32,11 +32,18 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 
     m_plugins.SetAS(m_vm.GetScriptEngine());
     LoadAllDLL();
+
+   // this->m_pRenderer->ToggleFullscreen();
 	
     glfwDisable(GLFW_MOUSE_CURSOR);
     glfwDisable(GLFW_AUTO_POLL_EVENTS);
 
 	// todo: move this code somewhere else
+    //m_pRenderer->GetResourceManager().RemoveAllTextures();
+    //m_pRenderer->GetResourceManager().LoadResourceFile("base.r");
+
+    //m_pRenderer->ToggleFullscreen();
+
     m_pRenderer->GetResourceManager().LoadResourceFile("base.r");
 
 	// todo: init the scripting console somewhere else
@@ -113,6 +120,12 @@ void Game::Update()
 		m_NextState.clear();
 	}
 
+    if(m_pInput->KeyDown('A'))
+    {
+        m_pRenderer->ToggleFullscreen();
+        m_pRenderer->GetResourceManager().LoadResourceFile("base.r");
+    }
+
 	/*if(m_pInput->KeyDown(KeyCode::F11))
 	{
 		m_pRenderer->ToggleFullscreen();
@@ -153,8 +166,18 @@ void Game::Draw()
 {
 
     DrawFPS();
-    //DrawCursor();
+    DrawCursor();
     DrawSelectionRect();
+
+    if(m_pInput->MouseClick(0,false))
+    {
+        std::stringstream stream;
+        stream << m_pRenderer->GetDisplayModeStr(0) << endl;
+        stream << m_pInput->MouseZ();
+
+        m_pRenderer->DrawString(stream.str().c_str(),glm::vec2(20,-50),glm::vec2(3.0f));
+        //m_pRenderer->DrawString(m_pRenderer->GetDisplayModeStr(0).c_str(),glm::vec2(20,-60),glm::vec2(3.0f));
+    }
 		
 	if(m_bConsoleEnabled)
 	{
@@ -180,15 +203,15 @@ void Game::DrawFPS()
 	std::ostringstream out;
     out<<"FPS: " << GetFps() << endl << int(counter);
 
-    m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),0,glm::vec3(0.0f,1.0f,0.0f),glm::vec2(2.5f,2.5f));
-    m_pRenderer->DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,50),0,glm::vec3(1.0f),glm::vec2(2.5f));
+    m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),glm::vec2(2.5f),glm::vec3(0.0f,1.0f,0.0f));
+    m_pRenderer->DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,50),glm::vec2(2.5f),glm::vec3(1.0f));
 }
 
 void Game::DrawCursor()
 {
     static double counter = 6.0;
 
-    if(m_pInput->KeyUp(GLFW_KEY_ENTER))
+    if(m_pInput->MouseRelease(0))
         counter = 0.0f;
 
     if(counter < 5.0)

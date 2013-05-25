@@ -20,6 +20,6 @@ void main()
 	
 	// UV of the vertex. No special space for this one.
 	UV = vertexUV * vertexTiling;
-	pos = vec2(gl_Position.x,gl_Position.y);
+	pos = gl_Position.xy;
 }
 

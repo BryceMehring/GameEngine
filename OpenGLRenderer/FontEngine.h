@@ -38,6 +38,8 @@ public:
 
     void Render();
 
+    void OnReset();
+
 private:
 
 	ResourceManager* m_pRm;

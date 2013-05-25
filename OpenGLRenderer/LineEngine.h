@@ -23,6 +23,8 @@ public:
 
 	void Render();
 
+    void OnReset();
+
 private:
 
 	unsigned int m_uiVertexBuffer;

@@ -166,9 +166,10 @@ IPlugin* PluginManager::LoadDLL(const std::string& file)
     }
 		
 	// Create the plugin
-	m_pAS->AddRef();
-    dll.pPlugin = pFunct(m_pAS);
+    dll.pPlugin = pFunct();
     assert(dll.pPlugin != nullptr);
+
+    dll.pPlugin->Init(m_pAS);
 
 	// Get the type of the plugin
 	DLLType type = dll.pPlugin->GetPluginType();
@@ -196,6 +197,7 @@ IPlugin* PluginManager::LoadDLL(const std::string& file)
 
 void PluginManager::FreePlugin(const PluginInfo& plugin)
 {
+    plugin.pPlugin->Destroy(m_pAS);
     delete plugin.pPlugin;
 
 #ifdef _WIN32
