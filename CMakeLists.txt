@@ -120,15 +120,12 @@ set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../lib/)
 add_library(GameEngine STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCE})
 if(MSVC)
 	target_link_libraries(GameEngine ../glfw/lib-msvc100/glfwdll)
-	target_link_libraries(GameEngine ../angelscript/angelscript/lib/angelscriptd) # debug version
+	target_link_libraries(GameEngine debug ../angelscript/angelscript/lib/angelscriptd) # debug version
+	target_link_libraries(GameEngine optimized ../angelscript/angelscript/lib/angelscript) # release version
 else()
 	target_link_libraries(GameEngine glfw)
 	target_link_libraries(GameEngine angelscript)
 endif()
-
-
-
-
 
 
 # build the plugins
@@ -163,13 +160,22 @@ add_executable(GameLauncher ${GAMELAUNCHER_SOURCE})
 target_link_libraries(GameLauncher GameEngine)
 
 if(MSVC)
-		set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
-		set_target_properties(renderer PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
-		set_target_properties(input PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
-		set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
-		set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
+		set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
+		set_target_properties(renderer PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
+		set_target_properties(input PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
+		set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
+		set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
+
+		set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
+		set_target_properties(renderer PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
+		set_target_properties(input PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
+		set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
+		set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 else()
+	#Debug
     add_definitions( "-Wall -std=c++0x -msse2 -fno-rtti -m64 -g -fPIC" )
+
+	#Release
     #add_definitions( "-Wall -std=c++0x -msse2 -fno-rtti -m64 -O2 -fPIC" )
 endif()
 
