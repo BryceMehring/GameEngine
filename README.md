@@ -12,6 +12,8 @@ Set GameLauncher as the startup project, and build the solution.
 
 compile: `make`
 
+To run the game, the command line argument must be set to name of the Game Project that the Game Engine should load first.
+
 ==========
 
 The compiled output will be in the directory above the repository. So on windows for example, in Debug mode in visual studio, all of the output will be in Debug. 
