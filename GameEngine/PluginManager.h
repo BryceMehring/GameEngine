@@ -44,11 +44,12 @@ public:
 	const IPlugin* GetPlugin(DLLType type) const;
 	IPlugin* GetPlugin(DLLType type);
 
-	// Loads the file dll. 
+	// Loads the dll
 	// returns a valid plugin if loaded
 	// returns nullptr in the case of error
 	// Note: Each plugin must export: "IPlugin* CreatePlugin(asIScriptEngine* as)" used to create the plugin
-    IPlugin* LoadDLL(const std::string& file);
+	// The extension is not needed to be added to the string. On linux, there is no need to prefix the dll's with 'lib'
+	IPlugin* LoadDLL(const std::string& dllName);
 	
 	// Frees the plugin given
 	// todo: need to return if this function succeeded or not
@@ -61,7 +62,7 @@ public:
 	void SetAS(class asIScriptEngine* pAS) { m_pAS = pAS; }
 
 	// todo: need to implement this?
-	virtual void RegisterScript() {}
+	void RegisterScript() {}
 
 private:
 

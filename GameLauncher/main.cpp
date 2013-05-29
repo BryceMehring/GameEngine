@@ -8,39 +8,31 @@ using namespace std;
 
 struct MemChecker
 {
-    ~MemChecker()
-    {
-        cout<<"Alloc: " <<RefCounting::GetAddRefCount()<<endl;
-        cout<<"Dealloc: " <<RefCounting::GetAddReleaseCount()<<endl;
-        cout<<"Memory Leak: "<<(RefCounting::GetAddRefCount() != RefCounting::GetAddReleaseCount())<<endl;
-    }
+	~MemChecker()
+	{
+		cout<<"Alloc: " <<RefCounting::GetAddRefCount()<<endl;
+		cout<<"Dealloc: " <<RefCounting::GetAddReleaseCount()<<endl;
+		cout<<"Memory Leak: "<<(RefCounting::GetAddRefCount() != RefCounting::GetAddReleaseCount())<<endl;
+	}
 };
-
-void Function(int a)
-{
-	cout<<a<<endl;
-}
-
-
 
 int main(int size, char** cmd)
 {
-    /*if(size < 2)
+	if(size < 2)
 	{
 		cout<<"Invalid Number of command line arguments"<<endl;
-		cin.get();
 		return 1;
-    }*/
+	}
 
-    MemChecker checker;
-    const char* pState = "FlockingAlgorithm";
+	MemChecker checker;
+	const char* pState = cmd[1];
 
 	//unsigned int seed = FileManager::Instance().GetSeedFromLog();
 
-	// seed the random number generator 
+	// seed the random number generator
 	srand (time(0));
 
-    Game myGame;
-    myGame.SetNextState(pState);
-    return myGame.Run();
+	Game myGame;
+	myGame.SetNextState(pState);
+	return myGame.Run();
 }

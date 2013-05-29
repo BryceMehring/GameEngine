@@ -32,8 +32,8 @@ public:
 	// Sets the last state that was called with RemoveState()
 	void LoadPreviousState(class Game&);
 
-    // todo: this is kind of bugged here
-    bool HasState() const { return m_pCurrentState != nullptr; }
+	// todo: this is kind of bugged here
+	bool HasState() const { return m_pCurrentState != nullptr; }
 
 	IGameState& GetState() { return *m_pCurrentState; }
 	const IGameState& GetState() const { return *m_pCurrentState; }

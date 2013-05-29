@@ -24,9 +24,9 @@ public:
 	// pos = pos of camera
 	// target = where the camera should look
 	// up = which direction is up
-    void lookAt(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up);
+	void lookAt(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up);
 
-	// Creates a 2D ortho matrix 
+	// Creates a 2D ortho matrix
 	// w = width of the 2D field
 	// h = height of the 2D field
 	// nearZ = near clip plane
@@ -40,7 +40,7 @@ public:
 protected:
 
 	friend Camera* CreateCamera();
-	friend void ReleaseCamera(Camera*); 
+	friend void ReleaseCamera(Camera*);
 
 	Camera();
 	virtual ~Camera() {}

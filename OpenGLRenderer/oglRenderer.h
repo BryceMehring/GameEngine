@@ -22,7 +22,7 @@ class oglRenderer : public IRenderer
 {
 public:
 
-    oglRenderer();
+	oglRenderer();
 	virtual ~oglRenderer();
 
 	// IPlugin
@@ -30,8 +30,8 @@ public:
 	virtual const char* GetName() const;
 	virtual int GetVersion() const;
 
-    virtual void Init(class asIScriptEngine*);
-    virtual void Destroy(class asIScriptEngine*);
+	virtual void Init(class asIScriptEngine*);
+	virtual void Destroy(class asIScriptEngine*);
 
 	// IRenderer
 
@@ -51,23 +51,23 @@ public:
 	virtual void DrawLine(const glm::vec3* pArray, unsigned int length, const glm::vec4& color, const glm::mat4& t);
 
 	// Fonts
-	virtual void GetStringRec(const char* str, const glm::vec2& pos, const glm::vec2& scale, Math::FRECT& out);
+	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;
 
-    virtual void DrawString(const char* str, // the string that gets drawn
-                            const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
-                            const glm::vec2& scale = glm::vec2(1.0f), // size of the text
-                            const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
-                            const char* font = nullptr // the desired font, may be null if you wish to use the default font
-                            ); // world space
+	virtual void DrawString(const char* str, // the string that gets drawn
+							const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
+							const glm::vec2& scale = glm::vec2(1.0f), // size of the text
+							const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
+							const char* font = nullptr // the desired font, may be null if you wish to use the default font
+			); // world space
 
-    virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
-                            const glm::mat4& transformation, // transformation applied to the sprite
-                            const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
-                            unsigned int iCellId = 0 // cellId if multiple frames are stored together in the same sprite image
-                            );
+	virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
+							const glm::mat4& transformation, // transformation applied to the sprite
+							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
+							unsigned int iCellId = 0 // cellId if multiple frames are stored together in the same sprite image
+			);
 
-    virtual void SetShaderValue(const std::string& shader, const std::string& location, float value );
-    virtual void SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value );
+	virtual void SetShaderValue(const std::string& shader, const std::string& location, float value );
+	virtual void SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value );
 
 
 	virtual void SetCamera(class Camera*);
@@ -88,7 +88,7 @@ private:
 	ResourceManager m_rm;
 	FontEngine* m_pFonts;
 	LineEngine* m_pLines;
-    SpriteEngine* m_pSprites;
+	SpriteEngine* m_pSprites;
 
 	std::vector<GLFWvidmode> m_VideoModes;
 	std::vector<std::string> m_VideoModeStr;

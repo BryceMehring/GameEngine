@@ -8,81 +8,81 @@ using namespace std;
 
 extern "C" PLUGINDECL IPlugin* CreatePlugin()
 {
-    return new oglRenderer();
+	return new oglRenderer();
 }
 
 oglRenderer::oglRenderer() : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_pFonts(nullptr), m_bFullscreen(false)
 {
-    m_pCamera = CreateCamera();
-    m_pCamera->setLens(200.0f,200.0f,0.0f,5000.0f);
-    m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
-    m_pCamera->update(0.0f);
+	m_pCamera = CreateCamera();
+	m_pCamera->setLens(200.0f,200.0f,0.0f,5000.0f);
+	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pCamera->update(0.0f);
 
-    EnumerateDisplayAdaptors();
+	EnumerateDisplayAdaptors();
 
-    GLFWOpenWindowHints();
-    if(glfwOpenWindow( m_VideoModes[0].Width,
-                       m_VideoModes[0].Height,
-                       m_VideoModes[0].RedBits,
-                       m_VideoModes[0].GreenBits,
-                       m_VideoModes[0].BlueBits,
-                       8,24,0,GLFW_FULLSCREEN ) < 1) // // GLFW_WINDOW, GLFW_FULLSCREEN
+	GLFWOpenWindowHints();
+	if(glfwOpenWindow( m_VideoModes[0].Width,
+					   0,
+					   m_VideoModes[0].RedBits,
+					   m_VideoModes[0].GreenBits,
+					   m_VideoModes[0].BlueBits,
+					   8,24,0,GLFW_FULLSCREEN ) < 1) // // GLFW_WINDOW, GLFW_FULLSCREEN
 	{
-        glfwTerminate();
-        throw std::string("Failed to create window");
-    }
+		glfwTerminate();
+		throw std::string("Failed to create window");
+	}
 
-    int major, minor, rev;
-    glfwGetGLVersion(&major,&minor,&rev);
+	int major, minor, rev;
+	glfwGetGLVersion(&major,&minor,&rev);
 
-    cout<<"major: "<<major<<endl;
-    cout<<"minor: "<<minor<<endl;
-    cout<<"rev: "<<rev<<endl;
+	cout<<"major: "<<major<<endl;
+	cout<<"minor: "<<minor<<endl;
+	cout<<"rev: "<<rev<<endl;
 
-    glfwSwapInterval(1);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
+	glfwSwapInterval(1);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
-    //glfwDisable(GLFW_MOUSE_CURSOR);
+	//glfwDisable(GLFW_MOUSE_CURSOR);
 
-    // Initialize GLEW
-    glewExperimental=true; // Needed in core profile
-    if (glewInit() != GLEW_OK)
-    {
-        throw std::string("Failed to initialize GLEW");
-    }
+	// Initialize GLEW
+	glewExperimental=true; // Needed in core profile
+	if (glewInit() != GLEW_OK)
+	{
+		throw std::string("Failed to initialize GLEW");
+	}
 
-    m_pFonts = new FontEngine(&m_rm,1024,m_pCamera);
-    m_pLines = new LineEngine(&m_rm,1024*20,m_pCamera);
-    m_pSprites = new SpriteEngine(&m_rm,1024*20,m_pCamera);
+	m_pFonts = new FontEngine(&m_rm,1024*8,m_pCamera);
+	m_pLines = new LineEngine(&m_rm,1024*20,m_pCamera);
+	m_pSprites = new SpriteEngine(&m_rm,1024*20,m_pCamera);
 
 
 
-    //this->ToggleFullscreen();
+	//this->ToggleFullscreen();
 
 	//::glClearColor(1.0f,0.0f,0.0f,0.0f);
 }
 
 oglRenderer::~oglRenderer()
 {
-    delete m_pFonts;
-    delete m_pLines;
-    delete m_pSprites;
-    m_pCamera->Release();
-    m_pCamera = nullptr;
+	delete m_pFonts;
+	delete m_pLines;
+	delete m_pSprites;
+	m_pCamera->Release();
+	m_pCamera = nullptr;
 
-    glfwCloseWindow();
+	glfwCloseWindow();
 }
 
 void oglRenderer::Init(asIScriptEngine* pAS)
 {
-    // todo: implement this later
+	// todo: implement this later
 }
 
 void oglRenderer::Destroy(asIScriptEngine* pAS)
 {
-    // todo: implement this later
+	// todo: implement this later
 }
 
 DLLType oglRenderer::GetPluginType() const
@@ -100,28 +100,28 @@ int oglRenderer::GetVersion() const
 
 void oglRenderer::GLFWOpenWindowHints()
 {
-    glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
-    //glfwOpenWindowHint(GLFW_FSAA_SAMPLES,2);
-    glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2); // We want OpenGL 2.1
-    glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
+	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
+	//glfwOpenWindowHint(GLFW_FSAA_SAMPLES,2);
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2); // We want OpenGL 2.1
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
 }
 
 void oglRenderer::ClearScreen()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //glClear(GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void oglRenderer::Present()
 {
-    ClearScreen();
+	ClearScreen();
 
-    m_pLines->Render();
-    m_pSprites->Render();
-    m_pFonts->Render();
+	m_pLines->Render();
+	m_pSprites->Render();
+	m_pFonts->Render();
 
 
-    glfwSwapBuffers();
+	glfwSwapBuffers();
 }
 
 void oglRenderer::EnableVSync(bool enable)
@@ -177,7 +177,7 @@ const std::string& oglRenderer::GetDisplayModeStr(unsigned int i) const
 
 void oglRenderer::ToggleFullscreen()
 {
-    /*m_bFullscreen = !m_bFullscreen;
+	/*m_bFullscreen = !m_bFullscreen;
 
 	glfwCloseWindow();
 
@@ -185,18 +185,18 @@ void oglRenderer::ToggleFullscreen()
 
 	if(m_bFullscreen)
 	{
-        CreateWindow(m_VideoModes[m_uiCurrentDisplayMode].Width,
-                       m_VideoModes[m_uiCurrentDisplayMode].Height,GLFW_FULLSCREEN);
+		CreateWindow(m_VideoModes[m_uiCurrentDisplayMode].Width,
+					   m_VideoModes[m_uiCurrentDisplayMode].Height,GLFW_FULLSCREEN);
 	}
 	else
-    {
-        CreateWindow(800,600,GLFW_WINDOW);
-    }
+	{
+		CreateWindow(800,600,GLFW_WINDOW);
+	}
 
-    m_pFonts->OnReset();
-    m_pLines->OnReset();
-    m_pSprites->OnReset();
-    m_rm.Clear();*/
+	m_pFonts->OnReset();
+	m_pLines->OnReset();
+	m_pSprites->OnReset();
+	m_rm.Clear();*/
 
 }
 
@@ -205,9 +205,14 @@ IResourceManager& oglRenderer::GetResourceManager()
 	return m_rm;
 }
 
+void oglRenderer::GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const
+{
+	m_pFonts->GetStringRec(str,scale,out);
+}
+
 void oglRenderer::DrawString(const char* str, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color, const char* font)
 {
-    m_pFonts->DrawString(str,font,pos,scale,color);
+	m_pFonts->DrawString(str,font,pos,scale,color);
 }
 
 void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, const glm::vec4& color, const glm::mat4& T)
@@ -215,34 +220,29 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, const g
 	m_pLines->DrawLine(pArray,length,color,T);
 }
 
-void oglRenderer::GetStringRec(const char* str, const glm::vec2& pos, const glm::vec2& scale, Math::FRECT& out)
-{
-	// todo: implement
-}
-
 void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec2& tiling, unsigned int iCellId)
 {
-    m_pSprites->DrawSprite("sprite",texture,transformation,tiling,iCellId);
+	m_pSprites->DrawSprite("sprite",texture,transformation,tiling,iCellId);
 }
 
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value )
 {
-    IResource& resource = m_rm.GetResource(shader);
-    assert(resource.GetType() == Shad);
+	IResource& resource = m_rm.GetResource(shader);
+	assert(resource.GetType() == Shad);
 
-    Shader& resourceShader = static_cast<Shader&>(m_rm.GetResource(shader));
-    glUseProgram(resourceShader.id);
-    glUniform1f(resourceShader.uniforms[location],value);
+	Shader& resourceShader = static_cast<Shader&>(m_rm.GetResource(shader));
+	glUseProgram(resourceShader.id);
+	glUniform1f(resourceShader.uniforms[location],value);
 }
 
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value )
 {
-    IResource& resource = m_rm.GetResource(shader);
-    assert(resource.GetType() == Shad);
+	IResource& resource = m_rm.GetResource(shader);
+	assert(resource.GetType() == Shad);
 
-    Shader& resourceShader = static_cast<Shader&>(m_rm.GetResource(shader));
-    glUseProgram(resourceShader.id);
-    glUniform2f(resourceShader.uniforms[location],value.x,value.y);
+	Shader& resourceShader = static_cast<Shader&>(m_rm.GetResource(shader));
+	glUseProgram(resourceShader.id);
+	glUniform2f(resourceShader.uniforms[location],value.x,value.y);
 }
 
 void oglRenderer::SetCamera(class Camera*)

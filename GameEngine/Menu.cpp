@@ -7,11 +7,11 @@
 #include "GameConstants.h"
 
 #include <sstream>
+#include <iostream>
 #include <glm/gtx/transform.hpp>
+#include <GL/glfw.h>
 
 using namespace std;
-
-RTTI_IMPL(Menu);
 
 
 Menu::Menu() : m_pPrev(nullptr)
@@ -21,12 +21,12 @@ Menu::~Menu()
 {
 	for(unsigned int i = 0; i < m_elements.size(); ++i)
 	{
-		delete m_elements[i];
+		m_elements[i]->Release();
 	}
 
 	for(unsigned int i = 0; i < m_menus.size(); ++i)
 	{
-		delete m_menus[i];
+		m_menus[i]->Release();
 	}
 }
 void Menu::SetMenuTitle(const std::string& str,const glm::vec2& pos)
@@ -51,13 +51,14 @@ void Menu::AddElement(IUIElement* pElement)
 {
 	if(pElement != nullptr)
 	{
+		pElement->AddRef();
 		m_elements.push_back(pElement);
 	}
 }
 
 void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 {
-	if(input.KeyDown(ESCAPE))
+	if(input.KeyDown(GLFW_KEY_SPACE))
 	{
 		if(m_pPrev != nullptr)
 		{
@@ -65,18 +66,23 @@ void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 		}
 	}
 
-	// todo: fix this
-	if(input.KeyDown(TAB))
+	if(input.KeyDown(GLFW_KEY_TAB))
 	{
-		m_elements[pGUI->m_uiCurrentIndex]->Deselect();
-		pGUI->m_uiCurrentIndex = ((pGUI->m_uiCurrentIndex + 1) % m_elements.size());
-		m_elements[pGUI->m_uiCurrentIndex]->Select();
+		unsigned int index = pGUI->GetIndex();
+
+		m_elements[index]->Deselect();
+		index = (index + 1) % m_elements.size();
+		m_elements[index]->Select();
+
+		pGUI->SetIndex(index);
+
 	}
-	else if(input.KeyDown(ENTER))
+	else if(input.KeyDown(GLFW_KEY_ENTER))
 	{
-		if(pGUI->m_uiCurrentIndex < m_elements.size())
+		unsigned int index = pGUI->GetIndex();
+		if(index < m_elements.size())
 		{
-			m_elements[pGUI->m_uiCurrentIndex]->Trigger();
+			m_elements[index]->Trigger();
 		}
 	}
 	
@@ -95,13 +101,13 @@ void Menu::Render(IRenderer& renderer)
 	}
 }
 
-GUI::GUI(Menu* pMenu) : m_pMenu(pMenu), m_uiCurrentIndex(0), m_bSetMenu(false)
+GUI::GUI(Menu* pMenu) : m_pMenu(pMenu), m_uiCurrentIndex(0)
 {
 }
 
 GUI::~GUI()
 {
-	delete m_pMenu;
+	m_pMenu->Release();
 }
 
 GUI::ChangeMenuCallback GUI::CreateCallback()
@@ -111,17 +117,15 @@ GUI::ChangeMenuCallback GUI::CreateCallback()
 
 void GUI::Update(IKMInput& input, double dt)
 {
-	if(m_bSetMenu)
+	if(m_pMenu != nullptr)
 	{
-		m_bSetMenu = false;
+		m_pMenu->Update(this,input,dt);
 	}
-
-	m_pMenu->Update(this,input,dt);
 }
 
 void GUI::Render(IRenderer& renderer)
 {
-	if(m_pMenu)
+	if(m_pMenu != nullptr)
 	{
 		m_pMenu->Render(renderer);
 	}
@@ -131,25 +135,36 @@ void GUI::SetMenu(Menu* pMenu)
 {
 	if(pMenu != nullptr)
 	{
+		if(m_pMenu != nullptr)
+		{
+			m_pMenu->Release();
+		}
+
 		m_pMenu = pMenu;
-		m_bSetMenu = true;
+		m_pMenu->AddRef();
 		m_uiCurrentIndex = 0;
 	}
 }
 
+void GUI::SetIndex(unsigned int i)
+{
+	m_uiCurrentIndex = i;
+}
+
+unsigned int GUI::GetIndex() const
+{
+	return m_uiCurrentIndex;
+}
+
 Menu* GUI::GetMenu()
 {
+	m_pMenu->AddRef();
 	return m_pMenu;
 }
 
-ButtonBase::ButtonBase(const Math::Sprite& s, const std::string& str) :
-    m_sprite(s), m_text(str),  m_bMouseHover(false), m_bSelected(false)
+ButtonBase::ButtonBase(const Math::FRECT& s, const std::string& str) :
+	m_sprite(s), m_text(str),  m_bMouseHover(false), m_bSelected(false)
 {
-}
-
-ButtonBase::~ButtonBase()
-{
-	//delete m_pPolygon;
 }
 
 void ButtonBase::Update(IKMInput& input)
@@ -168,29 +183,19 @@ void ButtonBase::Update(IKMInput& input)
 
 void ButtonBase::Render(IRenderer& renderer)
 {
-	//TextureInfo buttonInfo;
-	//renderer.GetResourceManager().GetTextureInfo("button",buttonInfo);
-
-	float scale = (m_bMouseHover || m_bSelected) ? 1.5f : 1.0f;
+	float scale = (m_bMouseHover || m_bSelected) ? 3.5f : 3.0f;
 
 	glm::vec2 pos = m_sprite.Middle();
-	glm::mat4 S = glm::scale(m_sprite.Width() * scale,m_sprite.Height() * scale,1.0f);
 	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
+	T = glm::scale(T,m_sprite.Width(),m_sprite.Height(),1.0f);
 
-    renderer.DrawSprite("button",S*T);
-    renderer.DrawString(m_text.c_str(),glm::vec2(m_sprite.topLeft.x + 4.0f,pos.y),glm::vec2(scale,scale));
-
-
-	//renderer.Get2DRenderer().DrawString(m_name.name.c_str(),m_name.P,m_color);
-
-	//renderer.Get2DRenderer().DrawSprite(
-
-	//m_pPolygon->Render(renderer);
+	renderer.DrawSprite("button",T);
+	renderer.DrawString(m_text.c_str(),glm::vec2(pos.x - (m_sprite.Width() / 2.0f),pos.y),glm::vec2(scale / 2.0f,scale / 2.0f),glm::vec3(0.0f));
 }
 
 // textbox ctor
 TextBox::TextBox(const std::string& name, const glm::vec2& pos, float w, float h)
-: m_sprite(w,h,pos), m_spacePos(-1), m_fScrollTime(0.0), m_pos(-40.0f,40.0f)
+	: m_sprite(w,h,pos), m_spacePos(-1), m_fScrollTime(0.0), m_pos(-40.0f,40.0f)
 {
 	m_text.push_back(LineData());
 
@@ -226,9 +231,9 @@ void TextBox::Backspace()
 {
 	// reference to the line
 	std::string& text = m_text.back().line;
-	size_t size = text.size(); 
+	size_t size = text.size();
 
-	// if the current line has text to remove(excluding the '>')
+	// if the current line has text to remove
 	if(size > 0)
 	{
 		// remove last character
@@ -250,48 +255,27 @@ void TextBox::AddKey(char Key)
 
 void TextBox::Enter()
 {
-    Write(string(""),glm::vec3(1.0f));
+	Write(string(""),glm::vec3(1.0f));
 }
 
 void TextBox::Update(IKMInput& input, double dt)
 {
-	/*if(m_sprite.IsPointWithin(input.GetTransformedMousePos()))
-	{
-		input.SetMouseState(Beam);
-	}
-	else
-	{
-		input.SetMouseState(Default);
-	}*/
-
-
-	if(input.KeyDown(BACKSPACE))
+	if(input.KeyDown(GLFW_KEY_BACKSPACE))
 	{
 		Backspace();
 	}
-
-	if(input.KeyDown(ENTER))
+	else if(input.KeyDown(GLFW_KEY_ENTER))
 	{
 		Enter();
 	}
-
-	/*if(input.KeyDown(TAB))
+	else
 	{
-		// todo: fix this implementation
-		for(int i = 0; i < 3; ++i)
+		char inputChar;
+		if(input.CharKeyDown(inputChar))
 		{
-			AddKey(' ');
+			AddKey(inputChar);
 		}
-	}*/
-
-	if(input.IsKeyDown())
-	{
-		char key = input.GetKeyDown();
-		AddKey(key);
 	}
-
-	//m_carrotPos = this->m_text.back().P;
-	//m_carrotPos.x += m_text.back().line.size() * 8;
 
 	UpdateScrolling(input,dt);
 }
@@ -316,26 +300,20 @@ void TextBox::Render(IRenderer& renderer)
 
 	}*/
 
-    //glm::vec2 middle = m_sprite.Middle();
-    //glm::mat4 S = glm::scale(m_sprite.Width(),m_sprite.Height(),1.0f);
-    //glm::mat4 T = glm::translate(middle.x,middle.y,3000.0f);
+	//glm::vec2 middle = m_sprite.Middle();
+	//glm::mat4 S = glm::scale(m_sprite.Width(),m_sprite.Height(),1.0f);
+	//glm::mat4 T = glm::translate(middle.x,middle.y,3000.0f);
 
 	glm::vec2 pos = m_pos;
 
 	// Iterate across all lines
 	for(auto iter = m_text.begin(); iter != m_text.end(); ++iter)
 	{
-		LineData& data = *iter;
+		const LineData& data = *iter;
 
-		renderer.DrawString(">",pos);
+		renderer.DrawString(("> " + data.line).c_str(),pos,glm::vec2(2.0f),data.color);
 
-        // todo: fix this later
-        //renderer.DrawString((" " + data.line).c_str(),pos,0,data.color);
-
-		Math::FRECT R;
-		renderer.GetStringRec((/*"> " + */data.line).c_str(),::glm::vec2(0.0f,0.0f),glm::vec2(1.0f,1.0f),R);
-
-		pos.y -= R.Height();
+		pos.y -= 10.0f;
 	}
 }
 
@@ -343,13 +321,14 @@ void TextBox::UpdateScrolling(IKMInput& input, double dt)
 {
 	if(input.MouseClick(0,false))
 	{
-		//m_scrollSpeed = input.MouseY() / 8.0f;
+		m_pos.y = input.GetTransformedMousePos().y;
+
 		//lastPos = newPos;
 		//m_scrollSpeed = pInput->MousePos().y;// - this->m_text.back().P.y;
 	}
 	else
 	{
-		m_pos.y += 2.0f*input.MouseZ();
+		//m_pos.y += 2.0f*input.MouseZ();
 	}
 
 	// Scroll Text Box using MouseY
@@ -463,7 +442,7 @@ void ScriptingConsole::Enter()
 	}
 	else if(!IsBlocked())
 	{
-		// single command line 
+		// single command line
 
 		// wrap code into console.grab() so that we can display the output
 		string line = "console.write(" + backLine + ")";
@@ -559,3 +538,89 @@ void ScriptingConsole::RegisterScript()
 
 	asEngine->Release();
 }*/
+
+Slider::Slider(const glm::vec2& start, const glm::vec2& end, float min, float max, const DELEGATE& callback) :
+	m_start(start), m_end(end), m_fPercentage(min), m_callback(callback), m_bEnable(false), m_fMin(min), m_fMax(max)
+{
+	m_pos = m_start;
+	Trigger();
+}
+
+void Slider::Trigger()
+{
+	// todo: this could be moved somewhere else
+	float length = glm::length(m_end - m_start);
+
+	float distance = glm::length(m_start - m_pos);
+	m_fPercentage = (m_fMax - m_fMin) * distance / length + m_fMin;
+	m_callback.Call(m_fPercentage);
+}
+
+void Slider::Update(IKMInput& input, double dt)
+{
+	/*if(!m_bEnable)
+		return;*/
+
+	if(input.MouseClick(0,false))
+	{
+		// if the click is in the area of the slider
+		Math::FRECT R(m_end.x - m_start.x,8.0f,(m_end + m_start) / 2.0f);
+		const glm::vec2& mousePos = input.GetTransformedMousePos();
+		if(R.IsPointWithin(input.GetTransformedMousePos()))
+		{
+			// Move the slider to the mouse pos
+			m_pos.x = mousePos.x;
+			m_pos.x = glm::clamp(m_pos.x,m_start.x,m_end.x);
+
+			Trigger();
+
+		}
+	}
+
+	// todo: need to clean this up
+	/*bool bKeyLeft = input.KeyDown(GLFW_KEY_LEFT,false);
+	bool bKeyRight = !bKeyLeft && input.KeyDown(GLFW_KEY_RIGHT,false);
+
+	if(bKeyLeft || bKeyRight)
+	{
+		float length = glm::length(m_end - m_start);
+		glm::vec2 dir = m_end - m_start;
+		if(bKeyLeft)
+		{
+			dir.x *= -1.0f;
+		}
+		else
+		{
+			dir.x *= 1.0f;
+		}
+
+		m_pos += 0.1f * dir * glm::vec2(dt);
+		m_pos.x = glm::clamp(m_pos.x,m_start.x,m_end.x);
+
+		float distance = glm::length(m_start - m_pos);
+		m_fPercentage = (m_fMax - m_fMin) * distance / length + m_fMin;
+		m_callback.Call(m_fPercentage);
+	}*/
+}
+
+void Slider::Render(IRenderer& renderer)
+{
+	glm::vec3 line[2] =
+	{
+		glm::vec3(m_start.x,m_start.y,0.0f),
+		glm::vec3(m_end.x,m_end.y,0.0f)
+	};
+
+	glm::mat4 T = glm::translate(m_pos.x,m_pos.y,0.0f);
+	T = glm::scale(T,4.0f,4.0f,1.0f);
+
+	std::stringstream stream;
+	stream.precision(2);
+	stream << std::fixed << m_fPercentage << endl;
+
+	renderer.DrawSprite("cell",T);
+	renderer.DrawLine(line,2);
+	renderer.DrawString(stream.str().c_str(),glm::vec2((m_end.x + m_start.x) / 2.0f - 10.0f,m_end.y - 10.0f),glm::vec2(2.0f));
+
+
+}

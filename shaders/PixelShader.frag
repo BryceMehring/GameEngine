@@ -13,8 +13,8 @@ uniform vec2 mousePos;
 void main(){
 
 	// Output color = color of the texture at the specified UV
-	float value = 1.0f*cos(2200.5f*distance(pos,vec2(cos(scalarValue),sin(scalarValue))) - 20.5f*scalarValue) + 0.5f;
-	gl_FragColor = value * (texture2D( myTextureSampler, UV ));
+	//float value = 1.0f*cos(2200.5f*distance(pos,vec2(cos(scalarValue),sin(scalarValue))) - 20.5f*scalarValue) + 0.5f;
+	gl_FragColor = (texture2D( myTextureSampler, UV ));
 	//gl_FragColor.x = 0.5f*sin(5.5f*distance(pos,mousePos) - 10.5f*scalarValue);
 	//gl_FragColor.y = 0.5f*sin(5.5f*distance(pos,mousePos) - 10.5f*scalarValue);
 	//gl_FragColor.z = 

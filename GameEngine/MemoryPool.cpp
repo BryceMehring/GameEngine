@@ -29,7 +29,7 @@ void MemoryPool::FreePool()
 	// Iterate over all memory blocks and delete them
 	Node* pIter = m_pNodeHead;
 
-	while(pIter != nullptr) 
+	while(pIter != nullptr)
 	{
 		Node* pTemp = pIter;
 		pIter = pIter->pNext;
@@ -138,7 +138,7 @@ void MemoryPool::LinkMemoryBlock(char* pMem)
 	// iterator that iterates over the memory block, pMem
 	MemoryBlock* pIter = m_pNode->pMemoryBlock;
 
-	// Loop m_iLength - 1 times, since the first node in the list is 
+	// Loop m_iLength - 1 times, since the first node in the list is
 	// m_pNode->pMemoryBlock
 	for(unsigned int i = 1; i < m_iLength; ++i)
 	{
@@ -232,7 +232,7 @@ void MemoryPool::Insert(Node* pWhere, Node* pNode)
 	{
 		// insert in the front
 		pWhere->pPrevious = pNode;
-	
+
 		m_pNodeHead = m_pNodeHead->pPrevious; // Set m_pFirst to the new node
 	}
 	else
@@ -257,7 +257,7 @@ unsigned int MemoryPool::SortBlocks()
 		Node* pNext = pIter->pNext;
 		
 		// If the nodes are out of order
-		if((pNext->iSize > pIter->iSize)) 
+		if((pNext->iSize > pIter->iSize))
 		{
 			// Find the new node to insert after
 			Node* pPrevIter = pIter;
@@ -286,7 +286,7 @@ unsigned int MemoryPool::SortBlocks()
 
 void MemoryPool::Compact()
 {
-	 // Iterate over all memory blocks and delete them, if they are full, but leaves one free block
+	// Iterate over all memory blocks and delete them, if they are full, but leaves one free block
 	Node* pIter = m_pNodeHead;
 
 	while(pIter != nullptr)
@@ -294,19 +294,19 @@ void MemoryPool::Compact()
 		Node* pPrevious = pIter;
 		pIter = pIter->pNext;
 
-        if(pPrevious->iSize == m_iLength && pPrevious != m_pNodeHead)
-        {
-            pPrevious->pPrevious->pNext = pIter;
+		if(pPrevious->iSize == m_iLength && pPrevious != m_pNodeHead)
+		{
+			pPrevious->pPrevious->pNext = pIter;
 
-            if(pIter != nullptr)
-            {
-                pIter->pPrevious = pPrevious->pPrevious;
-            }
+			if(pIter != nullptr)
+			{
+				pIter->pPrevious = pPrevious->pPrevious;
+			}
 
-            operator delete(pPrevious);
+			operator delete(pPrevious);
 
-            m_iBlocks--;
-        }
+			m_iBlocks--;
+		}
 	}
 }
 

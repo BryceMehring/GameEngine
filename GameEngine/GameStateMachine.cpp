@@ -19,18 +19,13 @@ GameStateMachine::~GameStateMachine()
 
 void GameStateMachine::SetState(const std::string& state, Game& game)
 {
-    string path = "./";
-#ifdef _WIN32
-    path += state;
-#else
-    path += "lib" + state;
-#endif
 	//if(game.GetPM().Good(path.c_str()))
 	{
 		// remove current state
 		RemoveState(game);
 
-		IPlugin* pPlugin = game.GetPM().LoadDLL(path.c_str());
+		IPlugin* pPlugin = game.GetPM().LoadDLL(state);
+		assert(pPlugin != nullptr);
 
 		string resourcePath = "..\\" + string(pPlugin->GetName()) + "\\resource.r";
 		game.GetRenderer().GetResourceManager().LoadResourceFile(resourcePath);
@@ -49,8 +44,8 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 
 void GameStateMachine::RemoveState(Game& game)
 {
-	// If there is a state, 
-    if(m_pCurrentState != nullptr)
+	// If there is a state,
+	if(m_pCurrentState != nullptr)
 	{
 		m_stateStack.push(m_pCurrentState->GetType()->GetName());
 
@@ -58,7 +53,7 @@ void GameStateMachine::RemoveState(Game& game)
 		game.GetPM().FreePlugin(DLLType::GamePlugin);
 
 		// todo: need to mark some textures as being perminate between dlls
-        //game.GetRenderer().GetResourceManager().Clear();
+		//game.GetRenderer().GetResourceManager().Clear();
 	}
 }
 

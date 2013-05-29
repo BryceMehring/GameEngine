@@ -7,7 +7,7 @@
 struct LineVertex
 {
 	glm::vec3 pos;
-    glm::vec4 color;
+	glm::vec4 color;
 };
 
 class LineEngine
@@ -19,11 +19,11 @@ public:
 
 	void SetLineWidth(float width);
 
-    void DrawLine(const glm::vec3* pArray, unsigned int uiLength, const glm::vec4& color, const glm::mat4& T);
+	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, const glm::vec4& color, const glm::mat4& T);
 
 	void Render();
 
-    void OnReset();
+	void OnReset();
 
 private:
 
@@ -33,7 +33,7 @@ private:
 	Camera* m_pCamera;
 	ResourceManager* m_pRM;
 
-    std::vector<unsigned int> m_LineSubsets;
+	std::vector<unsigned int> m_LineSubsets;
 
 	void CreateVertexBuffer();
 

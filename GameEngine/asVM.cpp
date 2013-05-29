@@ -57,7 +57,7 @@ asVM::asVM() : m_iExeScript(0)
 }
 asVM::~asVM()
 {
-    m_pEngine->GarbageCollect();
+	m_pEngine->GarbageCollect();
 	// Release all contexts
 	for(unsigned int i = 0; i < m_scripts.size(); ++i)
 	{
@@ -66,8 +66,8 @@ asVM::~asVM()
 
 
 	// release the Script Engine
-    int num = m_pEngine->Release();
-    cout<<num<<endl;
+	int num = m_pEngine->Release();
+	cout<<num<<endl;
 }
 
 void asVM::Save() const
@@ -81,7 +81,7 @@ unsigned int asVM::BuildScriptFromFile(const string& file)
 	// todo: need to cache scripts if they are marked with "final"?
 	// todo: Need to implement Pre-compiled byte code
 	// todo: When a file is selected in the window, its full path is included in the string
-	// I could remove everything to the left of the last '\' to improve performance in 
+	// I could remove everything to the left of the last '\' to improve performance in
 	// searching the m_scriptIndex data structure.
 	//str.find_last_of();
 
@@ -115,14 +115,14 @@ unsigned int asVM::BuildScriptFromFile(const string& file)
 
 void asVM::RemoveScript(unsigned int id)
 {
-	// Remove from vector. not the most efficient data structure for this task. 
+	// Remove from vector. not the most efficient data structure for this task.
 
 	if(id != m_iExeScript)
 	{
 		vector<Script>::iterator iter = m_scripts.begin() + id;
-	
+
 		iter->pCtx->Release();
-	
+
 		m_scripts.erase(iter);
 	}
 }
@@ -146,7 +146,7 @@ void asVM::ExecuteScript(unsigned int scriptId)
 		DBAS(m_pEngine->WriteMessage("",0,0,asMSGTYPE_INFORMATION,stream.str().c_str()));
 
 		DBAS(s.pCtx->Prepare(s.pFunction));
-	
+
 		DBAS(s.pCtx->Execute());
 		DBAS(s.pCtx->Unprepare());
 	}
@@ -172,7 +172,7 @@ void asVM::ExecuteScriptFunction(const ScriptFunctionStruct& func)
 	{
 		Script s = m_scripts[func.iScriptIndex];
 		m_iExeScript = func.ifuncId; // todo: this might be bugged
-	
+
 		DBAS(s.pCtx->Prepare(s.pFunction));
 		DBAS(s.pCtx->Execute());
 		DBAS(s.pCtx->Unprepare());
@@ -187,9 +187,9 @@ void asVM::ExecuteScriptFunction(unsigned int scriptId, int funcId, char param)
 		m_iExeScript = scriptId;
 
 		DBAS(s.pCtx->Prepare(s.pFunction));
-	
+
 		DBAS(s.pCtx->SetArgByte(0,param));
-	
+
 		DBAS(s.pCtx->Execute());
 		DBAS(s.pCtx->Unprepare());
 	}
@@ -223,7 +223,7 @@ bool asVM::GoodScriptId(unsigned int id) const
 {
 	ScriptFunctionStruct func;
 
-	if( pFunc ) 
+	if( pFunc )
 	{
 		// Do something with the function
 		func.ifuncId = pFunc->GetId();
@@ -234,7 +234,7 @@ bool asVM::GoodScriptId(unsigned int id) const
 		with calling AddRef and Release. Since I didn't update this method, two Release's were
 		being called on the function, which brings the counter down to 0 and delete's it.
 		To fix the crash, we no longer call Release and AddRef anymore, AngelScript will
-		manage this for us. 
+		manage this for us.
 
 		AngelScript Version 2.21.0 - 2011/07/03
 		Date Found: 7/24/2011
@@ -358,14 +358,14 @@ void asVM::SendMessage(const std::string& msg) const
 void asVM::RegisterScript(ScriptingConsole* pTextBox)
 {
 	// logging output
-    //DBAS(m_pEngine->SetMessageCallback(asMETHOD(ScriptingConsole,MessageCallback),pTextBox,asCALL_THISCALL));
+	//DBAS(m_pEngine->SetMessageCallback(asMETHOD(ScriptingConsole,MessageCallback),pTextBox,asCALL_THISCALL));
 
 	//DBAS(m_pEngine->SetDefaultAccessMask(0xffffffff));
 
 	RegisterScriptMath(m_pEngine);
 	Math::RegisterScriptVecMath(m_pEngine);
 
-	// ============= Funcdefs ============= 
+	// ============= Funcdefs =============
 	DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));
 	DBAS(m_pEngine->RegisterFuncdef("void UintAppCallback(uint)"));
 	//DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));

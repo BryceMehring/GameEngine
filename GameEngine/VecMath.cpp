@@ -22,7 +22,7 @@ CCircle::CCircle(const Circle& circle) : m_circle(circle)
 
 bool CCircle::Intersects(const ICollisionPolygon& other) const
 {
-	// exclude collision with the same object 
+	// exclude collision with the same object
 	if(&other == this) { return true; }
 
 	// Get the type of the other object
@@ -31,19 +31,19 @@ bool CCircle::Intersects(const ICollisionPolygon& other) const
 
 	switch(polyType)
 	{
-		case ICollisionPolygon::CircleType:
-		{
-			const CCircle& circle = static_cast<const CCircle&>(other);
-			bSuccess = Math::Intersects(m_circle,circle.m_circle);
-			break;
-		}
+	case ICollisionPolygon::CircleType:
+	{
+		const CCircle& circle = static_cast<const CCircle&>(other);
+		bSuccess = Math::Intersects(m_circle,circle.m_circle);
+		break;
+	}
 
-		case ICollisionPolygon::RectangleType:
-		{
-			const CRectangle& rectangle = static_cast<const CRectangle&>(other);
-			bSuccess = Math::Intersects(m_circle,rectangle.GetRect());
-			break;
-		}
+	case ICollisionPolygon::RectangleType:
+	{
+		const CRectangle& rectangle = static_cast<const CRectangle&>(other);
+		bSuccess = Math::Intersects(m_circle,rectangle.GetRect());
+		break;
+	}
 	}
 
 	return bSuccess;
@@ -78,19 +78,19 @@ bool CRectangle::Intersects(const ICollisionPolygon& other) const
 
 	switch(polyType)
 	{
-		case ICollisionPolygon::CircleType:
-		{
-			const CCircle& circle = static_cast<const CCircle&>(other);
-			bSuccess = Math::Intersects(circle.GetCircle(),m_rect);
-			break;
-		}
+	case ICollisionPolygon::CircleType:
+	{
+		const CCircle& circle = static_cast<const CCircle&>(other);
+		bSuccess = Math::Intersects(circle.GetCircle(),m_rect);
+		break;
+	}
 
-		case ICollisionPolygon::RectangleType:
-		{
-			const CRectangle& rectangle = static_cast<const CRectangle&>(other);
-			bSuccess = Math::Intersects(m_rect,rectangle.m_rect);
-			break;
-		}
+	case ICollisionPolygon::RectangleType:
+	{
+		const CRectangle& rectangle = static_cast<const CRectangle&>(other);
+		bSuccess = Math::Intersects(m_rect,rectangle.m_rect);
+		break;
+	}
 	}
 
 	return bSuccess;
@@ -185,7 +185,7 @@ bool Intersects(const Circle& c1, const Circle& c2)
 bool Intersects(const FRECT& rect1, const FRECT& rect2)
 {
 	return (rect1.topLeft.x <= rect2.bottomRight.x && rect1.bottomRight.x >= rect2.topLeft.x &&
-    rect1.topLeft.y >= rect2.bottomRight.y && rect1.bottomRight.y <= rect2.topLeft.y);
+			rect1.topLeft.y >= rect2.bottomRight.y && rect1.bottomRight.y <= rect2.topLeft.y);
 }
 
 bool IsPointInPolygon(const glm::vec2* pArray, unsigned int length, const glm::vec2& P)
@@ -202,53 +202,53 @@ bool IsPointInPolygon(const glm::vec2* pArray, unsigned int length, const glm::v
 		j=i;
 	}
 
-	return oddNodes; 
+	return oddNodes;
 }
 
 bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly2)
 {
-    bool ret = true;
+	bool ret = true;
 
-    //For every face in c1
-    for(unsigned int i = 0; i < poly1.size() - 1; i++)
-    {
-        //Grab a face (face x, face y)
-        float fx = poly1[i].x - poly1[(i + 1) % (poly1.size() - 1)].x;
-        float fy = poly1[i].y - poly1[(i + 1) % (poly1.size() - 1)].y;
+	//For every face in c1
+	for(unsigned int i = 0; i < poly1.size() - 1; i++)
+	{
+		//Grab a face (face x, face y)
+		float fx = poly1[i].x - poly1[(i + 1) % (poly1.size() - 1)].x;
+		float fy = poly1[i].y - poly1[(i + 1) % (poly1.size() - 1)].y;
 
-        //Create a perpendicular axis to project on (axis x, axis y)
-        float ax = -fy, ay = fx;
+		//Create a perpendicular axis to project on (axis x, axis y)
+		float ax = -fy, ay = fx;
 
-        //Normalize the axis
-        float len_v = sqrt(ax * ax + ay * ay);
-        ax /= len_v;
-        ay /= len_v;
+		//Normalize the axis
+		float len_v = sqrt(ax * ax + ay * ay);
+		ax /= len_v;
+		ay /= len_v;
 
-        //Carve out the min and max values
-        float c1_min = FLT_MAX, c1_max = -FLT_MAX;
-        float c2_min = FLT_MAX, c2_max = -FLT_MAX;
+		//Carve out the min and max values
+		float c1_min = FLT_MAX, c1_max = -FLT_MAX;
+		float c2_min = FLT_MAX, c2_max = -FLT_MAX;
 
-        //Project every point in c1 on the axis and store min and max
-        for(unsigned int j = 0; j < poly1.size() - 1; j++)
-        {
-            float c1_proj = (ax * (poly1[j].x) + ay * (poly1[j].y)) / (ax * ax + ay * ay);
-            c1_min = glm::min(c1_proj, c1_min);
-            c1_max = glm::max(c1_proj, c1_max);
-        }
+		//Project every point in c1 on the axis and store min and max
+		for(unsigned int j = 0; j < poly1.size() - 1; j++)
+		{
+			float c1_proj = (ax * (poly1[j].x) + ay * (poly1[j].y)) / (ax * ax + ay * ay);
+			c1_min = glm::min(c1_proj, c1_min);
+			c1_max = glm::max(c1_proj, c1_max);
+		}
 
-        //Project every point in c2 on the axis and store min and max
-        for(unsigned int j = 0; j < poly2.size() - 1; j++)
-        {
-            float c2_proj = (ax * (poly2[j].x) + ay * (poly2[j].y)) / (ax * ax + ay * ay);
-            c2_min = glm::min(c2_proj, c2_min);
-            c2_max = glm::max(c2_proj, c2_max);
-        }
+		//Project every point in c2 on the axis and store min and max
+		for(unsigned int j = 0; j < poly2.size() - 1; j++)
+		{
+			float c2_proj = (ax * (poly2[j].x) + ay * (poly2[j].y)) / (ax * ax + ay * ay);
+			c2_min = glm::min(c2_proj, c2_min);
+			c2_max = glm::max(c2_proj, c2_max);
+		}
 
-        //Return if the projections do not overlap
-        if(!(c1_max >= c2_min && c1_min <= c2_max))
-            ret = false;
-    }
-    return ret;
+		//Return if the projections do not overlap
+		if(!(c1_max >= c2_min && c1_min <= c2_max))
+			ret = false;
+	}
+	return ret;
 }
 
 float GetRandFloat(float a, float b)

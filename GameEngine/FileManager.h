@@ -12,7 +12,7 @@ class FileManager : public Singleton<FileManager>
 {
 public:
 
-	// todo: a lot of these methods could be global functions 
+	// todo: a lot of these methods could be global functions
 
 	friend class Singleton<FileManager>;
 
@@ -23,12 +23,12 @@ public:
 	template< class T >
 	void WriteToLog(const T& data)
 	{
-        m_buffer << clock() / 1000.0f << ' ' << data << std::endl;
+		m_buffer << clock() / 1000.0f << ' ' << data << std::endl;
 	}
 
 	// Each line of the file gets passed to functor
 	template< class T >
-    bool ProccessFileByLine(const char* file, const T& functor) const
+	bool ProccessFileByLine(const char* file, const T& functor) const
 	{
 		std::fstream in(file,std::ios::in);
 
@@ -55,7 +55,7 @@ private:
 	std::ostringstream m_buffer;
 
 	// constructor
-    FileManager() {}
+	FileManager() {}
 
 	void WriteTime();
 };

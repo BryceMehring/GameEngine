@@ -17,17 +17,27 @@ struct AABB
 	glm::vec2 max;
 };
 
+class IPolygon
+{
+public:
+	virtual ~IPolygon() {}
+	virtual bool IsPointWithin(const glm::vec2& pos) const = 0;
+};
+
 // Basic rect, using floats
-struct FRECT
+struct FRECT : public IPolygon
 {
 	FRECT() {}
-	FRECT(const glm::vec2& topLeft, const glm::vec2& bottomRight) : topLeft(topLeft), bottomRight(bottomRight)
-	{
-	}
+
+	FRECT(const glm::vec2& topLeft, const glm::vec2& bottomRight) : topLeft(topLeft), bottomRight(bottomRight) {}
+
+	FRECT(float width, float height, const glm::vec2& center) :
+		topLeft(center.x - width / 2.0f,center.y + height / 2.0f),
+		bottomRight(center.x + width / 2.0f,center.y - height / 2.0f) {}
 
 	glm::vec2 Middle() const { return (topLeft + bottomRight) * 0.5f; }
 
-	bool IsPointWithin(const glm::vec2& pos) const
+	virtual bool IsPointWithin(const glm::vec2& pos) const
 	{
 		return (pos.x >= topLeft.x) && (pos.x <= bottomRight.x) && (pos.y >= bottomRight.y) && (pos.y <= topLeft.y);
 	}
@@ -58,14 +68,14 @@ struct FRECT
 };
 
 // Basic circle structure
-struct Circle
+struct Circle : public IPolygon
 {
 	Circle() {}
 	Circle(const glm::vec2& c, float r) : center(c), r(r)
 	{
 	}
 
-	bool IsPointWithin(const glm::vec2& pos) const
+	virtual bool IsPointWithin(const glm::vec2& pos) const
 	{
 		glm::vec2 temp = pos - center;
 		return (temp.x * temp.x + temp.y * temp.y) < (r*r);
@@ -100,16 +110,6 @@ unsigned int GetRandInt(unsigned int a, unsigned int b);
 bool InRange(float value, float min, float max);
 
 bool Equals(float a, float b, float diff = 0.0001f);
-
-unsigned int LOG2(unsigned int i);
-unsigned int LOG10(unsigned int i);
-
-bool IsPrime(unsigned int);
-
-std::string ConvertTo(unsigned int uiInputNumber, unsigned int uiTargetBase);
-
-unsigned int NumDigits(unsigned int uiNumber);
-
 
 // collision interface
 

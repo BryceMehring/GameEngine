@@ -13,7 +13,7 @@ using namespace std;
 // Input plug-in implementation
 extern "C" PLUGINDECL IPlugin* CreatePlugin()
 {
-    return new DirectInput();
+	return new DirectInput();
 }
 
 DirectInput* DirectInput::s_pThis = nullptr;
@@ -31,8 +31,8 @@ void GLFWCALL DirectInput::KeyCallback(int c, int action)
 {
 	if(s_pThis != nullptr)
 	{
-        s_pThis->m_iKeyDown = c;
-        s_pThis->m_iKeyAction = action;
+		s_pThis->m_iKeyDown = c;
+		s_pThis->m_iKeyAction = action;
 	}
 }
 
@@ -46,17 +46,16 @@ void GLFWCALL DirectInput::MouseCallback(int x, int y)
 
 void GLFWCALL DirectInput::MouseClickCallback(int button, int action)
 {
-    if(s_pThis != nullptr)
-    {
-        s_pThis->m_selectedPos = s_pThis->m_tpos;
-        s_pThis->m_MouseClickOnce[button] = action;
-    }
+	if(s_pThis != nullptr)
+	{
+		s_pThis->m_selectedPos = s_pThis->m_tpos;
+		s_pThis->m_MouseClickOnce[button] = action;
+	}
 }
 
 // DirectInput ctor
-DirectInput::DirectInput() : m_iMouseX(0), m_iMouseY(0), m_tpos(0.0f,0.0f)
+DirectInput::DirectInput() : m_iMouseX(0), m_iMouseY(0), m_fMouseSensistivity(100.0f), m_tpos(0.0f,0.0f)
 {
-	// todo: need to rework this: 
 	s_pThis = this;
 
 	Reset();
@@ -64,8 +63,10 @@ DirectInput::DirectInput() : m_iMouseX(0), m_iMouseY(0), m_tpos(0.0f,0.0f)
 	glfwSetCharCallback(CharCallback);
 	glfwSetKeyCallback(KeyCallback);
 	glfwSetMousePosCallback(MouseCallback);
-    glfwSetMouseButtonCallback(MouseClickCallback);
+	glfwSetMouseButtonCallback(MouseClickCallback);
 
+	glfwDisable(GLFW_AUTO_POLL_EVENTS);
+	glfwEnable(GLFW_MOUSE_CURSOR);
 	glfwEnable(GLFW_KEY_REPEAT);
 	glfwEnable(GLFW_STICKY_KEYS);
 
@@ -74,13 +75,13 @@ DirectInput::DirectInput() : m_iMouseX(0), m_iMouseY(0), m_tpos(0.0f,0.0f)
 
 void DirectInput::Init(asIScriptEngine* pAS)
 {
-    RegisterScript(pAS);
+	RegisterScript(pAS);
 }
 
 void DirectInput::Destroy(asIScriptEngine* pAS)
 {
-    // remove config group from script
-    pAS->RemoveConfigGroup("Input");
+	// remove config group from script
+	pAS->RemoveConfigGroup("Input");
 }
 
 int DirectInput::GetVersion() const
@@ -104,8 +105,9 @@ void DirectInput::CenterMouse()
 
 void DirectInput::Reset()
 {
-    m_MouseClickOnce[0] = m_MouseClickOnce[1] = -1;
-    m_iKeyAction = m_iKeyDown = -1;
+	m_MouseClickOnce[0] = m_MouseClickOnce[1] = -1;
+	m_iKeyAction = m_iKeyDown = -1;
+	m_iCharAction = m_iCharKeyDown = -1;
 }
 
 void DirectInput::UpdateMouse(int x, int y)
@@ -118,31 +120,31 @@ void DirectInput::UpdateMouse(int x, int y)
 	m_iMouseX = x - (width / 2);
 	m_iMouseY = -y + (height / 2);
 
-    m_tpos += 100.0f * glm::vec2(m_iMouseX / (float)width ,m_iMouseY / (float)height);
+	m_tpos += m_fMouseSensistivity * glm::vec2(m_iMouseX / (float)width ,m_iMouseY / (float)height);
 
 	CenterMouse();
-    ClampMouse();
+	ClampMouse();
 }
 
 void DirectInput::ClampMouse()
 {
-    if(m_tpos.x < -100.0f)
+	if(m_tpos.x < -100.0f)
 	{
-        m_tpos.x = -100.0f;
+		m_tpos.x = -100.0f;
 	}
-    else if(m_tpos.x > 100.0f)
+	else if(m_tpos.x > 100.0f)
 	{
-        m_tpos.x = 100.0f;
+		m_tpos.x = 100.0f;
 	}
 
-    if(m_tpos.y < -100.0f)
+	if(m_tpos.y < -100.0f)
 	{
-        m_tpos.y = -100.0f;
+		m_tpos.y = -100.0f;
 	}
-    else if(m_tpos.y > 100.0f)
+	else if(m_tpos.y > 100.0f)
 	{
-        m_tpos.y = 100.0f;
-    }
+		m_tpos.y = 100.0f;
+	}
 }
 
 void DirectInput::MousePos(int& x, int& y) const
@@ -161,29 +163,31 @@ bool DirectInput::KeyDown(int Key, bool once)
 }
 bool DirectInput::KeyUp(int Key, bool once)
 {
-    return once ? (m_iKeyAction == GLFW_RELEASE && m_iKeyDown == Key) : (glfwGetKey( Key ) == GLFW_RELEASE);
+	return once ? (m_iKeyAction == GLFW_RELEASE && m_iKeyDown == Key) : (glfwGetKey( Key ) == GLFW_RELEASE);
 }
-bool DirectInput::IsKeyDown() const
+bool DirectInput::CharKeyDown(char& out) const
 {
-    return m_iCharAction != -1 && m_iCharAction == GLFW_PRESS;
+	if(m_iCharKeyDown == -1 || m_iCharAction == GLFW_RELEASE)
+		return false;
+
+	out = m_iCharKeyDown;
+
+	return true;
 }
-int DirectInput::GetKeyDown() const
-{
-	return m_iCharKeyDown;
-}
+
 bool DirectInput::MouseClick(int iButton, bool once) const
 {
-    if(iButton > 1)
-        return false;
+	if(iButton > 1)
+		return false;
 
-    return (once ? (m_MouseClickOnce[iButton] == GLFW_PRESS) : glfwGetMouseButton(iButton) == GLFW_PRESS);
+	return (once ? (m_MouseClickOnce[iButton] == GLFW_PRESS) : glfwGetMouseButton(iButton) == GLFW_PRESS);
 }
 bool DirectInput::MouseRelease(int iButton, bool once) const
 {
-    if(iButton > 1)
-        return false;
+	if(iButton > 1)
+		return false;
 
-    return (once ? (m_MouseClickOnce[iButton] == GLFW_RELEASE) : glfwGetMouseButton(iButton) == GLFW_RELEASE);
+	return (once ? (m_MouseClickOnce[iButton] == GLFW_RELEASE) : glfwGetMouseButton(iButton) == GLFW_RELEASE);
 }
 int DirectInput::MouseX() const
 {
@@ -197,7 +201,7 @@ int DirectInput::MouseY() const
 
 int DirectInput::MouseZ() const
 {
-    return glfwGetMouseWheel();
+	return glfwGetMouseWheel();
 }
 
 bool DirectInput::GetSelectedRect(Math::AABB& out)
@@ -211,15 +215,20 @@ bool DirectInput::GetSelectedRect(Math::AABB& out)
 	return true;
 }
 
+void DirectInput::SetCursorSensitivity(float s)
+{
+	m_fMouseSensistivity = s;
+}
+
 void DirectInput::RegisterScript(asIScriptEngine* pAS)
 {
-    pAS->BeginConfigGroup("Input");
+	pAS->BeginConfigGroup("Input");
 
-    (pAS->RegisterObjectType("IKMInput",0,asOBJ_REF | asOBJ_NOHANDLE));
-    (pAS->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
-    (pAS->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
-    (pAS->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
-    (pAS->RegisterGlobalProperty("IKMInput input",this));
+	(pAS->RegisterObjectType("IKMInput",0,asOBJ_REF | asOBJ_NOHANDLE));
+	(pAS->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
+	(pAS->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
+	(pAS->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
+	(pAS->RegisterGlobalProperty("IKMInput input",this));
 
-    pAS->EndConfigGroup();
+	pAS->EndConfigGroup();
 }

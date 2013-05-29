@@ -7,16 +7,13 @@
 #include "IKMInput.h"
 #include "IRender.h"
 #include "IGameState.h"
-#include "Sprite.h"
-#include "RTTI.h"
+#include "RefCounting.h"
 
 #include <sstream>
 
-class IUIElement : public IRender
+class IUIElement : public IRender, public RefCounting
 {
 public:
-
-	virtual ~IUIElement() {}
 
 	virtual void Select() = 0;
 	virtual void Deselect() = 0;
@@ -26,8 +23,8 @@ public:
 
 protected:
 
-	class Menu* m_pMenu;
-	
+	virtual ~IUIElement() {}
+
 };
 
 // Buttons
@@ -35,11 +32,11 @@ class ButtonBase : public IUIElement
 {
 public:
 
-	ButtonBase(const Math::Sprite& s, const std::string& str);
-	virtual ~ButtonBase();
+	ButtonBase() {}
+	ButtonBase(const Math::FRECT& s, const std::string& str);
 
-	virtual void Render(class IRenderer&);
 	virtual void Update(class IKMInput&);
+	virtual void Render(class IRenderer&);
 
 	virtual void Select()
 	{
@@ -54,10 +51,14 @@ public:
 
 protected:
 
-	Math::Sprite m_sprite;
+	virtual ~ButtonBase() {}
+
+	Math::FRECT m_sprite;
 	std::string m_text;
 	bool m_bMouseHover;
 	bool m_bSelected;
+
+
 
 };
 
@@ -68,13 +69,13 @@ public:
 
 	typedef Delegate<void,T> DELEGATE;
 
-	GenericButton(const Math::Sprite& s, const std::string& str) : ButtonBase(s,str) {}
-	GenericButton(const Math::Sprite& s, const std::string& str, const DELEGATE& callback, const T& type) : ButtonBase(s,str), m_callback(callback), m_type(type)
+	GenericButton(const Math::FRECT& s, const std::string& str) : ButtonBase(s,str) {}
+	GenericButton(const Math::FRECT& s, const std::string& str, const DELEGATE& callback, const T& type) : ButtonBase(s,str), m_callback(callback), m_type(type)
 	{
 	}
 
 	void SetCallback(const DELEGATE& callback)
-	{ 
+	{
 		m_callback = callback;
 	}
 	void SetArg(const T& arg)
@@ -103,75 +104,11 @@ public:
 
 private:
 
+	virtual ~GenericButton() {}
+
 	DELEGATE m_callback;
 	T m_type;
 };
-
-
-// Todo: change the name of this class?
-class Menu : public IRender
-{
-public:
-
-	RTTI_DECL;
-
-	struct MenuItem
-	{
-		IUIElement* pTrigger;
-		Menu* pMenu;
-	};
-
-	Menu();
-	//Menu(const std::string& str);
-	~Menu();
-
-	virtual void Update(class GUI* pGUI, class IKMInput& input, double dt);
-	virtual void Render(class IRenderer& renderer);
-
-	void SetMenuTitle(const std::string& str,const glm::vec2& pos);
-
-	void AddMenu(Menu* pMenu, GenericButton<Menu*>* pElement, class GUI* pGUI);
-	void AddElement(IUIElement* pElement);
-
-private:
-
-	// data members
-	std::vector<IUIElement*> m_elements;
-	std::vector<Menu*> m_menus;
-	Menu * m_pPrev;
-
-	glm::vec2 m_pos;
-	std::string m_menuTitle;
-};
-
-
-class GUI : public IRender
-{
-public:
-
-	friend class Menu;
-
-	typedef Delegate<void,Menu*> ChangeMenuCallback;
-
-	explicit GUI(Menu* pMenu = nullptr);
-	~GUI();
-
-	ChangeMenuCallback CreateCallback();
-
-	void SetMenu(Menu* pMenu);
-	Menu* GetMenu();
-
-	void Update(class IKMInput& input, double dt);
-	void Render(class IRenderer& renderer);
-
-private:
-
-	Menu* m_pMenu;
-	unsigned int m_uiCurrentIndex;
-	bool m_bSetMenu;
-
-};
-
 
 template< class T >
 class GenericButton<T&> : public ButtonBase
@@ -180,20 +117,20 @@ public:
 
 	typedef Delegate<void,T&> DELEGATE;
 
-	GenericButton(const Math::Sprite& s, const std::string& str) : ButtonBase(s,str) {}
-	GenericButton(const Math::Sprite& s, const std::string& str, const DELEGATE& callback, const T& type) : ButtonBase(s,str), m_callback(callback), m_type(type)
+	GenericButton(const Math::FRECT& s, const std::string& str) : ButtonBase(s,str) {}
+	GenericButton(const Math::FRECT& s, const std::string& str, const DELEGATE& callback, const T& type) : ButtonBase(s,str), m_callback(callback), m_type(type)
 	{
 	}
 
 	void SetCallback(const DELEGATE& callback)
-	{ 
+	{
 		m_callback = callback;
 	}
 	void SetArg(const T& arg)
 	{
 		m_type = arg;
 	}
-	
+
 	virtual void Trigger()
 	{
 		m_callback.Call(m_type);
@@ -202,7 +139,7 @@ public:
 	{
 		ButtonBase::Update(input);
 
-		if(input.MouseClick(0))
+		if(input.MouseRelease(0))
 		{
 			const glm::vec2& pos = input.GetTransformedMousePos();
 
@@ -214,6 +151,8 @@ public:
 	}
 
 private:
+
+	virtual ~GenericButton() {}
 
 	DELEGATE m_callback;
 	T m_type;
@@ -226,13 +165,13 @@ public:
 
 	typedef Delegate<void,void> DELEGATE;
 
-	GenericButton(const Math::Sprite& s, const std::string& str) : ButtonBase(s,str) {}
-	GenericButton(const Math::Sprite& s, const std::string& str, const DELEGATE& callback) : ButtonBase(s,str), m_callback(callback)
+	GenericButton(const Math::FRECT& s, const std::string& str) : ButtonBase(s,str) {}
+	GenericButton(const Math::FRECT& s, const std::string& str, const DELEGATE& callback) : ButtonBase(s,str), m_callback(callback)
 	{
 	}
 
 	void SetCallback(const DELEGATE& callback)
-	{ 
+	{
 		m_callback = callback;
 	}
 
@@ -257,24 +196,75 @@ public:
 
 private:
 
+	virtual ~GenericButton() {}
+
 	DELEGATE m_callback;
 };
 
-/*template< class T >
-class SquareButton : public GenericButton<T>
+
+// Todo: change the name of this class?
+// Menu manages updating and drawing IUIElements on the current menu
+class Menu : public IRender, public RefCounting
 {
 public:
 
-	SquareButton(const RECT& R, const std::string& name)
-	{
-		Text text = {name,{R.left,R.top}};
-		this->SetPolygon(new DxSquare(R));
-		this->SetName(text);
-	}
+	Menu();
+
+	virtual void Update(class GUI* pGUI, class IKMInput& input, double dt);
+	virtual void Render(class IRenderer& renderer);
+
+	void SetMenuTitle(const std::string& str,const glm::vec2& pos);
+
+	// Adds a sub menu connected to this menu
+	void AddMenu(Menu* pMenu, GenericButton<Menu*>* pElement, class GUI* pGUI);
+
+	// Adds a gui element to this menu
+	void AddElement(IUIElement* pElement);
 
 private:
 
-};*/
+	~Menu();
+
+	std::vector<IUIElement*> m_elements; // A list of all gui elements in the menu
+	std::vector<Menu*> m_menus; // a list of all menus connected to this menu
+	Menu * m_pPrev; // The previous menu in the menu tree
+
+	glm::vec2 m_pos;
+	std::string m_menuTitle; // todo: is this needed?
+};
+
+// GUI class that the game will interface with.
+// The gui is a small wrapper around the Menu
+class GUI : public IRender
+{
+public:
+
+	typedef Delegate<void,Menu*> ChangeMenuCallback;
+
+	explicit GUI(Menu* pMenu = nullptr);
+	~GUI();
+
+	// Create a callback to change the menu
+	ChangeMenuCallback CreateCallback();
+
+	// Get/set the current menu in use
+	void SetMenu(Menu* pMenu);
+	Menu* GetMenu();
+
+	// Indexes index the current UI menu's elements via the tab key.
+	void SetIndex(unsigned int i);
+	unsigned int GetIndex() const;
+
+	void Update(class IKMInput& input, double dt);
+	void Render(class IRenderer& renderer);
+
+private:
+
+	Menu* m_pMenu;
+	unsigned int m_uiCurrentIndex;
+
+};
+
 
 // A basic ui textbox
 class TextBox : public IUIElement
@@ -285,7 +275,7 @@ public:
 	virtual ~TextBox();
 
 	// Enters a new line
-    void Write(const std::string& line, const glm::vec3& color, bool bContinue = false);
+	void Write(const std::string& line, const glm::vec3& color, bool bContinue = false);
 	
 	virtual void Update(IKMInput&, double dt);
 	virtual void Render(IRenderer&);
@@ -304,19 +294,19 @@ protected:
 	struct LineData
 	{
 		LineData() {}
-        LineData(const std::string& str, const glm::vec3& color, const Math::FRECT& R,bool c)
-		: line(str), R(R), color(color), bContinue(c)
+		LineData(const std::string& str, const glm::vec3& color, const Math::FRECT& R,bool c)
+			: line(str), R(R), color(color), bContinue(c)
 		{
 
 		}
 
 		std::string line;
 		Math::FRECT R;
-        glm::vec3 color;
-		bool bContinue; 
+		glm::vec3 color;
+		bool bContinue;
 	};
 
-//private:
+	//private:
 
 	// ===== Data members =====
 
@@ -325,7 +315,7 @@ protected:
 	typedef std::vector<LineData> TextDataType;
 	TextDataType m_text;
 
-	Math::Sprite m_sprite;
+	Math::FRECT m_sprite;
 
 	unsigned int m_spacePos;
 	
@@ -334,7 +324,7 @@ protected:
 	//POINT m_carrotPos;
 	bool m_drawCarrot;
 
-    //float m_fCarrotTime;
+	//float m_fCarrotTime;
 	double m_fScrollTime;
 
 	glm::vec2 m_pos;
@@ -343,7 +333,7 @@ protected:
 protected:
 	virtual void Backspace();
 	virtual void Enter();
-	virtual void AddKey(char Key); 
+	virtual void AddKey(char Key);
 private:
 
 	// todo: passing around these interfaces seems redundant
@@ -384,7 +374,7 @@ protected:
 
 	// helper functions
 
-	bool IsBlocked() const; 
+	bool IsBlocked() const;
 
 	template< class T >
 	void _Grab(const T& p)
@@ -410,19 +400,35 @@ class Slider : public IUIElement
 {
 public:
 
-	virtual void Select();
-	virtual void Deselect();
+	typedef Delegate<void,float> DELEGATE;
+
+	Slider(const glm::vec2& start,
+		   const glm::vec2& end,
+		   float min, float max, const DELEGATE& callback);
+
+	virtual void Select() { m_bEnable = true; }
+	virtual void Deselect() { m_bEnable = false; }
 	virtual void Trigger();
-	virtual void Render(IRenderer&);
 
 	virtual void Update(class IKMInput&, double dt);
+	virtual void Render(IRenderer&);
 
 private:
 
+	virtual ~Slider() {}
+
+	// todo: reduce the number of member variables
+	glm::vec2 m_pos;
+	glm::vec2 m_start;
+	glm::vec2 m_end;
+	float m_fPercentage;
+	float m_fMin;
+	float m_fMax;
+	bool m_bEnable;
+	DELEGATE m_callback;
 	std::string m_SpriteTexture;
 
 };
-
 
 
 #endif

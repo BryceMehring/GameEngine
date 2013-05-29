@@ -6,7 +6,7 @@
 
 Timer::Timer() : m_fStart(0.0), m_fEnd(0.0)
 {
-    Reset();
+	Reset();
 }
 
 void Timer::Start()
@@ -21,17 +21,17 @@ void Timer::Stop()
 	PollCounter(m_fEnd);
 }
 
- // Stops the timer if it's active and resets all
-    // of the Timer's members to their initial values.
+// Stops the timer if it's active and resets all
+// of the Timer's members to their initial values.
 void Timer::Reset()
 {
-    if (_Active)
-        Stop();
+	if (_Active)
+		Stop();
 
-    glfwSetTime(0.0);
-    _Active = false;
+	glfwSetTime(0.0);
+	_Active = false;
 }
- 
+
 // Returns the time elapsed since Start() was called
 // in micro-seconds
 double Timer::GetTime()
@@ -49,6 +49,6 @@ bool Timer::IsActive() const
 
 void Timer::PollCounter(double& Out)
 {
-   Out = glfwGetTime();
+	Out = glfwGetTime();
 }
 

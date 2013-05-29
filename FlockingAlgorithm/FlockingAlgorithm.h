@@ -6,6 +6,7 @@
 #include "IGameState.h"
 #include "RTTI.h"
 #include "QuadTree.h"
+#include "Menu.h"
 
 class Bird : public ISpatialObject
 {
@@ -38,12 +39,12 @@ class FlockingAlgorithm : public IGameState
 {
 public:
 
-    RTTI_DECL;
+	RTTI_DECL;
 
 	virtual DLLType GetPluginType() const { return GamePlugin; }
 	virtual const char* GetName() const { return "FlockingAlgorithm"; }
 	virtual int GetVersion() const { return 0; }
- 
+
 	// displays a info box about the plug-in
 	virtual void About() const {}
 
@@ -53,16 +54,19 @@ public:
 	virtual void Update(class Game& game);
 	virtual void Draw(class Game& game);
 
-    virtual void Init(class asIScriptEngine*) {}
-    virtual void Destroy(class asIScriptEngine*) {}
+	virtual void Init(class asIScriptEngine*) {}
+	virtual void Destroy(class asIScriptEngine*) {}
 
-    void ClearBirds();
+	void ClearBirds();
+	void MouseCallback(float);
 
 private:
 
 	std::vector<Bird*> m_birds;
 
 	QuadTree* m_pQuadtree;
+
+	GUI m_gui;
 
 	float m_fFlockAngle;
 

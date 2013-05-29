@@ -9,8 +9,8 @@
 
 #define RTTI_DECL \
 	public: \
-		static const RTTI s_rtti; \
-		virtual const RTTI* GetType() const { return &s_rtti; }
+	static const RTTI s_rtti; \
+	virtual const RTTI* GetType() const { return &s_rtti; }
 
 #define RTTI_IMPL(name) \
 	const RTTI name::s_rtti(#name);

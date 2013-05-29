@@ -16,20 +16,29 @@ void SerializedState::Load(asVM& vm)
 {
 	vm.SendMessage(m_file + " Config loaded");
 
-	// open the file
-	FileManager::Instance().ProccessFileByLine(m_file.c_str(),[&](const string& line)
+	/*auto lambdaFunction = [&](const string& line)
 	{
-		if(line.empty() == false)
-		{
-			// Add the code to the map, and exec the code. 
-			// note: the script code gets executed even if the line did not get inserted into the map
-			// note: this allows for the potential for script code to be executed during the loading of a state.
-			BuildMap(line);
+			if(line.empty() == false)
+				{
+
+			}
+	};*/
+
+
+	// open the file
+	/*FileManager::Instance().ProccessFileByLine(m_file.c_str(),[&](const string& line)
+	{
+											   if(line.empty() == false)
+	{
+											   // Add the code to the map, and exec the code.
+											   // note: the script code gets executed even if the line did not get inserted into the map
+											   // note: this allows for the potential for script code to be executed during the loading of a state.
+											   BuildMap(line);
 
 			vm.ExecuteScript(line,0);
-			vm.SendMessage(line.c_str());
-		}
-	});
+	vm.SendMessage(line.c_str());
+}
+});*/
 }
 
 void SerializedState::SaveMap() const
@@ -50,14 +59,14 @@ void SerializedState::BuildMap(const string& line)
 {
 	unsigned int uiCounter = 0;
 	string variables[2];
-	stringstream stream(line); 
+	stringstream stream(line);
 
 	while(stream && uiCounter < 2)
 	{
 		if(!getline(stream,variables[uiCounter],'=')) { break; }
 
 		string& ref = variables[uiCounter];
-        ref.erase(remove_if(ref.begin(), ref.end(),::isspace), ref.end());
+		ref.erase(remove_if(ref.begin(), ref.end(),::isspace), ref.end());
 
 		++uiCounter;
 	}

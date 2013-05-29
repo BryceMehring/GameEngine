@@ -37,8 +37,11 @@ class IFunction : public RefCounting
 {
 public:
 
-    virtual ~IFunction() {}
-    virtual RETURN Call(PARAM) const = 0;
+	virtual RETURN Call(PARAM) const = 0;
+
+protected:
+
+	virtual ~IFunction() {}
 
 };
 
@@ -47,8 +50,11 @@ class IFunction<RETURN,void> : public RefCounting
 {
 public:
 
-    virtual ~IFunction() {}
-    virtual RETURN Call() const = 0;
+	virtual RETURN Call() const = 0;
+
+protected:
+
+	virtual ~IFunction() {}
 
 };
 
@@ -58,19 +64,19 @@ class GlobalFunction : public IFunction<RETURN,PARAM>
 {
 public:
 
-    // global function signature
-    typedef RETURN (*PTR)(PARAM);
+	// global function signature
+	typedef RETURN (*PTR)(PARAM);
 
-    GlobalFunction(PTR function) : m_function(function) {}
+	GlobalFunction(PTR function) : m_function(function) {}
 
-    virtual RETURN Call(PARAM param) const
-    {
-        return (*m_function)(param);
-    }
+	virtual RETURN Call(PARAM param) const
+	{
+		return (*m_function)(param);
+	}
 
 private:
 
-    PTR m_function;
+	PTR m_function;
 
 };
 
@@ -79,18 +85,18 @@ class GlobalFunction<RETURN,void> : public IFunction<RETURN,void>
 {
 public:
 
-    typedef RETURN (*PTR)();
+	typedef RETURN (*PTR)();
 
-    GlobalFunction(PTR function) : m_function(function) {}
+	GlobalFunction(PTR function) : m_function(function) {}
 
-    virtual RETURN Call() const
-    {
-        return (*m_function)();
-    }
+	virtual RETURN Call() const
+	{
+		return (*m_function)();
+	}
 
 private:
 
-    PTR m_function;
+	PTR m_function;
 
 };
 
@@ -100,20 +106,20 @@ class MemberFunction : public IFunction<RETURN,PARAM>
 {
 public:
 
-    // class method signature
-    typedef RETURN (CLASS::*PTR)(PARAM);
+	// class method signature
+	typedef RETURN (CLASS::*PTR)(PARAM);
 
-    MemberFunction(CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
+	MemberFunction(CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
 
-    virtual RETURN Call(PARAM param) const
-    {
-        return (m_pThis->*m_method)(param);
-    }
+	virtual RETURN Call(PARAM param) const
+	{
+		return (m_pThis->*m_method)(param);
+	}
 
 private:
 
-    CLASS* m_pThis;
-    PTR m_method;
+	CLASS* m_pThis;
+	PTR m_method;
 
 };
 
@@ -122,19 +128,19 @@ class MemberFunction<CLASS,RETURN,void> : public IFunction<RETURN,void>
 {
 public:
 
-    typedef RETURN (CLASS::*PTR)();
+	typedef RETURN (CLASS::*PTR)();
 
-    MemberFunction(CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
+	MemberFunction(CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
 
-    virtual RETURN Call() const
-    {
-        return (m_pThis->*m_method)();
-    }
+	virtual RETURN Call() const
+	{
+		return (m_pThis->*m_method)();
+	}
 
 private:
 
-    CLASS* m_pThis;
-    PTR m_method;
+	CLASS* m_pThis;
+	PTR m_method;
 
 };
 
@@ -144,20 +150,20 @@ class ConstMemberFunction : public IFunction<RETURN,PARAM>
 {
 public:
 
-    // class method signature
-    typedef RETURN (CLASS::*PTR)(PARAM) const;
+	// class method signature
+	typedef RETURN (CLASS::*PTR)(PARAM) const;
 
-    ConstMemberFunction(const CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
+	ConstMemberFunction(const CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
 
-    virtual RETURN Call(PARAM param) const
-    {
-        return (m_pThis->*m_method)(param);
-    }
+	virtual RETURN Call(PARAM param) const
+	{
+		return (m_pThis->*m_method)(param);
+	}
 
 private:
 
-    const CLASS* m_pThis;
-    PTR m_method;
+	const CLASS* m_pThis;
+	PTR m_method;
 
 };
 
@@ -166,19 +172,19 @@ class ConstMemberFunction<CLASS,RETURN,void> : public IFunction<RETURN,void>
 {
 public:
 
-    typedef RETURN (CLASS::*PTR)() const;
+	typedef RETURN (CLASS::*PTR)() const;
 
-    ConstMemberFunction(const CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
+	ConstMemberFunction(const CLASS* pThis,PTR method) : m_pThis(pThis), m_method(method) {}
 
-    virtual RETURN Call() const
-    {
-        return (m_pThis->*m_method)();
-    }
+	virtual RETURN Call() const
+	{
+		return (m_pThis->*m_method)();
+	}
 
 private:
 
-    const CLASS* m_pThis;
-    PTR m_method;
+	const CLASS* m_pThis;
+	PTR m_method;
 
 };
 
@@ -193,54 +199,54 @@ class DelegateBase
 {
 public:
 
-     DelegateBase() : m_ptr(nullptr) {}
-     ~DelegateBase()
-     {
-         Unbind();
-     }
+	DelegateBase() : m_ptr(nullptr) {}
+	~DelegateBase()
+	{
+		Unbind();
+	}
 
-     DelegateBase(const DelegateBase& d)
-     {
-         CopyConstruct(d);
-     }
+	DelegateBase(const DelegateBase& d)
+	{
+		CopyConstruct(d);
+	}
 
-     void Unbind()
-     {
-         if(m_ptr != nullptr)
-         {
-             m_ptr->Release();
-             m_ptr = nullptr;
-         }
-     }
+	void Unbind()
+	{
+		if(IsBound())
+		{
+			m_ptr->Release();
+			m_ptr = nullptr;
+		}
+	}
 
-     bool IsBound() { return m_ptr != nullptr; }
+	bool IsBound() const { return m_ptr != nullptr; }
 
-     DelegateBase& operator =(const DelegateBase& d)
-     {
-         if(this != &d)
-         {
-             // Release old pointer
-             Unbind();
+	DelegateBase& operator =(const DelegateBase& d)
+	{
+		if(this != &d)
+		{
+			// Release old pointer
+			Unbind();
 
-             // copy the new pointer
-             CopyConstruct(d);
-         }
+			// copy the new pointer
+			CopyConstruct(d);
+		}
 
-         return *this;
-     }
+		return *this;
+	}
 
 protected:
 
-     IFunction<RETURN,PARAM>* m_ptr;
+	IFunction<RETURN,PARAM>* m_ptr;
 
-     void CopyConstruct(const DelegateBase& d)
-     {
-         m_ptr = d.m_ptr;
-         if(m_ptr != nullptr)
-         {
-             m_ptr->AddRef();
-         }
-     }
+	void CopyConstruct(const DelegateBase& d)
+	{
+		m_ptr = d.m_ptr;
+		if(IsBound())
+		{
+			m_ptr->AddRef();
+		}
+	}
 
 };
 
@@ -251,56 +257,56 @@ class Delegate : public DelegateBase<RETURN,PARAM>
 {
 public:
 
-    using DelegateBase<RETURN,PARAM>::m_ptr;
+	using DelegateBase<RETURN,PARAM>::m_ptr;
 
-    Delegate() {}
-    Delegate(typename GlobalFunction<RETURN,PARAM>::PTR pFunc)
-    {
-        Bind(pFunc);
-    }
+	Delegate() {}
+	Delegate(typename GlobalFunction<RETURN,PARAM>::PTR pFunc)
+	{
+		Bind(pFunc);
+	}
 
-    template< class T >
-    Delegate(T* pThis, RETURN (T::*pFunc)(PARAM))
-    {
-        Bind(pThis,pFunc);
-    }
+	template< class T >
+	Delegate(T* pThis, RETURN (T::*pFunc)(PARAM))
+	{
+		Bind(pThis,pFunc);
+	}
 
-    template< class T >
-    Delegate(const T* pThis, RETURN (T::*pFunc)(PARAM) const)
-    {
-        Bind(pThis,pFunc);
-    }
+	template< class T >
+	Delegate(const T* pThis, RETURN (T::*pFunc)(PARAM) const)
+	{
+		Bind(pThis,pFunc);
+	}
 
-    void Bind(typename GlobalFunction<RETURN,PARAM>::PTR pFunc)
-    {
-        if(m_ptr == nullptr)
-        {
-            m_ptr = new GlobalFunction<RETURN,PARAM>(pFunc);
-        }
-    }
+	void Bind(typename GlobalFunction<RETURN,PARAM>::PTR pFunc)
+	{
+		if(m_ptr == nullptr)
+		{
+			m_ptr = new GlobalFunction<RETURN,PARAM>(pFunc);
+		}
+	}
 
-    template< class T >
-    void Bind(T* pThis, RETURN (T::*pFunc)(PARAM))
-    {
-        if(m_ptr == nullptr)
-        {
-            m_ptr = new MemberFunction<T,RETURN,PARAM>(pThis,pFunc);
-        }
-    }
+	template< class T >
+	void Bind(T* pThis, RETURN (T::*pFunc)(PARAM))
+	{
+		if(m_ptr == nullptr)
+		{
+			m_ptr = new MemberFunction<T,RETURN,PARAM>(pThis,pFunc);
+		}
+	}
 
-    template< class T >
-    void Bind(const T* pThis, RETURN (T::*pFunc)(PARAM) const)
-    {
-        if(m_ptr == nullptr)
-        {
-            m_ptr = new ConstMemberFunction<T,RETURN,PARAM>(pThis,pFunc);
-        }
-    }
+	template< class T >
+	void Bind(const T* pThis, RETURN (T::*pFunc)(PARAM) const)
+	{
+		if(m_ptr == nullptr)
+		{
+			m_ptr = new ConstMemberFunction<T,RETURN,PARAM>(pThis,pFunc);
+		}
+	}
 
-    RETURN Call(PARAM param) const
-    {
-        return this->m_ptr->Call(param);
-    }
+	RETURN Call(PARAM param) const
+	{
+		return this->m_ptr->Call(param);
+	}
 
 };
 
@@ -310,56 +316,56 @@ class Delegate<RETURN,void> : public DelegateBase<RETURN,void>
 {
 public:
 
-    using DelegateBase<RETURN,void>::m_ptr;
+	using DelegateBase<RETURN,void>::m_ptr;
 
-    Delegate() {}
-    Delegate(typename GlobalFunction<RETURN,void>::PTR pFunc)
-    {
-        Bind(pFunc);
-    }
+	Delegate() {}
+	Delegate(typename GlobalFunction<RETURN,void>::PTR pFunc)
+	{
+		Bind(pFunc);
+	}
 
-    template< class T >
-    Delegate(T* pThis, RETURN (T::*pFunc)())
-    {
-        Bind(pThis,pFunc);
-    }
+	template< class T >
+	Delegate(T* pThis, RETURN (T::*pFunc)())
+	{
+		Bind(pThis,pFunc);
+	}
 
-    template< class T >
-    Delegate(const T* pThis, RETURN (T::*pFunc)() const)
-    {
-        Bind(pThis,pFunc);
-    }
+	template< class T >
+	Delegate(const T* pThis, RETURN (T::*pFunc)() const)
+	{
+		Bind(pThis,pFunc);
+	}
 
-    void Bind(typename GlobalFunction<RETURN,void>::PTR pFunc)
-    {
-        if(m_ptr == nullptr)
-        {
-            m_ptr = new GlobalFunction<RETURN,void>(pFunc);
-        }
-    }
+	void Bind(typename GlobalFunction<RETURN,void>::PTR pFunc)
+	{
+		if(m_ptr == nullptr)
+		{
+			m_ptr = new GlobalFunction<RETURN,void>(pFunc);
+		}
+	}
 
-    template< class T >
-    void Bind(T* pThis, RETURN (T::*pFunc)())
-    {
-        if(m_ptr == nullptr)
-        {
-            m_ptr = new MemberFunction<T,RETURN,void>(pThis,pFunc);
-        }
-    }
+	template< class T >
+	void Bind(T* pThis, RETURN (T::*pFunc)())
+	{
+		if(m_ptr == nullptr)
+		{
+			m_ptr = new MemberFunction<T,RETURN,void>(pThis,pFunc);
+		}
+	}
 
-    template< class T >
-    void Bind(const T* pThis, RETURN (T::*pFunc)() const)
-    {
-        if(m_ptr == nullptr)
-        {
-            m_ptr = new ConstMemberFunction<T,RETURN,void>(pThis,pFunc);
-        }
-    }
+	template< class T >
+	void Bind(const T* pThis, RETURN (T::*pFunc)() const)
+	{
+		if(m_ptr == nullptr)
+		{
+			m_ptr = new ConstMemberFunction<T,RETURN,void>(pThis,pFunc);
+		}
+	}
 
-    RETURN Call() const
-    {
-        return this->m_ptr->Call();
-    }
+	RETURN Call() const
+	{
+		return this->m_ptr->Call();
+	}
 };
 
 
@@ -371,38 +377,38 @@ class EventBase
 {
 public:
 
-    typedef Delegate<RETURN,PARAM> DELEGATE;
+	typedef Delegate<RETURN,PARAM> DELEGATE;
 
-    EventBase() : m_iId(0) {}
+	EventBase() : m_iId(0) {}
 
-    // adds a Delegate to the map and returns its key.
-    int Attach(const DELEGATE& d)
-    {
-        unsigned int id = m_iId;
-        auto iter = m_delegates.find(m_iId);
+	// adds a Delegate to the map and returns its key.
+	int Attach(const DELEGATE& d)
+	{
+		unsigned int id = m_iId;
+		auto iter = m_delegates.find(m_iId);
 
-        while(iter != m_delegates.end())
-        {
-            id = ++m_iId;
-            iter = m_delegates.find(m_iId);
-        }
+		while(iter != m_delegates.end())
+		{
+			id = ++m_iId;
+			iter = m_delegates.find(m_iId);
+		}
 
-        m_delegates.insert(std::make_pair(m_iId++,d));
+		m_delegates.insert(std::make_pair(m_iId++,d));
 
-        return id;
-    }
-    // Detaches a delegate by its key
-    void Detach(int id)
-    {
-        m_delegates.erase(id);
-    }
+		return id;
+	}
+	// Detaches a delegate by its key
+	void Detach(int id)
+	{
+		m_delegates.erase(id);
+	}
 
 protected:
 
-    typedef std::map<int,DELEGATE> DelegateMap;
+	typedef std::map<int,DELEGATE> DelegateMap;
 
-    DelegateMap m_delegates;
-    int m_iId;
+	DelegateMap m_delegates;
+	int m_iId;
 };
 
 // Event with parameters
@@ -411,16 +417,16 @@ class Event : public EventBase<RETURN,PARAM>
 {
 public:
 
-    using EventBase<RETURN,PARAM>::m_delegates;
+	using EventBase<RETURN,PARAM>::m_delegates;
 
-    // Notify all delegates
-    void Notify(PARAM a)
-    {
-        for(auto iter = m_delegates.begin(); iter != m_delegates.end(); iter++)
-        {
-            iter->second.Call(a);
-        }
-    }
+	// Notify all delegates
+	void Notify(PARAM a)
+	{
+		for(auto iter = m_delegates.begin(); iter != m_delegates.end(); iter++)
+		{
+			iter->second.Call(a);
+		}
+	}
 };
 
 // Event without parameters
@@ -429,15 +435,15 @@ class Event<RETURN,void> : public EventBase<RETURN,void>
 {
 public:
 
-    using EventBase<RETURN,void>::m_delegates;
+	using EventBase<RETURN,void>::m_delegates;
 
-    void Notify()
-    {
-        for(auto iter = m_delegates.begin(); iter != m_delegates.end(); iter++)
-        {
-            iter->second.Call();
-        }
-    }
+	void Notify()
+	{
+		for(auto iter = m_delegates.begin(); iter != m_delegates.end(); iter++)
+		{
+			iter->second.Call();
+		}
+	}
 };
 
 #endif // _DELEGATES_

@@ -15,9 +15,9 @@ void ReleaseCamera(Camera* pCam)
 }
 
 Camera::Camera() : m_View(1.0f), m_Proj(1.0f),
- m_ViewProj(1.0f), m_PosW(0.0f), m_RightW(0.0f),
- m_UpW(0.0f), m_LookW(0.0f),
- m_width(0.0f), m_height(0.0f)
+	m_ViewProj(1.0f), m_PosW(0.0f), m_RightW(0.0f),
+	m_UpW(0.0f), m_LookW(0.0f),
+	m_width(0.0f), m_height(0.0f)
 {
 }
 
@@ -61,7 +61,7 @@ void Camera::setLens(float w, float h, float nearZ, float farZ)
 {
 	m_width = w;
 	m_height = h;
-    m_Proj = glm::ortho(-m_width/2,m_width/2,-m_height/2,m_height/2,nearZ,farZ);
+	m_Proj = glm::ortho(-m_width/2,m_width/2,-m_height/2,m_height/2,nearZ,farZ);
 }
 
 void Camera::setDir(const glm::vec3& dir)

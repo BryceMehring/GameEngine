@@ -8,7 +8,7 @@ class IGameState : public IPlugin
 {
 public:
 
-    IGameState() {}
+	IGameState() {}
 
 	// Called only once when the plugin is created
 	virtual void Init(class Game& game) = 0;
@@ -16,13 +16,13 @@ public:
 	// Called only once when the plugin is destroyed
 	virtual void Destroy(class Game& game) = 0;
 
-	// Called every frame to update the date of the game 
+	// Called every frame to update the date of the game
 	virtual void Update(class Game& game) = 0;
 
 	// Called every frame to render the game
 	virtual void Draw(class Game& game) = 0;
 
-    virtual const class RTTI* GetType() const = 0;
+	virtual const class RTTI* GetType() const = 0;
 
 protected:
 

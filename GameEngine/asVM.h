@@ -94,7 +94,7 @@ private:
 
 	typedef Delegate<void,void> asDelegate;
 
-	// interfaces 
+	// interfaces
 	asIScriptEngine* m_pEngine;
 
 	// m_iExeScript is the script that is currently being executed. This variable is
@@ -113,7 +113,7 @@ private:
 	void ListFunctions();
 	bool GoodScriptId(unsigned int id) const; // returns true if the id is valid
 
-	// called from the script, 
+	// called from the script,
 	//asDelegate GetFunc(asIScriptFunction* func);
 
 	//class VoidDelegate CreateDelegate(ScriptFunction func) const;

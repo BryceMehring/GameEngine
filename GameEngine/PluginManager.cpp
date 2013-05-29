@@ -30,7 +30,7 @@ PluginManager::PluginManager() : m_pAS(nullptr)
 PluginManager::~PluginManager()
 {
 	FreeAllPlugins();
-    m_pAS->Release();
+	m_pAS->Release();
 }
 
 void PluginManager::FreeAllPlugins()
@@ -118,24 +118,24 @@ IPlugin* PluginManager::GetPlugin(DLLType type)
 
 IPlugin* PluginManager::LoadDLL(const std::string& file)
 {
-    PluginInfo dll;
-    dll.mod = 0;
-    dll.pPlugin = 0;
+	PluginInfo dll;
+	dll.mod = 0;
+	dll.pPlugin = 0;
 
-    string dllFile = file;
+	string dllFile = "./";
 
 #ifdef _WIN32
-    dllFile += ".dll";
-    dll.mod = LoadLibrary(dllFile.c_str());
+	dllFile += file + ".dll";
+	dll.mod = LoadLibrary(dllFile.c_str());
 #else
-    dllFile += ".so";
-    dll.mod = dlopen(dllFile.c_str(),RTLD_NOW);
+	dllFile += "lib" + file + ".so";
+	dll.mod = dlopen(dllFile.c_str(),RTLD_NOW);
 #endif
 
 	// todo: fix the error handling here
 	if(dll.mod == nullptr)
 	{
-        cout << "Cannot open library: ";
+		cout << "Cannot open library: ";
 #ifdef _WIN32
 		cout << GetLastError() << endl;
 #else
@@ -163,13 +163,13 @@ IPlugin* PluginManager::LoadDLL(const std::string& file)
 #endif
 
 		return nullptr;
-    }
-		
-	// Create the plugin
-    dll.pPlugin = pFunct();
-    assert(dll.pPlugin != nullptr);
+	}
 
-    dll.pPlugin->Init(m_pAS);
+	// Create the plugin
+	dll.pPlugin = pFunct();
+	assert(dll.pPlugin != nullptr);
+
+	dll.pPlugin->Init(m_pAS);
 
 	// Get the type of the plugin
 	DLLType type = dll.pPlugin->GetPluginType();
@@ -186,7 +186,6 @@ IPlugin* PluginManager::LoadDLL(const std::string& file)
 	}
 	else
 	{
-
 		// insert plugin into hash table
 		m_plugins.insert(make_pair(type,dll));
 	}
@@ -197,8 +196,8 @@ IPlugin* PluginManager::LoadDLL(const std::string& file)
 
 void PluginManager::FreePlugin(const PluginInfo& plugin)
 {
-    plugin.pPlugin->Destroy(m_pAS);
-    delete plugin.pPlugin;
+	plugin.pPlugin->Destroy(m_pAS);
+	delete plugin.pPlugin;
 
 #ifdef _WIN32
 	FreeLibrary((HMODULE)plugin.mod);

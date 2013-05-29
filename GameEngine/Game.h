@@ -36,16 +36,16 @@ class Game
 {
 public:
 
-	// Init GLFW, load dlls, load the base resource file 
+	// Init GLFW, load dlls, load the base resource file
 	Game();
 
 	// Destroy everything
 	~Game();
 
-    // Get the current state
+	// Get the current state
 	const std::string& GetCurrentState() const;
 
-    // change the current state
+	// change the current state
 	void SetNextState(const std::string& state);
 
 	// ignore, working on this

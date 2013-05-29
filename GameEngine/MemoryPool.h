@@ -13,18 +13,18 @@ public:
 
 	/*
 
-	if delete is not called on a object, memory will not be leaked, 
+	if delete is not called on a object, memory will not be leaked,
 	only its destructor will not be called.
 
-	In the constructor, the MemoryPool builds the linked list from 
+	In the constructor, the MemoryPool builds the linked list from
 	the contiguous memory block.
 
 	When memory is needed, it is returned from the front of the list, then
-	the node is removed from the list. If needed, another equally sized 
+	the node is removed from the list. If needed, another equally sized
 	memory block will be allocated and linked to the previous block.
 
-	When the memory is deleted, it will be added to the front of the linked 
-	list. 
+	When the memory is deleted, it will be added to the front of the linked
+	list.
 
 	Each pool will have a pointer allocated at the beginning of each object
 	to link it with the correct pool when deallocating.
@@ -61,7 +61,7 @@ private:
 
 	struct Node;
 
-	struct MemoryBlock 
+	struct MemoryBlock
 	{
 		Node* pNode;
 
@@ -86,7 +86,7 @@ private:
 	// friend access to access private data structures
 	friend void BDelete(void* p);
 
-	// ========== Data Members ========== 
+	// ========== Data Members ==========
 	Node* m_pNode; // points to the current node
 	Node* m_pNodeHead; // points to the first node
 	Node* m_pNodeTail; // points to the last node
@@ -100,7 +100,7 @@ private:
 
 	// Checks if the current node has free space
 	void CheckNextNodeForMemory();
-	bool FreeSpace(Node* pNode) const; 
+	bool FreeSpace(Node* pNode) const;
 
 	// for adding & moving nodes around
 	void Move(Node* pTo, Node* pNode);
