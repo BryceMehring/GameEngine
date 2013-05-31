@@ -131,15 +131,20 @@ add_executable(GameLauncher ${GAMELAUNCHER_SOURCE})
 target_link_libraries(GameLauncher GameEngine)
 
 if(MSVC)
-	target_link_libraries(GameEngine ../glfw/lib-msvc100/glfwdll)
+	if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 10")
+		target_link_libraries(GameEngine ../glfw/lib-msvc100/glfwdll)
+		target_link_libraries(renderer ../glfw/lib-msvc100/glfwdll)
+		target_link_libraries(input ../glfw/lib-msvc100/glfwdll)
+	elseif(${CMAKE_GENERATOR} STREQUAL "Visual Studio 11")
+		target_link_libraries(GameEngine ../glfw/lib-msvc110/glfwdll)
+		target_link_libraries(renderer ../glfw/lib-msvc110/glfwdll)
+		target_link_libraries(input ../glfw/lib-msvc110/glfwdll)
+	endif()
 	target_link_libraries(GameEngine debug ../angelscript/angelscript/lib/angelscriptd) # debug version
 	target_link_libraries(GameEngine optimized ../angelscript/angelscript/lib/angelscript) # release version
 	
 	target_link_libraries(renderer ../glew/lib/glew32)
-	target_link_libraries(renderer ../glfw/lib-msvc100/glfwdll)
 	target_link_libraries(renderer opengl32)
-	
-	target_link_libraries(input ../glfw/lib-msvc100/glfwdll)
 	
 	# compile flags
 	set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
