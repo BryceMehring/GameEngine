@@ -11,6 +11,9 @@
 
 #include <sstream>
 
+namespace UI
+{
+
 class IUIElement : public IRender, public RefCounting
 {
 public:
@@ -433,5 +436,7 @@ private:
 
 };
 
+} // UI namespace
 
-#endif
+
+#endif // _MENU_

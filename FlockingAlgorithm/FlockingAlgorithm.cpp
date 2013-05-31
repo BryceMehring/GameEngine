@@ -139,7 +139,7 @@ void FlockingAlgorithm::Init(Game& game)
 		m_pQuadtree->Insert(*m_birds[i]);
 	}
 
-	Menu* pMenu = new Menu();
+	UI::Menu* pMenu = new UI::Menu();
 
 	const char* buttonText = "ClearBirds";
 
@@ -147,13 +147,13 @@ void FlockingAlgorithm::Init(Game& game)
 	game.GetRenderer().GetStringRec(buttonText,glm::vec2(3.0f),clearRect); // todo: need to fix this
 	clearRect = glm::vec2(80.0f,80.0f);
 
-	GenericButton<void>* pClearButton = new GenericButton<void>(clearRect,buttonText);
+	UI::GenericButton<void>* pClearButton = new UI::GenericButton<void>(clearRect,buttonText);
 
-	Slider::DELEGATE sliderCallback;
+	UI::Slider::DELEGATE sliderCallback;
 	sliderCallback.Bind(this,&FlockingAlgorithm::SliderCallback);
-	Slider* pSlider = new Slider(glm::vec2(-90.0f,-80.0f),glm::vec2(90.0f,-80.0f),10.0f,50.0f,"cell",sliderCallback);
+	UI::Slider* pSlider = new UI::Slider(glm::vec2(-90.0f,-80.0f),glm::vec2(90.0f,-80.0f),10.0f,50.0f,"cell",sliderCallback);
 
-	GenericButton<void>::DELEGATE clearCallback;
+	UI::GenericButton<void>::DELEGATE clearCallback;
 	clearCallback.Bind(this,&FlockingAlgorithm::ClearBirds);
 	pClearButton->SetCallback(clearCallback);
 

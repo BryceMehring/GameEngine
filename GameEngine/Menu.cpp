@@ -13,6 +13,8 @@
 
 using namespace std;
 
+namespace UI
+{
 
 Menu::Menu() : m_pPrev(nullptr)
 {
@@ -623,3 +625,5 @@ float Slider::GetValue() const
 {
 	return m_fPercentage;
 }
+
+} // UI namespace

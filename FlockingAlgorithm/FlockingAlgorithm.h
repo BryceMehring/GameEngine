@@ -66,7 +66,7 @@ private:
 
 	QuadTree* m_pQuadtree;
 
-	GUI m_gui;
+	UI::GUI m_gui;
 
 	float m_fSliderValue;
 
