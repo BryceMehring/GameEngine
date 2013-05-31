@@ -54,11 +54,8 @@ Bird::Bird(const glm::vec2& pos)
 	m_CollisionCircle.GetCircle().r = 6.0f;
 }
 
-void Bird::Update(QuadTree& tree, const glm::vec2& avgPos, double dt)
+void Bird::Update(QuadTree& tree, const glm::vec2& avgPos, float v, double dt)
 {
-	// time complexity of QueryNearObjects
-	// Log4(N)
-
 	std::vector<ISpatialObject*> nearBirds;
 	tree.QueryNearObjects(GetCollisionPolygon(),nearBirds,this);
 
@@ -100,7 +97,7 @@ void Bird::Update(QuadTree& tree, const glm::vec2& avgPos, double dt)
 	//dir.x += ::Math::GetRandFloat(0.0f,100.0f);
 	//dir.y += ::Math::GetRandFloat(0.0f,100.0f);
 	dir = glm::normalize(dir);
-	m_pos += dir * glm::vec3(20.0f) * glm::vec3(dt);
+	m_pos += dir * glm::vec3(v) * glm::vec3(dt);
 
 	float angleDiff = atan2(-dir.x,dir.y) - m_fAngle;
 	m_fAngle += angleDiff * 5.0f * dt; // this is the problem
@@ -110,21 +107,6 @@ void Bird::Update(QuadTree& tree, const glm::vec2& avgPos, double dt)
 	tree.Insert(*this);
 
 	ClampWrap(m_pos);
-	/*D3DXVECTOR3 dir(-sin(m_fAngle),cos(m_fAngle),0.0f);
-
-	m_pos += dir * 10.0f * dt;
-
-	D3DXMATRIX R, T;
-	D3DXMatrixTranslation(&T,m_pos.x,m_pos.y,m_pos.z);
-	D3DXMatrixRotationZ(&R,m_fAngle);
-
-	m_Transformation = R * T;
-
-	tree.Erase(*this);
-	m_CollisionCircle.GetCircle().center = ::D3DXVECTOR2(m_pos.x,m_pos.y);
-	tree.Insert(*this);
-
-	ClampWrap(m_pos);*/
 }
 
 void Bird::Render(IRenderer& renderer)
@@ -157,8 +139,6 @@ void FlockingAlgorithm::Init(Game& game)
 		m_pQuadtree->Insert(*m_birds[i]);
 	}
 
-	m_fFlockAngle = Math::GetRandFloat(0.0f,6.2832f);
-
 	Menu* pMenu = new Menu();
 
 	const char* buttonText = "ClearBirds";
@@ -170,8 +150,8 @@ void FlockingAlgorithm::Init(Game& game)
 	GenericButton<void>* pClearButton = new GenericButton<void>(clearRect,buttonText);
 
 	Slider::DELEGATE sliderCallback;
-	sliderCallback.Bind(&game.GetInput(),&IKMInput::SetCursorSensitivity);
-	Slider* pSlider = new Slider(glm::vec2(-90.0f,-80.0f),glm::vec2(90.0f,-80.0f),10.0f,50.0f,sliderCallback);
+	sliderCallback.Bind(this,&FlockingAlgorithm::SliderCallback);
+	Slider* pSlider = new Slider(glm::vec2(-90.0f,-80.0f),glm::vec2(90.0f,-80.0f),10.0f,50.0f,"cell",sliderCallback);
 
 	GenericButton<void>::DELEGATE clearCallback;
 	clearCallback.Bind(this,&FlockingAlgorithm::ClearBirds);
@@ -204,6 +184,12 @@ void FlockingAlgorithm::ClearBirds()
 
 	m_birds.clear();
 }
+
+void FlockingAlgorithm::SliderCallback(float p)
+{
+	m_fSliderValue = p;
+}
+
 void FlockingAlgorithm::Update(Game& game)
 {
 	glm::vec2 avgPos(0.0f,0.0f);
@@ -226,7 +212,7 @@ void FlockingAlgorithm::Update(Game& game)
 	// O(n*log4(n))
 	for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
-		m_birds[i]->Update(*m_pQuadtree,avgPos,game.GetDt());
+		m_birds[i]->Update(*m_pQuadtree,avgPos,m_fSliderValue,game.GetDt());
 	}
 
 	m_gui.Update(game.GetInput(),game.GetDt());

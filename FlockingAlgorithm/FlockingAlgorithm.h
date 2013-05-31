@@ -23,7 +23,7 @@ public:
 
 	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const { return m_CollisionCircle; }
 
-	void Update(QuadTree&, const glm::vec2& avgPos, double dt);
+	void Update(QuadTree&, const glm::vec2& avgPos, float v, double dt);
 	void Render(IRenderer& renderer);
 
 private:
@@ -58,7 +58,7 @@ public:
 	virtual void Destroy(class asIScriptEngine*) {}
 
 	void ClearBirds();
-	void MouseCallback(float);
+	void SliderCallback(float);
 
 private:
 
@@ -68,7 +68,8 @@ private:
 
 	GUI m_gui;
 
-	float m_fFlockAngle;
+	float m_fSliderValue;
+
 
 };
 

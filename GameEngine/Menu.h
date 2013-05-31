@@ -404,14 +404,16 @@ public:
 
 	Slider(const glm::vec2& start,
 		   const glm::vec2& end,
-		   float min, float max, const DELEGATE& callback);
+		   float min, float max, const std::string& tex, const DELEGATE& callback);
 
-	virtual void Select() { m_bEnable = true; }
-	virtual void Deselect() { m_bEnable = false; }
+	virtual void Select();
+	virtual void Deselect();
 	virtual void Trigger();
 
 	virtual void Update(class IKMInput&, double dt);
 	virtual void Render(IRenderer&);
+
+	float GetValue() const;
 
 private:
 
@@ -425,6 +427,7 @@ private:
 	float m_fMin;
 	float m_fMax;
 	bool m_bEnable;
+	bool m_bUpdateEnable;
 	DELEGATE m_callback;
 	std::string m_SpriteTexture;
 

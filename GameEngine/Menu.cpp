@@ -539,11 +539,25 @@ void ScriptingConsole::RegisterScript()
 	asEngine->Release();
 }*/
 
-Slider::Slider(const glm::vec2& start, const glm::vec2& end, float min, float max, const DELEGATE& callback) :
-	m_start(start), m_end(end), m_fPercentage(min), m_callback(callback), m_bEnable(false), m_fMin(min), m_fMax(max)
+Slider::Slider(const glm::vec2& start,
+			   const glm::vec2& end,
+			   float min, float max, const std::string& tex, const DELEGATE& callback) :
+	m_start(start), m_end(end), m_fPercentage(min), m_callback(callback),
+	m_bEnable(false), m_bUpdateEnable(false), m_fMin(min), m_fMax(max), m_SpriteTexture(tex)
 {
-	m_pos = m_start;
+	m_pos.y = start.y;
+	m_pos.x = (end.x + start.x) / 2.0f;
 	Trigger();
+}
+
+void Slider::Select()
+{
+	m_bEnable = true;
+}
+
+void Slider::Deselect()
+{
+	m_bEnable = false;
 }
 
 void Slider::Trigger()
@@ -558,49 +572,30 @@ void Slider::Trigger()
 
 void Slider::Update(IKMInput& input, double dt)
 {
-	/*if(!m_bEnable)
-		return;*/
-
-	if(input.MouseClick(0,false))
+	if(input.MouseClick(0))
 	{
-		// if the click is in the area of the slider
 		Math::FRECT R(m_end.x - m_start.x,8.0f,(m_end + m_start) / 2.0f);
 		const glm::vec2& mousePos = input.GetTransformedMousePos();
 		if(R.IsPointWithin(input.GetTransformedMousePos()))
 		{
-			// Move the slider to the mouse pos
-			m_pos.x = mousePos.x;
-			m_pos.x = glm::clamp(m_pos.x,m_start.x,m_end.x);
-
-			Trigger();
-
+			m_bUpdateEnable = true;
 		}
 	}
-
-	// todo: need to clean this up
-	/*bool bKeyLeft = input.KeyDown(GLFW_KEY_LEFT,false);
-	bool bKeyRight = !bKeyLeft && input.KeyDown(GLFW_KEY_RIGHT,false);
-
-	if(bKeyLeft || bKeyRight)
+	else if(input.MouseRelease(0))
 	{
-		float length = glm::length(m_end - m_start);
-		glm::vec2 dir = m_end - m_start;
-		if(bKeyLeft)
-		{
-			dir.x *= -1.0f;
-		}
-		else
-		{
-			dir.x *= 1.0f;
-		}
+		m_bUpdateEnable = false;
+	}
 
-		m_pos += 0.1f * dir * glm::vec2(dt);
+	if(m_bUpdateEnable)
+	{
+		const glm::vec2& mousePos = input.GetTransformedMousePos();
+		
+		// Move the slider to the mouse pos
+		m_pos.x = mousePos.x;
 		m_pos.x = glm::clamp(m_pos.x,m_start.x,m_end.x);
 
-		float distance = glm::length(m_start - m_pos);
-		m_fPercentage = (m_fMax - m_fMin) * distance / length + m_fMin;
-		m_callback.Call(m_fPercentage);
-	}*/
+		Trigger();
+	}
 }
 
 void Slider::Render(IRenderer& renderer)
@@ -618,9 +613,13 @@ void Slider::Render(IRenderer& renderer)
 	stream.precision(2);
 	stream << std::fixed << m_fPercentage << endl;
 
-	renderer.DrawSprite("cell",T);
+	renderer.DrawSprite(m_SpriteTexture,T);
 	renderer.DrawLine(line,2);
 	renderer.DrawString(stream.str().c_str(),glm::vec2((m_end.x + m_start.x) / 2.0f - 10.0f,m_end.y - 10.0f),glm::vec2(2.0f));
 
+}
 
+float Slider::GetValue() const
+{
+	return m_fPercentage;
 }
