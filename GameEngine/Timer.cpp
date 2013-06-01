@@ -1,54 +1,52 @@
-#define GLFW_DLL
-#define GLFW_NO_GLU
 
 #include "Timer.h"
-#include <GL/glfw.h>
 
-Timer::Timer() : m_fStart(0.0), m_fEnd(0.0)
+using namespace std::chrono;
+
+Timer::Timer() : m_bActive(false)
 {
-	Reset();
 }
 
 void Timer::Start()
 {
-	_Active = true;
-	PollCounter(m_fStart);
+	m_bActive = true;
+	PollCounter(m_start);
 }
 
 void Timer::Stop()
 {
-	_Active = false;
-	PollCounter(m_fEnd);
+	m_bActive = false;
+	PollCounter(m_end);
 }
 
 // Stops the timer if it's active and resets all
 // of the Timer's members to their initial values.
 void Timer::Reset()
 {
-	if (_Active)
+	if (m_bActive)
 		Stop();
 
-	glfwSetTime(0.0);
-	_Active = false;
+	m_bActive = false;
 }
 
 // Returns the time elapsed since Start() was called
 // in micro-seconds
 double Timer::GetTime()
 {
-	if (_Active) { PollCounter(m_fEnd); }
-	
-	return m_fEnd - m_fStart;
+	if (m_bActive) { PollCounter(m_end); }
+
+	duration<double> time_span = duration_cast<duration<double>>(m_end - m_start);
+	return time_span.count();
 }
 
 // Returns TRUE if the Timer is currently active
 bool Timer::IsActive() const
 {
-	return _Active;
+	return m_bActive;
 }
 
-void Timer::PollCounter(double& Out)
+void Timer::PollCounter(high_resolution_clock::time_point& Out)
 {
-	Out = glfwGetTime();
+	Out = high_resolution_clock::now();
 }
 

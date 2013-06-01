@@ -1,6 +1,8 @@
 #ifndef _TIMER_H_
 #define _TIMER_H_
 
+#include <chrono>
+
 // Defines a simple High Resolution Timer
 class Timer
 {
@@ -28,12 +30,12 @@ public:
 private:
 
 	// Poll the query performance counter
-	void PollCounter(double& Out);
+	void PollCounter(std::chrono::high_resolution_clock::time_point& Out);
 
 private:
-	bool _Active;
-	double m_fStart;
-	double m_fEnd;
+	bool m_bActive;
+	std::chrono::high_resolution_clock::time_point m_start;
+	std::chrono::high_resolution_clock::time_point m_end;
 }; // class Timer
 
 #endif

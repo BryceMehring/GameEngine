@@ -4,7 +4,7 @@ GameEngine
 
 ### To create projects:
 
-#### Windows: Run `WindowsBuildScript.bat` which translates to `cmake -g "visual studio 10" CMakeLists.txt`
+#### Windows: Run `WindowsBuildScript.bat` which translates to `cmake -g "visual studio 11" CMakeLists.txt`
 
 Set GameLauncher as the startup project, and build the solution.
 
