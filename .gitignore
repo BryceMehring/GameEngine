@@ -21,6 +21,8 @@
 *.rule
 *.cmake
 *.stamp
+*.depend
+*.bin
 
 #visual studio
 *.vcxproj
@@ -31,3 +33,8 @@
 *.log
 *.cd
 *.cache
+*.filters
+*.opensdf
+*.user
+*.suo
+*.sdf
