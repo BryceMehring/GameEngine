@@ -74,7 +74,6 @@ private:
 	UI::ProgressBar* m_pProgressBar;
 
 	float m_fSliderValue;
-	double m_Time;
 	bool m_bEnableQuadtree;
 
 	void BuildUI(Game&);

@@ -10,7 +10,7 @@ public:
 
 	IGameState()
 	{
-		//m_timer.Start();
+		m_timer.Start();
 	}
 
 	// Called only once when the plugin is created
@@ -29,7 +29,7 @@ public:
 
 protected:
 
-	//Timer m_timer; // keeps track of the time the game has been playing
+	Timer m_timer; // keeps track of the time the game has been playing
 
 	virtual ~IGameState() {}
 

@@ -130,7 +130,7 @@ void Bird::Render(IRenderer& renderer)
 
 
 FlockingAlgorithm::FlockingAlgorithm() : m_pQuadtree(nullptr),
-	m_pProgressBar(nullptr), m_fSliderValue(0.0f), m_Time(0.0), m_bEnableQuadtree(false) {}
+	m_pProgressBar(nullptr), m_fSliderValue(0.0f), m_bEnableQuadtree(false) {}
 
 void FlockingAlgorithm::Init(Game& game)
 {
@@ -229,8 +229,9 @@ void FlockingAlgorithm::ClearBirds()
 
 void FlockingAlgorithm::ProgressBarCallback()
 {
-	m_Time = 0.0;
-	m_pProgressBar->SetProgress(m_Time);	
+	m_timer.Reset();
+	m_timer.Start();
+	m_pProgressBar->SetProgress(0.0f);	
 }
 
 void FlockingAlgorithm::ToggleQuadtree()
@@ -268,9 +269,7 @@ void FlockingAlgorithm::Update(Game& game)
 		m_birds[i]->Update(*m_pQuadtree,avgPos,m_fSliderValue,game.GetDt());
 	}
 
-	m_Time += game.GetDt();
-
-	m_pProgressBar->SetProgress(m_Time / 4.0f);
+	m_pProgressBar->SetProgress(m_timer.GetTime() / 4.0f);
 
 	m_gui.Update(game.GetInput(),game.GetDt());
 }

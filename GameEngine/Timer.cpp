@@ -26,6 +26,7 @@ void Timer::Reset()
 	if (m_bActive)
 		Stop();
 
+	m_start = m_end;
 	m_bActive = false;
 }
 
