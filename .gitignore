@@ -16,3 +16,18 @@
 *.la
 *.a
 *.lib
+
+#cmake
+*.rule
+*.cmake
+*.stamp
+
+#visual studio
+*.vcxproj
+*.obj
+*.tlog
+*.lastbuildstate
+*.sln
+*.log
+*.cd
+*.cache
