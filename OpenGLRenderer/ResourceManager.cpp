@@ -35,11 +35,15 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	glBindTexture(GL_TEXTURE_2D, textureId);
 
 	GLenum format = GL_RGB;
+	GLint internalFormat = GL_COMPRESSED_RGB;
 	if(comp == 4)
+	{
 		format = GL_RGBA;
+		internalFormat = GL_COMPRESSED_RGBA;
+	}
 
 	// Give the image to OpenGL
-	glTexImage2D(GL_TEXTURE_2D, 0, format, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
