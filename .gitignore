@@ -23,6 +23,11 @@
 *.stamp
 *.depend
 *.bin
+*.list
+*.check_cache
+TargetDirectories.txt
+CMakeCXXCompilerId.cpp
+CMakeCache.txt
 
 #visual studio
 *.vcxproj
@@ -38,3 +43,6 @@
 *.user
 *.suo
 *.sdf
+
+#other
+stats.txt
