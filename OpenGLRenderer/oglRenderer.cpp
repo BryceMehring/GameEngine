@@ -22,11 +22,11 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_pF
 
 	GLFWOpenWindowHints();
 	if(glfwOpenWindow( m_VideoModes[0].Width,
-					   0,
+					   m_VideoModes[0].Height,
 					   m_VideoModes[0].RedBits,
 					   m_VideoModes[0].GreenBits,
 					   m_VideoModes[0].BlueBits,
-					   8,24,0,GLFW_FULLSCREEN ) < 1) // // GLFW_WINDOW, GLFW_FULLSCREEN
+					   8,24,0,GLFW_WINDOW ) < 1) // // GLFW_WINDOW, GLFW_FULLSCREEN
 	{
 		glfwTerminate();
 		throw std::string("Failed to create window");
@@ -215,9 +215,14 @@ void oglRenderer::DrawString(const char* str, const glm::vec2& pos, const glm::v
 	m_pFonts->DrawString(str,font,pos,scale,color);
 }
 
-void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, const glm::vec4& color, const glm::mat4& T)
+void oglRenderer::GetLineWidthRange(glm::vec2& out) const
 {
-	m_pLines->DrawLine(pArray,length,color,T);
+	m_pLines->GetLineWidthRange(out);
+}
+
+void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float fWidth, const glm::vec4& color, const glm::mat4& T)
+{
+	m_pLines->DrawLine(pArray,length,fWidth,color,T);
 }
 
 void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec2& tiling, unsigned int iCellId)

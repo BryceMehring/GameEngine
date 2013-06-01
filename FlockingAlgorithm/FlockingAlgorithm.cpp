@@ -226,18 +226,26 @@ void FlockingAlgorithm::Draw(Game& game)
 		m_birds[i]->Render(game.GetRenderer());
 	}
 
-	static float angle = 0.0;
-	angle += 3.0f*game.GetDt();
-
 	glm::mat4 T = glm::translate(0.0f,0.0f,-50.0f);
 	T = glm::scale(T,200.0f,200.0f,1.0f);
 
-	game.GetRenderer().DrawSprite("background",T);
-	game.GetRenderer().SetShaderValue("sprite","mousePos",game.GetInput().GetTransformedMousePos() / 100.0f);
+	IRenderer& renderer = game.GetRenderer();
+
+	renderer.DrawSprite("background",T);
+	renderer.SetShaderValue("sprite","mousePos",game.GetInput().GetTransformedMousePos() / 100.0f);
 
 	//game.GetRenderer().DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,50),glm::vec2(2.5f),glm::vec3(1.0f));
 
-	m_gui.Render(game.GetRenderer());
+	glm::vec3 vertices[] =
+	{
+		glm::vec3(0.0f,0.0f,0.0f),
+		glm::vec3(40.0f,0.0f,0.0f),
+	};
+
+	renderer.DrawLine(vertices,2,5.0f);
+	
+	
+	m_gui.Render(renderer);
 
 	//m_pQuadtree->Render(game.GetRenderer());
 

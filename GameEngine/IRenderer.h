@@ -30,9 +30,13 @@ public:
 	// Returns the resource manager
 	virtual IResourceManager& GetResourceManager() = 0;
 
-	// Draws lines
+	// Lines
+	
+	virtual void GetLineWidthRange(glm::vec2& out) const = 0; // Gets the range of the width of the lines supported on the current hardware, x = min, y = max
+	
 	virtual void DrawLine(const glm::vec3* pArray, // array of 3d vertices to draw
 						  unsigned int length, // number of vertices
+						  float fWidth = 3.0f, // the width of the line
 						  const glm::vec4& color = glm::vec4(1.0f), // color of the line
 						  const glm::mat4& t = glm::mat4(1.0f)) = 0; // transformation to apply to the line
 

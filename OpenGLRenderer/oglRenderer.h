@@ -47,8 +47,10 @@ public:
 	// textures
 	virtual IResourceManager& GetResourceManager();
 
-	// Line
-	virtual void DrawLine(const glm::vec3* pArray, unsigned int length, const glm::vec4& color, const glm::mat4& t);
+	// Lines
+	virtual void GetLineWidthRange(glm::vec2& out) const;
+	virtual void DrawLine(const glm::vec3* pArray, unsigned int length, float width, const glm::vec4& color, const glm::mat4& t);
+	
 
 	// Fonts
 	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;

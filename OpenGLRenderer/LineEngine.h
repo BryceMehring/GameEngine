@@ -10,6 +10,12 @@ struct LineVertex
 	glm::vec4 color;
 };
 
+struct LineSubset
+{
+	unsigned int uiLength;
+	float fWidth;
+};
+
 class LineEngine
 {
 public:
@@ -17,9 +23,9 @@ public:
 	LineEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam);
 	~LineEngine();
 
-	void SetLineWidth(float width);
+	void GetLineWidthRange(glm::vec2& out) const;
 
-	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, const glm::vec4& color, const glm::mat4& T);
+	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T);
 
 	void Render();
 
@@ -33,7 +39,9 @@ private:
 	Camera* m_pCamera;
 	ResourceManager* m_pRM;
 
-	std::vector<unsigned int> m_LineSubsets;
+	float m_fMaxWidth[2];
+
+	std::vector<LineSubset> m_LineSubsets;
 
 	void CreateVertexBuffer();
 

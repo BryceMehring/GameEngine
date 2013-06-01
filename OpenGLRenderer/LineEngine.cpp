@@ -7,16 +7,13 @@ LineEngine::LineEngine(ResourceManager* pRM, unsigned int maxLength, Camera* pCa
 	: m_iMaxLength(maxLength), m_pCamera(pCam), m_pRM(pRM), m_iCurrentLength(0)
 {
 	CreateVertexBuffer();
-	SetLineWidth(2.0f);
+
+	// Get the range of widths supported by the hardware
+	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE,m_fMaxWidth);
 }
 LineEngine::~LineEngine()
 {
 	glDeleteBuffers(1,&m_uiVertexBuffer);
-}
-
-void LineEngine::SetLineWidth(float width)
-{
-	glLineWidth(width);
 }
 
 void LineEngine::CreateVertexBuffer()
@@ -26,7 +23,13 @@ void LineEngine::CreateVertexBuffer()
 	glBufferData(GL_ARRAY_BUFFER,sizeof(LineVertex) * m_iMaxLength,0,GL_DYNAMIC_DRAW);
 }
 
-void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, const glm::vec4& color, const glm::mat4& T)
+void LineEngine::GetLineWidthRange(glm::vec2& out) const
+{
+	out.x = m_fMaxWidth[0];
+	out.y = m_fMaxWidth[1];
+}
+
+void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T)
 {
 	unsigned int uiNewLength = m_iCurrentLength + uiLength;
 	if(uiNewLength >= this->m_iMaxLength)
@@ -45,7 +48,11 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, const 
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
-	m_LineSubsets.push_back(uiLength);
+	LineSubset subset;
+	subset.fWidth = glm::clamp(fWidth,m_fMaxWidth[0],m_fMaxWidth[1]);
+	subset.uiLength = uiLength;
+
+	m_LineSubsets.push_back(subset);
 	m_iCurrentLength = uiNewLength;
 }
 
@@ -80,9 +87,10 @@ void LineEngine::Render()
 	unsigned int uiStartingIndex = 0;
 	for(unsigned int j = 0; j < m_LineSubsets.size(); ++j)
 	{
-		glDrawArrays( GL_LINE_STRIP,uiStartingIndex,m_LineSubsets[j]);
+		glLineWidth(m_LineSubsets[j].fWidth);
+		glDrawArrays( GL_LINE_STRIP,uiStartingIndex,m_LineSubsets[j].uiLength);
 
-		uiStartingIndex += m_LineSubsets[j];
+		uiStartingIndex += m_LineSubsets[j].uiLength;
 	}
 
 	glDisableVertexAttribArray(0);
