@@ -35,33 +35,30 @@ class ButtonBase : public IUIElement
 {
 public:
 
-	ButtonBase() {}
-	ButtonBase(const Math::FRECT& s, const std::string& str);
+	ButtonBase(const Math::FRECT& s, const glm::vec3& defaultColor,
+			   const glm::vec3& hoverColor, const glm::vec2& scale, const std::string& str);
 
 	virtual void Update(class IKMInput&);
 	virtual void Render(class IRenderer&);
 
-	virtual void Select()
-	{
-		m_bSelected = true;
-		//m_pPolygon->SetColor(0xffff0000);
-	}
-	virtual void Deselect()
-	{
-		m_bSelected = false;
-		//m_pPolygon->SetColor(0xffffffff);
-	}
+	virtual void Select();
+	virtual void Deselect();
 
 protected:
 
 	virtual ~ButtonBase() {}
 
 	Math::FRECT m_sprite;
+
+private:
+	glm::vec3 m_defaultColor;
+	glm::vec3 m_hoverColor;
+	glm::vec2 m_scale;
+
 	std::string m_text;
+
 	bool m_bMouseHover;
 	bool m_bSelected;
-
-
 
 };
 
@@ -72,10 +69,10 @@ public:
 
 	typedef Delegate<void,T> DELEGATE;
 
-	GenericButton(const Math::FRECT& s, const std::string& str) : ButtonBase(s,str) {}
-	GenericButton(const Math::FRECT& s, const std::string& str, const DELEGATE& callback, const T& type) : ButtonBase(s,str), m_callback(callback), m_type(type)
-	{
-	}
+	GenericButton(const Math::FRECT& s, const glm::vec3& defaultColor,
+		const glm::vec3& hoverColor, const glm::vec2& textScale, const std::string& str) : ButtonBase(s,defaultColor,hoverColor,textScale,str) {}
+	GenericButton(const Math::FRECT& s, const glm::vec3& defaultColor,
+		const glm::vec3& hoverColor, const glm::vec2& textScale, const std::string& str, const DELEGATE& callback) : ButtonBase(s,defaultColor,hoverColor, textScale,str), m_callback(callback) {}
 
 	void SetCallback(const DELEGATE& callback)
 	{
@@ -120,10 +117,10 @@ public:
 
 	typedef Delegate<void,T&> DELEGATE;
 
-	GenericButton(const Math::FRECT& s, const std::string& str) : ButtonBase(s,str) {}
-	GenericButton(const Math::FRECT& s, const std::string& str, const DELEGATE& callback, const T& type) : ButtonBase(s,str), m_callback(callback), m_type(type)
-	{
-	}
+	GenericButton(const Math::FRECT& s, const glm::vec3& defaultColor,
+		const glm::vec3& hoverColor, const glm::vec2& textScale, const std::string& str) : ButtonBase(s,defaultColor,hoverColor,textScale,str) {}
+	GenericButton(const Math::FRECT& s, const glm::vec3& defaultColor,
+		const glm::vec3& hoverColor, const glm::vec2& textScale, const std::string& str, const DELEGATE& callback) : ButtonBase(s,defaultColor,hoverColor, textScale,str), m_callback(callback) {}
 
 	void SetCallback(const DELEGATE& callback)
 	{
@@ -168,10 +165,10 @@ public:
 
 	typedef Delegate<void,void> DELEGATE;
 
-	GenericButton(const Math::FRECT& s, const std::string& str) : ButtonBase(s,str) {}
-	GenericButton(const Math::FRECT& s, const std::string& str, const DELEGATE& callback) : ButtonBase(s,str), m_callback(callback)
-	{
-	}
+	GenericButton(const Math::FRECT& s, const glm::vec3& defaultColor,
+		const glm::vec3& hoverColor, const glm::vec2& textScale, const std::string& str) : ButtonBase(s,defaultColor,hoverColor,textScale,str) {}
+	GenericButton(const Math::FRECT& s, const glm::vec3& defaultColor,
+		const glm::vec3& hoverColor, const glm::vec2& textScale, const std::string& str, const DELEGATE& callback) : ButtonBase(s,defaultColor,hoverColor, textScale,str), m_callback(callback) {}
 
 	void SetCallback(const DELEGATE& callback)
 	{
@@ -399,12 +396,21 @@ protected:
 
 };*/
 
+// A UI controlled slider via the mouse. Whenever the user changes the value, 
+// the callback gets called with the new value
 class Slider : public IUIElement
 {
 public:
 
 	typedef Delegate<void,float> DELEGATE;
 
+	// Slider ctor
+	// start: starting point of the Slider
+	// end: ending point of the Slider
+	// min: min value of the Slider
+	// max: max value of the Slider
+	// tex: texture of the ball on the Slider line that displays the current value
+	// callback: the function that gets called whenever there is a change in value of the Slider
 	Slider(const glm::vec2& start,
 		   const glm::vec2& end,
 		   float min, float max, const std::string& tex, const DELEGATE& callback);
@@ -416,6 +422,7 @@ public:
 	virtual void Update(class IKMInput&, double dt);
 	virtual void Render(IRenderer&);
 
+	// returns the current value of the slider
 	float GetValue() const;
 
 private:
@@ -433,6 +440,39 @@ private:
 	bool m_bUpdateEnable;
 	DELEGATE m_callback;
 	std::string m_SpriteTexture;
+
+};
+
+// todo: make this a template?
+// A ProgressBar displays the progress from a percentage as a colored line
+class ProgressBar : public IUIElement
+{
+public:
+
+	typedef Delegate<void,void> DELEGATE;
+
+	// ProgressBar ctor
+	// start: starting point of ProgressBar
+	// end: ending point of ProgressBar
+	// callback: gets called whenever the progress bar reaches 1.0
+	ProgressBar(const glm::vec2& start, const glm::vec2& end, const DELEGATE& callback);
+
+	virtual void Select();
+	virtual void Deselect();
+	virtual void Trigger();
+
+	virtual void Update(class IKMInput&, double dt);
+	virtual void Render(IRenderer&);
+
+	// sets the current progress of the bar, value must be between 0 and 1, if not, the value is clamped into this range
+	void SetProgress(float);
+
+private:
+
+	glm::vec2 m_pos;
+	glm::vec2 m_start;
+	glm::vec2 m_end;
+	DELEGATE m_callback;
 
 };
 

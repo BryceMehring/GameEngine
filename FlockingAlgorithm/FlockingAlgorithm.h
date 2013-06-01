@@ -41,6 +41,8 @@ public:
 
 	RTTI_DECL;
 
+	FlockingAlgorithm();
+
 	virtual DLLType GetPluginType() const { return GamePlugin; }
 	virtual const char* GetName() const { return "FlockingAlgorithm"; }
 	virtual int GetVersion() const { return 0; }
@@ -59,6 +61,8 @@ public:
 
 	void ClearBirds();
 	void SliderCallback(float);
+	void ProgressBarCallback();
+	void ToggleQuadtree();
 
 private:
 
@@ -67,8 +71,13 @@ private:
 	QuadTree* m_pQuadtree;
 
 	UI::GUI m_gui;
+	UI::ProgressBar* m_pProgressBar;
 
 	float m_fSliderValue;
+	double m_Time;
+	bool m_bEnableQuadtree;
+
+	void BuildUI(Game&);
 
 
 };

@@ -21,20 +21,21 @@ void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRE
 
 	glm::vec2 topLeft(0.0f,0.0f);
 	glm::vec2 bottomRight(topLeft);
-	bottomRight.y -= 2.0f*scale.y;
+	bottomRight.y -= 5.0f*scale.y + 5.0f;
 
 	const Charset& font = static_cast<const Charset&>(m_pRm->GetResource("font")); // todo: need to check if the resource is actually a font
 
 	while(*str)
 	{
 		// todo: need to add space and newline calculations
-		if(*str != ' ' && *str != '\n')
+		//if(*str != ' ' && *str != '\n')
 		{
-			float fAdvance = scale.x * font.Chars[int(*str)].Width / (float)font.iWidth;
-			bottomRight.x += 2.0f*(fAdvance * scale.x + 0.75f);
+			float fAdvance = 5.0f*scale.x * font.Chars[(*str)].Width / (float)font.iWidth;
+			bottomRight.x += 5.0f*fAdvance * scale.x + 0.5f;
 		}
 		str++;
 	}
+
 
 	out = Math::FRECT(topLeft,bottomRight);
 }

@@ -164,10 +164,10 @@ Menu* GUI::GetMenu()
 	return m_pMenu;
 }
 
-ButtonBase::ButtonBase(const Math::FRECT& s, const std::string& str) :
-	m_sprite(s), m_text(str),  m_bMouseHover(false), m_bSelected(false)
-{
-}
+ButtonBase::ButtonBase(const Math::FRECT& s, const glm::vec3& defaultColor,
+					   const glm::vec3& hoverColor, const glm::vec2& scale, const std::string& str) :
+					   m_sprite(s), m_defaultColor(defaultColor), m_hoverColor(hoverColor), m_scale(scale),
+					   m_text(str),  m_bMouseHover(false), m_bSelected(false) {}
 
 void ButtonBase::Update(IKMInput& input)
 {
@@ -183,16 +183,26 @@ void ButtonBase::Update(IKMInput& input)
 	}
 }
 
+void ButtonBase::Select()
+{
+	m_bSelected = true;
+}
+
+void ButtonBase::Deselect()
+{
+	m_bSelected = false;
+}
+
 void ButtonBase::Render(IRenderer& renderer)
 {
-	float scale = (m_bMouseHover || m_bSelected) ? 3.5f : 3.0f;
+	glm::vec3 color = (m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor;
 
 	glm::vec2 pos = m_sprite.Middle();
 	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
 	T = glm::scale(T,m_sprite.Width(),m_sprite.Height(),1.0f);
 
 	renderer.DrawSprite("button",T);
-	renderer.DrawString(m_text.c_str(),glm::vec2(pos.x - (m_sprite.Width() / 2.0f),pos.y),glm::vec2(scale / 2.0f,scale / 2.0f),glm::vec3(0.0f));
+	renderer.DrawString(m_text.c_str(),glm::vec2(pos.x - (m_sprite.Width() / 2.0f),pos.y),m_scale,color);
 }
 
 // textbox ctor
@@ -574,7 +584,7 @@ void Slider::Trigger()
 
 void Slider::Update(IKMInput& input, double dt)
 {
-	if(input.MouseClick(0))
+	if(input.MouseClick(GLFW_MOUSE_BUTTON_1))
 	{
 		Math::FRECT R(m_end.x - m_start.x,8.0f,(m_end + m_start) / 2.0f);
 		const glm::vec2& mousePos = input.GetTransformedMousePos();
@@ -583,7 +593,7 @@ void Slider::Update(IKMInput& input, double dt)
 			m_bUpdateEnable = true;
 		}
 	}
-	else if(input.MouseRelease(0))
+	else if(input.MouseRelease(GLFW_MOUSE_BUTTON_1))
 	{
 		m_bUpdateEnable = false;
 	}
@@ -625,5 +635,52 @@ float Slider::GetValue() const
 {
 	return m_fPercentage;
 }
+
+ProgressBar::ProgressBar(const glm::vec2& start, const glm::vec2& end, const DELEGATE& callback) : m_pos(start),
+	m_start(start), m_end(end), m_callback(callback)
+{
+}
+
+void ProgressBar::Select()
+{
+}
+void ProgressBar::Deselect()
+{
+}
+void ProgressBar::Trigger()
+{
+}
+
+void ProgressBar::Update(class IKMInput&, double dt)
+{
+	if((m_end.x - m_pos.x) < 0.01f)
+	{
+		m_callback.Call();
+	}
+}
+void ProgressBar::Render(IRenderer& renderer)
+{
+	glm::vec3 progStart[2] =
+	{
+		glm::vec3(m_start,0.0f),
+		glm::vec3(m_pos,0.0f)
+	};
+
+	glm::vec3 progEnd[2] =
+	{
+		glm::vec3(m_pos,0.0f),
+		glm::vec3(m_end,0.0f)
+	};
+
+	renderer.DrawLine(progStart,2,10.0f,glm::vec4(1.0f,0.0f,0.0f,1.0f));
+	renderer.DrawLine(progEnd,2,10.0f);
+}
+
+void ProgressBar::SetProgress(float v)
+{
+	float dist = m_end.x - m_start.x;
+	m_pos.x = m_start.x + dist * glm::clamp(v,0.0f,1.0f);
+}
+
 
 } // UI namespace

@@ -8,7 +8,10 @@ class IGameState : public IPlugin
 {
 public:
 
-	IGameState() {}
+	IGameState()
+	{
+		//m_timer.Start();
+	}
 
 	// Called only once when the plugin is created
 	virtual void Init(class Game& game) = 0;
@@ -26,7 +29,7 @@ public:
 
 protected:
 
-	Timer m_timer; // keeps track of the time the game has been playing
+	//Timer m_timer; // keeps track of the time the game has been playing
 
 	virtual ~IGameState() {}
 

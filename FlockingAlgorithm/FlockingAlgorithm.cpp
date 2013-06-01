@@ -127,6 +127,11 @@ void Bird::Render(IRenderer& renderer)
 	renderer.DrawSprite("bird", T * S);
 }
 
+
+
+FlockingAlgorithm::FlockingAlgorithm() : m_pQuadtree(nullptr),
+	m_pProgressBar(nullptr), m_fSliderValue(0.0f), m_Time(0.0), m_bEnableQuadtree(false) {}
+
 void FlockingAlgorithm::Init(Game& game)
 {
 	m_pQuadtree = new QuadTree(Math::FRECT(glm::vec2(-100.0f,100.0f),glm::vec2(100.0f,-100.0f)));
@@ -139,37 +144,74 @@ void FlockingAlgorithm::Init(Game& game)
 		m_pQuadtree->Insert(*m_birds[i]);
 	}
 
+	BuildUI(game);
+
+}
+
+void FlockingAlgorithm::BuildUI(Game& game)
+{
+	glm::vec2 textSize(1.5f);
 	UI::Menu* pMenu = new UI::Menu();
 
 	const char* buttonText = "ClearBirds";
+	const char* quadtreeButtonText = "ToggleQuadTree";
 
+	// calculate the rects of the buttons
 	Math::FRECT clearRect;
-	game.GetRenderer().GetStringRec(buttonText,glm::vec2(3.0f),clearRect); // todo: need to fix this
-	clearRect = glm::vec2(80.0f,80.0f);
+	game.GetRenderer().GetStringRec(buttonText,textSize,clearRect);
+	clearRect = glm::vec2(70.0f,80.0f);
 
-	UI::GenericButton<void>* pClearButton = new UI::GenericButton<void>(clearRect,buttonText);
+	Math::FRECT quadtreeRect;
+	game.GetRenderer().GetStringRec(quadtreeButtonText,textSize,quadtreeRect);
+	quadtreeRect = glm::vec2(70.0f,60.0f);
 
+	// create both buttons
+	UI::GenericButton<void>* pClearButton = new UI::GenericButton<void>(clearRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),textSize,buttonText);
+	UI::GenericButton<void>* pQuadtreeButton = new UI::GenericButton<void>(quadtreeRect,glm::vec3(0.0f),glm::vec3(0.0f,0.0f,1.0f),textSize,quadtreeButtonText);
+
+	// Create the progress bar callback
+	UI::ProgressBar::DELEGATE callback;
+	callback.Bind(this,&FlockingAlgorithm::ProgressBarCallback);
+
+	// create the progress bar
+	m_pProgressBar = new UI::ProgressBar(glm::vec2(-40.0f,90.0f),glm::vec2(40.0f,90.0f),callback);
+
+	// Create the slider
 	UI::Slider::DELEGATE sliderCallback;
 	sliderCallback.Bind(this,&FlockingAlgorithm::SliderCallback);
 	UI::Slider* pSlider = new UI::Slider(glm::vec2(-90.0f,-80.0f),glm::vec2(90.0f,-80.0f),10.0f,50.0f,"cell",sliderCallback);
 
+	// Create the clear button callback
 	UI::GenericButton<void>::DELEGATE clearCallback;
 	clearCallback.Bind(this,&FlockingAlgorithm::ClearBirds);
 	pClearButton->SetCallback(clearCallback);
 
-	//pMenu->AddElement(pTextBox);
+	// Create the quadtree callback
+	UI::GenericButton<void>::DELEGATE quadtreeCallback;
+	quadtreeCallback.Bind(this,&FlockingAlgorithm::ToggleQuadtree);
+	pQuadtreeButton->SetCallback(quadtreeCallback);
+
+	// Add all the UI elements to the UI menu 
 	pMenu->AddElement(pClearButton);
 	pMenu->AddElement(pSlider);
+	pMenu->AddElement(pQuadtreeButton);
+
+	m_pProgressBar->AddRef();
+	pMenu->AddElement(m_pProgressBar);
 
 	m_gui.SetMenu(pMenu);
 	pMenu->Release();
 	pClearButton->Release();
 	pSlider->Release();
-
+	pQuadtreeButton->Release();
 }
+
 void FlockingAlgorithm::Destroy(Game& game)
 {
 	ClearBirds();
+
+	m_pProgressBar->Release();
+	m_pProgressBar = nullptr;
 
 	delete m_pQuadtree;
 }
@@ -183,6 +225,17 @@ void FlockingAlgorithm::ClearBirds()
 	}
 
 	m_birds.clear();
+}
+
+void FlockingAlgorithm::ProgressBarCallback()
+{
+	m_Time = 0.0;
+	m_pProgressBar->SetProgress(m_Time);	
+}
+
+void FlockingAlgorithm::ToggleQuadtree()
+{
+	m_bEnableQuadtree = !m_bEnableQuadtree;
 }
 
 void FlockingAlgorithm::SliderCallback(float p)
@@ -215,11 +268,15 @@ void FlockingAlgorithm::Update(Game& game)
 		m_birds[i]->Update(*m_pQuadtree,avgPos,m_fSliderValue,game.GetDt());
 	}
 
+	m_Time += game.GetDt();
+
+	m_pProgressBar->SetProgress(m_Time / 4.0f);
+
 	m_gui.Update(game.GetInput(),game.GetDt());
 }
 void FlockingAlgorithm::Draw(Game& game)
 {
-	//game.GetRenderer().Get2DRenderer().DrawString("Hello World",::D3DXVECTOR2(-10.0f,0.0f));
+	
 
 	for(unsigned int i = 0; i < m_birds.size(); ++i)
 	{
@@ -234,20 +291,12 @@ void FlockingAlgorithm::Draw(Game& game)
 	renderer.DrawSprite("background",T);
 	renderer.SetShaderValue("sprite","mousePos",game.GetInput().GetTransformedMousePos() / 100.0f);
 
-	//game.GetRenderer().DrawString("Will these birds ever\nstop flocking?",::glm::vec2(-70,50),glm::vec2(2.5f),glm::vec3(1.0f));
-
-	glm::vec3 vertices[] =
-	{
-		glm::vec3(0.0f,0.0f,0.0f),
-		glm::vec3(40.0f,0.0f,0.0f),
-	};
-
-	renderer.DrawLine(vertices,2,5.0f);
-	
-	
 	m_gui.Render(renderer);
 
-	//m_pQuadtree->Render(game.GetRenderer());
+	if(m_bEnableQuadtree)
+	{
+		m_pQuadtree->Render(game.GetRenderer());
+	}
 
 	//game.GetRenderer().Get2DRenderer().
 }
