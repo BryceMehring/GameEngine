@@ -47,27 +47,28 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	std::fstream in(file + ".txt",std::ios::in);
+	std::fstream in;
+	in.open(file + ".fnt",std::ios::in);
 	if(in)
 	{
-		in >> spriteWidth >> spriteHeight;
+		// Load font
+		Charset* pCharSet = new Charset(textureId,x,y,spriteWidth,spriteHeight);
+		ParseFont(in,*pCharSet);
+
+		m_resources.insert(std::make_pair(id,pCharSet));
+
 		in.close();
 	}
 	else
 	{
-		in.open(file + ".fnt");
+		in.open(file + ".txt",std::ios::in);
 		if(in)
 		{
-			// Load font
-			Charset* pCharSet = new Charset(textureId,x,y,spriteWidth,spriteHeight);
-			ParseFont(in,*pCharSet);
+			in >> spriteWidth >> spriteHeight;
+			in.close();
+		}
 
-			m_resources.insert(std::make_pair(id,pCharSet));
-		}
-		else
-		{
-			m_resources.insert(std::make_pair(id,new Texture(textureId,x,y,spriteWidth,spriteHeight)));
-		}
+		m_resources.insert(std::make_pair(id,new Texture(textureId,x,y,spriteWidth,spriteHeight)));
 	}
 
 	stbi_image_free(pImg);
@@ -256,9 +257,12 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 {
 	auto iter = m_resources.find(name);
 
+	if(iter == m_resources.end())
+		return false;
+
 	const IResource* pResource = iter->second;
 
-	if(iter == m_resources.end() || pResource->GetType() != ResourceType::Tex)
+	if(pResource->GetType() != ResourceType::Tex)
 		return false;
 
 	const Texture* pTex = static_cast<const Texture*>(pResource);
