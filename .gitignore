@@ -25,6 +25,7 @@
 *.bin
 *.list
 *.check_cache
+*.ilk
 TargetDirectories.txt
 CMakeCXXCompilerId.cpp
 CMakeCache.txt
@@ -43,6 +44,8 @@ CMakeCache.txt
 *.user
 *.suo
 *.sdf
+*.pdb
+*.cxx
 
 #other
 stats.txt
