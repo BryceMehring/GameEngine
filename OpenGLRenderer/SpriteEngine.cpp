@@ -63,7 +63,7 @@ void SpriteEngine::FillVertexBuffer()
 			for(unsigned int i = 0; i < sprites.size(); ++i)
 			{
 				int x = (sprites[i].iCellId % texInfo.uiCellsWidth);
-				int y = (sprites[i].iCellId / texInfo.uiCellsHeight);
+				int y = (sprites[i].iCellId / (float)texInfo.uiCellsWidth);
 
 				// tex coords
 				glm::vec2 topLeft((float)x / (float)texInfo.uiCellsWidth,(float)y / (float)texInfo.uiCellsHeight);
