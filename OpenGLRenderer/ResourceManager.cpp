@@ -1,5 +1,10 @@
 #include "ResourceManager.h"
 #include <fstream>
+
+#ifdef _MSC_VER
+#pragma warning(disable: 4996) 
+#endif
+
 #include <stb_image.c>
 
 ResourceManager::ResourceManager()
@@ -14,7 +19,7 @@ ResourceManager::~ResourceManager()
 bool ResourceManager::LoadTexture(const std::string& id, const std::string& file)
 {
 	auto iter = m_resources.find(id);
-	if(iter != m_resources.end() && iter->second->GetType() == Tex)
+	if(iter != m_resources.end() && iter->second->GetType() == ResourceType::Texture)
 	{
 		// texture already loaded
 		return false;
@@ -80,7 +85,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 bool ResourceManager::LoadShader(const std::string& id, const std::string& vert, const std::string& frag)
 {
 	auto iter = m_resources.find(id);
-	if(iter != m_resources.end() && iter->second->GetType() == Shad)
+	if(iter != m_resources.end() && iter->second->GetType() == ResourceType::Shader)
 	{
 		// shader already loaded
 		return false;
@@ -262,7 +267,7 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 
 	const IResource* pResource = iter->second;
 
-	if(pResource->GetType() != ResourceType::Tex)
+	if(pResource->GetType() != ResourceType::Texture)
 		return false;
 
 	const Texture* pTex = static_cast<const Texture*>(pResource);

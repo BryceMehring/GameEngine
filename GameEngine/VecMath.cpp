@@ -31,19 +31,19 @@ bool CCircle::Intersects(const ICollisionPolygon& other) const
 
 	switch(polyType)
 	{
-	case ICollisionPolygon::CircleType:
-	{
-		const CCircle& circle = static_cast<const CCircle&>(other);
-		bSuccess = Math::Intersects(m_circle,circle.m_circle);
-		break;
-	}
+		case ICollisionPolygon::Type::Circle:
+		{
+			const CCircle& circle = static_cast<const CCircle&>(other);
+			bSuccess = Math::Intersects(m_circle,circle.m_circle);
+			break;
+		}
 
-	case ICollisionPolygon::RectangleType:
-	{
-		const CRectangle& rectangle = static_cast<const CRectangle&>(other);
-		bSuccess = Math::Intersects(m_circle,rectangle.GetRect());
-		break;
-	}
+		case ICollisionPolygon::Type::Rectangle:
+		{
+			const CRectangle& rectangle = static_cast<const CRectangle&>(other);
+			bSuccess = Math::Intersects(m_circle,rectangle.GetRect());
+			break;
+		}
 	}
 
 	return bSuccess;
@@ -78,19 +78,19 @@ bool CRectangle::Intersects(const ICollisionPolygon& other) const
 
 	switch(polyType)
 	{
-	case ICollisionPolygon::CircleType:
-	{
-		const CCircle& circle = static_cast<const CCircle&>(other);
-		bSuccess = Math::Intersects(circle.GetCircle(),m_rect);
-		break;
-	}
+		case ICollisionPolygon::Type::Circle:
+		{
+			const CCircle& circle = static_cast<const CCircle&>(other);
+			bSuccess = Math::Intersects(circle.GetCircle(),m_rect);
+			break;
+		}
 
-	case ICollisionPolygon::RectangleType:
-	{
-		const CRectangle& rectangle = static_cast<const CRectangle&>(other);
-		bSuccess = Math::Intersects(m_rect,rectangle.m_rect);
-		break;
-	}
+		case ICollisionPolygon::Type::Rectangle:
+		{
+			const CRectangle& rectangle = static_cast<const CRectangle&>(other);
+			bSuccess = Math::Intersects(m_rect,rectangle.m_rect);
+			break;
+		}
 	}
 
 	return bSuccess;

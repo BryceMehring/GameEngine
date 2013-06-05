@@ -35,7 +35,7 @@ public:
 	SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam);
 	~SpriteEngine();
 
-	void DrawSprite(const std::string& tech,
+	void DrawSprite(const std::string& tech,  
 					const std::string& texture,
 					const glm::mat4& transformation,
 					const glm::vec2& tiling,
@@ -45,6 +45,8 @@ public:
 	void Render();
 
 	void OnReset();
+
+	void SetCamera(Camera* pCam) { m_pCamera = pCam; }
 
 private:
 

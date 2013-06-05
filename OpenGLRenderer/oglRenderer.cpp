@@ -44,8 +44,6 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_pF
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
-	//glfwDisable(GLFW_MOUSE_CURSOR);
-
 	// Initialize GLEW
 	glewExperimental=true; // Needed in core profile
 	if (glewInit() != GLEW_OK)
@@ -57,11 +55,6 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_pF
 	m_pLines = new LineEngine(&m_rm,1024*20,m_pCamera);
 	m_pSprites = new SpriteEngine(&m_rm,1024*20,m_pCamera);
 
-
-
-	//this->ToggleFullscreen();
-
-	//::glClearColor(1.0f,0.0f,0.0f,0.0f);
 }
 
 oglRenderer::~oglRenderer()
@@ -87,7 +80,7 @@ void oglRenderer::Destroy(asIScriptEngine* pAS)
 
 DLLType oglRenderer::GetPluginType() const
 {
-	return DLLType::RenderingPlugin;
+	return DLLType::Rendering;
 }
 const char* oglRenderer::GetName() const
 {
@@ -210,9 +203,9 @@ void oglRenderer::GetStringRec(const char* str, const glm::vec2& scale, Math::FR
 	m_pFonts->GetStringRec(str,scale,out);
 }
 
-void oglRenderer::DrawString(const char* str, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color, const char* font)
+void oglRenderer::DrawString(const char* str, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color, const char* font, FontAlignment options)
 {
-	m_pFonts->DrawString(str,font,pos,scale,color);
+	m_pFonts->DrawString(str,font,pos,scale,color,options);
 }
 
 void oglRenderer::GetLineWidthRange(glm::vec2& out) const
@@ -233,9 +226,9 @@ void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transf
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value )
 {
 	IResource& resource = m_rm.GetResource(shader);
-	assert(resource.GetType() == Shad);
+	assert(resource.GetType() == ResourceType::Shader);
 
-	Shader& resourceShader = static_cast<Shader&>(m_rm.GetResource(shader));
+	Shader& resourceShader = static_cast<Shader&>(resource);
 	glUseProgram(resourceShader.id);
 	glUniform1f(resourceShader.uniforms[location],value);
 }
@@ -243,15 +236,25 @@ void oglRenderer::SetShaderValue(const std::string& shader, const string& locati
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value )
 {
 	IResource& resource = m_rm.GetResource(shader);
-	assert(resource.GetType() == Shad);
+	assert(resource.GetType() == ResourceType::Shader);
 
-	Shader& resourceShader = static_cast<Shader&>(m_rm.GetResource(shader));
+	Shader& resourceShader = static_cast<Shader&>(resource);
 	glUseProgram(resourceShader.id);
 	glUniform2f(resourceShader.uniforms[location],value.x,value.y);
 }
 
-void oglRenderer::SetCamera(class Camera*)
+void oglRenderer::SetCamera(Camera* pCam)
 {
-	// todo: implement
+	//m_pFonts->SetCamera(pCam);
+	m_pLines->SetCamera(pCam);
+	m_pSprites->SetCamera(pCam);
+
+	/*if(m_pCamera != nullptr)
+	{
+		m_pCamera->Release();
+		m_pCamera = pCam;
+	}*/
+
+
 }
 

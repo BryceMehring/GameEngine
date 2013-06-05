@@ -37,6 +37,14 @@ set(FLOCKING_ALGORITHM_HEADERS
     FlockingAlgorithm/FlockingAlgorithm.h
     )
 
+set(ADVENTURE_GAME_SOURCE
+	AdventureGame/AdventureGame.cpp
+	)
+
+set(ADVENTURE_GAME_HEADERS
+	AdventureGame/AdventureGame.h
+	)
+
 set(ENGINE_SOURCE
         GameEngine/asVM.cpp
         GameEngine/BNew.cpp
@@ -119,9 +127,12 @@ target_link_libraries(renderer GameEngine)
 
 add_library(input MODULE ${INPUT_HEADERS} ${INPUT_SOURCE})
 
+# build the games
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
 add_library(FlockingAlgorithm MODULE ${FLOCKING_ALGORITHM_HEADERS} ${FLOCKING_ALGORITHM_SOURCE})
+add_library(AdventureGame MODULE ${ADVENTURE_GAME_HEADERS} ${ADVENTURE_GAME_SOURCE})
 target_link_libraries(FlockingAlgorithm GameEngine)
+target_link_libraries(AdventureGame GameEngine)
 
 # build the game launcher
 set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
@@ -151,12 +162,14 @@ if(MSVC)
 	set_target_properties(renderer PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
 	set_target_properties(input PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
 	set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
+	set_target_properties(AdventureGame PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
 	set_target_properties(GameLauncher PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
 
 	set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 	set_target_properties(renderer PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 	set_target_properties(input PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 	set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
+	set_target_properties(AdventureGame PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 	set_target_properties(GameLauncher PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 else()
 	target_link_libraries(GameEngine glfw)

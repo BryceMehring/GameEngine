@@ -1,11 +1,11 @@
 #ifndef _IPLUGIN_
 #define _IPLUGIN_
 
-enum DLLType
+enum class DLLType
 {
-	RenderingPlugin,
-	InputPlugin,
-	GamePlugin
+	Rendering,
+	Input,
+	Game
 	// more dll types here
 };
 

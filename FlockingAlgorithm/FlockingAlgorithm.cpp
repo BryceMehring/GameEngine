@@ -159,11 +159,11 @@ void FlockingAlgorithm::BuildUI(Game& game)
 	// calculate the rects of the buttons
 	Math::FRECT clearRect;
 	game.GetRenderer().GetStringRec(buttonText,textSize,clearRect);
-	clearRect = glm::vec2(70.0f,80.0f);
+	clearRect.SetCenter(glm::vec2(70.0f,80.0f));
 
 	Math::FRECT quadtreeRect;
 	game.GetRenderer().GetStringRec(quadtreeButtonText,textSize,quadtreeRect);
-	quadtreeRect = glm::vec2(70.0f,60.0f);
+	quadtreeRect.SetCenter(glm::vec2(70.0f,60.0f));
 
 	// create both buttons
 	UI::GenericButton<void>* pClearButton = new UI::GenericButton<void>(clearRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),textSize,buttonText);

@@ -43,7 +43,7 @@ public:
 
 	FlockingAlgorithm();
 
-	virtual DLLType GetPluginType() const { return GamePlugin; }
+	virtual DLLType GetPluginType() const { return DLLType::Game; }
 	virtual const char* GetName() const { return "FlockingAlgorithm"; }
 	virtual int GetVersion() const { return 0; }
 

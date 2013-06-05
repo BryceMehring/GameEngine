@@ -1,6 +1,7 @@
 #include "FontEngine.h"
 #include "GenerateBuffers.h"
 #include <glm/gtx/transform.hpp>
+#include <GL/glew.h>
 
 FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
 	m_pRm(pRm), m_iMaxLength(2*maxLength), m_pCamera(pCam)
@@ -40,7 +41,7 @@ void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRE
 	out = Math::FRECT(topLeft,bottomRight);
 }
 
-void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color)
+void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color, FontAlignment options)
 {
 	if(str == nullptr)
 		return;
@@ -48,7 +49,7 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& 
 	if(font == nullptr)
 		font = "font";
 
-	m_textSubsets[font].push_back(DrawTextInfo(str,pos,glm::vec2(5.0f,5.0f)*scale,color));
+	m_textSubsets[font].push_back(DrawTextInfo(str,pos,glm::vec2(5.0f)*scale,color,options));
 }
 
 void FontEngine::OnReset()
@@ -91,25 +92,33 @@ void FontEngine::FillVertexBuffer()
 		// Loop over all fonts with the current texture
 		for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
 		{
+			unsigned int iVert = iCurrentVerts; // current vertex
 			const char* str = subIter->text.c_str();
+			
+			glm::vec3 posW(subIter->pos,0.0f); // World pos of where the text will be drawn
+			
+			if(subIter->options == FontAlignment::Center)
+			{
+				Math::FRECT drawRec;
+				GetStringRec(str,subIter->scale / 5.0f,drawRec);
 
-			// current vertex
-			unsigned int iVert = iCurrentVerts;
+				posW.x -= drawRec.Width() / 2.0f;
+			}
+			//else if (subIter->options == FontAlignment::Left)
+			{
+				//posW = glm::vec3(subIter->pos,0.0f);
+			}
+			//else
+			{
+				 // right
+			}
 
-			// World pos of where the text will be drawn
-			glm::vec3 posW(subIter->pos,0.0f);
-
-			// Loop over entire string and write to the vertex buffer
+			// Loop over the entire string and write to the vertex buffer
 			while((iVert < m_iMaxLength) && *str)
 			{
-				// character to draw
-				char character = *str++;
-
-				// font info about the character to draw
-				const CharDescriptor& charToRender = font.Chars[character];
-
-				// How much we will advance from the current character
-				float fAdvance = (subIter->scale.x * charToRender.Width / (float)font.iWidth);
+				char character = *str++; // character to draw
+				const CharDescriptor& charToRender = font.Chars[character]; // font info about the character to draw
+				float fAdvance = (subIter->scale.x * charToRender.Width / (float)font.iWidth); // // How much we will advance from the current character
 
 				if((character != '\n') && (character != '\t') && (character != ' '))
 				{
@@ -192,7 +201,6 @@ void FontEngine::Render()
 	GLuint TexId = theShader.uniforms["myTextureSampler"];
 	GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
 	GLuint vertexUV = glGetAttribLocation(theShader.id, "vertexUV");
-
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);

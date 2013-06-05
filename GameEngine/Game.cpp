@@ -15,7 +15,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-
 using namespace std;
 
 Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
@@ -32,17 +31,6 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 
 	m_plugins.SetAS(m_vm.GetScriptEngine());
 	LoadAllDLL();
-
-	// this->m_pRenderer->ToggleFullscreen();
-	
-
-
-
-	// todo: move this code somewhere else
-	//m_pRenderer->GetResourceManager().RemoveAllTextures();
-	//m_pRenderer->GetResourceManager().LoadResourceFile("base.r");
-
-	//m_pRenderer->ToggleFullscreen();
 
 	m_pRenderer->GetResourceManager().LoadResourceFile("base.r");
 
@@ -87,9 +75,18 @@ void Game::SetNextState(const std::string& state)
 
 int Game::Run()
 {
+	double prevTimeStamp = 0.0;
+	double currentTimeStamp = 0.0;
+
+	m_timer.Start();
+
 	// Loop while the use has not quit
-	while(StartTimer(), glfwGetKey( GLFW_KEY_ESC ) != GLFW_PRESS && glfwGetWindowParam( GLFW_OPENED ))
+	while(glfwGetKey( GLFW_KEY_ESC ) != GLFW_PRESS && glfwGetWindowParam( GLFW_OPENED ))
 	{
+		currentTimeStamp = m_timer.GetTime();
+		m_fDT = currentTimeStamp - prevTimeStamp;
+		prevTimeStamp = currentTimeStamp;
+
 		glfwPollEvents();
 
 		// Update the game
@@ -99,8 +96,6 @@ int Game::Run()
 		Draw();
 
 		m_pInput->Reset();
-
-		EndTimer();
 	}
 
 	return 0;
@@ -171,7 +166,6 @@ void Game::Update()
 
 void Game::Draw()
 {
-
 	DrawFPS();
 	DrawCursor();
 	//DrawSelectionRect();
@@ -209,9 +203,10 @@ void Game::DrawFPS()
 
 	std::ostringstream out;
 	out <<"FPS: " << GetFps() << endl;
-	out <<width<<"x"<<height;
+	out <<width<<"x"<<height<<endl;
+	out <<m_fDT<<endl;
 
-	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),glm::vec2(2.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,80),glm::vec2(2.0f),glm::vec3(0.0f,1.0f,0.0f));
 }
 
 void Game::DrawCursor()
@@ -283,13 +278,13 @@ void Game::ReloadPlugins(const std::string& path)
 
 	IPlugin* pPlugin = m_plugins.LoadDLL("renderer");
 	assert(pPlugin != nullptr);
-	assert(pPlugin->GetPluginType() == DLLType::RenderingPlugin); // check to make sure the renderer is actually the renderer
+	assert(pPlugin->GetPluginType() == DLLType::Rendering); // check to make sure the renderer is actually the renderer
 
 	m_pRenderer = static_cast<IRenderer*>(pPlugin);
 
 	pPlugin = m_plugins.LoadDLL("input");
 	assert(pPlugin != nullptr);
-	assert(pPlugin->GetPluginType() == DLLType::InputPlugin); // check to make sure the input is actually the input plugin
+	assert(pPlugin->GetPluginType() == DLLType::Input); // check to make sure the input is actually the input plugin
 
 	m_pInput = static_cast<IKMInput*>(pPlugin);
 }
@@ -340,13 +335,23 @@ void GameInfo::Update(double dt)
 
 void GameInfo::UpdateFPS(double dt)
 {
-	m_fTimeElapsed += dt;
-	m_uiFrames += 1;
+	static double tim1 = 0;
+	static double tim2 = 0;
+	static double diff = 0;
 
-	if(m_fTimeElapsed >= 1.0)
+	m_fTimeElapsed += dt;
+	++m_uiFrames;
+
+	if ( m_uiFrames % 61 == 1 )
 	{
-		m_uiFPS = m_uiFrames;
-		m_uiFrames = 0;
-		m_fTimeElapsed = 0.0;
+		tim1 = m_fTimeElapsed;
 	}
+	else if(m_uiFrames % 61 == 0)
+	{
+		tim1 = tim2;
+		tim2 = m_fTimeElapsed;
+		diff = abs(tim1 - tim2);
+	}
+
+	m_uiFPS = ((61 / diff)+0.5f);
 }

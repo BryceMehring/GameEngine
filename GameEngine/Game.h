@@ -106,6 +106,7 @@ private:
 	void DrawSelectionRect();
 	void DrawFPS();
 
+
 	// Prevent copying
 	Game(const Game&);
 	Game& operator =(const Game&);

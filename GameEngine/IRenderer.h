@@ -5,7 +5,14 @@
 #include "IResourceManager.h"
 #include "VecMath.h"
 #include <string>
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
+
+enum class FontAlignment
+{
+	Left,
+	Center,
+	Right
+};
 
 class IRenderer : public IPlugin
 {
@@ -23,9 +30,6 @@ public:
 	virtual void OnResetDevice() = 0;
 	virtual bool IsDeviceLost() = 0;
 	//-------- TODO: REMOVE THESE, NOT USED ANYMORE -------
-
-	// whenever an ISpatialObject is passed to the renderer,
-	// the renderer deals with rendering the object so the application does not have to worry about it.
 	
 	// Returns the resource manager
 	virtual IResourceManager& GetResourceManager() = 0;
@@ -44,17 +48,18 @@ public:
 	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const = 0;
 
 	virtual void DrawString(const char* str, // the string that gets drawn
-							const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
-							const glm::vec2& scale = glm::vec2(1.0f), // size of the text
+							const glm::vec2& pos, // pos of the text
+							const glm::vec2& scale = glm::vec2(1.5f), // scaling the text
 							const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
-							const char* font = nullptr // the desired font, may be null if you wish to use the default font
-			) = 0; // world space
+							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
+							FontAlignment options = FontAlignment::Left
+							) = 0; // world space
 
 	virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
 							const glm::mat4& transformation, // transformation applied to the sprite
 							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
 							unsigned int iCellId = 0 // cellId if multiple frames are stored together in the same sprite image
-			) = 0;
+							) = 0;
 
 	virtual void SetShaderValue(const std::string& shader, const std::string& location, float value ) = 0;
 	virtual void SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value ) = 0;

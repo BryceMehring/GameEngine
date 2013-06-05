@@ -66,7 +66,7 @@ DirectInput::DirectInput() : m_iMouseX(0), m_iMouseY(0), m_fMouseSensistivity(10
 	glfwSetMouseButtonCallback(MouseClickCallback);
 
 	glfwDisable(GLFW_AUTO_POLL_EVENTS);
-	glfwEnable(GLFW_MOUSE_CURSOR);
+	glfwDisable(GLFW_MOUSE_CURSOR);
 	glfwEnable(GLFW_KEY_REPEAT);
 	glfwEnable(GLFW_STICKY_KEYS);
 
@@ -91,7 +91,7 @@ int DirectInput::GetVersion() const
 
 DLLType DirectInput::GetPluginType() const
 {
-	return InputPlugin;
+	return DLLType::Input;
 }
 
 void DirectInput::CenterMouse()

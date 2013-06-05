@@ -24,7 +24,7 @@ public:
 	// Returns the time elapsed since Start() was called in seconds
 	double GetTime();
 
-	// Returns TRUE if the Timer is currently active
+	// Returns true if the Timer is currently active
 	bool IsActive() const;
 
 private:

@@ -6,10 +6,10 @@
 #include <map>
 #include <vector>
 
-enum ResourceType
+enum class ResourceType
 {
-	Tex,
-	Shad,
+	Texture,
+	Shader,
 	Font
 };
 
@@ -44,7 +44,7 @@ struct Texture : IResource
 		glDeleteTextures(1,&id);
 	}
 
-	virtual ResourceType GetType() const { return Tex; }
+	virtual ResourceType GetType() const { return ResourceType::Texture; }
 
 	int iWidth;
 	int iHeight;
@@ -62,7 +62,7 @@ struct Shader : IResource
 		glDeleteProgram(id);
 	}
 
-	virtual ResourceType GetType() const { return Shad; }
+	virtual ResourceType GetType() const { return ResourceType::Shader; }
 
 	std::map<std::string,unsigned int> uniforms;
 	//std::map<std::string,unsigned int> parameters;
@@ -74,7 +74,7 @@ struct Charset : Texture
 	{
 	}
 
-	virtual ResourceType GetType() const { return Font; }
+	virtual ResourceType GetType() const { return ResourceType::Font; }
 
 	unsigned short LineHeight;
 	unsigned short Base;

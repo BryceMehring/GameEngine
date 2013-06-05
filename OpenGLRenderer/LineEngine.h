@@ -31,6 +31,8 @@ public:
 
 	void OnReset();
 
+	void SetCamera(Camera* pCam) { m_pCamera = pCam; }
+
 private:
 
 	unsigned int m_uiVertexBuffer;

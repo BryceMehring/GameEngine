@@ -57,16 +57,17 @@ public:
 
 	virtual void DrawString(const char* str, // the string that gets drawn
 							const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
-							const glm::vec2& scale = glm::vec2(1.0f), // size of the text
-							const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
-							const char* font = nullptr // the desired font, may be null if you wish to use the default font
-			); // world space
+							const glm::vec2& scale, // size of the text
+							const glm::vec3& color, // color of the text blended together with the texture
+							const char* font, // the desired font, may be null if you wish to use the default font
+							FontAlignment options
+							);
 
 	virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
 							const glm::mat4& transformation, // transformation applied to the sprite
 							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
 							unsigned int iCellId = 0 // cellId if multiple frames are stored together in the same sprite image
-			);
+							);
 
 	virtual void SetShaderValue(const std::string& shader, const std::string& location, float value );
 	virtual void SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value );

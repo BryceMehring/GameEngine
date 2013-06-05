@@ -52,14 +52,11 @@ struct FRECT : public IPolygon
 		return (topLeft.y - bottomRight.y);
 	}
 
-	// sets new center
-	FRECT& operator =(const glm::vec2& pos)
+	void SetCenter(const glm::vec2& pos)
 	{
 		glm::vec2 diff = (bottomRight - topLeft)*0.5f;
 		topLeft = pos - diff;
 		bottomRight = pos + diff;
-
-		return *this;
 	}
 
 	// todo: rename to leftTop, rightBottom;
@@ -81,10 +78,9 @@ struct Circle : public IPolygon
 		return (temp.x * temp.x + temp.y * temp.y) < (r*r);
 	}
 
-	Circle& operator =(const glm::vec2& c)
+	void SetCenter(const glm::vec2& pos)
 	{
-		center = c;
-		return *this;
+		center = pos;
 	}
 
 	glm::vec2 center;
@@ -117,10 +113,10 @@ class ICollisionPolygon
 {
 public:
 
-	enum Type
+	enum class Type
 	{
-		CircleType,
-		RectangleType,
+		Circle,
+		Rectangle,
 	};
 
 	virtual ~ICollisionPolygon() {}
@@ -146,7 +142,7 @@ public:
 	CCircle() {}
 	CCircle(const Circle& circle);
 
-	virtual Type GetType() const { return ICollisionPolygon::CircleType; }
+	virtual Type GetType() const { return ICollisionPolygon::Type::Circle; }
 	virtual bool Intersects(const ICollisionPolygon& other) const;
 	virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
 	virtual void GetAABB(AABB&) const;
@@ -171,7 +167,7 @@ public:
 	CRectangle() {}
 	CRectangle(const FRECT& rect);
 
-	virtual Type GetType() const { return ICollisionPolygon::RectangleType; }
+	virtual Type GetType() const { return ICollisionPolygon::Type::Rectangle; }
 	virtual bool Intersects(const ICollisionPolygon& other) const;
 	virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
 	virtual void GetAABB(AABB&) const;

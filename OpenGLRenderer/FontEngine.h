@@ -1,22 +1,22 @@
 #ifndef _FONTENGINE_
 #define _FONTENGINE_
 
-#include "ResourceManager.h"
 #include "Camera.h"
-#include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <VecMath.h>
+#include "IRenderer.h"
+#include "ResourceManager.h"
+#include <map>
 
 struct DrawTextInfo
 {
 	DrawTextInfo() {}
-	DrawTextInfo(const std::string& str, const glm::vec2& p, const glm::vec2& s, const glm::vec3& c) :
-		text(str), pos(p), scale(s), color(c), length(0) {}
+	DrawTextInfo(const std::string& str, const glm::vec2& p, const glm::vec2& s, const glm::vec3& c, FontAlignment o) :
+		text(str), pos(p), scale(s), color(c), options(o), length(0) {}
 
 	std::string text;
 	glm::vec2 pos;
 	glm::vec2 scale;
 	glm::vec3 color;
+	FontAlignment options;
 	unsigned int length;
 };
 
@@ -37,11 +37,20 @@ public:
 
 	void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;
 
-	void DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color);
+	//void DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color);
+	void DrawString(const char* str,
+					const char* font,
+					const glm::vec2& pos,
+					const glm::vec2& scale,
+					const glm::vec3& color,
+					FontAlignment options
+					);
 
 	void Render();
 
 	void OnReset();
+
+	void SetCamera(Camera* pCam) { m_pCamera = pCam; }
 
 private:
 

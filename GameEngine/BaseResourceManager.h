@@ -4,6 +4,7 @@
 #include "IResourceManager.h"
 #include <fstream>
 #include <sstream>
+#include <cassert>
 
 class BaseResourceManager : public IResourceManager
 {
@@ -32,14 +33,14 @@ public:
 
             if(type == "texture")
             {
-                LoadTexture(id,fileName);
+                assert(LoadTexture(id,fileName));
             }
             else if(type == "shader")
             {
                 std::string fileName2;
                 stream >> fileName2;
 
-                LoadShader(id,fileName,fileName2);
+                assert(LoadShader(id,fileName,fileName2));
             }
         }
 
