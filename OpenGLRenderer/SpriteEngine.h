@@ -8,6 +8,14 @@
 #include <string>
 #include <vector>
 
+// todo: move these to another header file
+struct SpriteVertex
+{
+	glm::vec3 pos;
+	glm::vec2 tex;
+	glm::vec2 tiling;
+};
+
 struct Sprite
 {
 	Sprite(const glm::mat4& transform, const glm::vec2& tile, unsigned int cell)
@@ -20,12 +28,10 @@ struct Sprite
 	unsigned int iCellId;
 };
 
-// todo: move these to another header file
-struct SpriteVertex
+struct Layer
 {
-	glm::vec3 pos;
-	glm::vec2 tex;
-	glm::vec2 tiling;
+	typedef std::map<std::string,std::vector<Sprite>> TextureMap;
+	std::map<std::string,TextureMap> sprites;
 };
 
 class SpriteEngine
@@ -61,9 +67,7 @@ private:
 	int m_iCurrentLength;
 	const unsigned int m_iMaxLength;
 
-	typedef std::map<std::string,std::vector<Sprite>> TextureMap;
-	std::map<std::string,TextureMap> m_sprites;
-	//std::map<std::string,std::vector<Sprite>> m_sprites;
+	std::map<int,Layer> m_spriteLayers;
 
 	void CreateIndexBuffer();
 	void CreateVertexBuffer();

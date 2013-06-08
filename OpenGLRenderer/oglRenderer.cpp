@@ -14,7 +14,7 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin()
 oglRenderer::oglRenderer() : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_pFonts(nullptr), m_bFullscreen(false)
 {
 	m_pCamera = CreateCamera();
-	m_pCamera->setLens(200.0f,200.0f,0.0f,5000.0f);
+	m_pCamera->setLens(200.0f,200.0f,0.0f,5.0f);
 	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_pCamera->update(0.0f);
 
@@ -43,6 +43,7 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_pF
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+	glClearColor(1.0f,1.0f,1.0f,0.0f);
 
 	// Initialize GLEW
 	glewExperimental=true; // Needed in core profile
@@ -94,7 +95,7 @@ int oglRenderer::GetVersion() const
 void oglRenderer::GLFWOpenWindowHints()
 {
 	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
-	//glfwOpenWindowHint(GLFW_FSAA_SAMPLES,2);
+	glfwOpenWindowHint(GLFW_FSAA_SAMPLES,4);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2); // We want OpenGL 2.1
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
 }
@@ -109,8 +110,8 @@ void oglRenderer::Present()
 {
 	ClearScreen();
 
-	m_pLines->Render();
 	m_pSprites->Render();
+	m_pLines->Render();
 	m_pFonts->Render();
 
 
@@ -245,7 +246,7 @@ void oglRenderer::SetShaderValue(const std::string& shader, const string& locati
 
 void oglRenderer::SetCamera(Camera* pCam)
 {
-	//m_pFonts->SetCamera(pCam);
+	m_pFonts->SetCamera(pCam);
 	m_pLines->SetCamera(pCam);
 	m_pSprites->SetCamera(pCam);
 
