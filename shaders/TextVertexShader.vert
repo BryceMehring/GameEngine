@@ -3,9 +3,11 @@
 // Input vertex data, different for all executions of this shader.
 attribute vec3 vertexPosition_modelspace;
 attribute vec2 vertexUV;
+attribute vec3 vertexColor;
 
 // Output data ; will be interpolated for each fragment.
-varying vec2 UV;
+varying vec2 interpUV;
+varying vec3 interpColor;
 
 // Values that stay constant for the whole mesh.
 uniform mat4 MVP;
@@ -16,6 +18,7 @@ void main()
 	gl_Position =  MVP * vec4(vertexPosition_modelspace,1);
 	
 	// UV of the vertex. No special space for this one.
-	UV = vertexUV;
+	interpUV = vertexUV;
+	interpColor = vertexColor;
 }
 

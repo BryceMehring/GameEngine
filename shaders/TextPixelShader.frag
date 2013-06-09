@@ -1,22 +1,15 @@
 #version 120
 
 // Interpolated values from the vertex shaders
-varying vec2 UV;
+varying vec2 interpUV;
+varying vec3 interpColor;
 
 // Values that stay constant for the whole mesh.
 uniform sampler2D myTextureSampler;
-uniform vec3 textColor;
 
-void main(){
-
-
+void main()
+{
 
 	// Output color = color of the texture at the specified UV
-	vec4 color = texture2D( myTextureSampler, vec2(UV.x,UV.y) );
-
-	gl_FragColor = color * vec4(textColor,1.0f) ; // gl_FragColor
-	
-	/*if(gl_FragColor.a <= 0)
-		discard;*/
-
+	gl_FragColor = texture2D( myTextureSampler, interpUV ) * vec4(interpColor,1.0f) ; // gl_FragColor
 }
