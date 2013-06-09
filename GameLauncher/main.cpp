@@ -2,19 +2,8 @@
 
 #include <iostream>
 #include <ctime>
-#include "RefCounting.h"
 
 using namespace std;
-
-struct MemChecker
-{
-	~MemChecker()
-	{
-		cout<<"Alloc: " <<RefCounting::GetAddRefCount()<<endl;
-		cout<<"Dealloc: " <<RefCounting::GetAddReleaseCount()<<endl;
-		cout<<"Memory Leak: "<<(RefCounting::GetAddRefCount() != RefCounting::GetAddReleaseCount())<<endl;
-	}
-};
 
 int main(int size, char** cmd)
 {
@@ -24,7 +13,6 @@ int main(int size, char** cmd)
 		return 1;
 	}
 
-	MemChecker checker;
 	const char* pState = cmd[1];
 
 	//unsigned int seed = FileManager::Instance().GetSeedFromLog();

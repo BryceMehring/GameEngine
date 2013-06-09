@@ -211,12 +211,12 @@ void FontEngine::Render()
 	// set shader parameters
 	glUniformMatrix4fv(theShader.uniforms["MVP"],1,false,&m_pCamera->viewProj()[0][0]);
 
-	GLuint ColorId = theShader.uniforms["textColor"];
 	GLuint TexId = theShader.uniforms["myTextureSampler"];
 	GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
 	GLuint vertexUV = glGetAttribLocation(theShader.id, "vertexUV");
 	GLuint vertexColor = glGetAttribLocation(theShader.id, "vertexColor");
 
+	// Create our vertex structure in OpenGL
 	glEnableVertexAttribArray(0);
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 	glVertexAttribPointer(
@@ -248,7 +248,11 @@ void FontEngine::Render()
 				(void*)offsetof(struct FontVertex,color)  // array buffer offset
 				);
 
+	// Bind index buffer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_uiIndexBuffer);
+
+	// Enables one texture
+	glActiveTexture(GL_TEXTURE0);
 
 	// Enable blending
 	glEnable(GL_BLEND);
@@ -261,7 +265,7 @@ void FontEngine::Render()
 		IResource& currentTexture = m_pRm->GetResource(iter->first);
 
 		// Set the texture to use
-		glActiveTexture(GL_TEXTURE0);
+		
 		glBindTexture(GL_TEXTURE_2D, currentTexture.id);
 		glUniform1i(TexId,0);
 
