@@ -10,7 +10,7 @@ struct DrawTextInfo
 {
 	DrawTextInfo() {}
 	DrawTextInfo(const std::string& str, const glm::vec2& p, const glm::vec2& s, const glm::vec3& c, FontAlignment o) :
-		text(str), pos(p), scale(s), color(c), options(o), length(0) {}
+		text(str), pos(p), scale(s), color(c), options(o) {}
 
 	std::string text;
 	glm::vec2 pos;
@@ -24,7 +24,8 @@ struct DrawTextInfo
 struct FontVertex
 {
 	glm::vec3 pos;
-	glm::vec2 tex;
+	glm::vec2 uv;
+	glm::vec3 color;
 };
 
 // This class manages the rendering of fonts
@@ -62,7 +63,9 @@ private:
 	unsigned int m_uiVertexBuffer;
 	unsigned int m_uiIndexBuffer;
 
-	void FillVertexBuffer();
+	// Fills the vertex buffer with all of the text subsets
+	// output is the number of characters to draw for each font texture, in the correct sorted order
+	void FillVertexBuffer(std::vector<unsigned int>&);
 
 	void CreateVertexBuffer();
 	void CreateIndexBuffer();

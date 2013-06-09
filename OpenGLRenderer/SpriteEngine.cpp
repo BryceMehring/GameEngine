@@ -35,7 +35,7 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 {
 	if(m_iCurrentLength < m_iMaxLength)
 	{
-		Layer& layer = m_spriteLayers[int(transformation[3].z)];
+		Layer& layer = m_spriteLayers[(int)transformation[3].z];
 		layer.sprites[tech][texture].push_back(Sprite(transformation,tiling,iCellId));
 		++m_iCurrentLength;
 	}
@@ -66,7 +66,7 @@ void SpriteEngine::FillVertexBuffer()
 				std::vector<Sprite>& sprites = subIter->second;
 				/*std::sort(sprites.begin(),sprites.end(),[](const Sprite& a, const Sprite& b) -> bool
 				{
-					return a.T[3].z > b.T[3].z;
+					return a.T[3].z < b.T[3].z;
 				});*/
 
 				for(unsigned int i = 0; i < sprites.size(); ++i)
