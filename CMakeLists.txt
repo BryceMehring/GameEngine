@@ -1,6 +1,12 @@
 cmake_minimum_required (VERSION 2.8)
 project (GameEngine CXX)
 
+if( MSVC )
+	if(NOT ${CMAKE_GENERATOR} STREQUAL "Visual Studio 11")
+		message( SEND_ERROR "Visual Studio 11 is needed to compile the code" )
+	endif()
+endif()
+
 # The version number.
 set (ENGINE_VERSION_MAJOR 1)
 set (ENGINE_VERSION_MINOR 0)
@@ -43,6 +49,14 @@ set(ADVENTURE_GAME_SOURCE
 
 set(ADVENTURE_GAME_HEADERS
 	AdventureGame/AdventureGame.h
+	)
+
+set(MINE_SWEEPER_HEADERS
+	MineSweeper/MineSweeper.cpp
+	)
+
+set(MINE_SWEEPER_SOURCE
+	MineSweeper/MineSweeper.h
 	)
 
 set(ENGINE_SOURCE
@@ -131,8 +145,10 @@ add_library(input MODULE ${INPUT_HEADERS} ${INPUT_SOURCE})
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
 add_library(FlockingAlgorithm MODULE ${FLOCKING_ALGORITHM_HEADERS} ${FLOCKING_ALGORITHM_SOURCE})
 add_library(AdventureGame MODULE ${ADVENTURE_GAME_HEADERS} ${ADVENTURE_GAME_SOURCE})
+add_library(MineSweeper MODULE ${MINE_SWEEPER_HEADERS} ${MINE_SWEEPER_SOURCE})
 target_link_libraries(FlockingAlgorithm GameEngine)
 target_link_libraries(AdventureGame GameEngine)
+target_link_libraries(MineSweeper GameEngine)
 
 # build the game launcher
 set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
@@ -142,15 +158,10 @@ add_executable(GameLauncher ${GAMELAUNCHER_SOURCE})
 target_link_libraries(GameLauncher GameEngine)
 
 if(MSVC)
-	if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 10")
-		target_link_libraries(GameEngine ../glfw/lib-msvc100/glfwdll)
-		target_link_libraries(renderer ../glfw/lib-msvc100/glfwdll)
-		target_link_libraries(input ../glfw/lib-msvc100/glfwdll)
-	elseif(${CMAKE_GENERATOR} STREQUAL "Visual Studio 11")
-		target_link_libraries(GameEngine ../glfw/lib-msvc110/glfwdll)
-		target_link_libraries(renderer ../glfw/lib-msvc110/glfwdll)
-		target_link_libraries(input ../glfw/lib-msvc110/glfwdll)
-	endif()
+	#message( SEND_ERROR "Visual Studio 11 is needed to compile" )
+	target_link_libraries(GameEngine ../glfw/lib-msvc110/glfwdll)
+	target_link_libraries(renderer ../glfw/lib-msvc110/glfwdll)
+	target_link_libraries(input ../glfw/lib-msvc110/glfwdll)
 	target_link_libraries(GameEngine debug ../angelscript/angelscript/lib/angelscriptd) # debug version
 	target_link_libraries(GameEngine optimized ../angelscript/angelscript/lib/angelscript) # release version
 	
@@ -164,6 +175,7 @@ if(MSVC)
 	set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
 	set_target_properties(AdventureGame PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
 	set_target_properties(GameLauncher PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
+	set_target_properties(MineSweeper PROPERTIES COMPILE_FLAGS_DEBUG "/MP /Od /arch:SSE2 /GR- /MDd")
 
 	set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 	set_target_properties(renderer PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
@@ -171,6 +183,7 @@ if(MSVC)
 	set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 	set_target_properties(AdventureGame PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 	set_target_properties(GameLauncher PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
+	set_target_properties(MineSweeper PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 else()
 	target_link_libraries(GameEngine glfw)
 	target_link_libraries(GameEngine angelscript)

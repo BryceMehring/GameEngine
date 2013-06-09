@@ -1,2 +1,2 @@
-cmake -g "visual studio 11" CMakeLists.txt
+cmake -G "Visual Studio 11" CMakeLists.txt
 pause
