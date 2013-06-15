@@ -13,10 +13,8 @@
 #include "Camera.h"
 #include <angelscript.h>
 
-#define GLFW_NO_GLU
 #include <GL/glew.h>
-#include <GL/glfw.h>
-
+#include <GLFW/glfw3.h>
 
 class oglRenderer : public IRenderer
 {
@@ -78,8 +76,8 @@ public:
 	// config
 	virtual void EnableVSync(bool);
 	virtual void EnumerateDisplayAdaptors();
-	virtual unsigned int GetNumDisplayModes() const;
-	virtual unsigned int GetCurrentDisplayMode() const;
+	virtual int GetNumDisplayModes() const;
+	virtual int GetCurrentDisplayMode() const;
 	virtual void SetDisplayMode(unsigned int i);
 	virtual const std::string& GetDisplayModeStr(unsigned int i) const;
 	virtual void ToggleFullscreen();
@@ -88,15 +86,20 @@ private:
 
 	Camera* m_pCamera;
 
+	GLFWwindow* m_pWindow;
+
 	ResourceManager m_rm;
 	FontEngine* m_pFonts;
 	LineEngine* m_pLines;
 	SpriteEngine* m_pSprites;
 
-	std::vector<GLFWvidmode> m_VideoModes;
+	// todo: turn this into a vector?
+	const GLFWvidmode* m_pVideoModes;
+	int m_iNumVideoModes;
+
 	std::vector<std::string> m_VideoModeStr;
 
-	unsigned int m_uiCurrentDisplayMode;
+	int m_uiCurrentDisplayMode;
 	bool m_bFullscreen;
 
 	void GLFWOpenWindowHints();

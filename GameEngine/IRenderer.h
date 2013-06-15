@@ -75,8 +75,8 @@ public:
 	// 0 = Highest Res
 	// N = Lowest Res where N is the number of display modes
 	virtual void EnumerateDisplayAdaptors() = 0;
-	virtual unsigned int GetNumDisplayModes() const = 0; // returns the number of video modes from EnumerateDisplayAdaptors()
-	virtual unsigned int GetCurrentDisplayMode() const = 0; // returns the current display mode
+	virtual int GetNumDisplayModes() const = 0; // returns the number of video modes from EnumerateDisplayAdaptors()
+	virtual int GetCurrentDisplayMode() const = 0; // returns the current display mode
 	virtual void SetDisplayMode(unsigned int i) = 0; // set a display mode, i being the index into the displayModeList.
 	virtual const std::string& GetDisplayModeStr(unsigned int i) const = 0; // get the display mode str
 	virtual void ToggleFullscreen() = 0; // todo: need to implement

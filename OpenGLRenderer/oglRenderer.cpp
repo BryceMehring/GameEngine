@@ -11,7 +11,7 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin()
 	return new oglRenderer();
 }
 
-oglRenderer::oglRenderer() : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_pFonts(nullptr), m_bFullscreen(false)
+oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_uiCurrentDisplayMode(0), m_pFonts(nullptr), m_bFullscreen(false)
 {
 	m_pCamera = CreateCamera();
 	m_pCamera->setLens(200.0f,200.0f,0.0f,5.0f);
@@ -21,23 +21,14 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_uiCurrentDisplayMode(0), m_pF
 	EnumerateDisplayAdaptors();
 
 	GLFWOpenWindowHints();
-	if(glfwOpenWindow( m_VideoModes[0].Width,
-					   m_VideoModes[0].Height,
-					   m_VideoModes[0].RedBits,
-					   m_VideoModes[0].GreenBits,
-					   m_VideoModes[0].BlueBits,
-					   8,24,0,GLFW_WINDOW ) < 1) // // GLFW_WINDOW, GLFW_FULLSCREEN
+	m_pWindow = glfwCreateWindow(m_pVideoModes[m_iNumVideoModes - 1].width, m_pVideoModes[m_iNumVideoModes - 1].height, "", NULL, NULL);
+	if(m_pWindow == nullptr)
 	{
 		glfwTerminate();
 		throw std::string("Failed to create window");
 	}
 
-	int major, minor, rev;
-	glfwGetGLVersion(&major,&minor,&rev);
-
-	cout<<"major: "<<major<<endl;
-	cout<<"minor: "<<minor<<endl;
-	cout<<"rev: "<<rev<<endl;
+	glfwMakeContextCurrent(m_pWindow);
 
 	glfwSwapInterval(1);
 	glDisable(GL_CULL_FACE);
@@ -66,7 +57,7 @@ oglRenderer::~oglRenderer()
 	m_pCamera->Release();
 	m_pCamera = nullptr;
 
-	glfwCloseWindow();
+	glfwDestroyWindow(m_pWindow);
 }
 
 void oglRenderer::Init(asIScriptEngine* pAS)
@@ -94,16 +85,12 @@ int oglRenderer::GetVersion() const
 
 void oglRenderer::GLFWOpenWindowHints()
 {
-	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,GL_TRUE);
-	glfwOpenWindowHint(GLFW_FSAA_SAMPLES,4);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2); // We want OpenGL 2.1
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
 }
 
 void oglRenderer::ClearScreen()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void oglRenderer::Present()
@@ -115,7 +102,7 @@ void oglRenderer::Present()
 	m_pFonts->Render();
 
 
-	glfwSwapBuffers();
+	glfwSwapBuffers(m_pWindow);
 }
 
 void oglRenderer::EnableVSync(bool enable)
@@ -125,32 +112,25 @@ void oglRenderer::EnableVSync(bool enable)
 
 void oglRenderer::EnumerateDisplayAdaptors()
 {
-	m_VideoModes.resize(64);
+	m_pVideoModes = glfwGetVideoModes(glfwGetPrimaryMonitor(),&m_iNumVideoModes);
 
-	int iVideoModes = glfwGetVideoModes(&m_VideoModes.front(),m_VideoModes.size());
+	m_VideoModeStr.reserve(m_iNumVideoModes);
 
-	m_VideoModes.resize(iVideoModes);
-	m_VideoModes.shrink_to_fit();
-
-	m_VideoModeStr.reserve(iVideoModes);
-
-	std::reverse(m_VideoModes.begin(),m_VideoModes.end());
-
-	for(unsigned int i = 0; i < m_VideoModes.size(); ++i)
+	for(unsigned int i = 0; i < m_iNumVideoModes; ++i)
 	{
 		std::stringstream stream;
-		stream << m_VideoModes[i].Width << 'x' << m_VideoModes[i].Height;
+		stream << m_pVideoModes[i].width << 'x' << m_pVideoModes[i].height;
 
 		m_VideoModeStr.push_back(stream.str());
 	}
 }
 
-unsigned int oglRenderer::GetNumDisplayModes() const
+int oglRenderer::GetNumDisplayModes() const
 {
-	return m_VideoModes.size();
+	return m_iNumVideoModes;
 }
 
-unsigned int oglRenderer::GetCurrentDisplayMode() const
+int oglRenderer::GetCurrentDisplayMode() const
 {
 	return m_uiCurrentDisplayMode;
 }
@@ -159,7 +139,7 @@ void oglRenderer::SetDisplayMode(unsigned int i)
 {
 	if(i < GetNumDisplayModes())
 	{
-		glfwSetWindowSize(m_VideoModes[i].Width,m_VideoModes[i].Height);
+		glfwSetWindowSize(m_pWindow,m_pVideoModes[i].width,m_pVideoModes[i].height);
 	}
 }
 

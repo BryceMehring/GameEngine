@@ -125,8 +125,8 @@ set(GAMELAUNCHER_SOURCE
     GameLauncher/main.cpp
     )
 
-include_directories("${CMAKE_SOURCE_DIR}")
 include_directories("${CMAKE_SOURCE_DIR}/GameEngine/")
+include_directories("${CMAKE_SOURCE_DIR}/../glm/")
 include_directories("${CMAKE_SOURCE_DIR}/../")
 include_directories("${CMAKE_SOURCE_DIR}/../angelscript/angelscript/include")
 
@@ -158,10 +158,9 @@ add_executable(GameLauncher ${GAMELAUNCHER_SOURCE})
 target_link_libraries(GameLauncher GameEngine)
 
 if(MSVC)
-	#message( SEND_ERROR "Visual Studio 11 is needed to compile" )
-	target_link_libraries(GameEngine ../glfw/lib-msvc110/glfwdll)
-	target_link_libraries(renderer ../glfw/lib-msvc110/glfwdll)
-	target_link_libraries(input ../glfw/lib-msvc110/glfwdll)
+	target_link_libraries(GameEngine ../glfw/lib-msvc110/glfw3dll)
+	target_link_libraries(renderer ../glfw/lib-msvc110/glfw3dll)
+	target_link_libraries(input ../glfw/lib-msvc110/glfw3dll)
 	target_link_libraries(GameEngine debug ../angelscript/angelscript/lib/angelscriptd) # debug version
 	target_link_libraries(GameEngine optimized ../angelscript/angelscript/lib/angelscript) # release version
 	
@@ -185,12 +184,12 @@ if(MSVC)
 	set_target_properties(GameLauncher PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 	set_target_properties(MineSweeper PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 else()
-	target_link_libraries(GameEngine glfw)
+	target_link_libraries(GameEngine glfw3)
 	target_link_libraries(GameEngine angelscript)
 	
 	target_link_libraries(renderer GLEW)
 	
-	target_link_libraries(input glfw)
+	target_link_libraries(input glfw3)
 	
 	# compile flags
 	add_definitions( "-Wall -std=c++0x -msse2 -fno-rtti -m64 -g -fPIC" )

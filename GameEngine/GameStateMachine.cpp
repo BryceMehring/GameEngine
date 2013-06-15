@@ -6,8 +6,7 @@
 #include <cassert>
 #include <algorithm>
 
-#define GLFW_NO_GLU
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 using namespace std;
 
@@ -38,7 +37,7 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 		FileManager::Instance().WriteToLog(buffer);
 
 		// update window caption
-		glfwSetWindowTitle(state.c_str());
+		glfwSetWindowTitle(glfwGetCurrentContext(),state.c_str());
 	}
 }
 

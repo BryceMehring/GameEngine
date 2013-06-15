@@ -20,7 +20,7 @@ public:
         std::string line;
         while(std::getline(in,line))
         {
-            std::stringstream stream(line);
+			std::stringstream stream(line);
 
             std::string type;
             stream >> type;
@@ -31,17 +31,19 @@ public:
             std::string fileName;
             stream >> fileName;
 
+			bool bSuccess = true;
             if(type == "texture")
             {
-                assert(LoadTexture(id,fileName));
+                bSuccess = LoadTexture(id,fileName);
             }
             else if(type == "shader")
             {
                 std::string fileName2;
                 stream >> fileName2;
 
-                assert(LoadShader(id,fileName,fileName2));
+                bSuccess = LoadShader(id,fileName,fileName2);
             }
+			assert(bSuccess);
         }
 
         in.close();

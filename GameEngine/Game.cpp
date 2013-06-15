@@ -9,9 +9,8 @@
 #include <iomanip>
 #include <iostream>
 
-#define GLFW_NO_GLU
 #define GLFW_DLL
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -81,21 +80,19 @@ int Game::Run()
 	m_timer.Start();
 
 	// Loop while the use has not quit
-	while(glfwGetKey( GLFW_KEY_ESC ) != GLFW_PRESS && glfwGetWindowParam( GLFW_OPENED ))
+	while(!m_pInput->KeyDown(GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(glfwGetCurrentContext()))
 	{
 		currentTimeStamp = m_timer.GetTime();
 		m_fDT = currentTimeStamp - prevTimeStamp;
 		prevTimeStamp = currentTimeStamp;
 
-		glfwPollEvents();
+		m_pInput->Poll();
 
 		// Update the game
 		Update();
 
 		// Render the game
 		Draw();
-
-		m_pInput->Reset();
 	}
 
 	return 0;
@@ -199,7 +196,7 @@ void Game::Draw()
 void Game::DrawFPS()
 {
 	int width, height;
-	glfwGetWindowSize(&width,&height);
+	glfwGetWindowSize(glfwGetCurrentContext(),&width,&height);
 
 	std::ostringstream out;
 	out <<"FPS: " << GetFps() << endl;

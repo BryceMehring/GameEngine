@@ -1,8 +1,7 @@
 
 #define GLFW_DLL
-#define GLFW_NO_GLU
 
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 #include <angelscript.h>
 #include "DXInput.h"
 
@@ -18,25 +17,24 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin()
 
 DirectInput* DirectInput::s_pThis = nullptr;
 
-void GLFWCALL DirectInput::CharCallback(int c, int action)
+void DirectInput::CharCallback(GLFWwindow*, unsigned int c)
 {
 	if(s_pThis != nullptr)
 	{
 		s_pThis->m_iCharKeyDown = c;
-		s_pThis->m_iCharAction = action;
 	}
 }
 
-void GLFWCALL DirectInput::KeyCallback(int c, int action)
+void DirectInput::KeyCallback(GLFWwindow*, int key, int scancode, int action, int mods)
 {
 	if(s_pThis != nullptr)
 	{
-		s_pThis->m_iKeyDown = c;
+		s_pThis->m_iKeyDown = key;
 		s_pThis->m_iKeyAction = action;
 	}
 }
 
-void GLFWCALL DirectInput::MouseCallback(int x, int y)
+void DirectInput::MouseCallback(GLFWwindow*, double x, double y)
 {
 	if(s_pThis != nullptr)
 	{
@@ -44,7 +42,7 @@ void GLFWCALL DirectInput::MouseCallback(int x, int y)
 	}
 }
 
-void GLFWCALL DirectInput::MouseClickCallback(int button, int action)
+void DirectInput::MouseButtonCallback(GLFWwindow*,int button, int action, int mods)
 {
 	if(s_pThis != nullptr)
 	{
@@ -58,17 +56,15 @@ DirectInput::DirectInput() : m_iMouseX(0), m_iMouseY(0), m_fMouseSensistivity(10
 {
 	s_pThis = this;
 
-	Reset();
+	Poll();
 
-	glfwSetCharCallback(CharCallback);
-	glfwSetKeyCallback(KeyCallback);
-	glfwSetMousePosCallback(MouseCallback);
-	glfwSetMouseButtonCallback(MouseClickCallback);
+	glfwSetCharCallback(glfwGetCurrentContext(),CharCallback);
+	glfwSetKeyCallback(glfwGetCurrentContext(),KeyCallback);
+	glfwSetCursorPosCallback(glfwGetCurrentContext(),MouseCallback);
+	glfwSetMouseButtonCallback(glfwGetCurrentContext(),MouseButtonCallback);
 
-	glfwDisable(GLFW_AUTO_POLL_EVENTS);
-	glfwDisable(GLFW_MOUSE_CURSOR);
-	glfwEnable(GLFW_KEY_REPEAT);
-	glfwEnable(GLFW_STICKY_KEYS);
+	glfwSetInputMode(glfwGetCurrentContext(),GLFW_CURSOR,GL_FALSE);
+	glfwSetInputMode(glfwGetCurrentContext(),GLFW_STICKY_KEYS,GL_TRUE);
 
 	CenterMouse();
 }
@@ -99,23 +95,25 @@ void DirectInput::CenterMouse()
 	int width;
 	int height;
 
-	glfwGetWindowSize(&width,&height);
-	glfwSetMousePos(width / 2, height / 2);
+	glfwGetWindowSize(glfwGetCurrentContext(),&width,&height);
+	glfwSetCursorPos(glfwGetCurrentContext(),width / 2, height / 2);
 }
 
-void DirectInput::Reset()
+void DirectInput::Poll()
 {
 	m_MouseClickOnce[0] = m_MouseClickOnce[1] = -1;
 	m_iKeyAction = m_iKeyDown = -1;
-	m_iCharAction = m_iCharKeyDown = -1;
+	m_iCharKeyDown = -1;
+
+	glfwPollEvents();
 }
 
-void DirectInput::UpdateMouse(int x, int y)
+void DirectInput::UpdateMouse(double x, double y)
 {
 	int width = 0;
 	int height = 0;
 
-	glfwGetWindowSize(&width,&height);
+	glfwGetWindowSize(glfwGetCurrentContext(),&width,&height);
 
 	m_iMouseX = x - (width / 2);
 	m_iMouseY = -y + (height / 2);
@@ -147,9 +145,9 @@ void DirectInput::ClampMouse()
 	}
 }
 
-void DirectInput::MousePos(int& x, int& y) const
+void DirectInput::CursorPos(double& x, double& y) const
 {
-	glfwGetMousePos(&x,&y);
+	glfwGetCursorPos(glfwGetCurrentContext(),&x,&y);
 }
 
 const glm::vec2& DirectInput::GetTransformedMousePos() const
@@ -159,15 +157,15 @@ const glm::vec2& DirectInput::GetTransformedMousePos() const
 
 bool DirectInput::KeyDown(int Key, bool once)
 {
-	return once ? (m_iKeyAction == GLFW_PRESS && m_iKeyDown == Key) : (glfwGetKey( Key ) == GLFW_PRESS);
+	return once ? (m_iKeyAction == GLFW_PRESS && m_iKeyDown == Key) : (glfwGetKey(glfwGetCurrentContext(), Key ) == GLFW_PRESS);
 }
 bool DirectInput::KeyUp(int Key, bool once)
 {
-	return once ? (m_iKeyAction == GLFW_RELEASE && m_iKeyDown == Key) : (glfwGetKey( Key ) == GLFW_RELEASE);
+	return once ? (m_iKeyAction == GLFW_RELEASE && m_iKeyDown == Key) : (glfwGetKey(glfwGetCurrentContext(), Key ) == GLFW_RELEASE);
 }
 bool DirectInput::CharKeyDown(char& out) const
 {
-	if(m_iCharKeyDown == -1 || m_iCharAction == GLFW_RELEASE)
+	if(m_iCharKeyDown == -1)
 		return false;
 
 	out = m_iCharKeyDown;
@@ -180,14 +178,14 @@ bool DirectInput::MouseClick(int iButton, bool once) const
 	if(iButton > 1)
 		return false;
 
-	return (once ? (m_MouseClickOnce[iButton] == GLFW_PRESS) : glfwGetMouseButton(iButton) == GLFW_PRESS);
+	return (once ? (m_MouseClickOnce[iButton] == GLFW_PRESS) : glfwGetMouseButton(glfwGetCurrentContext(),iButton) == GLFW_PRESS);
 }
 bool DirectInput::MouseRelease(int iButton, bool once) const
 {
 	if(iButton > 1)
 		return false;
 
-	return (once ? (m_MouseClickOnce[iButton] == GLFW_RELEASE) : glfwGetMouseButton(iButton) == GLFW_RELEASE);
+	return (once ? (m_MouseClickOnce[iButton] == GLFW_RELEASE) : glfwGetMouseButton(glfwGetCurrentContext(),iButton) == GLFW_RELEASE);
 }
 int DirectInput::MouseX() const
 {
@@ -201,7 +199,8 @@ int DirectInput::MouseY() const
 
 int DirectInput::MouseZ() const
 {
-	return glfwGetMouseWheel();
+	return 0;
+	//return glfwGetMouseWheel();
 }
 
 bool DirectInput::GetSelectedRect(Math::AABB& out)

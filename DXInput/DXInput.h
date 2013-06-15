@@ -17,15 +17,17 @@ public:
 	DirectInput();
 
 	// Callbacks
-	static void GLFWCALL CharCallback(int c, int action);
-	static void GLFWCALL KeyCallback(int c, int action);
-	static void GLFWCALL MouseCallback(int x, int y);
-	static void GLFWCALL MouseClickCallback(int button, int action);
+	static void CharCallback(GLFWwindow*,unsigned int);
+	static void KeyCallback(GLFWwindow*,int,int,int,int);
+	static void MouseCallback(GLFWwindow*,double,double);
+	static void MouseButtonCallback(GLFWwindow*,int,int,int);
 
 	// IPlugin
 	virtual DLLType GetPluginType() const;
 	virtual const char* GetName() const { return "DirectInput"; }
 	virtual int GetVersion() const;
+
+	virtual void Poll();
 	
 	// Keyboard
 	virtual bool KeyDown(int Key, bool once = true);
@@ -33,7 +35,7 @@ public:
 	virtual bool CharKeyDown(char&) const;
 
 	// Mouse
-	virtual void MousePos(int& x, int& y) const;
+	virtual void CursorPos(double& x, double& y) const;
 	virtual const glm::vec2& GetTransformedMousePos() const;
 	virtual bool MouseClick(int Button, bool once) const;
 	virtual bool MouseRelease(int Button, bool once) const;
@@ -57,8 +59,7 @@ private:
 	int m_iKeyDown;
 	int m_iKeyAction;
 
-	int m_iCharKeyDown;
-	int m_iCharAction;
+	unsigned int m_iCharKeyDown;
 
 	// Mouse
 	int m_iMouseX;
@@ -72,10 +73,9 @@ private:
 	glm::vec2 m_selectedPos;
 
 	// helper functions
-	void Reset();
 	void ClampMouse();
 	void CenterMouse();
-	void UpdateMouse(int x, int y);
+	void UpdateMouse(double x, double y);
 	void RegisterScript(class asIScriptEngine*);
 };
 

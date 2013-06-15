@@ -23,7 +23,7 @@ public:
 	virtual bool MouseRelease(int Button, bool once = true) const = 0;
 
 	//gets the mouse position
-	virtual void MousePos(int& x, int& y) const = 0;
+	virtual void CursorPos(double& x, double& y) const = 0;
 
 	//gets mouse position in world space
 	virtual const glm::vec2& GetTransformedMousePos() const = 0;
