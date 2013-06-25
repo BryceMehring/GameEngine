@@ -11,5 +11,8 @@ void main()
 {
 
 	// Output color = color of the texture at the specified UV
-	gl_FragColor = texture2D( myTextureSampler, interpUV ) * vec4(interpColor,1.0f) ; // gl_FragColor
+	gl_FragColor = texture2D(myTextureSampler,vec2(interpUV.x,interpUV.y)) * vec4(interpColor,1.0f) ; // gl_FragColor
+	
+	if(gl_FragColor.a <= 0.0)
+		discard;
 }

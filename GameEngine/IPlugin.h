@@ -11,6 +11,7 @@ enum class DLLType
 
 #define DLLTYPE decltype(DLLType)
 
+// Plugin Interface 
 class IPlugin
 {
 public:

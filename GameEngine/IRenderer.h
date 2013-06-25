@@ -14,6 +14,7 @@ enum class FontAlignment
 	Right
 };
 
+// Renderer plugin interface
 class IRenderer : public IPlugin
 {
 public:

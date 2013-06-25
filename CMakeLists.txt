@@ -78,6 +78,7 @@ set(ENGINE_SOURCE
         GameEngine/FileManager.cpp
         GameEngine/GameConstants.cpp
         GameEngine/SerializedState.cpp
+		GameEngine/IGrid.inl
         ../angelscript/add_on/scriptbuilder/scriptbuilder.cpp
         ../angelscript/add_on/scriptstdstring/scriptstdstring.cpp
         ../angelscript/add_on/scripthelper/scripthelper.cpp
@@ -114,6 +115,7 @@ set(ENGINE_HEADERS
        GameEngine/IPlugin.h
        GameEngine/IRenderer.h
        GameEngine/IResourceManager.h
+	   GameEngine/IGrid.h
        ../angelscript/add_on/scriptbuilder/scriptbuilder.h
        ../angelscript/add_on/scriptstdstring/scriptstdstring.h
        ../angelscript/add_on/scripthelper/scripthelper.h

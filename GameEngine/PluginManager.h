@@ -25,6 +25,7 @@ struct PluginInfo
 	void* mod;
 };
 
+// Manages loading and freeing of all plugins
 class PluginManager
 {
 public:

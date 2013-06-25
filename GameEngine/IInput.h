@@ -3,6 +3,7 @@
 
 #include "IPlugin.h"
 
+// Base Input Plugin
 class IInputPlugin : public IPlugin
 {
 public:

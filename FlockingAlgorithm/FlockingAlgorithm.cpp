@@ -1,7 +1,7 @@
 #include "FlockingAlgorithm.h"
 #include "Game.h"
 #include <glm/gtx/transform.hpp>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 
 RTTI_IMPL(FlockingAlgorithm);

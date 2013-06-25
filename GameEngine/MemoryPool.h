@@ -6,7 +6,7 @@
 #ifndef _MEMPOOL_
 #define _MEMPOOL_
 
-
+// A memory pool is a free list
 class MemoryPool
 {
 public:

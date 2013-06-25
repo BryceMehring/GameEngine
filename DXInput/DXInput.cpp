@@ -63,7 +63,7 @@ DirectInput::DirectInput() : m_iMouseX(0), m_iMouseY(0), m_fMouseSensistivity(10
 	glfwSetCursorPosCallback(glfwGetCurrentContext(),MouseCallback);
 	glfwSetMouseButtonCallback(glfwGetCurrentContext(),MouseButtonCallback);
 
-	glfwSetInputMode(glfwGetCurrentContext(),GLFW_CURSOR,GL_FALSE);
+	glfwSetInputMode(glfwGetCurrentContext(),GLFW_CURSOR,GLFW_CURSOR_HIDDEN);
 	glfwSetInputMode(glfwGetCurrentContext(),GLFW_STICKY_KEYS,GL_TRUE);
 
 	CenterMouse();

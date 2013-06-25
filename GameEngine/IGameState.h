@@ -3,7 +3,7 @@
 #include "Timer.h"
 #include "IPlugin.h"
 
-
+// Base Game plugin
 class IGameState : public IPlugin
 {
 public:

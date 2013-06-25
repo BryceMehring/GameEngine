@@ -6,27 +6,52 @@
 #include "IGameState.h"
 #include "RTTI.h"
 #include "Menu.h"
+#include "IGrid.h"
+#include <stack>
 
-class Grid
+enum class GameStatus
+{
+	Playing,
+	Won,
+	Lost,
+};
+
+struct Tile
+{
+	Tile() : selsected(false), mine(false), marked(false), minesNearby(0) {}
+
+	bool selsected;
+	bool mine;
+	bool marked;
+	unsigned int minesNearby;
+};
+
+class Grid : public IGrid<Tile>
 {
 public:
 
-	Grid();
+	Grid(float width, float height, unsigned int tileWidth, unsigned int tileHeight);
 
-	void Render(IRenderer&);
+	virtual int Update(IKMInput&);
+
+	virtual void Render(IRenderer&);
+
+	void Reset();
+
+protected:
+
+	virtual void RenderTileCallback(IRenderer&,const Tile&, const glm::mat4&) const;
 
 private:
 
-	struct Tile
-	{
-		Tile() : selsected(false), mine(false), minesNearby(0) {}
+	unsigned int m_uiMineCount;
+	unsigned int m_uiMarkedCount;
+	unsigned int m_uiMarkedCorrectlyCount;
 
-		bool selsected;
-		bool mine;
-		unsigned int minesNearby;
-	};
+	// Expands all zero tiles if the user clicks a zero tile
+	void Expand(const glm::ivec2& pos);
 
-	std::vector<Tile> m_tiles;
+	void BuildGrid();
 
 };
 
@@ -35,6 +60,8 @@ class MineSweeper : public IGameState
 public:
 
 	RTTI_DECL;
+
+	MineSweeper();
 
 	virtual DLLType GetPluginType() const { return DLLType::Game; }
 
@@ -61,7 +88,17 @@ public:
 
 private:
 
+	void CreatePlayingMenu(Game&);
+	void CreateMainMenu(Game&);
+
+	void Reset();
+
 	Grid m_grid;
+	UI::GUI m_gui;
+	UI::GUI m_mainMenu;
+	GameStatus m_gameState;
+	double m_fTime;
+
 
 };
 

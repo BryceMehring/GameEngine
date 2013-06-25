@@ -5,7 +5,7 @@
 #include "IKMInput.h"
 #include "Game.h"
 #include <glm/gtx/transform.hpp>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 #include <sstream>
 
 RTTI_IMPL(AdventureGame);

@@ -9,7 +9,7 @@
 #include <sstream>
 #include <iostream>
 #include <glm/gtx/transform.hpp>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 using namespace std;
 
