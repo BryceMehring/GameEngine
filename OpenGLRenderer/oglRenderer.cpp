@@ -29,6 +29,7 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_uiCurrent
 	}
 
 	glfwMakeContextCurrent(m_pWindow);
+	//glfwSetGamma(glfwGetPrimaryMonitor(),1.8f);
 
 	glfwSwapInterval(1);
 	glDisable(GL_CULL_FACE);
@@ -97,10 +98,9 @@ void oglRenderer::Present()
 {
 	ClearScreen();
 
-	m_pSprites->Render();
-	m_pLines->Render();
 	m_pFonts->Render();
-
+	m_pLines->Render();
+	m_pSprites->Render();
 
 	glfwSwapBuffers(m_pWindow);
 }

@@ -36,12 +36,6 @@ public:
 	virtual void ClearScreen();
 	virtual void Present();
 
-	// todo: need to implement
-	virtual void Reset() {}
-	virtual void OnLostDevice() {}
-	virtual void OnResetDevice() {}
-	virtual bool IsDeviceLost() { return false; }
-
 	// textures
 	virtual IResourceManager& GetResourceManager();
 
@@ -63,7 +57,7 @@ public:
 
 	virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
 							const glm::mat4& transformation, // transformation applied to the sprite
-							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
+							const glm::vec2& tiling, // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
 							unsigned int iCellId = 0 // cellId if multiple frames are stored together in the same sprite image
 							);
 

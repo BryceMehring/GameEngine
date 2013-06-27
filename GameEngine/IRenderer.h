@@ -24,13 +24,6 @@ public:
 
 	// draw everything to screen
 	virtual void Present() = 0;
-
-	//-------- TODO: REMOVE THESE, NOT USED ANYMORE -------
-	virtual void Reset() = 0;
-	virtual void OnLostDevice() = 0;
-	virtual void OnResetDevice() = 0;
-	virtual bool IsDeviceLost() = 0;
-	//-------- TODO: REMOVE THESE, NOT USED ANYMORE -------
 	
 	// Returns the resource manager
 	virtual IResourceManager& GetResourceManager() = 0;
@@ -49,12 +42,12 @@ public:
 	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const = 0;
 
 	virtual void DrawString(const char* str, // the string that gets drawn
-							const glm::vec2& pos, // pos of the text
-							const glm::vec2& scale = glm::vec2(1.5f), // scaling the text
+							const glm::vec2& pos, // pos of the text in world space
+							const glm::vec2& scale = glm::vec2(10.0f), // scaling the text
 							const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
 							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
 							FontAlignment options = FontAlignment::Left
-							) = 0; // world space
+							) = 0;
 
 	virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
 							const glm::mat4& transformation, // transformation applied to the sprite

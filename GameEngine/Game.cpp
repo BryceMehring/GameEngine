@@ -200,10 +200,10 @@ void Game::DrawFPS()
 
 	std::ostringstream out;
 	out <<"FPS: " << GetFps() << endl;
-	out <<width<<"x"<<height<<endl;
-	out <<m_fDT<<endl;
+	//out <<width<<"x"<<height<<endl;
+	//out <<m_fDT<<endl;
 
-	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,80),glm::vec2(2.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),glm::vec2(2.0f),glm::vec3(0.0f,1.0f,0.0f));
 }
 
 void Game::DrawCursor()

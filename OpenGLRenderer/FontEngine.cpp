@@ -13,6 +13,11 @@ FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCa
 
 FontEngine::~FontEngine()
 {
+	DeleteBuffers();
+}
+
+void FontEngine::DeleteBuffers()
+{
 	glDeleteBuffers(1,&m_uiIndexBuffer);
 	glDeleteBuffers(1,&m_uiVertexBuffer);
 }
@@ -24,21 +29,23 @@ void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRE
 
 	glm::vec2 topLeft(0.0f,0.0f);
 	glm::vec2 bottomRight(topLeft);
-	bottomRight.y -= 5.0f*scale.y + 5.0f;
+	bottomRight.y -= 2.0f*scale.y;
 
 	const Charset& font = static_cast<const Charset&>(m_pRm->GetResource("font")); // todo: need to check if the resource is actually a font
 
 	while(*str)
 	{
-		// todo: need to add space and newline calculations
-		//if(*str != ' ' && *str != '\n')
+		float fAdvance = 0.2f;
+
+		// todo: need to newline calculations
+		if(*str != ' ' /*&& *str != '\n'*/)
 		{
-			float fAdvance = 5.0f*scale.x * font.Chars[(*str)].Width / (float)font.iWidth;
-			bottomRight.x += 5.0f*fAdvance * scale.x + 0.5f;
+			fAdvance = scale.x * font.Chars[(*str)].Width / (float)font.iWidth;
 		}
+
+		bottomRight.x += fAdvance * scale.x + 0.5f;
 		str++;
 	}
-
 
 	out = Math::FRECT(topLeft,bottomRight);
 }
@@ -51,7 +58,7 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& 
 	if(font == nullptr)
 		font = "font";
 
-	m_textSubsets[font].push_back(DrawTextInfo(str,pos,glm::vec2(5.0f)*scale,color,options));
+	m_textSubsets[font].push_back(DrawTextInfo(str,pos,scale,color,options));
 }
 
 void FontEngine::OnReset()
@@ -108,7 +115,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			if(subIter->options == FontAlignment::Center || subIter->options == FontAlignment::Right)
 			{
 				Math::FRECT drawRec;
-				GetStringRec(str,subIter->scale / 5.0f,drawRec);
+				GetStringRec(str,subIter->scale,drawRec);
 
 				float fHalfWidth = (drawRec.Width() / 2.0f);
 

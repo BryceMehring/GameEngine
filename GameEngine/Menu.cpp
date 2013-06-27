@@ -198,7 +198,7 @@ void ButtonBase::Render(IRenderer& renderer)
 	glm::vec3 color = (m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor;
 
 	glm::vec2 pos = m_sprite.Middle();
-	glm::mat4 T = glm::translate(pos.x,pos.y,0.0f);
+	glm::mat4 T = glm::translate(pos.x,pos.y,-1.0f);
 	T = glm::scale(T,m_sprite.Width(),m_sprite.Height(),1.0f);
 
 	renderer.DrawSprite("button",T);

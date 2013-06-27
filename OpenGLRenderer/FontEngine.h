@@ -69,6 +69,8 @@ private:
 
 	void CreateVertexBuffer();
 	void CreateIndexBuffer();
+
+	void DeleteBuffers();
 };
 
 #endif // _FONTENGINE_

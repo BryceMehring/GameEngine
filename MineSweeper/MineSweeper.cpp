@@ -181,7 +181,7 @@ void Grid::Render(IRenderer& renderer)
 	std::ostringstream stream;
 	stream << "Mines: "<< m_uiMineCount - m_uiMarkedCount;
 
-	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,90.0f),glm::vec2(1.5f),glm::vec3(0.0f),0,FontAlignment::Center);
+	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,90.0f),glm::vec2(10.0f),glm::vec3(0.0f),0,FontAlignment::Center);
 
 	IGrid::Render(renderer);
 }
@@ -190,6 +190,7 @@ void Grid::RenderTileCallback(IRenderer& renderer, const Tile& tile, const glm::
 {
 	std::ostringstream stream;
 	glm::vec2 pos(T[3].x,T[3].y);
+	glm::vec2 scale(T[0].x,T[1].y);
 
 	if(tile.selsected)
 	{
@@ -202,14 +203,14 @@ void Grid::RenderTileCallback(IRenderer& renderer, const Tile& tile, const glm::
 			stream << tile.minesNearby;
 		}
 
-		renderer.DrawString(stream.str().c_str(),pos,glm::vec2(1.5f),glm::vec3(0.0f),0,FontAlignment::Center);
+		renderer.DrawString(stream.str().c_str(),pos,scale,glm::vec3(0.0f),0,FontAlignment::Center);
 		renderer.DrawSprite("selected",T);
 	}
 	else
 	{
 		if(tile.marked)
 		{
-			renderer.DrawString("X",pos,glm::vec2(1.5f),glm::vec3(0.0f),0,FontAlignment::Center);
+			renderer.DrawString("X",pos,scale,glm::vec3(0.0f),0,FontAlignment::Center);
 		}
 
 		renderer.DrawSprite("unselected",T);
@@ -328,5 +329,5 @@ void MineSweeper::Draw(Game& game)
 	}
 
 	m_grid.Render(renderer);
-	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,-80.0f),glm::vec2(1.5f),glm::vec3(0.0f),0,FontAlignment::Center);
+	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,-80.0f),glm::vec2(10.5f),glm::vec3(0.0f),0,FontAlignment::Left);
 }
