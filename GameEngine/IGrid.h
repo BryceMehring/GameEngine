@@ -24,7 +24,7 @@ public:
 protected:
 
 	// RenderTileCallback is called for each tile
-	virtual void RenderTileCallback(class IRenderer& renderer,const T& tile, const glm::mat4& T) const = 0;
+    virtual void RenderTileCallback(class IRenderer& renderer,const T& tile, const glm::mat4& transformation) const = 0;
 
 	//WorldSpaceToTile returns the tile from the input parameter pos via the parameter outTile
 	// If the pos is required in array coordinates set pRoundedPosOut to point to an ivec2, else leave it null.

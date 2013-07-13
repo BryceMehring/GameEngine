@@ -17,10 +17,10 @@ void IGrid<T>::Render(class IRenderer& renderer)
 		for(unsigned int j = 0; j < m_uiNumTilesWidth; ++j)
 		{
 			glm::vec2 pos(m_tileSize.x * j - (m_gridSize.x / 2.0f) + (m_tileSize.x / 2.0f), m_tileSize.y * i - (m_gridSize.y / 2.0f) + (m_tileSize.y / 2.0f));
-			glm::mat4 T(glm::translate(pos.x,pos.y,-2.0f));
-			T = glm::scale(T,m_tileSize.x,m_tileSize.y,1.0f);
+            glm::mat4 transformation(glm::translate(pos.x,pos.y,-2.0f));
+            transformation = glm::scale(transformation,m_tileSize.x,m_tileSize.y,1.0f);
 
-			RenderTileCallback(renderer,m_tiles[index],T);
+            RenderTileCallback(renderer,m_tiles[index],transformation);
 
 			index++;
 		}
