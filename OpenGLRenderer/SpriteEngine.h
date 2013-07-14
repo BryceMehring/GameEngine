@@ -19,7 +19,7 @@ struct SpriteVertex
 struct Sprite
 {
 	Sprite(const glm::mat4& transform, const glm::vec2& tile, unsigned int cell)
-		: T(transform), iCellId(cell), tiling(tile)
+        : T(transform), tiling(tile), iCellId(cell)
 	{
 	}
 
@@ -38,7 +38,7 @@ class SpriteEngine
 {
 public:
 
-	SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam);
+    SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam);
 	~SpriteEngine();
 
 	void DrawSprite(const std::string& tech,  
@@ -64,8 +64,8 @@ private:
 	unsigned int m_uiVertexBuffer;
 	unsigned int m_uiIndexBuffer;
 
-	int m_iCurrentLength;
-	const unsigned int m_iMaxLength;
+    unsigned int m_iCurrentLength;
+    const unsigned int m_iMaxLength;
 
 	std::map<int,Layer> m_spriteLayers;
 

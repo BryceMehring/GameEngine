@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
-	m_pRm(pRm), m_iMaxLength(2*maxLength), m_pCamera(pCam)
+    m_pRm(pRm), m_pCamera(pCam), m_iMaxLength(2*maxLength)
 {
 	OnReset();
 }
@@ -40,7 +40,7 @@ void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRE
 		// todo: need to newline calculations
 		if(*str != ' ' /*&& *str != '\n'*/)
 		{
-			fAdvance = scale.x * font.Chars[(*str)].Width / (float)font.iWidth;
+            fAdvance = scale.x * font.Chars[(unsigned int)(*str)].Width / (float)font.iWidth;
 		}
 
 		bottomRight.x += fAdvance * scale.x + 0.5f;
@@ -135,7 +135,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			while((iVert < m_iMaxLength) && *str)
 			{
 				char character = *str++; // character to draw
-				const CharDescriptor& charToRender = font.Chars[character]; // font info about the character to draw
+                const CharDescriptor& charToRender = font.Chars[(unsigned int)character]; // font info about the character to draw
 				float fAdvance = (subIter->scale.x * charToRender.Width / (float)font.iWidth); // // How much we will advance from the current character
 
 				if((character != '\n') && (character != '\t') && (character != ' '))
@@ -276,7 +276,7 @@ void FontEngine::Render()
 		glBindTexture(GL_TEXTURE_2D, currentTexture.id);
 		glUniform1i(TexId,0);
 
-		glDrawElements(GL_TRIANGLES, numChar[i] * 6, GL_UNSIGNED_SHORT, (void*)(uiStartingIndex * 12));
+        glDrawElements(GL_TRIANGLES, numChar[i] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
 
 		uiStartingIndex += numChar[i];
 	}

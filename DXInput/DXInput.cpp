@@ -165,7 +165,7 @@ bool DirectInput::KeyUp(int Key, bool once)
 }
 bool DirectInput::CharKeyDown(char& out) const
 {
-	if(m_iCharKeyDown == -1)
+    if(m_iCharKeyDown == (unsigned int)-1)
 		return false;
 
 	out = m_iCharKeyDown;

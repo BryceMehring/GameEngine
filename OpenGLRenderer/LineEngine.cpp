@@ -4,7 +4,7 @@
 
 
 LineEngine::LineEngine(ResourceManager* pRM, unsigned int maxLength, Camera* pCam)
-	: m_iMaxLength(maxLength), m_pCamera(pCam), m_pRM(pRM), m_iCurrentLength(0)
+    : m_iMaxLength(maxLength), m_iCurrentLength(0), m_pCamera(pCam), m_pRM(pRM)
 {
 	CreateVertexBuffer();
 

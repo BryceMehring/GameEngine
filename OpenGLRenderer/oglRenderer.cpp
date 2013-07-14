@@ -11,7 +11,7 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin()
 	return new oglRenderer();
 }
 
-oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_uiCurrentDisplayMode(0), m_pFonts(nullptr), m_bFullscreen(false)
+oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nullptr), m_pLines(nullptr), m_pSprites(nullptr), m_uiCurrentDisplayMode(0), m_bFullscreen(false)
 {
 	m_pCamera = CreateCamera();
 	m_pCamera->setLens(200.0f,200.0f,0.0f,5.0f);
@@ -116,7 +116,7 @@ void oglRenderer::EnumerateDisplayAdaptors()
 
 	m_VideoModeStr.reserve(m_iNumVideoModes);
 
-	for(unsigned int i = 0; i < m_iNumVideoModes; ++i)
+    for(int i = 0; i < m_iNumVideoModes; ++i)
 	{
 		std::stringstream stream;
 		stream << m_pVideoModes[i].width << 'x' << m_pVideoModes[i].height;
@@ -135,15 +135,15 @@ int oglRenderer::GetCurrentDisplayMode() const
 	return m_uiCurrentDisplayMode;
 }
 
-void oglRenderer::SetDisplayMode(unsigned int i)
+void oglRenderer::SetDisplayMode(int i)
 {
-	if(i < GetNumDisplayModes())
+    if(i < GetNumDisplayModes() && i >= 0)
 	{
 		glfwSetWindowSize(m_pWindow,m_pVideoModes[i].width,m_pVideoModes[i].height);
 	}
 }
 
-const std::string& oglRenderer::GetDisplayModeStr(unsigned int i) const
+const std::string& oglRenderer::GetDisplayModeStr(int i) const
 {
 	// todo: return error if i is out of the range of the vector
 	return m_VideoModeStr[i];

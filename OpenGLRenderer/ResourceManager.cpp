@@ -5,7 +5,7 @@
 #pragma warning(disable: 4996) 
 #endif
 
-#include <stb_image.c>
+#include <stb_img.c>
 
 ResourceManager::ResourceManager()
 {
@@ -277,6 +277,7 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 	out.uiHeight = pTex->iHeight;
 	out.uiWidth = pTex->iWidth;
 
+    return true;
 }
 void ResourceManager::Clear()
 {

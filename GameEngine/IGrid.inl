@@ -3,18 +3,18 @@
 
 template< class T >
 IGrid<T>::IGrid(float width, float height,
-				unsigned int tileWidth, unsigned int tileHeight,
+                int tileWidth, int tileHeight,
 				const glm::vec2& center) : m_tiles(tileWidth*tileHeight), m_gridSize(width,height),
-				m_uiNumTilesWidth(tileWidth), m_uiNumTilesiHeight(tileHeight), m_tileSize(m_gridSize.x / m_uiNumTilesWidth,
-				m_gridSize.y / m_uiNumTilesiHeight), m_center(center) {}
+                m_iNumTilesWidth(tileWidth), m_iNumTilesiHeight(tileHeight), m_tileSize(m_gridSize.x / m_iNumTilesWidth,
+                m_gridSize.y / m_iNumTilesiHeight), m_center(center) {}
 
 template< class T >
 void IGrid<T>::Render(class IRenderer& renderer)
 {
 	unsigned int index = 0;
-	for(unsigned int i = 0; i < m_uiNumTilesiHeight; ++i)
+    for(int i = 0; i < m_iNumTilesiHeight; ++i)
 	{
-		for(unsigned int j = 0; j < m_uiNumTilesWidth; ++j)
+        for(int j = 0; j < m_iNumTilesWidth; ++j)
 		{
 			glm::vec2 pos(m_tileSize.x * j - (m_gridSize.x / 2.0f) + (m_tileSize.x / 2.0f), m_tileSize.y * i - (m_gridSize.y / 2.0f) + (m_tileSize.y / 2.0f));
             glm::mat4 transformation(glm::translate(pos.x,pos.y,-2.0f));
@@ -37,9 +37,9 @@ bool IGrid<T>::WorldSpaceToTile(const glm::vec2& pos, T** outTile, glm::ivec2* p
 
 	glm::ivec2 roundedPos(floor(transformedPos.x),floor(transformedPos.y));
 
-	unsigned int index = m_uiNumTilesWidth*roundedPos.y + roundedPos.x;
+    int index = m_iNumTilesWidth*roundedPos.y + roundedPos.x;
 
-	if(index < m_tiles.size())
+    if(index < (int)m_tiles.size() && index >= 0)
 	{
 		if(pRoundedPosOut != nullptr)
 		{
@@ -52,6 +52,6 @@ bool IGrid<T>::WorldSpaceToTile(const glm::vec2& pos, T** outTile, glm::ivec2* p
 		}
 	}
 
-	return index < m_tiles.size();
+    return index < (int)m_tiles.size();
 }
 

@@ -8,7 +8,6 @@
 #include <GLFW/glfw3.h>
 #include <sstream>
 
-
 RTTI_IMPL(MineSweeper);
 
 extern "C" PLUGINDECL IPlugin*  CreatePlugin()
@@ -18,7 +17,7 @@ extern "C" PLUGINDECL IPlugin*  CreatePlugin()
 
 
 Grid::Grid(float width, float height, unsigned int tileWidth, unsigned int tileHeight) :
-	m_uiMineCount(0), m_uiMarkedCount(0), m_uiMarkedCorrectlyCount(0), IGrid(width,height,tileWidth,tileHeight)
+    IGrid(width,height,tileWidth,tileHeight), m_uiMineCount(0), m_uiMarkedCount(0), m_uiMarkedCorrectlyCount(0)
 {
 	BuildGrid();
 }
@@ -39,8 +38,8 @@ void Grid::BuildGrid()
 		if(!m_tiles[i].mine)
 		{
 			unsigned int uiMineCount = 0;
-			unsigned int x = i % m_uiNumTilesWidth;
-			unsigned int y = i / m_uiNumTilesWidth;
+            int x = i % m_iNumTilesWidth;
+            int y = i / m_iNumTilesWidth;
 			
 			for(int j = -1; j <= 1; ++j)
 			{
@@ -49,12 +48,12 @@ void Grid::BuildGrid()
 					if(k == 0 && j == 0)
 						continue;
 
-					unsigned int newX = x + j;
-					unsigned int newY = y + k;
+                    int newX = x + j;
+                    int newY = y + k;
 				
-					if(newX < m_uiNumTilesWidth && newY < m_uiNumTilesiHeight)
+                    if(newX < m_iNumTilesWidth && newY < m_iNumTilesiHeight)
 					{
-						unsigned int newIndex = m_uiNumTilesWidth * newY + newX;
+                        int newIndex = m_iNumTilesWidth * newY + newX;
 						if(m_tiles[newIndex].mine)
 						{
 							++uiMineCount;
@@ -83,17 +82,15 @@ void Grid::Reset()
 
 void Grid::Expand(const glm::ivec2& pos)
 {
-	Tile& tile = m_tiles[m_uiNumTilesWidth*pos.y + pos.x];
-
 	for(int y = -1; y <= 1; ++y)
 	{
 		for(int x = -1; x <= 1; ++x)
 		{
 			glm::ivec2 newPos(pos.x + x,pos.y + y);
 
-			if(newPos.x < m_uiNumTilesWidth && newPos.x >= 0 && newPos.y < m_uiNumTilesiHeight && newPos.y >= 0)
+            if(newPos.x < m_iNumTilesWidth && newPos.x >= 0 && newPos.y < m_iNumTilesiHeight && newPos.y >= 0)
 			{
-				unsigned int newIndex = m_uiNumTilesWidth*newPos.y + newPos.x;
+                int newIndex = m_iNumTilesWidth*newPos.y + newPos.x;
 
 				if(!m_tiles[newIndex].marked)
 				{

@@ -72,8 +72,8 @@ public:
 	virtual void EnumerateDisplayAdaptors();
 	virtual int GetNumDisplayModes() const;
 	virtual int GetCurrentDisplayMode() const;
-	virtual void SetDisplayMode(unsigned int i);
-	virtual const std::string& GetDisplayModeStr(unsigned int i) const;
+    virtual void SetDisplayMode(int i);
+    virtual const std::string& GetDisplayModeStr(int i) const;
 	virtual void ToggleFullscreen();
 
 private:

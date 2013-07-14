@@ -13,7 +13,7 @@ public:
 
 	// ctor builds the grid
 	IGrid(float width, float height,
-		  unsigned int tileWidth, unsigned int tileHeight,
+          int tileWidth, int tileHeight,
 		  const glm::vec2& center = glm::vec2(0.0f));
 
 	virtual int Update(IKMInput&) = 0;
@@ -34,8 +34,8 @@ protected:
 
 	std::vector<T> m_tiles; // the grid
 	glm::vec2 m_gridSize;
-	unsigned int m_uiNumTilesWidth; // width of the grid, in tiles
-	unsigned int m_uiNumTilesiHeight; // height of the grid, in tiles
+    int m_iNumTilesWidth; // width of the grid, in tiles
+    int m_iNumTilesiHeight; // height of the grid, in tiles
 
 	const glm::vec2 m_tileSize;
 	

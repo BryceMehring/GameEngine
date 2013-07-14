@@ -554,8 +554,7 @@ void ScriptingConsole::RegisterScript()
 Slider::Slider(const glm::vec2& start,
 			   const glm::vec2& end,
 			   float min, float max, const std::string& tex, const DELEGATE& callback) :
-	m_start(start), m_end(end), m_fPercentage(min), m_callback(callback),
-	m_bEnable(false), m_bUpdateEnable(false), m_fMin(min), m_fMax(max), m_SpriteTexture(tex)
+    m_start(start), m_end(end), m_fPercentage(min), m_fMin(min), m_fMax(max), m_bEnable(false), m_bUpdateEnable(false), m_callback(callback), m_SpriteTexture(tex)
 {
 	m_pos.y = start.y;
 	m_pos.x = (end.x + start.x) / 2.0f;
@@ -587,7 +586,6 @@ void Slider::Update(IKMInput& input, double dt)
 	if(input.MouseClick(GLFW_MOUSE_BUTTON_1))
 	{
 		Math::FRECT R(m_end.x - m_start.x,8.0f,(m_end + m_start) / 2.0f);
-		const glm::vec2& mousePos = input.GetTransformedMousePos();
 		if(R.IsPointWithin(input.GetTransformedMousePos()))
 		{
 			m_bUpdateEnable = true;
