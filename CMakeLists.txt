@@ -11,6 +11,8 @@ endif()
 set (ENGINE_VERSION_MAJOR 1)
 set (ENGINE_VERSION_MINOR 0)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules/")
+
 set(INPUT_SOURCE
     DXInput/DXInput.cpp
     )
@@ -127,33 +129,34 @@ set(GAMELAUNCHER_SOURCE
     GameLauncher/main.cpp
     )
 
+include_directories("${CMAKE_SOURCE_DIR}/../angelscript/angelscript/include")
 include_directories("${CMAKE_SOURCE_DIR}/GameEngine/")
 include_directories("${CMAKE_SOURCE_DIR}/../glm/")
 include_directories("${CMAKE_SOURCE_DIR}/../")
-include_directories("${CMAKE_SOURCE_DIR}/../angelscript/angelscript/include")
+
+set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin/)
+set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin/)
 
 # build the game engine
-set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../lib/)
 add_library(GameEngine STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCE})
 
 # build the plugins
-set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
 add_library(renderer MODULE ${OPENGL_RENDERER_HEADERS} ${OPENGL_RENDERER_SOURCE})
 target_link_libraries(renderer GameEngine)
 
 add_library(input MODULE ${INPUT_HEADERS} ${INPUT_SOURCE})
 
 # build the games
-set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
-add_library(FlockingAlgorithm MODULE ${FLOCKING_ALGORITHM_HEADERS} ${FLOCKING_ALGORITHM_SOURCE})
-add_library(AdventureGame MODULE ${ADVENTURE_GAME_HEADERS} ${ADVENTURE_GAME_SOURCE})
+
+#add_library(FlockingAlgorithm MODULE ${FLOCKING_ALGORITHM_HEADERS} ${FLOCKING_ALGORITHM_SOURCE})
+#add_library(AdventureGame MODULE ${ADVENTURE_GAME_HEADERS} ${ADVENTURE_GAME_SOURCE})
 add_library(MineSweeper MODULE ${MINE_SWEEPER_HEADERS} ${MINE_SWEEPER_SOURCE})
-target_link_libraries(FlockingAlgorithm GameEngine)
-target_link_libraries(AdventureGame GameEngine)
+#target_link_libraries(FlockingAlgorithm GameEngine)
+#target_link_libraries(AdventureGame GameEngine)
 target_link_libraries(MineSweeper GameEngine)
 
 # build the game launcher
-set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/../)
+
 add_executable(GameLauncher ${GAMELAUNCHER_SOURCE})
 
 # link libraries
@@ -186,12 +189,29 @@ if(MSVC)
 	set_target_properties(GameLauncher PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 	set_target_properties(MineSweeper PROPERTIES COMPILE_FLAGS_RELEASE "/MP /O2 /arch:SSE2 /GR- /MD")
 else()
-	target_link_libraries(GameEngine glfw3)
-	target_link_libraries(GameEngine angelscript)
+
+	# check to make sure that the libraries are installed
+	find_package(glfw REQUIRED)
+	if(NOT glfw_FOUND)
+	    message(SEND_ERROR "GLFW is required")
+	endif()
 	
+	find_package(GLEW REQUIRED)
+	if(NOT GLEW_FOUND)
+	    message(SEND_ERROR "GLEW is required")
+	endif()
+	
+	find_package(GLM REQUIRED)
+	if(NOT GLM_FOUND)
+	    message(SEND_ERROR "glm is required")
+	endif()
+	
+	#include_directories(${glfw_INCLUDE_DIRS})
+	#set(LIBS ${LIBS} ${glfw_LIBRARIES})
+
+	target_link_libraries(GameEngine dl angelscript pthread angelscript glfw)
 	target_link_libraries(renderer GLEW)
-	
-	target_link_libraries(input glfw3)
+	target_link_libraries(input glfw)
 	
 	# compile flags
 	add_definitions( "-Wall -std=c++0x -msse2 -fno-rtti -m64 -g -fPIC" )

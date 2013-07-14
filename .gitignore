@@ -19,7 +19,6 @@
 
 #cmake
 *.rule
-*.cmake
 *.stamp
 *.depend
 *.bin
@@ -29,6 +28,7 @@
 TargetDirectories.txt
 CMakeCXXCompilerId.cpp
 CMakeCache.txt
+cmake_install.cmake
 
 #visual studio
 *.vcxproj
