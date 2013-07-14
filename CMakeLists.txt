@@ -214,5 +214,7 @@ else()
 	target_link_libraries(input glfw)
 	
 	# compile flags
-	add_definitions( "-Wall -std=c++0x -msse2 -fno-rtti -m64 -g -fPIC" )
+	set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -msse2 -fno-rtti -m64 -fPIC")
+	set(CMAKE_CXX_FLAGS_DEBUG "-Wall -std=c++0x -msse2 -fno-rtti -m64 -g -fPIC")
+	set(CMAKE_CXX_FLAGS_RELEASE "-Wall -std=c++0x -msse2 -O2 -fno-rtti -m64 -fPIC")
 endif()
