@@ -31,7 +31,7 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 	m_plugins.SetAS(m_vm.GetScriptEngine());
 	LoadAllDLL();
 
-	m_pRenderer->GetResourceManager().LoadResourceFile("base.r");
+    m_pRenderer->GetResourceManager().LoadResourceFile("../base.r");
 
 	// todo: init the scripting console somewhere else
 	//float width = 90;
