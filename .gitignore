@@ -1,3 +1,6 @@
+#output dir
+bin/
+
 # windows
 *.exe
 
@@ -25,10 +28,9 @@
 *.list
 *.check_cache
 *.ilk
-TargetDirectories.txt
-CMakeCXXCompilerId.cpp
 CMakeCache.txt
 cmake_install.cmake
+CMakeFiles/
 
 #visual studio
 *.vcxproj
@@ -46,6 +48,7 @@ cmake_install.cmake
 *.sdf
 *.pdb
 *.cxx
+
 
 #other
 stats.txt
