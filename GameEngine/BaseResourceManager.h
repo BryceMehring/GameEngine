@@ -10,12 +10,11 @@ class BaseResourceManager : public IResourceManager
 {
 public:
 
-    virtual bool LoadResourceFile(const std::string& file)
+    virtual void LoadResourceFile(const std::string& file)
 	{
 		std::fstream in(file,std::ios::in);
 
-        if(!in.is_open())
-            return false;
+		assert(in.is_open());
 
         std::string line;
         while(std::getline(in,line))
@@ -47,9 +46,6 @@ public:
         }
 
         in.close();
-
-        return true;
-
 	}
 
 };

@@ -51,7 +51,7 @@ void Grid::BuildGrid()
                     int newX = x + j;
                     int newY = y + k;
 				
-                    if(newX < m_iNumTilesWidth && newY < m_iNumTilesiHeight)
+                    if(newX < m_iNumTilesWidth && newX >= 0 && newY < m_iNumTilesiHeight && newY >= 0)
 					{
                         int newIndex = m_iNumTilesWidth * newY + newX;
 						if(m_tiles[newIndex].mine)
@@ -235,11 +235,11 @@ void MineSweeper::CreatePlayingMenu(Game& game)
 	const char* pResetButtonText = "Reset";
 
 	Math::FRECT resetRect;
-	game.GetRenderer().GetStringRec(pResetButtonText,glm::vec2(1.5f),resetRect);
+	game.GetRenderer().GetStringRec(pResetButtonText,glm::vec2(6.0f),resetRect);
 
 	resetRect.SetCenter(glm::vec2(80.0f,92.0f));
 
-	UI::GenericButton<void>* pButton = new UI::GenericButton<void>(resetRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),glm::vec2(1.5f),pResetButtonText);
+	UI::GenericButton<void>* pButton = new UI::GenericButton<void>(resetRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),glm::vec2(6.0f),pResetButtonText);
 	pButton->SetCallback(UI::GenericButton<void>::DELEGATE(this,&MineSweeper::Reset));
 
 	pMenu->AddElement(pButton);
@@ -254,11 +254,11 @@ void MineSweeper::CreateMainMenu(Game& game)
 	const char* pResetButtonText = "Play Again";
 
 	Math::FRECT resetRect;
-	game.GetRenderer().GetStringRec(pResetButtonText,glm::vec2(3.5f,4.0f),resetRect);
+	game.GetRenderer().GetStringRec(pResetButtonText,glm::vec2(10.0f),resetRect);
 
 	resetRect.SetCenter(glm::vec2(0.0f,20.0f));
 
-	UI::GenericButton<void>* pButton = new UI::GenericButton<void>(resetRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),glm::vec2(3.5f,4.0f),pResetButtonText);
+	UI::GenericButton<void>* pButton = new UI::GenericButton<void>(resetRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),glm::vec2(10.0f),pResetButtonText);
 	pButton->SetCallback(UI::GenericButton<void>::DELEGATE(this,&MineSweeper::Reset));
 
 	pMenu->AddElement(pButton);
@@ -304,10 +304,6 @@ void MineSweeper::Draw(Game& game)
 	if(m_gameState == GameStatus::Playing)
 	{
 		stream << "Time: " << (int)m_fTime << std::endl;
-		stream << game.GetInput().GetTransformedMousePos().x;
-
-		//drawPos = glm::vec2(0.0f,-80.0f);
-
 		
 		m_gui.Render(renderer);
 	}
@@ -326,5 +322,5 @@ void MineSweeper::Draw(Game& game)
 	}
 
 	m_grid.Render(renderer);
-	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,-80.0f),glm::vec2(10.5f),glm::vec3(0.0f),0,FontAlignment::Left);
+	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,-80.0f),glm::vec2(10.5f),glm::vec3(0.0f),0,FontAlignment::Center);
 }

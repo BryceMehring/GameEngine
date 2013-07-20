@@ -26,7 +26,7 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 		IPlugin* pPlugin = game.GetPM().LoadDLL(state);
 		assert(pPlugin != nullptr);
 
-        string resourcePath = "../" + string(pPlugin->GetName()) + ".r";
+        string resourcePath = string(pPlugin->GetName()) + ".r";
 		game.GetRenderer().GetResourceManager().LoadResourceFile(resourcePath);
 
 		m_pCurrentState = static_cast<IGameState*>(pPlugin);

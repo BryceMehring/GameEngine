@@ -1,2 +1,2 @@
-texture selected ../textures/selected.png
-texture unselected ../textures/unselected.png
+texture selected textures/selected.png
+texture unselected textures/unselected.png

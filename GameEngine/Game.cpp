@@ -31,7 +31,7 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 	m_plugins.SetAS(m_vm.GetScriptEngine());
 	LoadAllDLL();
 
-    m_pRenderer->GetResourceManager().LoadResourceFile("../base.r");
+    m_pRenderer->GetResourceManager().LoadResourceFile("base.r");
 
 	// todo: init the scripting console somewhere else
 	//float width = 90;
@@ -195,15 +195,12 @@ void Game::Draw()
 
 void Game::DrawFPS()
 {
-	int width, height;
-	glfwGetWindowSize(glfwGetCurrentContext(),&width,&height);
-
 	std::ostringstream out;
 	out <<"FPS: " << GetFps() << endl;
 	//out <<width<<"x"<<height<<endl;
 	//out <<m_fDT<<endl;
 
-	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),glm::vec2(2.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),glm::vec2(10.0f),glm::vec3(0.0f,1.0f,0.0f));
 }
 
 void Game::DrawCursor()
