@@ -4,7 +4,7 @@ GameEngine
 
 ### To create projects:
 
-#### Windows: Run `WindowsBuildScript.bat` which translates to `cmake -G "visual studio 11" CMakeLists.txt` and also creates the symbolic links
+#### Windows: Run `WindowsBuildScript.bat` as an administrator which translates to `cmake -G "visual studio 11" CMakeLists.txt` and also creates the symbolic links
 
 Set GameLauncher as the startup project, and build the solution in Visual Studio 2012.
 
