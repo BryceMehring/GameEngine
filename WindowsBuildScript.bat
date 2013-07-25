@@ -1,4 +1,6 @@
+@ECHO OFF
 cd %~dp0
+
 cmake -G "Visual Studio 11" CMakeLists.txt
 
 mkdir bin && cd bin && mkdir Debug && cd Debug
