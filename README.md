@@ -4,9 +4,9 @@ GameEngine
 
 ### To create projects:
 
-#### Windows: Run `WindowsBuildScript.bat` which translates to `cmake -G "visual studio 11" CMakeLists.txt`
+#### Windows: Run `WindowsBuildScript.bat` as an administrator which translates to `cmake -G "visual studio 11" CMakeLists.txt` and also creates the symbolic links
 
-Set GameLauncher as the startup project, and build the solution.
+Set GameLauncher as the startup project, and build the solution in Visual Studio 2012.
 
 #### Linux: `cmake CMakeLists.txt`
 
@@ -16,24 +16,20 @@ To run the game, the command line argument must be set to name of the Game Proje
 
 ==========
 
-The compiled output will be in the directory above the repository. So on windows for example, in Debug mode in visual studio, all of the output will be in Debug. 
-Also, the compiler will be looking for Angelscript, GLFW, GLEW, GLM in this same directory as shown below:
+The compiled output will in source in a directory called bin.
+An example of a GitHub folder:
 
-All within the folder GameEngine:
-
-Debug/
-
-GameEngine/
-
-angelscript/
-
-glew/
+GameEngine/ - this is the root of the repo
 
 glfw/
 
+glew/
+
 glm/
 
-Starting point is GameLauncher.
+angelscript/
+
+stb_img.c
 
 Dependencies
 ==========
@@ -44,5 +40,4 @@ Dependencies
 * [stb_img](http://nothings.org/stb_image.c)
 * [AngelScript](http://www.angelcode.com/angelscript/)
 * [cmake](http://www.cmake.org/)
-
 
