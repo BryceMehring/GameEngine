@@ -1,8 +1,8 @@
 
 #find GLEW
 
-    find_path(GLEW_INCLUDE_DIR GL/glew.h "${CMAKE_SOURCE_DIR}/../glew/include/GL/glew.h")
-    find_library(GLEW_LIBRARY NAMES GLEW glew32 PATHS "${CMAKE_SOURCE_DIR}/../glew/lib/Release/Win32/" PATH_SUFFIXES lib64)
+find_path(GLEW_INCLUDE_DIR glew.h "${CMAKE_SOURCE_DIR}/../glew/include/GL/" GL/)
+find_library(GLEW_LIBRARY NAMES GLEW glew32 PATHS "${CMAKE_SOURCE_DIR}/../glew/lib/Release/Win32/" PATH_SUFFIXES lib64)
 
 if(WIN32)
     set(GLEW_INCLUDE_DIR ${GLEW_INCLUDE_DIR}/../)
