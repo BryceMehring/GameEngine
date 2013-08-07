@@ -129,10 +129,7 @@ set(GAMELAUNCHER_SOURCE
     GameLauncher/main.cpp
     )
 
-include_directories("${CMAKE_SOURCE_DIR}/../angelscript/angelscript/include")
 include_directories("${CMAKE_SOURCE_DIR}/GameEngine/")
-include_directories("${CMAKE_SOURCE_DIR}/../glm/")
-include_directories("${CMAKE_SOURCE_DIR}/../")
 
 set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin/)
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin/)
@@ -162,59 +159,56 @@ add_executable(GameLauncher ${GAMELAUNCHER_SOURCE})
 # link libraries
 target_link_libraries(GameLauncher GameEngine)
 
+find_package (GLEW)
+if (GLEW_FOUND)
+  include_directories(${GLEW_INCLUDE_DIRS})
+  target_link_libraries (renderer ${GLEW_LIBRARIES})
+else(GLEW_FOUND)
+	message(SEND_ERROR "GLEW is required")
+endif (GLEW_FOUND)
+
+find_package (GLFW)
+if (GLFW_FOUND)
+  include_directories(${GLFW_INCLUDE_DIR})
+  target_link_libraries (renderer ${GLFW_LIBRARY})
+  target_link_libraries (input ${GLFW_LIBRARY})
+  target_link_libraries (GameEngine ${GLFW_LIBRARY})
+else(GLFW_FOUND)
+	message(SEND_ERROR "GLFW is required")
+endif (GLFW_FOUND)
+
+find_package (STB_IMAGE)
+if (STB_IMAGE_FOUND)
+	include_directories(${STB_IMAGE_INCLUDE_DIR})
+else(STB_IMAGE_FOUND)
+	message(SEND_ERROR "stb_image is required")
+endif (STB_IMAGE_FOUND)
+
+find_package (GLM)
+if (GLM_FOUND)
+  include_directories(${GLM_INCLUDE_DIR})
+else(GLM_FOUND)
+	message(SEND_ERROR "GLM is required")
+endif (GLM_FOUND)
+
+find_package (ANGELSCRIPT)
+if (ANGELSCRIPT_FOUND)
+  include_directories(${ANGELSCRIPT_INCLUDE_DIRS})
+  target_link_libraries (GameEngine ${ANGELSCRIPT_LIBRARY})
+else(ANGELSCRIPT_FOUND)
+	message(SEND_ERROR "Angelscript is required")
+endif (ANGELSCRIPT_FOUND)
+
 if(MSVC)
-	target_link_libraries(GameEngine ../glfw/lib-msvc110/glfw3dll)
-	target_link_libraries(renderer ../glfw/lib-msvc110/glfw3dll)
-	target_link_libraries(input ../glfw/lib-msvc110/glfw3dll)
-	target_link_libraries(GameEngine debug ../angelscript/angelscript/lib/angelscriptd) # debug version
-	target_link_libraries(GameEngine optimized ../angelscript/angelscript/lib/angelscript) # release version
-	
-	target_link_libraries(renderer ../glew/lib/glew32)
+
 	target_link_libraries(renderer opengl32)
 	
 	# visual studio compile flags
-	set(VS_DEBUG_COMPILE_FLAGS "/MP /Od /arch:SSE2 /GR- /MDd")
-	set(VS_RELEASE_COMPILE_FLAGS "/MP /O2 /arch:SSE2 /GR- /MD")
-	
-	set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS_DEBUG ${VS_DEBUG_COMPILE_FLAGS})
-	set_target_properties(renderer PROPERTIES COMPILE_FLAGS_DEBUG ${VS_DEBUG_COMPILE_FLAGS})
-	set_target_properties(input PROPERTIES COMPILE_FLAGS_DEBUG ${VS_DEBUG_COMPILE_FLAGS})
-	#set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS_DEBUG ${VS_DEBUG_COMPILE_FLAGS})
-	#set_target_properties(AdventureGame PROPERTIES COMPILE_FLAGS_DEBUG ${VS_DEBUG_COMPILE_FLAGS})
-	set_target_properties(GameLauncher PROPERTIES COMPILE_FLAGS_DEBUG ${VS_DEBUG_COMPILE_FLAGS})
-	set_target_properties(MineSweeper PROPERTIES COMPILE_FLAGS_DEBUG ${VS_DEBUG_COMPILE_FLAGS})
-
-	set_target_properties(GameEngine PROPERTIES COMPILE_FLAGS_RELEASE ${VS_RELEASE_COMPILE_FLAGS})
-	set_target_properties(renderer PROPERTIES COMPILE_FLAGS_RELEASE ${VS_RELEASE_COMPILE_FLAGS})
-	set_target_properties(input PROPERTIES COMPILE_FLAGS_RELEASE ${VS_RELEASE_COMPILE_FLAGS})
-	#set_target_properties(FlockingAlgorithm PROPERTIES COMPILE_FLAGS_RELEASE ${VS_RELEASE_COMPILE_FLAGS})
-	#set_target_properties(AdventureGame PROPERTIES COMPILE_FLAGS_RELEASE ${VS_RELEASE_COMPILE_FLAGS})
-	set_target_properties(GameLauncher PROPERTIES COMPILE_FLAGS_RELEASE ${VS_RELEASE_COMPILE_FLAGS})
-	set_target_properties(MineSweeper PROPERTIES COMPILE_FLAGS_RELEASE ${VS_RELEASE_COMPILE_FLAGS})
+	set(CMAKE_CXX_FLAGS_DEBUG "/W3 /sdl /MP /Od /arch:SSE2 /GR- /MDd")
+	set(CMAKE_CXX_FLAGS_RELEASE "/W3 /sdl /MP /O2 /arch:SSE2 /GR- /MD")
 else()
 
-	# check to make sure that the libraries are installed
-	find_package(glfw REQUIRED)
-	if(NOT glfw_FOUND)
-	    message(SEND_ERROR "GLFW is required")
-	endif()
-	
-	find_package(GLEW REQUIRED)
-	if(NOT GLEW_FOUND)
-	    message(SEND_ERROR "GLEW is required")
-	endif()
-	
-	find_package(GLM REQUIRED)
-	if(NOT GLM_FOUND)
-	    message(SEND_ERROR "glm is required")
-	endif()
-	
-	#include_directories(${glfw_INCLUDE_DIRS})
-	#set(LIBS ${LIBS} ${glfw_LIBRARIES})
-
-	target_link_libraries(GameEngine dl angelscript pthread angelscript glfw)
-	target_link_libraries(renderer GLEW)
-	target_link_libraries(input glfw)
+	target_link_libraries(GameEngine dl pthread)
 	
 	# compile flags
 	set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -msse2 -fno-rtti -m64 -fPIC")
