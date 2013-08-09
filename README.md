@@ -4,22 +4,20 @@ GameEngine
 
 ### To create projects:
 
-#### Windows: Run `WindowsBuildScript.bat` as an administrator which translates to `cmake -G "visual studio 11" CMakeLists.txt` and also creates the symbolic links
+#### Open CMakeLists.txt with the CMake GUI to generate projects
+
+#### Windows: Run `CreateWinSymLinks.bat` as an administrator to create the symbolic links
 
 Set GameLauncher as the startup project, and build the solution in Visual Studio 2012.
 
-#### Linux: `cmake CMakeLists.txt`
-
-compile: `make`
-
-To run the game, the command line argument must be set to name of the Game Project that the Game Engine should load first.
+To run a game, the command line argument must be set to name of the Game Project that the Game Engine should load first.
 
 ==========
 
-The compiled output will in source in a directory called bin.
-An example of a GitHub folder:
+The compiled output will be located in source in a directory called bin.
+How the github folder should look on windows:
 
-GameEngine/ - this is the root of the repo
+`GameEngine/ - this is the root of the repo
 
 glfw/
 
@@ -29,7 +27,7 @@ glm/
 
 angelscript/
 
-stb_img.c
+stb_image/stb_image.c`
 
 Dependencies
 ==========
