@@ -1,5 +1,13 @@
 
+#include <fstream>
 
+using namespace std;
+
+template< class T >
+IGrid<T>::IGrid(const std::string& file)
+{
+	//Load(file);
+}
 
 template< class T >
 IGrid<T>::IGrid(float width, float height,
@@ -53,5 +61,53 @@ bool IGrid<T>::WorldSpaceToTile(const glm::vec2& pos, T** outTile, glm::ivec2* p
 	}
 
     return index < (int)m_tiles.size();
+}
+
+template< class T >
+bool IGrid<T>::Load(std::ifstream& stream)
+{
+	if(!stream.is_open())
+		return false;
+
+	unsigned int uiNumTiles = 0;
+	stream >> uiNumTiles;
+	stream >> m_gridSize.x >> m_gridSize.y;
+	stream >> m_iNumTilesWidth >> m_iNumTilesiHeight;
+	stream >> m_tileSize.x >> m_tileSize.y;
+	stream >> m_center.x >> m_center.y;
+
+	if(uiNumTiles == 0)
+		return false;
+
+	m_tiles.resize(uiNumTiles);
+
+	unsigned int i = 0;
+	while(!stream.eof() && i < uiNumTiles)
+	{
+		stream >> m_tiles[i];
+		++i;
+	}
+
+	return true;
+}
+
+template< class T >
+bool IGrid<T>::Save(std::ofstream& stream) const
+{
+	if(!stream.is_open())
+		return false;
+
+	stream << m_tiles.size() << endl;
+	stream << m_gridSize.x << " " << m_gridSize.y << endl;
+	stream << m_iNumTilesWidth << " " << m_iNumTilesiHeight << endl;
+	stream << m_tileSize.x << " " << m_tileSize.y << endl;
+	stream << m_center.x << " " << m_center.y << endl;
+
+	for(unsigned int i = 0; i < m_tiles.size(); ++i)
+	{
+		stream << m_tiles[i] << endl;
+	}
+
+	return true;
 }
 

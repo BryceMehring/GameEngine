@@ -15,7 +15,7 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 {
 	m_pCamera = CreateCamera();
 	m_pCamera->setLens(200.0f,200.0f,0.0f,5.0f);
-	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1000.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_pCamera->update(0.0f);
 
 	EnumerateDisplayAdaptors();

@@ -61,7 +61,9 @@ void Camera::setLens(float w, float h, float nearZ, float farZ)
 {
 	m_width = w;
 	m_height = h;
-	m_Proj = glm::ortho(-m_width/2,m_width/2,-m_height/2,m_height/2,nearZ,farZ);
+	//m_Proj = glm::ortho(-m_width/2,m_width/2,-m_height/2,m_height/2,nearZ,farZ);
+	m_Proj = glm::perspective<float>(150.0f,1920.0f/1080.0f,nearZ,farZ);
+	//m_Proj =  glm::infinitePerspective(90.0f,1920.0f/1080.0f,10.0f);
 }
 
 void Camera::setDir(const glm::vec3& dir)

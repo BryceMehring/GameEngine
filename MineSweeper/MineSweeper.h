@@ -20,11 +20,17 @@ struct Tile
 {
 	Tile() : selsected(false), mine(false), marked(false), minesNearby(0) {}
 
+	friend std::ostream& operator <<(std::ostream&, const Tile&);
+	friend std::istream& operator >>(std::istream&, Tile&);
+
 	bool selsected;
 	bool mine;
 	bool marked;
 	unsigned int minesNearby;
 };
+
+std::ostream& operator <<(std::ostream&, const Tile&);
+std::istream& operator >>(std::istream&, Tile&);
 
 class Grid : public IGrid<Tile>
 {
@@ -35,6 +41,26 @@ public:
 	virtual int Update(IKMInput&);
 
 	virtual void Render(IRenderer&);
+
+	virtual bool Load(std::ifstream& stream)
+	{
+		if(!stream.is_open())
+			return false;
+
+		stream >> m_uiMineCount >> m_uiMarkedCount >> m_uiMarkedCorrectlyCount;
+
+		return IGrid<Tile>::Load(stream);
+	}
+
+	virtual bool Save(std::ofstream& stream) const
+	{
+		if(!stream.is_open())
+			return false;
+
+		stream << m_uiMineCount << " " << m_uiMarkedCount << " " << m_uiMarkedCorrectlyCount << endl;
+
+		return IGrid<Tile>::Save(stream);
+	}
 
 	void Reset();
 

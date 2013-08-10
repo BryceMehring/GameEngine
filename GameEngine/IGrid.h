@@ -4,22 +4,28 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <vector>
+#include "ISerializable.h"
 
 // Grid abstract interface which implements a basic way to render them, which should be abstracted into another class 
 template< class T >
-class IGrid
+class IGrid : public ISerializable
 {
 public:
 
 	// ctor builds the grid
+	IGrid(const std::string& file);
 	IGrid(float width, float height,
           int tileWidth, int tileHeight,
 		  const glm::vec2& center = glm::vec2(0.0f));
+	virtual ~IGrid() {}
 
 	virtual int Update(IKMInput&) = 0;
 
 	// Render calls RenderTileCallback for each tile
 	virtual void Render(class IRenderer& renderer);
+
+	virtual bool Load(std::ifstream& stream);
+	virtual bool Save(std::ofstream& stream) const;
 
 protected:
 
@@ -37,11 +43,13 @@ protected:
     int m_iNumTilesWidth; // width of the grid, in tiles
     int m_iNumTilesiHeight; // height of the grid, in tiles
 
-	const glm::vec2 m_tileSize;
+	glm::vec2 m_tileSize;
 	
 private:
 	glm::vec2 m_center;
 };
+
+
 
 #include "IGrid.inl"
 

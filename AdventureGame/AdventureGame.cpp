@@ -117,7 +117,7 @@ void Player::Render(IRenderer& renderer)
 	T = glm::scale(T,6.0f,12.0f,1.0f);
 
 	renderer.DrawSprite("robot",T,glm::vec2(1.0f),m_iCell);
-	renderer.DrawString("HealthBar",glm::vec2(0.0f,10.0f),glm::vec2(1.5f),glm::vec3(1.0f),0,FontAlignment::Left);
+	renderer.DrawString("HealthBar",glm::vec2(0.0f,0.0f));
 
 	m_pCamera->lookAt(glm::vec3(m_pos,1.0f),glm::vec3(m_pos,0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_pCamera->update(0.0f);
@@ -172,7 +172,7 @@ void AdventureGame::Draw(Game& game)
 	IRenderer& renderer = game.GetRenderer();
 
 	//renderer.DrawSprite("bush",glm::translate(40.0f,40.0f,0.0f)*glm::scale(5.0f,5.0f,1.0f));
-	renderer.DrawSprite("grass",glm::scale(500.0f,500.0f,1.0f),glm::vec2(50.0f,50.0f));
+	renderer.DrawSprite("grass",glm::scale(500.0f,500.0f,0.0f),glm::vec2(50.0f,50.0f));
 	// game.GetInput().GetTransformedMousePos()
 	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,0.0f),glm::vec2(1.5f),glm::vec3(1.0f),0,FontAlignment::Right);
 	this->m_pPlayer->Render(renderer);

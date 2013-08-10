@@ -64,10 +64,6 @@ void SpriteEngine::FillVertexBuffer()
 
 				// get the list of all sprites that use the same tech and texture
 				std::vector<Sprite>& sprites = subIter->second;
-				/*std::sort(sprites.begin(),sprites.end(),[](const Sprite& a, const Sprite& b) -> bool
-				{
-					return a.T[3].z < b.T[3].z;
-				});*/
 
 				for(unsigned int i = 0; i < sprites.size(); ++i)
 				{

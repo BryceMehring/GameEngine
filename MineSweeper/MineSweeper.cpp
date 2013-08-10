@@ -15,9 +15,19 @@ extern "C" PLUGINDECL IPlugin*  CreatePlugin()
 	return new MineSweeper();
 }
 
+std::ostream& operator <<(std::ostream& stream, const Tile& t)
+{
+	stream << t.marked <<" "<< t.mine <<" "<< t.minesNearby <<" "<< t.selsected;
+	return stream;
+}
+std::istream& operator >>(std::istream& stream, Tile& t)
+{
+	stream >> t.marked >> t.mine >> t.minesNearby >> t.selsected;
+	return stream;
+}
 
 Grid::Grid(float width, float height, unsigned int tileWidth, unsigned int tileHeight) :
-    IGrid(width,height,tileWidth,tileHeight), m_uiMineCount(0), m_uiMarkedCount(0), m_uiMarkedCorrectlyCount(0)
+    IGrid("gridSave.txt"), m_uiMineCount(0), m_uiMarkedCount(0), m_uiMarkedCorrectlyCount(0)
 {
 	BuildGrid();
 }
@@ -268,7 +278,8 @@ void MineSweeper::CreateMainMenu(Game& game)
 
 void MineSweeper::Destroy(Game& game)
 {
-
+	std::ofstream stream("gridSave.txt");
+	m_grid.Save(stream);
 }
 
 void MineSweeper::Reset()
