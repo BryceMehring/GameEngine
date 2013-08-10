@@ -4,8 +4,7 @@
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) 
 #endif
-
-#include <stb_img.c>
+#include <stb_image.c>
 
 ResourceManager::ResourceManager()
 {

@@ -11,8 +11,8 @@
 #define _ASMANAGER_
 
 #include <cassert>
-#include "angelscript/add_on/scriptstdstring/scriptstdstring.h"
-#include "angelscript/add_on/scriptbuilder/scriptbuilder.h"
+#include "scriptstdstring/scriptstdstring.h"
+#include "scriptbuilder/scriptbuilder.h"
 
 // debug AngelScript macro
 /*#ifdef _DEBUG
