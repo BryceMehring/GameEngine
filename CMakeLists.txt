@@ -60,6 +60,14 @@ set(MINE_SWEEPER_HEADERS
 set(MINE_SWEEPER_SOURCE
 	MineSweeper/MineSweeper.h
 	)
+	
+find_package (ANGELSCRIPT)
+if (ANGELSCRIPT_FOUND)
+  include_directories(${ANGELSCRIPT_INCLUDE_DIR})
+  include_directories(${ANGELSCRIPT_ADDON_INCLUDE_DIR})
+else(ANGELSCRIPT_FOUND)
+	message(SEND_ERROR "Angelscript is required")
+endif (ANGELSCRIPT_FOUND)
 
 set(ENGINE_SOURCE
         GameEngine/asVM.cpp
@@ -81,11 +89,12 @@ set(ENGINE_SOURCE
         GameEngine/GameConstants.cpp
         GameEngine/SerializedState.cpp
 		GameEngine/IGrid.inl
-        ../angelscript/add_on/scriptbuilder/scriptbuilder.cpp
-        ../angelscript/add_on/scriptstdstring/scriptstdstring.cpp
-        ../angelscript/add_on/scripthelper/scripthelper.cpp
-        ../angelscript/add_on/scriptmath/scriptmath.cpp
+        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.cpp
+        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.cpp
+        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.cpp
+        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptmath/scriptmath.cpp
         )
+    
         
 set(ENGINE_HEADERS
        GameEngine/asVM.h
@@ -118,10 +127,10 @@ set(ENGINE_HEADERS
        GameEngine/IRenderer.h
        GameEngine/IResourceManager.h
 	   GameEngine/IGrid.h
-       ../angelscript/add_on/scriptbuilder/scriptbuilder.h
-       ../angelscript/add_on/scriptstdstring/scriptstdstring.h
-       ../angelscript/add_on/scripthelper/scripthelper.h
-       ../angelscript/add_on/scriptmath/scriptmath.h
+       ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.h
+       ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.h
+       ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.h
+       ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptmath/scriptmath.h
 
     )
 
@@ -191,10 +200,7 @@ else(GLM_FOUND)
 	message(SEND_ERROR "GLM is required")
 endif (GLM_FOUND)
 
-find_package (ANGELSCRIPT)
 if (ANGELSCRIPT_FOUND)
-  include_directories(${ANGELSCRIPT_INCLUDE_DIR})
-  include_directories(${ANGELSCRIPT_ADDON_INCLUDE_DIR})
   if(MSVC)
 	target_link_libraries (GameEngine debug ${ANGELSCRIPT_LIBRARY_DEBUG})
 	target_link_libraries (GameEngine optimized ${ANGELSCRIPT_LIBRARY_RELEASE})
@@ -202,9 +208,7 @@ if (ANGELSCRIPT_FOUND)
     target_link_libraries (GameEngine ${ANGELSCRIPT_LIBRARY_RELEASE})
 	target_link_libraries (GameEngine ${ANGELSCRIPT_LIBRARY_RELEASE})
   endif(MSVC)
-else(ANGELSCRIPT_FOUND)
-	message(SEND_ERROR "Angelscript is required")
-endif (ANGELSCRIPT_FOUND)
+endif(ANGELSCRIPT_FOUND)
 
 if(MSVC)
 

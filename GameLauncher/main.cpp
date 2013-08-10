@@ -1,4 +1,4 @@
-//#include "Game.h"
+#include "Game.h"
 
 #include <iostream>
 #include <ctime>
@@ -7,7 +7,6 @@ using namespace std;
 
 int main(int size, char** cmd)
 {
-	system("pause");
 	if(size < 2)
 	{
 		cout<<"Invalid Number of command line arguments"<<endl;
@@ -20,10 +19,8 @@ int main(int size, char** cmd)
 
 	// seed the random number generator
 	srand (time(0));
-	
-	return 0;
 
-	//Game myGame;
-	//myGame.SetNextState(pState);
-	//return myGame.Run();
+	Game myGame;
+	myGame.SetNextState(pState);
+	return myGame.Run();
 }
