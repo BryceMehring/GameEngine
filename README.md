@@ -39,6 +39,7 @@ Dependencies
 * [AngelScript](http://www.angelcode.com/angelscript/)
 * [cmake](http://www.cmake.org/)
 
-#### Linux: `sudo apt-get install g++ git mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxi-dev libxmu-dev`
+#### Linux: 
+`sudo apt-get install g++ git mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxi-dev libxmu-dev`
 
 
