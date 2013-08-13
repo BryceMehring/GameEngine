@@ -65,7 +65,7 @@ set(ENGINE_SOURCE
     
 # build the game engine
 add_library(GameEngine STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCE})
-target_link_libraries(GameEngine dl pthread)
+target_link_libraries(GameEngine dl)
 target_link_libraries(GameEngine ${GLFW_LIBRARY})
   
 if(MSVC)

@@ -29,5 +29,5 @@ if(MSVC)
     target_link_libraries(renderer opengl32)
 endif(MSVC)
 
-set_target_properties(renderer PROPERTIES COMPILE_FLAGS "-Wall -std=c++0x -g -fno-rtti -m64")
+#set_target_properties(renderer PROPERTIES COMPILE_FLAGS "-Wall -std=c++0x -g -fno-rtti -m64")
 
