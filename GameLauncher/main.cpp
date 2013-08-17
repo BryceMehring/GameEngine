@@ -15,8 +15,6 @@ int main(int size, char** cmd)
 
 	const char* pState = cmd[1];
 
-	//unsigned int seed = FileManager::Instance().GetSeedFromLog();
-
 	// seed the random number generator
 	srand (time(0));
 

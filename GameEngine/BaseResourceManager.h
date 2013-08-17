@@ -30,19 +30,23 @@ public:
             std::string fileName;
             stream >> fileName;
 
-			bool bSuccess = true;
-            if(type == "texture")
-            {
-                bSuccess = LoadTexture(id,fileName);
-            }
-            else if(type == "shader")
-            {
-                std::string fileName2;
-                stream >> fileName2;
+			if(fileName.size() > 0)
+			{
+				bool bSuccess = true;
+				if(type == "texture")
+				{
+					bSuccess = LoadTexture(id,fileName);
+				}
+				else if(type == "shader")
+				{
+					std::string fileName2;
+					stream >> fileName2;
 
-                bSuccess = LoadShader(id,fileName,fileName2);
-            }
-			assert(bSuccess);
+					bSuccess = LoadShader(id,fileName,fileName2);
+				}
+				assert(bSuccess);
+			}
+			
         }
 
         in.close();
