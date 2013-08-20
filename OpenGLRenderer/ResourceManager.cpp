@@ -1,10 +1,34 @@
-#include "ResourceManager.h"
+﻿#include "ResourceManager.h"
 #include <fstream>
+#include <cmath>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) 
 #endif
 #include <stb_image.c>
+
+unsigned int log2(unsigned int v)
+{
+	const unsigned int b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
+	const unsigned int S[] = {1, 2, 4, 8, 16};
+	int i;
+
+	register unsigned int r = 0; // result of log2(v) will go here
+	for (i = 4; i >= 0; i--) // unroll for speed...
+	{
+	  if (v & b[i])
+	  {
+		v >>= S[i];
+		r |= S[i];
+	  } 
+	}
+
+	return r;
+}
+
+IResource::~IResource()
+{
+}
 
 ResourceManager::ResourceManager()
 {
@@ -13,6 +37,73 @@ ResourceManager::ResourceManager()
 ResourceManager::~ResourceManager()
 {
 	Clear();
+}
+
+void ResourceManager::LoadResourceFile(const std::string& file)
+{
+	std::fstream in(file,std::ios::in);
+
+	assert(in.is_open());
+
+    std::string line;
+    while(std::getline(in,line))
+    {
+		std::stringstream stream(line);
+
+        std::string type;
+        stream >> type;
+
+        std::string id;
+        stream >> id;
+
+        std::string fileName;
+        stream >> fileName;
+
+		if(fileName.size() > 0)
+		{
+			bool bSuccess = true;
+			if(type == "texture")
+			{
+				bSuccess = LoadTexture(id,fileName);
+			}
+			else if(type == "shader")
+			{
+				std::string fileName2;
+				stream >> fileName2;
+
+				bSuccess = LoadShader(id,fileName,fileName2);
+			}
+			assert(bSuccess);
+		}
+			
+    }
+
+    in.close();
+}
+
+void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat)
+{
+	switch(comp)
+	{
+	case 1:
+		format = GL_RED;
+		internalFormat = GL_COMPRESSED_RED;
+		break;
+	case 2:
+		format = GL_RG;
+		internalFormat = GL_COMPRESSED_RED;
+		break;
+
+	case 3:
+		format = GL_RGB;
+		internalFormat = GL_COMPRESSED_RGB;
+		break;
+
+	case 4:
+		format = GL_RGBA;
+		internalFormat = GL_COMPRESSED_RGBA;
+		break;
+	}
 }
 
 bool ResourceManager::LoadTexture(const std::string& id, const std::string& file)
@@ -47,9 +138,14 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	}
 
 	// Give the image to OpenGL
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
+	unsigned int mipmapLevels = 1 + log2(std::max(x,y));
+	glTexStorage2D(GL_TEXTURE_2D, mipmapLevels, GL_RGBA8, x, y);
+	glTexSubImage2D(GL_TEXTURE_2D,0,0,0,x,y,format,GL_UNSIGNED_BYTE,(void*)pImg);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	//glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 	std::fstream in;
 	in.open(file + ".fnt",std::ios::in);
@@ -161,10 +257,21 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
 
-	Shader* pShader = new Shader(ProgramID);
+	return CreateShaderInstance(id,ProgramID);
+}
+
+bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint programID)
+{
+	bool bFoundMVP = false;
+	GLuint uiMVPLocation = 0;
+
+	bool bFoundTexture = false;
+	GLuint uiTextureLocation = 0;
+
+	Shader::UnifromMap uniforms;
 
 	int total = 0;
-	glGetProgramiv( ProgramID, GL_ACTIVE_UNIFORMS, &total );
+	glGetProgramiv( programID, GL_ACTIVE_UNIFORMS, &total );
 	for(int i = 0; i < total; ++i)
 	{
 		char name[128];
@@ -172,17 +279,43 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 		int iSize = 0;
 		GLenum type;
 
-		glGetActiveUniform(ProgramID,i,sizeof(name) - 1,&iNameLength,&iSize,&type,name);
+		glGetActiveUniform(programID,i,sizeof(name) - 1,&iNameLength,&iSize,&type,name);
 		name[iNameLength] = 0;
 
-		GLuint location = glGetUniformLocation( ProgramID, name );
+		GLuint location = glGetUniformLocation( programID, name );
 
-		pShader->uniforms.insert(std::make_pair(name,location));
+		if (type == GL_SAMPLER_2D)
+		{
+			uiTextureLocation = location;
+			bFoundTexture = true;
+		}
+		else if(std::strcmp(name,"MVP") == 0 && type == GL_FLOAT_MAT4)
+		{
+			uiMVPLocation = location;
+			bFoundMVP = true;
+		}
+		else
+		{
+			uniforms.insert(std::make_pair(name,location));
+		}
 	}
 
-	m_resources.insert(std::make_pair(id,pShader));
+	if(bFoundMVP)
+	{
+		Shader* pShader = nullptr;
+		if(bFoundTexture)
+		{
+			pShader = new TexturedShader(programID,uiMVPLocation,uiTextureLocation,uniforms);
+		}
+		else
+		{
+			pShader = new Shader(programID,uiMVPLocation,uniforms);
+		}
 
-	return true;
+		m_resources.insert(std::make_pair(id,pShader));
+	}
+
+	return bFoundMVP;
 }
 
 void ResourceManager::ParseFont(std::fstream& stream, Charset& CharsetDesc)
@@ -212,11 +345,11 @@ void ResourceManager::ParseFont(std::fstream& stream, Charset& CharsetDesc)
 				//assign the correct value
 				Converter << Value;
 				if( Key == "lineHeight" )
-					Converter >> CharsetDesc.LineHeight;
+					Converter >> CharsetDesc.m_LineHeight;
 				else if( Key == "base" )
-					Converter >> CharsetDesc.Base;
+					Converter >> CharsetDesc.m_Base;
 				else if( Key == "pages" )
-					Converter >> CharsetDesc.Pages;
+					Converter >> CharsetDesc.m_Pages;
 			}
 		}
 		else if( Read == "char" )
@@ -237,21 +370,21 @@ void ResourceManager::ParseFont(std::fstream& stream, Charset& CharsetDesc)
 				if( Key == "id" )
 					Converter >> CharID;
 				else if( Key == "x" )
-					Converter >> CharsetDesc.Chars[CharID].x;
+					Converter >> CharsetDesc.m_Chars[CharID].x;
 				else if( Key == "y" )
-					Converter >> CharsetDesc.Chars[CharID].y;
+					Converter >> CharsetDesc.m_Chars[CharID].y;
 				else if( Key == "width" )
-					Converter >> CharsetDesc.Chars[CharID].Width;
+					Converter >> CharsetDesc.m_Chars[CharID].Width;
 				else if( Key == "height" )
-					Converter >> CharsetDesc.Chars[CharID].Height;
+					Converter >> CharsetDesc.m_Chars[CharID].Height;
 				else if( Key == "xoffset" )
-					Converter >> CharsetDesc.Chars[CharID].XOffset;
+					Converter >> CharsetDesc.m_Chars[CharID].XOffset;
 				else if( Key == "yoffset" )
-					Converter >> CharsetDesc.Chars[CharID].YOffset;
+					Converter >> CharsetDesc.m_Chars[CharID].YOffset;
 				else if( Key == "xadvance" )
-					Converter >> CharsetDesc.Chars[CharID].XAdvance;
+					Converter >> CharsetDesc.m_Chars[CharID].XAdvance;
 				else if( Key == "page" )
-					Converter >> CharsetDesc.Chars[CharID].Page;
+					Converter >> CharsetDesc.m_Chars[CharID].Page;
 			}
 		}
 	}
@@ -271,10 +404,10 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 
 	const Texture* pTex = static_cast<const Texture*>(pResource);
 
-	out.uiCellsHeight = pTex->iCellsHeight;
-	out.uiCellsWidth = pTex->iCellsWidth;
-	out.uiHeight = pTex->iHeight;
-	out.uiWidth = pTex->iWidth;
+	out.uiCellsHeight = pTex->m_iCellsHeight;
+	out.uiCellsWidth = pTex->m_iCellsWidth;
+	out.uiHeight = pTex->m_iHeight;
+	out.uiWidth = pTex->m_iWidth;
 
     return true;
 }
@@ -288,17 +421,24 @@ void ResourceManager::Clear()
 	m_resources.clear();
 }
 
-void ResourceManager::RemoveTexture(const std::string& name)
+IResource* ResourceManager::GetResource(const std::string& name)
 {
-}
-void ResourceManager::RemoveAllTextures()
-{
-}
-void ResourceManager::RemoveAllShaders()
-{
+	auto iter = m_resources.find(name);
+
+	if(iter != m_resources.end())
+	{
+		return iter->second;
+	}
+	return nullptr;
 }
 
-IResource& ResourceManager::GetResource(const std::string& name)
+const IResource* ResourceManager::GetResource(const std::string& name) const
 {
-	return *(m_resources[name]);
+	auto iter = m_resources.find(name);
+
+	if(iter != m_resources.end())
+	{
+		return iter->second;
+	}
+	return nullptr;
 }

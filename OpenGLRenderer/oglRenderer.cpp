@@ -15,7 +15,7 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 {
 	m_pCamera = CreateCamera();
 	m_pCamera->setLens(200.0f,200.0f,0.0f,5.0f);
-	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1000.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_pCamera->update(0.0f);
 
 	EnumerateDisplayAdaptors();
@@ -44,17 +44,16 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 		throw std::string("Failed to initialize GLEW");
 	}
 
-	m_pFonts = new FontEngine(&m_rm,1024*8,m_pCamera);
-	m_pLines = new LineEngine(&m_rm,1024*20,m_pCamera);
-	m_pSprites = new SpriteEngine(&m_rm,1024*20,m_pCamera);
+	m_rm.LoadResourceFile("base.r");
+
+	m_pFonts.reset(new FontEngine(&m_rm,1024*8,m_pCamera));
+	m_pLines.reset(new LineEngine(&m_rm,1024*20,m_pCamera));
+	m_pSprites.reset(new SpriteEngine(&m_rm,1024*20,m_pCamera));
 
 }
 
 oglRenderer::~oglRenderer()
 {
-	delete m_pFonts;
-	delete m_pLines;
-	delete m_pSprites;
 	m_pCamera->Release();
 	m_pCamera = nullptr;
 
@@ -63,7 +62,15 @@ oglRenderer::~oglRenderer()
 
 void oglRenderer::Init(asIScriptEngine* pAS)
 {
+	pAS->BeginConfigGroup("renderer");
+	(pAS->RegisterObjectType("renderer",0,asOBJ_REF | asOBJ_NOHANDLE));
+	//(pAS->RegisterObjectMethod("renderer","int mouseX()",asMETHOD(oglRenderer,MouseX),asCALL_THISCALL));
+	//(pAS->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
+	//(pAS->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
+	//(pAS->RegisterGlobalProperty("IKMInput input",this));
 	// todo: implement this later
+
+	pAS->EndConfigGroup();
 }
 
 void oglRenderer::Destroy(asIScriptEngine* pAS)
@@ -204,24 +211,57 @@ void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transf
 	m_pSprites->DrawSprite("sprite",texture,transformation,tiling,iCellId);
 }
 
-void oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value )
+bool oglRenderer::CheckShader(const std::string& shader, const string& location,  GLuint& shaderID, GLuint& outLocation) const
 {
-	IResource& resource = m_rm.GetResource(shader);
-	assert(resource.GetType() == ResourceType::Shader);
+	const IResource* pResource = m_rm.GetResource(shader);
 
-	Shader& resourceShader = static_cast<Shader&>(resource);
-	glUseProgram(resourceShader.id);
-	glUniform1f(resourceShader.uniforms[location],value);
+	if(pResource == nullptr)
+		return false;
+
+	if(pResource->GetType() != ResourceType::Shader)
+		return false;
+
+	const Shader* pShader = static_cast<const Shader*>(pResource);
+	const auto& unifromMap = pShader->GetUniforms();
+
+	auto iterLocation = unifromMap.find(location);
+	if(iterLocation == unifromMap.end())
+		return false;
+
+	shaderID = pShader->GetID();
+	outLocation = iterLocation->second;
+
+	return true;
 }
 
-void oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value )
+bool oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value )
 {
-	IResource& resource = m_rm.GetResource(shader);
-	assert(resource.GetType() == ResourceType::Shader);
+	GLuint shaderID;
+	GLuint unifromLocation;
+	bool bSuccess = CheckShader(shader,location,shaderID,unifromLocation);
 
-	Shader& resourceShader = static_cast<Shader&>(resource);
-	glUseProgram(resourceShader.id);
-	glUniform2f(resourceShader.uniforms[location],value.x,value.y);
+	if(bSuccess)
+	{
+		glUseProgram(shaderID);
+		glUniform1f(unifromLocation,value);
+	}
+
+	return bSuccess;
+}
+
+bool oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value )
+{
+	GLuint shaderID;
+	GLuint unifromLocation;
+	bool bSuccess = CheckShader(shader,location,shaderID,unifromLocation);
+
+	if(bSuccess)
+	{
+		glUseProgram(shaderID);
+		glUniform2f(unifromLocation,value.x,value.y);
+	}
+
+	return bSuccess;
 }
 
 void oglRenderer::SetCamera(Camera* pCam)

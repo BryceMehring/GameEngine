@@ -6,6 +6,13 @@
 LineEngine::LineEngine(ResourceManager* pRM, unsigned int maxLength, Camera* pCam)
     : m_iMaxLength(maxLength), m_iCurrentLength(0), m_pCamera(pCam), m_pRM(pRM)
 {
+	// check to make sure that the line shader is loaded
+	IResource* pResource = m_pRM->GetResource("lineShader");
+	if(pResource == nullptr || (pResource->GetType() != ResourceType::Shader))
+	{
+		throw std::string("Error: Line Shader is not loaded");
+	}
+
 	CreateVertexBuffer();
 
 	// Get the range of widths supported by the hardware
@@ -68,14 +75,14 @@ void LineEngine::Render()
 	if(m_LineSubsets.empty())
 		return;
 
-	Shader& theShader = static_cast<Shader&>(m_pRM->GetResource("lineShader"));
-	GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
-	GLuint vertexColorID = glGetAttribLocation(theShader.id, "vertexColor");
+	Shader* pShader = static_cast<Shader*>(m_pRM->GetResource("lineShader"));
+	GLuint vertexPosition_modelspaceID = glGetAttribLocation(pShader->GetID(), "vertexPosition_modelspace");
+	GLuint vertexColorID = glGetAttribLocation(pShader->GetID(), "vertexColor");
 
-	glUseProgram(theShader.id);
+	glUseProgram(pShader->GetID());
 
 	// set shader parameters
-	glUniformMatrix4fv(theShader.uniforms["MVP"],1,false,&m_pCamera->viewProj()[0][0]);
+	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);

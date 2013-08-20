@@ -61,8 +61,8 @@ public:
 							unsigned int iCellId = 0 // cellId if multiple frames are stored together in the same sprite image
 							);
 
-	virtual void SetShaderValue(const std::string& shader, const std::string& location, float value );
-	virtual void SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value );
+	virtual bool SetShaderValue(const std::string& shader, const std::string& location, float value );
+	virtual bool SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value );
 
 
 	virtual void SetCamera(class Camera*);
@@ -83,9 +83,9 @@ private:
 	GLFWwindow* m_pWindow;
 
 	ResourceManager m_rm;
-	FontEngine* m_pFonts;
-	LineEngine* m_pLines;
-	SpriteEngine* m_pSprites;
+	std::auto_ptr<FontEngine> m_pFonts;
+	std::auto_ptr<LineEngine> m_pLines;
+	std::auto_ptr<SpriteEngine> m_pSprites;
 
 	// todo: turn this into a vector?
 	const GLFWvidmode* m_pVideoModes;
@@ -97,6 +97,8 @@ private:
 	bool m_bFullscreen;
 
 	void GLFWOpenWindowHints();
+
+	bool CheckShader(const std::string& shader, const std::string& location, GLuint& shaderID, GLuint& outLocation) const;
 };
 
 #endif // _OGLRENDERER_

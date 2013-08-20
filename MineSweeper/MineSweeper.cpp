@@ -27,7 +27,7 @@ std::istream& operator >>(std::istream& stream, Tile& t)
 }
 
 Grid::Grid(float width, float height, unsigned int tileWidth, unsigned int tileHeight) :
-    IGrid("gridSave.txt"), m_uiMineCount(0), m_uiMarkedCount(0), m_uiMarkedCorrectlyCount(0)
+    IGrid(width,height,tileWidth,tileHeight), m_uiMineCount(0), m_uiMarkedCount(0), m_uiMarkedCorrectlyCount(0)
 {
 	BuildGrid();
 }
@@ -285,6 +285,7 @@ void MineSweeper::Destroy(Game& game)
 void MineSweeper::Reset()
 {
 	m_gameState = GameStatus::Playing;
+	m_fTime = 0;
 	m_grid.Reset();
 }
 

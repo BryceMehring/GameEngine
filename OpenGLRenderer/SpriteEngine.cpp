@@ -35,9 +35,15 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 {
 	if(m_iCurrentLength < m_iMaxLength)
 	{
-		Layer& layer = m_spriteLayers[(int)transformation[3].z];
-		layer.sprites[tech][texture].push_back(Sprite(transformation,tiling,iCellId));
-		++m_iCurrentLength;
+		IResource* pShader = m_pRM->GetResource(tech);
+		IResource* pTex = m_pRM->GetResource(texture);
+
+		if( pShader != nullptr && pTex != nullptr)
+		{
+			Layer& layer = m_spriteLayers[(int)transformation[3].z];
+			layer.sprites[tech][texture].push_back(Sprite(transformation,tiling,iCellId));
+			++m_iCurrentLength;
+		}
 	}
 	else
 	{
@@ -146,14 +152,13 @@ void SpriteEngine::Render()
 		{
 			// Apply the shader tech
 
-			Shader& theShader = static_cast<Shader&>(m_pRM->GetResource(techIter->first));
-			GLuint TexId = theShader.uniforms["myTextureSampler"];
+			const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter->first));
 
-			GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
-			GLuint vertexUV = glGetAttribLocation(theShader.id, "vertexUV");
-			GLuint vertexTiling = glGetAttribLocation(theShader.id, "vertexTiling");
+			GLuint vertexPosition_modelspaceID = glGetAttribLocation(pShader->GetID(), "vertexPosition_modelspace");
+			GLuint vertexUV = glGetAttribLocation(pShader->GetID(), "vertexUV");
+			GLuint vertexTiling = glGetAttribLocation(pShader->GetID(), "vertexTiling");
 
-			glUseProgram(theShader.id);
+			glUseProgram(pShader->GetID());
 
 			glVertexAttribPointer(
 						vertexPosition_modelspaceID, // attribute 0. No particular reason for 0, but must match the layout in the shader.
@@ -183,17 +188,17 @@ void SpriteEngine::Render()
 						);
 
 			// set shader parameters
-			glUniformMatrix4fv(theShader.uniforms["MVP"],1,false,&m_pCamera->viewProj()[0][0]);
+			glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
 
 			glActiveTexture(GL_TEXTURE0);
 
 			// Render all sprites that use the same tech and texture
 			for(auto spriteIter = techIter->second.begin(); spriteIter != techIter->second.end(); ++spriteIter)
 			{
-				const Texture& theTexture = static_cast<Texture&>(m_pRM->GetResource(spriteIter->first));
+				const Texture* pTexture = static_cast<const Texture*>(m_pRM->GetResource(spriteIter->first));
 
-				glBindTexture(GL_TEXTURE_2D, theTexture.id);
-				glUniform1i(TexId,0);
+				glBindTexture(GL_TEXTURE_2D, pTexture->GetID());
+				glUniform1i(pShader->GetTextureSamplerID(),0);
 
 				glDrawElements(
 							GL_TRIANGLES,      // mode

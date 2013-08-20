@@ -31,7 +31,8 @@ void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRE
 	glm::vec2 bottomRight(topLeft);
 	bottomRight.y -= 2.0f*scale.y;
 
-	const Charset& font = static_cast<const Charset&>(m_pRm->GetResource("font")); // todo: need to check if the resource is actually a font
+	
+	const Charset* font = static_cast<const Charset*>(m_pRm->GetResource("font")); // todo: need to check if the resource is actually a font
 
 	while(*str)
 	{
@@ -40,7 +41,7 @@ void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRE
 		// todo: need to newline calculations
 		if(*str != ' ' /*&& *str != '\n'*/)
 		{
-            fAdvance = scale.x * font.Chars[(unsigned int)(*str)].Width / (float)font.iWidth;
+			fAdvance = scale.x * font->GetCharDescriptor()[(unsigned int)(*str)].Width / (float)font->GetWidth();
 		}
 
 		bottomRight.x += fAdvance * scale.x + 0.5f;
@@ -48,6 +49,7 @@ void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRE
 	}
 
 	out = Math::FRECT(topLeft,bottomRight);
+	
 }
 
 void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color, FontAlignment options)
@@ -57,6 +59,8 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& 
 
 	if(font == nullptr)
 		font = "font";
+
+	// todo: need to verify that the font is actually loaded
 
 	m_textSubsets[font].push_back(DrawTextInfo(str,pos,scale,color,options));
 }
@@ -99,9 +103,6 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 	{
 		unsigned int length = 0;
 
-		// Get the current font
-		const Charset& font = static_cast<const Charset&>(m_pRm->GetResource(iter->first)); // todo: need to check if the resource is actually a font
-
 		// Loop over all fonts with the current texture
 		for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
 		{
@@ -131,12 +132,15 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 				// left, do nothing
 			}
 
+			// Get the current font
+			const Charset* font = static_cast<const Charset*>(m_pRm->GetResource(iter->first)); // todo: need to check if the resource is actually a font
+
 			// Loop over the entire string and write to the vertex buffer
 			while((iVert < m_iMaxLength) && *str)
 			{
 				char character = *str++; // character to draw
-                const CharDescriptor& charToRender = font.Chars[(unsigned int)character]; // font info about the character to draw
-				float fAdvance = (subIter->scale.x * charToRender.Width / (float)font.iWidth); // // How much we will advance from the current character
+                const CharDescriptor& charToRender = font->GetCharDescriptor()[(unsigned int)character]; // font info about the character to draw
+				float fAdvance = (subIter->scale.x * charToRender.Width / (float)font->GetWidth()); // // How much we will advance from the current character
 
 				if((character != '\n') && (character != '\t') && (character != ' '))
 				{
@@ -146,8 +150,8 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 						int index = iVert * 4;
 
 						// calc tex coords
-						glm::vec2 topLeft((charToRender.x / (float)font.iWidth),charToRender.y / (float)font.iHeight);
-						glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font.iWidth),(charToRender.y+charToRender.Height) / (float)font.iHeight);
+						glm::vec2 topLeft((charToRender.x / (float)font->GetWidth()),charToRender.y / (float)font->GetHeight());
+						glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font->GetWidth()),(charToRender.y+charToRender.Height) / (float)font->GetHeight());
 
 						v[index].pos = glm::vec3(posW.x,0.5f * subIter->scale.y + posW.y,0.0f);
 						v[index].uv = topLeft; // topLeft
@@ -210,18 +214,17 @@ void FontEngine::Render()
 	FillVertexBuffer(numChar);
 
 	// get the shader to use
-	Shader& theShader = static_cast<Shader&>(m_pRm->GetResource("textShader"));
+	const TexturedShader* pShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader"));
 
 	// use the shader
-	glUseProgram(theShader.id);
+	glUseProgram(pShader->GetID());
 
 	// set shader parameters
-	glUniformMatrix4fv(theShader.uniforms["MVP"],1,false,&m_pCamera->viewProj()[0][0]);
+	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
 
-	GLuint TexId = theShader.uniforms["myTextureSampler"];
-	GLuint vertexPosition_modelspaceID = glGetAttribLocation(theShader.id, "vertexPosition_modelspace");
-	GLuint vertexUV = glGetAttribLocation(theShader.id, "vertexUV");
-	GLuint vertexColor = glGetAttribLocation(theShader.id, "vertexColor");
+	GLuint vertexPosition_modelspaceID = glGetAttribLocation(pShader->GetID(), "vertexPosition_modelspace");
+	GLuint vertexUV = glGetAttribLocation(pShader->GetID(), "vertexUV");
+	GLuint vertexColor = glGetAttribLocation(pShader->GetID(), "vertexColor");
 
 	// Create our vertex structure in OpenGL
 	glEnableVertexAttribArray(0);
@@ -269,12 +272,12 @@ void FontEngine::Render()
 	unsigned int i = 0;
 	for(auto iter = m_textSubsets.begin(); iter != m_textSubsets.end(); ++iter, ++i)
 	{
-		IResource& currentTexture = m_pRm->GetResource(iter->first);
+		const IResource* pCurrentTexture = m_pRm->GetResource(iter->first);
 
 		// Set the texture to use
 		
-		glBindTexture(GL_TEXTURE_2D, currentTexture.id);
-		glUniform1i(TexId,0);
+		glBindTexture(GL_TEXTURE_2D, pCurrentTexture->GetID());
+		glUniform1i(pShader->GetTextureSamplerID(),0);
 
         glDrawElements(GL_TRIANGLES, numChar[i] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
 
