@@ -61,6 +61,9 @@ endif()
 add_subdirectory(GameEngine)
 add_subdirectory(OpenGLRenderer)
 add_subdirectory(DXInput)
+#add_subdirectory(AdventureGame)
 add_subdirectory(MineSweeper)
-add_subdirectory(GameLauncher)
+
+add_executable(GameLauncher GameLauncher/main.cpp)
+target_link_libraries(GameLauncher GameEngine)
 
