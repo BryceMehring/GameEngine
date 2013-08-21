@@ -138,9 +138,8 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	}
 
 	// Give the image to OpenGL
-	unsigned int mipmapLevels = 1 + log2(std::max(x,y));
-	glTexStorage2D(GL_TEXTURE_2D, mipmapLevels, GL_RGBA8, x, y);
-	glTexSubImage2D(GL_TEXTURE_2D,0,0,0,x,y,format,GL_UNSIGNED_BYTE,(void*)pImg);
+	//unsigned int mipmapLevels = 1 + log2(std::max(x,y));
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	//glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
