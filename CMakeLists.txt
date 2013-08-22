@@ -12,6 +12,7 @@ if( MSVC )
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules")
+include("${CMAKE_SOURCE_DIR}/CMake/CompileFlags.cmake")
 
 find_package (GLEW)
 if (GLEW_FOUND)
@@ -44,25 +45,15 @@ include_directories("${CMAKE_SOURCE_DIR}/GameEngine")
 set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
 
-if(MSVC)
-    # visual studio compile flags
-	
-	set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /arch:SSE2 /RTC1 /W3 /MP /GR-")
-	set(CMAKE_CXX_FLAGS_RELEASE "/W3 /MP /O2 /arch:SSE2 /GR- /MD")
-else()
-
-	#g++ compile flags
-	set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -fno-rtti -fPIC -pipe")
-	set(CMAKE_CXX_FLAGS_DEBUG "-Wall -std=c++11 -g -fno-rtti -fPIC -pipe")
-	set(CMAKE_CXX_FLAGS_RELEASE "-Wall -std=c++11 -O2 -fno-rtti -fPIC -pipe")
-
-endif()
+SetCompileFlags()
 	
 add_subdirectory(GameEngine)
 add_subdirectory(OpenGLRenderer)
 add_subdirectory(DXInput)
-#add_subdirectory(AdventureGame)
-add_subdirectory(MineSweeper)
+add_subdirectory(AdventureGame)
+#add_subdirectory(MineSweeper)
+#add_subdirectory(FlockingAlgorithm)
+
 
 add_executable(GameLauncher GameLauncher/main.cpp)
 target_link_libraries(GameLauncher GameEngine)
