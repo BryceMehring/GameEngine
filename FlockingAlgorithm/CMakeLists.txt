@@ -1,0 +1,3 @@
+
+add_library(FlockingAlgorithm MODULE FlockingAlgorithm.h FlockingAlgorithm.cpp)
+target_link_libraries(FlockingAlgorithm GameEngine)

@@ -1,7 +1,6 @@
 #include "Game.h"
 #include "FileManager.h"
 #include "RTTI.h"
-#include "StringAlgorithms.h"
 
 #include <cassert>
 #include <algorithm>

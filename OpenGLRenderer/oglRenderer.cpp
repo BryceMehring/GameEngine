@@ -218,7 +218,9 @@ bool oglRenderer::CheckShader(const std::string& shader, const string& location,
 	if(pResource == nullptr)
 		return false;
 
-	if(pResource->GetType() != ResourceType::Shader)
+	auto type = pResource->GetType();
+
+	if((type != ResourceType::Shader) && (type != ResourceType::TexturedShader))
 		return false;
 
 	const Shader* pShader = static_cast<const Shader*>(pResource);

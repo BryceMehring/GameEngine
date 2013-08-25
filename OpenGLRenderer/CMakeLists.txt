@@ -20,14 +20,9 @@ set(OPENGL_RENDERER_HEADERS
     
     
 add_library(renderer MODULE ${OPENGL_RENDERER_HEADERS} ${OPENGL_RENDERER_SOURCE})
-target_link_libraries(renderer ${GLEW_LIBRARY})
-
-# why is this needed?
-target_link_libraries(renderer GameEngine)
+target_link_libraries(renderer GameEngine ${GLFW_LIBRARY} ${GLEW_LIBRARY})
 
 if(MSVC)
     target_link_libraries(renderer opengl32)
 endif(MSVC)
-
-#set_target_properties(renderer PROPERTIES COMPILE_FLAGS "-Wall -std=c++0x -g -fno-rtti -m64")
 

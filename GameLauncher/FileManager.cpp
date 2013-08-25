@@ -3,7 +3,6 @@
 #include "FileManager.h"
 #include "asVM.h"
 #include "GameConstants.h"
-#include "StringAlgorithms.h"
 
 using namespace std;
 

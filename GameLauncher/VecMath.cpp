@@ -1,7 +1,6 @@
 // Programmed by Bryce Mehring
 #include "VecMath.h"
 #include "asVM.h"
-#include "FileManager.h"
 
 
 namespace Math

@@ -25,6 +25,8 @@ public:
 	//gets the mouse position
 	virtual void CursorPos(double& x, double& y) const = 0;
 
+	//virtual bool JoyPos(double& x, double& y) const = 0;
+
 	//gets mouse position in world space
 	virtual const glm::vec2& GetTransformedMousePos() const = 0;
 

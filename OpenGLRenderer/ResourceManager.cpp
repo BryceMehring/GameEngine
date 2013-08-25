@@ -1,4 +1,6 @@
-﻿#include "ResourceManager.h"
+﻿
+#include "ResourceManager.h"
+#include <sstream>
 #include <fstream>
 #include <cmath>
 
@@ -87,11 +89,11 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 	{
 	case 1:
 		format = GL_RED;
-		internalFormat = GL_COMPRESSED_RED;
+		internalFormat = GL_RED;
 		break;
 	case 2:
 		format = GL_RG;
-		internalFormat = GL_COMPRESSED_RED;
+		internalFormat = GL_COMPRESSED_RG;
 		break;
 
 	case 3:
@@ -101,7 +103,7 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 
 	case 4:
 		format = GL_RGBA;
-		internalFormat = GL_COMPRESSED_RGBA;
+		internalFormat = GL_RGBA;
 		break;
 	}
 }
@@ -129,13 +131,10 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	glGenTextures(1,&textureId);
 	glBindTexture(GL_TEXTURE_2D, textureId);
 
-	GLenum format = GL_RGB;
-	GLint internalFormat = GL_COMPRESSED_RGB;
-	if(comp == 4)
-	{
-		format = GL_RGBA;
-		internalFormat = GL_COMPRESSED_RGBA;
-	}
+	GLenum format;
+	GLint internalFormat;
+
+	GetOpenGLFormat(comp,format,internalFormat);
 
 	// Give the image to OpenGL
 	//unsigned int mipmapLevels = 1 + log2(std::max(x,y));
@@ -144,6 +143,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 
 	//glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 	std::fstream in;

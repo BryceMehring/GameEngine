@@ -1,7 +1,7 @@
 #ifndef _OGLRESOURCEMANAGER_
 #define _OGLRESOURCEMANAGER_
 
-#include "BaseResourceManager.h"
+#include "IResourceManager.h"
 #include <GL/glew.h>
 #include <map>
 #include <vector>

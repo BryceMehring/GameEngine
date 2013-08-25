@@ -282,7 +282,7 @@ void FlockingAlgorithm::Draw(Game& game)
 		m_birds[i]->Render(game.GetRenderer());
 	}
 
-	glm::mat4 T = glm::translate(0.0f,0.0f,-50.0f);
+	glm::mat4 T = glm::translate(0.0f,0.0f,0.0f);
 	T = glm::scale(T,200.0f,200.0f,1.0f);
 
 	IRenderer& renderer = game.GetRenderer();

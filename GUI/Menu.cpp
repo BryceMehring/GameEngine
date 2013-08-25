@@ -9,7 +9,6 @@
 #include <sstream>
 #include <iostream>
 #include <glm/gtx/transform.hpp>
-#include <GLFW/glfw3.h>
 
 using namespace std;
 
@@ -60,7 +59,7 @@ void Menu::AddElement(IUIElement* pElement)
 
 void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 {
-	if(input.KeyDown(GLFW_KEY_SPACE))
+	if(input.KeyDown(32))
 	{
 		if(m_pPrev != nullptr)
 		{
@@ -68,7 +67,7 @@ void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 		}
 	}
 
-	if(input.KeyDown(GLFW_KEY_TAB))
+	if(input.KeyDown(258))
 	{
 		unsigned int index = pGUI->GetIndex();
 
@@ -79,7 +78,7 @@ void Menu::Update(GUI* pGUI, IKMInput& input, double dt)
 		pGUI->SetIndex(index);
 
 	}
-	else if(input.KeyDown(GLFW_KEY_ENTER))
+	else if(input.KeyDown(257))
 	{
 		unsigned int index = pGUI->GetIndex();
 		if(index < m_elements.size())
@@ -272,11 +271,11 @@ void TextBox::Enter()
 
 void TextBox::Update(IKMInput& input, double dt)
 {
-	if(input.KeyDown(GLFW_KEY_BACKSPACE))
+	if(input.KeyDown(259))
 	{
 		Backspace();
 	}
-	else if(input.KeyDown(GLFW_KEY_ENTER))
+	else if(input.KeyDown(257))
 	{
 		Enter();
 	}
@@ -583,7 +582,7 @@ void Slider::Trigger()
 
 void Slider::Update(IKMInput& input, double dt)
 {
-	if(input.MouseClick(GLFW_MOUSE_BUTTON_1))
+	if(input.MouseClick(0))
 	{
 		Math::FRECT R(m_end.x - m_start.x,8.0f,(m_end + m_start) / 2.0f);
 		if(R.IsPointWithin(input.GetTransformedMousePos()))
@@ -591,7 +590,7 @@ void Slider::Update(IKMInput& input, double dt)
 			m_bUpdateEnable = true;
 		}
 	}
-	else if(input.MouseRelease(GLFW_MOUSE_BUTTON_1))
+	else if(input.MouseRelease(0))
 	{
 		m_bUpdateEnable = false;
 	}

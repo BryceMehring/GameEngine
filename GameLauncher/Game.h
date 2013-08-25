@@ -10,6 +10,7 @@
 #include "GameStateMachine.h"
 #include "IKMInput.h"
 #include "IRenderer.h"
+#include "IGame.h"
 #include "asVM.h"
 #include <string>
 
@@ -32,7 +33,8 @@ private:
 
 };
 
-class Game
+
+class Game : public IGame
 {
 public:
 

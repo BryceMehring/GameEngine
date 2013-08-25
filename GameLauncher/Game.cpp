@@ -1,9 +1,7 @@
 
 #include "Game.h"
 #include "FileManager.h"
-#include "Heap.h"
 #include "RTTI.h"
-#include "Menu.h"
 #include <string>
 #include <ctime>
 #include <iomanip>

@@ -3,19 +3,13 @@
 // todo: somehow, I need to register the delegate with AngelScript
 
 #include "asVM.h"
-#include "Delegates.h"
 #include "scripthelper/scripthelper.h"
 #include "scriptarray/scriptarray.h"
 #include "scriptmath/scriptmath.h"
-#include "FileManager.h"
-#include "StringAlgorithms.h" // todo: remove this file
-#include "Menu.h"
 
 #include <sstream>
 #include <ctime>
 #include <cassert>
-
-#include <iostream>
 
 
 using namespace std;
@@ -49,8 +43,8 @@ asVM::asVM() : m_iExeScript(0)
 
 	RegisterStdString(m_pEngine);
 
-	::FileManager::Instance().RegisterScript(*this);
-	::RegisterStrAlgorScript(*this);
+	//::FileManager::Instance().RegisterScript(*this);
+	//::RegisterStrAlgorScript(*this);
 
 	// turn off auto GARBAGE_COLLECT
 	//m_pEngine->SetEngineProperty(asEP_AUTO_GARBAGE_COLLECT,false);
@@ -64,10 +58,8 @@ asVM::~asVM()
 		m_scripts[i].pCtx->Release();
 	}
 
-
 	// release the Script Engine
-	int num = m_pEngine->Release();
-	cout<<num<<endl;
+	m_pEngine->Release();
 }
 
 void asVM::Save() const
@@ -363,7 +355,7 @@ void asVM::RegisterScript(ScriptingConsole* pTextBox)
 	//DBAS(m_pEngine->SetDefaultAccessMask(0xffffffff));
 
 	RegisterScriptMath(m_pEngine);
-	Math::RegisterScriptVecMath(m_pEngine);
+	//Math::RegisterScriptVecMath(m_pEngine);
 
 	// ============= Funcdefs =============
 	DBAS(m_pEngine->RegisterFuncdef("void AppCallback()"));

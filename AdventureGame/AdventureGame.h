@@ -48,10 +48,10 @@ public:
 	virtual void About() const {}
 
 	// IGameState
-	virtual void Init(class Game& game);
-	virtual void Destroy(class Game& game);
-	virtual void Update(class Game& game);
-	virtual void Draw(class Game& game);
+	virtual void Init(IGame& game);
+	virtual void Destroy(IGame& game);
+	virtual void Update(IGame& game);
+	virtual void Draw(IGame& game);
 
 	virtual void Init(class asIScriptEngine*) {}
 	virtual void Destroy(class asIScriptEngine*) {}
