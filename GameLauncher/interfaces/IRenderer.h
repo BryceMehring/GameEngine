@@ -14,6 +14,23 @@ enum class FontAlignment
 	Right
 };
 
+/*struct DrawTextInfo
+{
+	DrawTextInfo(const std::string& t, const glm::vec3 p, const glm::vec2& s) : text(t), pos(p), scale(s) {}
+	DrawTextInfo(const std::string& t, const glm::vec3 p, const glm::vec3& c) : text(t), pos(p), color(c) {}
+	DrawTextInfo(const std::string& t, const glm::vec3 p, const std::string& f) : text(t), pos(p), font(f) {}
+	DrawTextInfo(const std::string& t, const glm::vec3 p, const FontAlignment o) : text(t), pos(p), options(o) {}
+
+	std::string text;
+	glm::vec3 pos;
+	glm::vec2 scale = glm::vec2(10.0f);
+	glm::vec3 color = glm::vec3(1.0f);
+	std::string font = "font";
+
+	FontAlignment options = FontAlignment::Left;
+};*/
+
+
 // Renderer plugin interface
 class IRenderer : public IPlugin
 {
@@ -41,6 +58,7 @@ public:
 	// Fonts
 	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const = 0;
 
+	//virtual void DrawString(const char* str, const glm::vec3& pos, const DrawTextInfo& = DrawTextInfo()) = 0;
 	virtual void DrawString(const char* str, // the string that gets drawn
 							const glm::vec3& pos, // pos of the text in world space
 							const glm::vec2& scale = glm::vec2(10.0f), // scaling the text
@@ -52,7 +70,8 @@ public:
 	virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
 							const glm::mat4& transformation, // transformation applied to the sprite
 							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
-							unsigned int iCellId = 0 // cellId if multiple frames are stored together in the same sprite image
+							unsigned int iCellId = 0, // cellId if multiple frames are stored together in the same sprite image
+							const std::string& tech = "sprite"
 							) = 0;
 
 	virtual bool SetShaderValue(const std::string& shader, const std::string& location, float value ) = 0;

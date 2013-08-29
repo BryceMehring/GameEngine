@@ -179,7 +179,7 @@ void SpriteEngine::Render()
 						);
 
 			glVertexAttribPointer(
-						vertexTiling,					// attribute 1
+						vertexTiling,					// attribute 2
 						2,                  // size
 						GL_FLOAT,           // type
 						GL_FALSE,           // normalized?

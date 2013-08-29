@@ -22,7 +22,8 @@ set(OPENGL_RENDERER_HEADERS
 add_library(renderer MODULE ${OPENGL_RENDERER_HEADERS} ${OPENGL_RENDERER_SOURCE})
 target_link_libraries(renderer GameEngine ${GLFW_LIBRARY} ${GLEW_LIBRARY})
 
-if(MSVC)
+if(WIN32)
     target_link_libraries(renderer opengl32)
-endif(MSVC)
+endif(WIN32)
+
 

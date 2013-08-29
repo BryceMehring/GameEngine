@@ -61,6 +61,7 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& 
 		font = "font";
 
 	m_textSubsets[font].push_back(DrawTextInfo(str,pos,scale,color,options));
+
 }
 
 void FontEngine::OnReset()

@@ -82,7 +82,7 @@ endif(BUILD_GUI)
 
 add_subdirectory(GameEngine)
 add_subdirectory(OpenGLRenderer)
-add_subdirectory(DXInput)
+add_subdirectory(Input)
 add_subdirectory(AdventureGame)
 #add_subdirectory(MineSweeper)
 #add_subdirectory(FlockingAlgorithm)

@@ -57,16 +57,17 @@ void Game::SetNextState(const std::string& state)
 int Game::Run()
 {
 	double prevTimeStamp = 0.0;
-	double currentTimeStamp = 0.0;
-
-	m_timer.Start();
+	//double currentTimeStamp = 0.0;
 
 	// Loop while the use has not quit
 	while(!m_pInput->KeyDown(GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(glfwGetCurrentContext()))
 	{
-		currentTimeStamp = m_timer.GetTime();
+		double currentTimeStamp = glfwGetTime();
 		m_fDT = currentTimeStamp - prevTimeStamp;
 		prevTimeStamp = currentTimeStamp;
+		/*currentTimeStamp = m_timer.GetTime();
+		m_fDT = currentTimeStamp - prevTimeStamp;
+		prevTimeStamp = currentTimeStamp;*/
 
 		m_pInput->Poll();
 
@@ -177,7 +178,8 @@ void Game::DrawFPS()
 	//out <<width<<"x"<<height<<endl;
 	//out <<m_fDT<<endl;
 
-	m_pRenderer->DrawString(out.str().c_str(),::glm::vec3(-90,90,-5),glm::vec2(10.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pRenderer->DrawString("Hello World",glm::vec3(1.0f));
+	//m_pRenderer->DrawString(DrawTextInfo(out.str().c_str(),::glm::vec3(-90,90,-5),glm::vec3(0.0f,1.0f,0.0f)));
 }
 
 void Game::DrawCursor()
@@ -249,18 +251,6 @@ void Game::LoadPlugins()
 	assert(pPlugin->GetPluginType() == DLLType::Input); // check to make sure the input is actually the input plugin
 
 	m_pInput = static_cast<IKMInput*>(pPlugin);
-}
-
-void Game::StartTimer()
-{
-	m_timer.Reset();
-	m_timer.Start();
-}
-
-void Game::EndTimer()
-{
-	m_timer.Stop();
-	m_fDT =  m_timer.GetTime();
 }
 
 void Game::RegisterScript()

@@ -88,13 +88,7 @@ private:
 
 	std::string m_NextState;
 
-	Timer m_timer;
-
 	// helper functions
-	void StartTimer();
-	void EndTimer();
-
-	void LoadAllDLL();
 
 	void RegisterScript();
 

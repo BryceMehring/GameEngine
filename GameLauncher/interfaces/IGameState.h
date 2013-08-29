@@ -3,17 +3,11 @@
 
 #include "IPlugin.h"
 #include "IGame.h"
-#include "Timer.h"
 
 // Base Game plugin
 class IGameState : public IPlugin
 {
 public:
-
-	IGameState()
-	{
-		m_timer.Start();
-	}
 
 	// Called only once when the plugin is created
 	virtual void Init(IGame& game) = 0;
@@ -30,8 +24,6 @@ public:
 	virtual const class RTTI* GetType() const = 0;
 
 protected:
-
-	Timer m_timer; // keeps track of the time the game has been playing
 
 	virtual ~IGameState() {}
 
