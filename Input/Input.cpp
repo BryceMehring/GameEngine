@@ -3,7 +3,7 @@
 
 #include <GLFW/glfw3.h>
 #include <angelscript.h>
-#include "DXInput.h"
+#include "Input.h"
 
 #include <iostream>
 #include <fstream>
@@ -14,12 +14,12 @@ using namespace std;
 // Input plug-in implementation
 extern "C" PLUGINDECL IPlugin* CreatePlugin()
 {
-	return new DirectInput();
+	return new Input();
 }
 
-DirectInput* DirectInput::s_pThis = nullptr;
+Input* Input::s_pThis = nullptr;
 
-void DirectInput::CharCallback(GLFWwindow*, unsigned int c)
+void Input::CharCallback(GLFWwindow*, unsigned int c)
 {
 	if(s_pThis != nullptr)
 	{
@@ -27,7 +27,7 @@ void DirectInput::CharCallback(GLFWwindow*, unsigned int c)
 	}
 }
 
-void DirectInput::KeyCallback(GLFWwindow*, int key, int scancode, int action, int mods)
+void Input::KeyCallback(GLFWwindow*, int key, int scancode, int action, int mods)
 {
 	if(s_pThis != nullptr)
 	{
@@ -36,7 +36,7 @@ void DirectInput::KeyCallback(GLFWwindow*, int key, int scancode, int action, in
 	}
 }
 
-void DirectInput::MouseCallback(GLFWwindow*, double x, double y)
+void Input::MouseCallback(GLFWwindow*, double x, double y)
 {
 	if(s_pThis != nullptr)
 	{
@@ -44,7 +44,7 @@ void DirectInput::MouseCallback(GLFWwindow*, double x, double y)
 	}
 }
 
-void DirectInput::MouseButtonCallback(GLFWwindow*,int button, int action, int mods)
+void Input::MouseButtonCallback(GLFWwindow*,int button, int action, int mods)
 {
 	if(s_pThis != nullptr)
 	{
@@ -53,7 +53,7 @@ void DirectInput::MouseButtonCallback(GLFWwindow*,int button, int action, int mo
 	}
 }
 
-void DirectInput::MouseScrollCallback(GLFWwindow*, double, double yOffset)
+void Input::MouseScrollCallback(GLFWwindow*, double, double yOffset)
 {
 	if(s_pThis != nullptr)
 	{
@@ -61,8 +61,8 @@ void DirectInput::MouseScrollCallback(GLFWwindow*, double, double yOffset)
 	}
 }
 
-// DirectInput ctor
-DirectInput::DirectInput() : m_fMouseSensistivity(100.0f), m_tpos(0.0f,0.0f)
+// Input ctor
+Input::Input() : m_fMouseSensistivity(100.0f), m_tpos(0.0f,0.0f)
 {
 	s_pThis = this;
 
@@ -80,28 +80,28 @@ DirectInput::DirectInput() : m_fMouseSensistivity(100.0f), m_tpos(0.0f,0.0f)
 	CenterMouse();
 }
 
-void DirectInput::Init(asIScriptEngine* pAS)
+void Input::Init(asIScriptEngine* pAS)
 {
 	RegisterScript(pAS);
 }
 
-void DirectInput::Destroy(asIScriptEngine* pAS)
+void Input::Destroy(asIScriptEngine* pAS)
 {
 	// remove config group from script
 	pAS->RemoveConfigGroup("Input");
 }
 
-int DirectInput::GetVersion() const
+int Input::GetVersion() const
 {
 	return 0;
 }
 
-DLLType DirectInput::GetPluginType() const
+DLLType Input::GetPluginType() const
 {
 	return DLLType::Input;
 }
 
-bool DirectInput::LoadKeyBindFile(const string& file)
+bool Input::LoadKeyBindFile(const string& file)
 {
 	ifstream inFile(file);
 	if(!inFile.is_open())
@@ -138,7 +138,7 @@ bool DirectInput::LoadKeyBindFile(const string& file)
 	return true;
 }
 
-void DirectInput::CenterMouse()
+void Input::CenterMouse()
 {
 	int width;
 	int height;
@@ -147,7 +147,7 @@ void DirectInput::CenterMouse()
 	glfwSetCursorPos(glfwGetCurrentContext(),width / 2, height / 2);
 }
 
-void DirectInput::Reset()
+void Input::Reset()
 {
 	m_MouseClickOnce[0] = m_MouseClickOnce[1] = -1;
 	m_iKeyAction = m_iKeyDown = -1;
@@ -156,7 +156,7 @@ void DirectInput::Reset()
 	m_fYScrollOffset = 0.0f;
 }
 
-void DirectInput::Poll()
+void Input::Poll()
 {
 	Reset();
 
@@ -177,7 +177,7 @@ void DirectInput::Poll()
 	glfwPollEvents();
 }
 
-void DirectInput::UpdateMouse(double x, double y)
+void Input::UpdateMouse(double x, double y)
 {
 	int width = 0;
 	int height = 0;
@@ -193,7 +193,7 @@ void DirectInput::UpdateMouse(double x, double y)
 	ClampMouse();
 }
 
-void DirectInput::ClampMouse()
+void Input::ClampMouse()
 {
 	if(m_tpos.x < -100.0f)
 	{
@@ -214,17 +214,17 @@ void DirectInput::ClampMouse()
 	}
 }
 
-void DirectInput::CursorPos(double& x, double& y) const
+void Input::CursorPos(double& x, double& y) const
 {
 	glfwGetCursorPos(glfwGetCurrentContext(),&x,&y);
 }
 
-const glm::vec2& DirectInput::GetTransformedMousePos() const
+const glm::vec2& Input::GetTransformedMousePos() const
 {
 	return m_tpos;
 }
 
-bool DirectInput::CheckKey(int Key, bool once, int flag)
+bool Input::CheckKey(int Key, bool once, int flag)
 {
 	if(once && (m_iKeyAction != flag))
 		return false;
@@ -263,15 +263,15 @@ bool DirectInput::CheckKey(int Key, bool once, int flag)
 	return bSuccess;
 }
 
-bool DirectInput::KeyDown(int Key, bool once)
+bool Input::KeyDown(int Key, bool once)
 {
 	return CheckKey(Key,once,GLFW_PRESS);
 }
-bool DirectInput::KeyUp(int Key, bool once)
+bool Input::KeyUp(int Key, bool once)
 {
 	return CheckKey(Key,once,GLFW_RELEASE);
 }
-bool DirectInput::CharKeyDown(char& out) const
+bool Input::CharKeyDown(char& out) const
 {
 	if(m_iCharKeyDown == (unsigned int)-1)
 		return false;
@@ -281,36 +281,36 @@ bool DirectInput::CharKeyDown(char& out) const
 	return true;
 }
 
-bool DirectInput::MouseClick(int iButton, bool once) const
+bool Input::MouseClick(int iButton, bool once) const
 {
 	if(iButton > 1)
 		return false;
 
 	return (once ? (m_MouseClickOnce[iButton] == GLFW_PRESS) : glfwGetMouseButton(glfwGetCurrentContext(),iButton) == GLFW_PRESS);
 }
-bool DirectInput::MouseRelease(int iButton, bool once) const
+bool Input::MouseRelease(int iButton, bool once) const
 {
 	if(iButton > 1)
 		return false;
 
 	return (once ? (m_MouseClickOnce[iButton] == GLFW_RELEASE) : glfwGetMouseButton(glfwGetCurrentContext(),iButton) == GLFW_RELEASE);
 }
-int DirectInput::MouseX() const
+int Input::MouseX() const
 {
 	return m_iMouseX;
 }
 
-int DirectInput::MouseY() const
+int Input::MouseY() const
 {
 	return m_iMouseY;
 }
 
-double DirectInput::MouseZ() const
+double Input::MouseZ() const
 {
 	return m_fYScrollOffset;
 }
 
-bool DirectInput::GetSelectedRect(Math::AABB& out)
+bool Input::GetSelectedRect(Math::AABB& out)
 {
 	if(!MouseClick(0,false))
 		return false;
@@ -321,19 +321,19 @@ bool DirectInput::GetSelectedRect(Math::AABB& out)
 	return true;
 }
 
-void DirectInput::SetCursorSensitivity(float s)
+void Input::SetCursorSensitivity(float s)
 {
 	m_fMouseSensistivity = s;
 }
 
-void DirectInput::RegisterScript(asIScriptEngine* pAS)
+void Input::RegisterScript(asIScriptEngine* pAS)
 {
 	pAS->BeginConfigGroup("Input");
 
 	(pAS->RegisterObjectType("IKMInput",0,asOBJ_REF | asOBJ_NOHANDLE));
-	(pAS->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(DirectInput,MouseX),asCALL_THISCALL));
-	(pAS->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
-	(pAS->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
+	(pAS->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(Input,MouseX),asCALL_THISCALL));
+	(pAS->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(Input,MouseY),asCALL_THISCALL));
+	(pAS->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(Input,MouseZ),asCALL_THISCALL));
 	(pAS->RegisterGlobalProperty("IKMInput input",this));
 
 	pAS->EndConfigGroup();

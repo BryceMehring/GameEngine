@@ -15,11 +15,11 @@
 using namespace __gnu_cxx;
 #endif
 
-class DirectInput : public IKMInput
+class Input : public IKMInput
 {
 public:
 
-	DirectInput();
+	Input();
 
 	// Callbacks
 	static void CharCallback(GLFWwindow*,unsigned int);
@@ -63,7 +63,7 @@ public:
 
 private:
 
-	static DirectInput* s_pThis;
+	static Input* s_pThis;
 
 	hash_map<int,std::vector<int> > m_bindings;
 
