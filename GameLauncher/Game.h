@@ -51,7 +51,7 @@ public:
 	void SetNextState(const std::string& state);
 
 	// ignore, working on this
-	void ReloadPlugins();
+	void LoadPlugins();
 	
 	// Get Functions
 	// todo: provide const overloaded versions
@@ -97,8 +97,6 @@ private:
 	void LoadAllDLL();
 
 	void RegisterScript();
-
-	void ReloadPlugins(const std::string& file);
 
 	void Update();
 	void UpdateFPS();

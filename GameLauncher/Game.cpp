@@ -17,9 +17,6 @@ using namespace std;
 Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 	m_fDT(0.0f), m_pRenderer(nullptr), m_pInput(nullptr)
 {
-	
-	// todo: reorganize this ctor
-
 	// Initialize
 	if(glfwInit() < 1)
 	{
@@ -27,20 +24,9 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 	}
 
 	m_plugins.SetAS(m_vm.GetScriptEngine());
-	LoadAllDLL();
+	LoadPlugins();
 
-	// todo: init the scripting console somewhere else
-	//float width = 90;
-	//float height = 90;
-	//glm::vec2 pos(0.0f,0.0f);
-	
-	//m_pConsole = new ScriptingConsole(&m_vm,"Scripting Console",pos,width,height);
-
-	//m_vm.RegisterScript(m_pConsole);
-
-	//m_pConsole->RegisterScript();
-
-
+	m_pInput->LoadKeyBindFile("bind.txt");
 
 	RegisterScript();
 }
@@ -109,12 +95,6 @@ void Game::Update()
 		m_NextState.clear();
 	}
 
-	/*if(m_pInput->KeyDown('A'))
-	{
-		m_pRenderer->ToggleFullscreen();
-		m_pRenderer->GetResourceManager().LoadResourceFile("base.r");
-	}*/
-
 	if(m_pInput->KeyDown(GLFW_KEY_F8))
 	{
 		m_pRenderer->EnableVSync(bSync);
@@ -160,18 +140,15 @@ void Game::Update()
 void Game::Draw()
 {
 	DrawFPS();
-	DrawCursor();
+	//DrawCursor();
 	//DrawSelectionRect();
 
-	if(m_pInput->MouseClick(0,false))
+	/*if(m_pInput->MouseClick(0,false))
 	{
 		std::stringstream stream;
 		stream << m_pRenderer->GetDisplayModeStr(0) << endl;
 		stream << m_pInput->MouseZ();
-
-		//m_pRenderer->DrawString(stream.str().c_str(),glm::vec2(20,-50),glm::vec2(3.0f));
-		//m_pRenderer->DrawString(m_pRenderer->GetDisplayModeStr(0).c_str(),glm::vec2(20,-60),glm::vec2(3.0f));
-	}
+	}*/
 
 	if(m_bConsoleEnabled)
 	{
@@ -184,6 +161,10 @@ void Game::Draw()
 		m_StateMachine.GetState().Draw(*this);
 	}
 
+	//std::stringstream stream;
+	//stream << this->GetDt() << endl;
+
+	//m_pRenderer->DrawString(stream.str().c_str(),glm::vec3(0.0f,0.0f,-30.0f),glm::vec2(10.0f),glm::vec3(1.0f));
 
 	// Present the screen
 	m_pRenderer->Present();
@@ -196,7 +177,7 @@ void Game::DrawFPS()
 	//out <<width<<"x"<<height<<endl;
 	//out <<m_fDT<<endl;
 
-	m_pRenderer->DrawString(out.str().c_str(),::glm::vec2(-90,90),glm::vec2(10.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pRenderer->DrawString(out.str().c_str(),::glm::vec3(-90,90,-5),glm::vec2(10.0f),glm::vec3(0.0f,1.0f,0.0f));
 }
 
 void Game::DrawCursor()
@@ -206,7 +187,7 @@ void Game::DrawCursor()
 	glm::mat4 T = glm::translate(pos.x + 2,pos.y - 3,0.0f);
 	T = glm::scale(T, 7.0f,8.5f,1.0f);
 
-	m_pRenderer->DrawSprite("cursor",T);
+	//m_pRenderer->DrawSprite("cursor",T);
 
 }
 
@@ -230,11 +211,11 @@ void Game::DrawSelectionRect()
 
 IRenderer& Game::GetRenderer()
 {
-	return (*m_pRenderer);
+	return *m_pRenderer;
 }
 IKMInput& Game::GetInput()
 {
-	return (*m_pInput);
+	return *m_pInput;
 }
 PluginManager& Game::GetPM()
 {
@@ -253,16 +234,7 @@ unsigned int Game::GetFps() const
 	return m_info.GetFPS();
 }
 
-void Game::ReloadPlugins()
-{
-	/*#ifdef _DEBUG
-	ReloadPlugins("..\\Debug\\");
-#else*/
-	ReloadPlugins("/");
-	//#endif
-}
-
-void Game::ReloadPlugins(const std::string& path)
+void Game::LoadPlugins()
 {
 	m_plugins.FreeAllPlugins();
 
@@ -277,11 +249,6 @@ void Game::ReloadPlugins(const std::string& path)
 	assert(pPlugin->GetPluginType() == DLLType::Input); // check to make sure the input is actually the input plugin
 
 	m_pInput = static_cast<IKMInput*>(pPlugin);
-}
-
-void Game::LoadAllDLL()
-{
-	ReloadPlugins();
 }
 
 void Game::StartTimer()
