@@ -24,14 +24,14 @@ public:
 
 	// draw everything to screen
 	virtual void Present() = 0;
-	
+
 	// Returns the resource manager
 	virtual IResourceManager& GetResourceManager() = 0;
 
 	// Lines
-	
+
 	virtual void GetLineWidthRange(glm::vec2& out) const = 0; // Gets the range of the width of the lines supported on the current hardware, x = min, y = max
-	
+
 	virtual void DrawLine(const glm::vec3* pArray, // array of 3d vertices to draw
 						  unsigned int length, // number of vertices
 						  float fWidth = 3.0f, // the width of the line
@@ -42,7 +42,7 @@ public:
 	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const = 0;
 
 	virtual void DrawString(const char* str, // the string that gets drawn
-							const glm::vec2& pos, // pos of the text in world space
+							const glm::vec3& pos, // pos of the text in world space
 							const glm::vec2& scale = glm::vec2(10.0f), // scaling the text
 							const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
 							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
@@ -71,10 +71,10 @@ public:
 	virtual void EnumerateDisplayAdaptors() = 0;
 	virtual int GetNumDisplayModes() const = 0; // returns the number of video modes from EnumerateDisplayAdaptors()
 	virtual int GetCurrentDisplayMode() const = 0; // returns the current display mode
-    virtual void SetDisplayMode(int i) = 0; // set a display mode, i being the index into the displayModeList.
-    virtual const std::string& GetDisplayModeStr(int i) const = 0; // get the display mode str
+	virtual void SetDisplayMode(int i) = 0; // set a display mode, i being the index into the displayModeList.
+	virtual const std::string& GetDisplayModeStr(int i) const = 0; // get the display mode str
 	virtual void ToggleFullscreen() = 0; // todo: need to implement
-	
+
 	///add more functions...
 protected:
 

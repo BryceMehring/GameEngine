@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
-    m_pRm(pRm), m_pCamera(pCam), m_iMaxLength(2*maxLength)
+	m_pRm(pRm), m_pCamera(pCam), m_iMaxLength(2*maxLength)
 {
 	OnReset();
 }
@@ -31,7 +31,7 @@ void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRE
 	glm::vec2 bottomRight(topLeft);
 	bottomRight.y -= 2.0f*scale.y;
 
-	
+
 	const Charset* font = static_cast<const Charset*>(m_pRm->GetResource("font")); // todo: need to check if the resource is actually a font
 
 	while(*str)
@@ -49,18 +49,16 @@ void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRE
 	}
 
 	out = Math::FRECT(topLeft,bottomRight);
-	
+
 }
 
-void FontEngine::DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color, FontAlignment options)
+void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, FontAlignment options)
 {
 	if(str == nullptr)
 		return;
 
 	if(font == nullptr)
 		font = "font";
-
-	// todo: need to verify that the font is actually loaded
 
 	m_textSubsets[font].push_back(DrawTextInfo(str,pos,scale,color,options));
 }
@@ -83,7 +81,7 @@ void FontEngine::CreateVertexBuffer()
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_uiVertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, m_iMaxLength * sizeof(FontVertex), 0, GL_DYNAMIC_DRAW);
-	
+
 }
 
 void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
@@ -108,10 +106,10 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 		{
 			unsigned int iVert = iCurrentVerts; // current vertex
 			const char* str = subIter->text.c_str();
-			
-			// World pos of text aligned to the left 
-			glm::vec3 posW(subIter->pos,0.0f); // World pos of where the text will be drawn
-			
+
+			// World pos of text aligned to the left
+			glm::vec3 posW(subIter->pos); // World pos of where the text will be drawn
+
 			// If the text needs to be aligned to center or right
 			if(subIter->options == FontAlignment::Center || subIter->options == FontAlignment::Right)
 			{
@@ -139,7 +137,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			while((iVert < m_iMaxLength) && *str)
 			{
 				char character = *str++; // character to draw
-                const CharDescriptor& charToRender = font->GetCharDescriptor()[(unsigned int)character]; // font info about the character to draw
+				const CharDescriptor& charToRender = font->GetCharDescriptor()[(unsigned int)character]; // font info about the character to draw
 				float fAdvance = (subIter->scale.x * charToRender.Width / (float)font->GetWidth()); // // How much we will advance from the current character
 
 				if((character != '\n') && (character != '\t') && (character != ' '))
@@ -153,11 +151,11 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 						glm::vec2 topLeft((charToRender.x / (float)font->GetWidth()),charToRender.y / (float)font->GetHeight());
 						glm::vec2 bottomRight(((charToRender.x+charToRender.Width) / (float)font->GetWidth()),(charToRender.y+charToRender.Height) / (float)font->GetHeight());
 
-						v[index].pos = glm::vec3(posW.x,0.5f * subIter->scale.y + posW.y,0.0f);
+						v[index].pos = glm::vec3(posW.x,0.5f * subIter->scale.y + posW.y,posW.z);
 						v[index].uv = topLeft; // topLeft
 						v[index].color = subIter->color;
 
-						v[index + 1].pos = glm::vec3(posW.x,-0.5f * subIter->scale.y + posW.y,0.0f);
+						v[index + 1].pos = glm::vec3(posW.x,-0.5f * subIter->scale.y + posW.y,posW.z);
 						v[index + 1].uv = glm::vec2(topLeft.x,bottomRight.y); // glm::vec2(topLeft.x,bottomRight.y) bottom left
 						v[index + 1].color = subIter->color;
 
@@ -275,11 +273,11 @@ void FontEngine::Render()
 		const IResource* pCurrentTexture = m_pRm->GetResource(iter->first);
 
 		// Set the texture to use
-		
+
 		glBindTexture(GL_TEXTURE_2D, pCurrentTexture->GetID());
 		glUniform1i(pShader->GetTextureSamplerID(),0);
 
-        glDrawElements(GL_TRIANGLES, numChar[i] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
+		glDrawElements(GL_TRIANGLES, numChar[i] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
 
 		uiStartingIndex += numChar[i];
 	}

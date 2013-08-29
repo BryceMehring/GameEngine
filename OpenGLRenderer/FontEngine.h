@@ -9,11 +9,11 @@
 struct DrawTextInfo
 {
 	DrawTextInfo() {}
-	DrawTextInfo(const std::string& str, const glm::vec2& p, const glm::vec2& s, const glm::vec3& c, FontAlignment o) :
+	DrawTextInfo(const std::string& str, const glm::vec3& p, const glm::vec2& s, const glm::vec3& c, FontAlignment o) :
 		text(str), pos(p), scale(s), color(c), options(o) {}
 
 	std::string text;
-	glm::vec2 pos;
+	glm::vec3 pos;
 	glm::vec2 scale;
 	glm::vec3 color;
 	FontAlignment options;
@@ -41,7 +41,7 @@ public:
 	//void DrawString(const char* str, const char* font, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color);
 	void DrawString(const char* str,
 					const char* font,
-					const glm::vec2& pos,
+					const glm::vec3& pos,
 					const glm::vec2& scale,
 					const glm::vec3& color,
 					FontAlignment options
