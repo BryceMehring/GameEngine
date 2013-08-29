@@ -15,6 +15,7 @@
 #include <iostream>
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
 #include <dlfcn.h>
@@ -86,10 +87,10 @@ IPlugin* PluginManager::GetPlugin(DLLType type)
 		stream <<"Could not load: " << pDLL << endl;
 
 		//fm.WriteToLog(stream.str());
-		
+
 		return false;
 	}
-	
+
 	CREATEPLUGIN pFunct = nullptr;
 
 #ifdef _WIN32
@@ -124,11 +125,15 @@ IPlugin* PluginManager::LoadDLL(const std::string& file)
 
 	string dllFile = "./";
 
-#ifdef _WIN32
+#ifdef __GNUC__
+	dllFile += "lib";
+#endif
+
+#if defined(_WIN32)
 	dllFile += file + ".dll";
 	dll.mod = LoadLibrary(dllFile.c_str());
 #else
-	dllFile += "lib" + file + ".so";
+	dllFile += file + ".so";
 	dll.mod = dlopen(dllFile.c_str(),RTLD_NOW);
 #endif
 
@@ -141,7 +146,7 @@ IPlugin* PluginManager::LoadDLL(const std::string& file)
 #else
 		cout << dlerror() << endl;
 #endif
-		
+
 		return nullptr;
 	}
 
