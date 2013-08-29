@@ -12,6 +12,7 @@
 #include "PluginManager.h"
 #include "Camera.h"
 #include <angelscript.h>
+#include <memory>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -42,13 +43,13 @@ public:
 	// Lines
 	virtual void GetLineWidthRange(glm::vec2& out) const;
 	virtual void DrawLine(const glm::vec3* pArray, unsigned int length, float width, const glm::vec4& color, const glm::mat4& t);
-	
+
 
 	// Fonts
 	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;
 
 	virtual void DrawString(const char* str, // the string that gets drawn
-							const glm::vec2& pos, // World pos of the text, where the text starts getting drawn from
+							const glm::vec3& pos, // World pos of the text, where the text starts getting drawn from
 							const glm::vec2& scale, // size of the text
 							const glm::vec3& color, // color of the text blended together with the texture
 							const char* font, // the desired font, may be null if you wish to use the default font
@@ -72,8 +73,8 @@ public:
 	virtual void EnumerateDisplayAdaptors();
 	virtual int GetNumDisplayModes() const;
 	virtual int GetCurrentDisplayMode() const;
-    virtual void SetDisplayMode(int i);
-    virtual const std::string& GetDisplayModeStr(int i) const;
+	virtual void SetDisplayMode(int i);
+	virtual const std::string& GetDisplayModeStr(int i) const;
 	virtual void ToggleFullscreen();
 
 private:

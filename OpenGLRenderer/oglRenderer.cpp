@@ -3,6 +3,9 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 using namespace std;
 
@@ -15,7 +18,7 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 {
 	m_pCamera = CreateCamera();
 	m_pCamera->setLens(200.0f,200.0f,0.0f,5.0f);
-	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1000.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_pCamera->update(0.0f);
 
 	EnumerateDisplayAdaptors();
@@ -29,9 +32,9 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 	}
 
 	glfwMakeContextCurrent(m_pWindow);
-	//glfwSetGamma(glfwGetPrimaryMonitor(),1.8f);
 
-	glfwSwapInterval(1);
+	EnableVSync(true);
+
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
@@ -105,16 +108,29 @@ void oglRenderer::Present()
 {
 	ClearScreen();
 
+	m_pSprites->Render();
 	m_pFonts->Render();
 	m_pLines->Render();
-	m_pSprites->Render();
+
 
 	glfwSwapBuffers(m_pWindow);
 }
 
 void oglRenderer::EnableVSync(bool enable)
 {
+#ifdef _WIN32
+	// Turn on vertical screen sync under Windows.
+	// (I.e. it uses the WGL_EXT_swap_control extension)
+	typedef BOOL (WINAPI *PFNWGLSWAPINTERVALEXTPROC)(int interval);
+	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = NULL;
+	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+	if(wglSwapIntervalEXT)
+		wglSwapIntervalEXT(enable ? 1 : 0);
+#else
 	glfwSwapInterval(enable ? 1 : 0);
+#endif
+
+
 }
 
 void oglRenderer::EnumerateDisplayAdaptors()
@@ -123,7 +139,7 @@ void oglRenderer::EnumerateDisplayAdaptors()
 
 	m_VideoModeStr.reserve(m_iNumVideoModes);
 
-    for(int i = 0; i < m_iNumVideoModes; ++i)
+	for(int i = 0; i < m_iNumVideoModes; ++i)
 	{
 		std::stringstream stream;
 		stream << m_pVideoModes[i].width << 'x' << m_pVideoModes[i].height;
@@ -144,7 +160,7 @@ int oglRenderer::GetCurrentDisplayMode() const
 
 void oglRenderer::SetDisplayMode(int i)
 {
-    if(i < GetNumDisplayModes() && i >= 0)
+	if(i < GetNumDisplayModes() && i >= 0)
 	{
 		glfwSetWindowSize(m_pWindow,m_pVideoModes[i].width,m_pVideoModes[i].height);
 	}
@@ -191,7 +207,7 @@ void oglRenderer::GetStringRec(const char* str, const glm::vec2& scale, Math::FR
 	m_pFonts->GetStringRec(str,scale,out);
 }
 
-void oglRenderer::DrawString(const char* str, const glm::vec2& pos, const glm::vec2& scale, const glm::vec3& color, const char* font, FontAlignment options)
+void oglRenderer::DrawString(const char* str, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, const char* font, FontAlignment options)
 {
 	m_pFonts->DrawString(str,font,pos,scale,color,options);
 }
