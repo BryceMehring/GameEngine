@@ -83,7 +83,7 @@ endif(BUILD_GUI)
 add_subdirectory(GameEngine)
 add_subdirectory(OpenGLRenderer)
 add_subdirectory(Input)
-add_subdirectory(AdventureGame)
+#add_subdirectory(AdventureGame)
 #add_subdirectory(MineSweeper)
 #add_subdirectory(FlockingAlgorithm)
 
@@ -143,6 +143,3 @@ add_executable(GameLauncher ${GAME_LAUNCHER_HEADERS} ${GAME_LAUNCHER_SOURCE})
 
 target_link_libraries(GameLauncher GameEngine ${GLFW_LIBRARY})
 target_link_libraries(GameLauncher ${ANGELSCRIPT_LIBRARY_RELEASE})
-
-
-

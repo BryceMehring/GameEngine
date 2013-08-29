@@ -173,12 +173,12 @@ void Game::Draw()
 
 void Game::DrawFPS()
 {
-	std::ostringstream out;
+	/*std::ostringstream out;
 	out <<"FPS: " << GetFps() << endl;
 	//out <<width<<"x"<<height<<endl;
 	//out <<m_fDT<<endl;
 
-	m_pRenderer->DrawString("Hello World",glm::vec3(1.0f));
+	m_pRenderer->DrawString("Hello World",glm::vec3(1.0f));*/
 	//m_pRenderer->DrawString(DrawTextInfo(out.str().c_str(),::glm::vec3(-90,90,-5),glm::vec3(0.0f,1.0f,0.0f)));
 }
 
