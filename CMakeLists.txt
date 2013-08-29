@@ -51,27 +51,35 @@ set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
 
 if(MSVC)
-	# visual studio compile flags
-		
-	set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /arch:SSE2 /RTC1 /W3 /MP /GR-")
-	set(CMAKE_CXX_FLAGS_RELEASE "/W3 /MP /O2 /arch:SSE2 /GR- /MD")
+    # visual studio compile flags
+
+    set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /arch:SSE2 /RTC1 /W3 /MP /GR-")
+    set(CMAKE_CXX_FLAGS_RELEASE "/W3 /MP /O2 /arch:SSE2 /GR- /MD")
 else()
 
-	#g++ compile flags
-	set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -fno-rtti -fPIC -pipe")
-	set(CMAKE_CXX_FLAGS_DEBUG "-Wall -std=c++11 -g -fno-rtti -fPIC -pipe")
-	set(CMAKE_CXX_FLAGS_RELEASE "-Wall -std=c++11 -O2 -fno-rtti -fPIC -pipe")
+    #MinGW and g++ compile flags
+    set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -fno-rtti -pipe")
+    set(CMAKE_CXX_FLAGS_DEBUG "-Wall -std=c++11 -g -fno-rtti -pipe")
+    set(CMAKE_CXX_FLAGS_RELEASE "-Wall -std=c++11 -O3 -fno-rtti -pipe")
+
+    if(UNIX)
+
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
+
+    endif(UNIX)
 
 endif()
 
 if(BUILD_MEMORY_MANAGER)
-	add_subdirectory(MemoryManager)
+    add_subdirectory(MemoryManager)
 endif(BUILD_MEMORY_MANAGER)
 
 if(BUILD_GUI)
-	add_subdirectory(GUI)
+    add_subdirectory(GUI)
 endif(BUILD_GUI)
-	
+
 add_subdirectory(GameEngine)
 add_subdirectory(OpenGLRenderer)
 add_subdirectory(DXInput)
@@ -89,7 +97,7 @@ set(GAME_LAUNCHER_HEADERS
         GameLauncher/interfaces/IGameState.h
         GameLauncher/interfaces/IGameState.h
         #IGrid.h
-		GameLauncher/interfaces/IGame.h
+        GameLauncher/interfaces/IGame.h
         GameLauncher/interfaces/IInput.h
         GameLauncher/interfaces/IKMInput.h
         GameLauncher/interfaces/IPlugin.h
@@ -110,7 +118,7 @@ set(GAME_LAUNCHER_HEADERS
     )
 
 set(GAME_LAUNCHER_SOURCE
-		GameLauncher/main.cpp
+        GameLauncher/main.cpp
         GameLauncher/asVM.cpp
         GameLauncher/FileManager.cpp
         GameLauncher/Game.cpp
@@ -134,8 +142,7 @@ set(GAME_LAUNCHER_SOURCE
 add_executable(GameLauncher ${GAME_LAUNCHER_HEADERS} ${GAME_LAUNCHER_SOURCE})
 
 target_link_libraries(GameLauncher GameEngine ${GLFW_LIBRARY})
-target_link_libraries(GameLauncher debug ${ANGELSCRIPT_LIBRARY_DEBUG})
-target_link_libraries(GameLauncher optimized ${ANGELSCRIPT_LIBRARY_RELEASE})
+target_link_libraries(GameLauncher ${ANGELSCRIPT_LIBRARY_RELEASE})
 
 
 
