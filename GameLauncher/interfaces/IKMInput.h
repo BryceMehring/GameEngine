@@ -9,6 +9,13 @@ class IKMInput : public IInputPlugin
 {
 public:
 
+	/*
+	 Loads a Keybind file
+	 format:
+	 bind NEW_KEY OLD_KEY
+	*/
+	virtual bool LoadKeyBindFile(const std::string& file) = 0;
+
 	//note: the once parameter:
 	//true, to only process the event the first time you press, false, returns true the entire time of the press
 
@@ -32,7 +39,7 @@ public:
 
 	virtual int MouseX() const = 0; // horizontal
 	virtual int MouseY() const = 0; // vertical
-	virtual int MouseZ() const = 0; // scroll
+	virtual double MouseZ() const = 0; // scroll
 
 	// selection box; returns true if user clicks
 	virtual bool GetSelectedRect(Math::AABB& out) = 0;

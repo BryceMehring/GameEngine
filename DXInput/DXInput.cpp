@@ -6,6 +6,8 @@
 #include "DXInput.h"
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -51,17 +53,26 @@ void DirectInput::MouseButtonCallback(GLFWwindow*,int button, int action, int mo
 	}
 }
 
+void DirectInput::MouseScrollCallback(GLFWwindow*, double, double yOffset)
+{
+	if(s_pThis != nullptr)
+	{
+		s_pThis->m_fYScrollOffset = yOffset;
+	}
+}
+
 // DirectInput ctor
-DirectInput::DirectInput() : m_iMouseX(0), m_iMouseY(0), m_fMouseSensistivity(100.0f), m_tpos(0.0f,0.0f)
+DirectInput::DirectInput() : m_fMouseSensistivity(100.0f), m_tpos(0.0f,0.0f)
 {
 	s_pThis = this;
 
-	Poll();
+	Reset();
 
 	glfwSetCharCallback(glfwGetCurrentContext(),CharCallback);
 	glfwSetKeyCallback(glfwGetCurrentContext(),KeyCallback);
 	glfwSetCursorPosCallback(glfwGetCurrentContext(),MouseCallback);
 	glfwSetMouseButtonCallback(glfwGetCurrentContext(),MouseButtonCallback);
+	glfwSetScrollCallback(glfwGetCurrentContext(),MouseScrollCallback);
 
 	glfwSetInputMode(glfwGetCurrentContext(),GLFW_CURSOR,GLFW_CURSOR_HIDDEN);
 	glfwSetInputMode(glfwGetCurrentContext(),GLFW_STICKY_KEYS,GL_TRUE);
@@ -90,6 +101,43 @@ DLLType DirectInput::GetPluginType() const
 	return DLLType::Input;
 }
 
+bool DirectInput::LoadKeyBindFile(const string& file)
+{
+	ifstream inFile(file);
+	if(!inFile.is_open())
+		return false;
+
+	string line;
+	while(getline(inFile,line))
+	{
+		istringstream stream(line);
+
+		string command;
+		stream >> command;
+
+		if(command.size() > 0 && command[0] != ';')
+		{
+			if(command == "bind")
+			{
+				string from;
+				string to;
+
+				stream >> from;
+				stream >> to;
+
+				if(from.size() > 0 && to.size() > 0)
+				{
+					m_bindings[to[0]].push_back(from[0]);
+				}
+			}
+		}
+	}
+
+	inFile.close();
+
+	return true;
+}
+
 void DirectInput::CenterMouse()
 {
 	int width;
@@ -99,12 +147,33 @@ void DirectInput::CenterMouse()
 	glfwSetCursorPos(glfwGetCurrentContext(),width / 2, height / 2);
 }
 
-void DirectInput::Poll()
+void DirectInput::Reset()
 {
 	m_MouseClickOnce[0] = m_MouseClickOnce[1] = -1;
 	m_iKeyAction = m_iKeyDown = -1;
 	m_iCharKeyDown = -1;
+	m_iMouseX = m_iMouseY = 0;
+	m_fYScrollOffset = 0.0f;
+}
 
+void DirectInput::Poll()
+{
+	Reset();
+
+	/*if(glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE)
+	{
+		int count;
+		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&count);
+		if(axes[0] > 0.2f && fabsf(axes[1]) < 0.5f)
+		{
+			m_bJoyRight = true;
+		}
+		else
+		{
+			m_bJoyRight = false;
+		}
+
+	}*/
 	glfwPollEvents();
 }
 
@@ -155,17 +224,56 @@ const glm::vec2& DirectInput::GetTransformedMousePos() const
 	return m_tpos;
 }
 
+bool DirectInput::CheckKey(int Key, bool once, int flag)
+{
+	if(once && (m_iKeyAction != flag))
+		return false;
+
+	bool bSuccess = false;
+	auto iter = m_bindings.find(Key);
+	if(once)
+	{
+		if(iter == m_bindings.end())
+		{
+			bSuccess = (Key == m_iKeyDown);
+		}
+		else
+		{
+			unsigned int i = 0;
+			while(i < iter->second.size() && (iter->second[i] != m_iKeyDown)) { ++i; }
+
+			bSuccess = (i < iter->second.size());
+		}
+	}
+	else
+	{
+		if(iter == m_bindings.end())
+		{
+			bSuccess = (glfwGetKey(glfwGetCurrentContext(), Key  ) == flag);
+		}
+		else
+		{
+			unsigned int i = 0;
+			while(i < iter->second.size() && (glfwGetKey(glfwGetCurrentContext(), iter->second[i]  ) != flag)) { ++i; }
+
+			bSuccess = (i < iter->second.size());
+		}
+	}
+
+	return bSuccess;
+}
+
 bool DirectInput::KeyDown(int Key, bool once)
 {
-	return once ? (m_iKeyAction == GLFW_PRESS && m_iKeyDown == Key) : (glfwGetKey(glfwGetCurrentContext(), Key ) == GLFW_PRESS);
+	return CheckKey(Key,once,GLFW_PRESS);
 }
 bool DirectInput::KeyUp(int Key, bool once)
 {
-	return once ? (m_iKeyAction == GLFW_RELEASE && m_iKeyDown == Key) : (glfwGetKey(glfwGetCurrentContext(), Key ) == GLFW_RELEASE);
+	return CheckKey(Key,once,GLFW_RELEASE);
 }
 bool DirectInput::CharKeyDown(char& out) const
 {
-    if(m_iCharKeyDown == (unsigned int)-1)
+	if(m_iCharKeyDown == (unsigned int)-1)
 		return false;
 
 	out = m_iCharKeyDown;
@@ -197,10 +305,9 @@ int DirectInput::MouseY() const
 	return m_iMouseY;
 }
 
-int DirectInput::MouseZ() const
+double DirectInput::MouseZ() const
 {
-	return 0;
-	//return glfwGetMouseWheel();
+	return m_fYScrollOffset;
 }
 
 bool DirectInput::GetSelectedRect(Math::AABB& out)
