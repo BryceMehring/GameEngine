@@ -11,7 +11,7 @@ public:
 
 	virtual const std::string& GetCurrentState() const = 0;
 	virtual void SetNextState(const std::string& state) = 0;
-	virtual void ReloadPlugins() = 0;
+	virtual void LoadPlugins() = 0;
 
 	virtual class IRenderer& GetRenderer() = 0;
 	virtual class IKMInput& GetInput() = 0;
