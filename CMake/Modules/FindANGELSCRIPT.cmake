@@ -2,7 +2,7 @@
 
 find_path(ANGELSCRIPT_INCLUDE_DIR angelscript.h "${CMAKE_SOURCE_DIR}/../angelscript/angelscript/include/")
 find_path(ANGELSCRIPT_ADDON_INCLUDE_DIR scriptmath/ "${CMAKE_SOURCE_DIR}/../angelscript/add_on")
-find_library(ANGELSCRIPT_LIBRARY_RELEASE libangelscript)
+find_library(ANGELSCRIPT_LIBRARY_RELEASE angelscript)
 if(MSVC)
 	find_library(ANGELSCRIPT_LIBRARY_DEBUG angelscriptd)
 endif(MSVC)
