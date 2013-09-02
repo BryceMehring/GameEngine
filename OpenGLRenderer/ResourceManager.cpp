@@ -3,6 +3,7 @@
 #include <sstream>
 #include <fstream>
 #include <cmath>
+#include <cstring>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) 
@@ -43,23 +44,24 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::LoadResourceFile(const std::string& file)
 {
+	
 	std::fstream in(file,std::ios::in);
 
 	assert(in.is_open());
 
-    std::string line;
-    while(std::getline(in,line))
-    {
+	std::string line;
+	while(std::getline(in,line))
+	{
 		std::stringstream stream(line);
 
-        std::string type;
-        stream >> type;
+		std::string type;
+		stream >> type;
 
-        std::string id;
-        stream >> id;
+		std::string id;
+		stream >> id;
 
-        std::string fileName;
-        stream >> fileName;
+		std::string fileName;
+		stream >> fileName;
 
 		if(fileName.size() > 0)
 		{
@@ -78,9 +80,9 @@ void ResourceManager::LoadResourceFile(const std::string& file)
 			assert(bSuccess);
 		}
 			
-    }
+	}
 
-    in.close();
+	in.close();
 }
 
 void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat)
@@ -98,7 +100,7 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 
 	case 3:
 		format = GL_RGB;
-		internalFormat = GL_COMPRESSED_RGB;
+		internalFormat = GL_RGB;
 		break;
 
 	case 4:
@@ -111,9 +113,12 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 bool ResourceManager::LoadTexture(const std::string& id, const std::string& file)
 {
 	auto iter = m_resources.find(id);
-	if(iter != m_resources.end() && iter->second->GetType() == ResourceType::Texture)
+	if(iter != m_resources.end())
 	{
-		// texture already loaded
+		if(iter->second->GetType() == ResourceType::Texture)
+			return true; //texture already loaded
+
+		// ID is taken
 		return false;
 	}
 
@@ -133,22 +138,26 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 
 	GLenum format;
 	GLint internalFormat;
-
 	GetOpenGLFormat(comp,format,internalFormat);
 
 	// Give the image to OpenGL
 	//unsigned int mipmapLevels = 1 + log2(std::max(x,y));
+
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	assert(glGetError() == GL_NO_ERROR);
 
 	//glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R,GL_MIRRORED_REPEAT);
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+	assert(glGetError() == GL_NO_ERROR);
 
 	std::fstream in;
 	in.open(file + ".fnt",std::ios::in);
-	if(in)
+	if(in.is_open())
 	{
 		// Load font
 		Charset* pCharSet = new Charset(textureId,x,y,spriteWidth,spriteHeight);
@@ -182,7 +191,7 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	if(iter != m_resources.end() && iter->second->GetType() == ResourceType::Shader)
 	{
 		// shader already loaded
-		return false;
+		return true;
 	}
 
 	// Create the shaders
@@ -408,7 +417,7 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 	out.uiHeight = pTex->m_iHeight;
 	out.uiWidth = pTex->m_iWidth;
 
-    return true;
+	return true;
 }
 void ResourceManager::Clear()
 {

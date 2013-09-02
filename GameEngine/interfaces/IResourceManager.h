@@ -33,7 +33,7 @@ public:
 		PIC (Softimage PIC)
 
 		resource file structure:
-		Texture UniqueStringID PathToImage/img.png
+		texture UniqueStringID PathToImage/img.png
 		shader UniqueStringID3 PathToShader/VertexShader.vert PathToShader/FragmentShader.frag
 	*/
 	virtual void LoadResourceFile(const std::string& file) = 0;
@@ -41,7 +41,7 @@ public:
 	// Loads a texture
 	// id: uniqueID to be used
 	// file: img
-	// return: true if the texture was loaded, false on error
+	// return: true if the texture is or was loaded, false on error
 	virtual bool LoadTexture(const std::string& id, const std::string& file) = 0;
 
 	// loads a shader
@@ -57,9 +57,6 @@ public:
 
 	// todo: need to implement these, do not use
 	virtual void Clear() = 0;
-	/*virtual void RemoveTexture(const std::string& id) = 0;
-	virtual void RemoveAllTextures() = 0;
-	virtual void RemoveAllShaders() = 0;*/
 
 };
 

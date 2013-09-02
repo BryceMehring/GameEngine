@@ -1,15 +1,17 @@
 #ifndef _OGLRENDERER_
 #define _OGLRENDERER_
 
-#define PLUGIN_EXPORTS
-#define GLFW_DLL
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 #include "IRenderer.h"
+#include "PluginManager.h"
 #include "FontEngine.h"
 #include "LineEngine.h"
 #include "SpriteEngine.h"
 #include "ResourceManager.h"
-#include "PluginManager.h"
+
 #include "Camera.h"
 #include <angelscript.h>
 #include <memory>
@@ -76,7 +78,7 @@ public:
 	virtual int GetNumDisplayModes() const;
 	virtual int GetCurrentDisplayMode() const;
 	virtual void SetDisplayMode(int i);
-	virtual const std::string& GetDisplayModeStr(int i) const;
+	virtual bool GetDisplayModeStr(int i, int& width, int& height) const;
 	virtual void ToggleFullscreen();
 
 private:
@@ -94,13 +96,15 @@ private:
 	const GLFWvidmode* m_pVideoModes;
 	int m_iNumVideoModes;
 
-	std::vector<std::string> m_VideoModeStr;
+	std::vector<std::pair<int,int>> m_VideoModeStr;
 
 	int m_uiCurrentDisplayMode;
 	bool m_bFullscreen;
 
+	// Helper functions
+	void ConfigureGLFW();
+	void ConfigureOpenGL();
 	void GLFWOpenWindowHints();
-
 	bool CheckShader(const std::string& shader, const std::string& location, GLuint& shaderID, GLuint& outLocation) const;
 };
 

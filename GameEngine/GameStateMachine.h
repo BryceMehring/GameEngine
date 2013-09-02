@@ -3,7 +3,7 @@
 #ifndef _GAMESTATEMACHINE_
 #define _GAMESTATEMACHINE_
 
-#include "IGameState.h"
+#include "interfaces/IGameState.h"
 #include <stack>
 #include <map>
 
@@ -14,7 +14,6 @@ class GameStateMachine
 public:
 
 	GameStateMachine();
-	~GameStateMachine();
 
 	// Removes current state if there is one
 	// And then initializes the new state

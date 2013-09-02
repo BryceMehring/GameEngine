@@ -6,13 +6,22 @@
 #define GLFW_DLL
 
 #include "PluginManager.h"
-#include "Timer.h"
 #include "GameStateMachine.h"
-#include "IKMInput.h"
-#include "IRenderer.h"
-#include "IGame.h"
+#include "GLFWInit.h"
+#include "interfaces/IKMInput.h"
+#include "interfaces/IRenderer.h"
 #include "asVM.h"
 #include <string>
+
+#ifdef _WIN32
+#ifdef GAME_ENGINE_EXPORT
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __declspec(dllimport)
+#endif
+#else
+#define EXPORT
+#endif
 
 class GameInfo
 {
@@ -33,40 +42,41 @@ private:
 
 };
 
-
-class Game : public IGame
+class Game
 {
 public:
 
 	// Init GLFW, load dlls, load the base resource file
-	Game();
+	EXPORT Game();
 
 	// Destroy everything
-	~Game();
+	EXPORT ~Game();
 
 	// Get the current state
-	const std::string& GetCurrentState() const;
+	EXPORT std::string GetCurrentStateName() const;
 
 	// change the current state
-	void SetNextState(const std::string& state);
+	EXPORT void SetNextState(const std::string& state);
 
 	// ignore, working on this
-	void LoadPlugins();
+	EXPORT void LoadPlugins();
 	
 	// Get Functions
 	// todo: provide const overloaded versions
-	IRenderer& GetRenderer();
-	IKMInput& GetInput();
-	PluginManager& GetPM();
-	asVM& GetAs();
+	EXPORT IRenderer& GetRenderer();
+	EXPORT IKMInput& GetInput();
+	EXPORT PluginManager& GetPM();
+	EXPORT asVM& GetAs();
 
-	double GetDt() const; // time diff between frames in seconds
-	unsigned int GetFps() const;
+	EXPORT double GetDt() const; // time diff between frames in seconds
+	EXPORT unsigned int GetFps() const;
 
 	// play the game set by SetNextState
-	int Run();
+	EXPORT int Run();
 
-protected:
+private:
+
+	GLFWInit m_glfwInit;
 
 	// Data members
 	asVM m_vm;

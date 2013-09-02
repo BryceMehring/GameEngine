@@ -1,19 +1,10 @@
 #include "Game.h"
 #include "FileManager.h"
-#include "RTTI.h"
-
-#include <cassert>
-#include <algorithm>
-
 #include <GLFW/glfw3.h>
 
 using namespace std;
 
 GameStateMachine::GameStateMachine() : m_pCurrentState(nullptr) {}
-
-GameStateMachine::~GameStateMachine()
-{
-}
 
 void GameStateMachine::SetState(const std::string& state, Game& game)
 {
@@ -45,7 +36,7 @@ void GameStateMachine::RemoveState(Game& game)
 	// If there is a state,
 	if(m_pCurrentState != nullptr)
 	{
-		m_stateStack.push(m_pCurrentState->GetType()->GetName());
+		m_stateStack.push(m_pCurrentState->GetName());
 
 		m_pCurrentState->Destroy(game);
 		game.GetPM().FreePlugin(DLLType::Game);

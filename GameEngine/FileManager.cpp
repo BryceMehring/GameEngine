@@ -2,13 +2,12 @@
 
 #include "FileManager.h"
 #include "asVM.h"
-#include "GameConstants.h"
 
 using namespace std;
 
 FileManager::~FileManager()
 {
-	::fstream out(Constants::LOGFILE,ios::out);
+	fstream out("log.txt",ios::out);
 
 	if(out.is_open())
 	{

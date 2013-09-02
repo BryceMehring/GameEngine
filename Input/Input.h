@@ -6,10 +6,9 @@
 
 // This is the GLFW Input Plug-in class
 // All that's needed is too implement the functions provided in the abstract interface
-#define PLUGIN_EXPORTS
 #include "IKMInput.h"
 #include "PluginManager.h"
-#include <hash_map>
+#include <unordered_map>
 
 #ifdef __GNUC__
 using namespace __gnu_cxx;
@@ -65,7 +64,7 @@ private:
 
 	static Input* s_pThis;
 
-	hash_map<int,std::vector<int> > m_bindings;
+	std::unordered_map<int,std::vector<int> > m_bindings;
 
 	// Keyboard
 	int m_iKeyDown;

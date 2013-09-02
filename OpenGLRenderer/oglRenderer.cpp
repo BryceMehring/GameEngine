@@ -3,9 +3,6 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 using namespace std;
 
@@ -14,14 +11,34 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin()
 	return new oglRenderer();
 }
 
-oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nullptr), m_pLines(nullptr), m_pSprites(nullptr), m_uiCurrentDisplayMode(0), m_bFullscreen(false)
+oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nullptr), m_pLines(nullptr), m_pSprites(nullptr), m_bFullscreen(false)
 {
-	m_pCamera = CreateCamera();
-	m_pCamera->setLens(200.0f,200.0f,0.0f,5.0f);
-	m_pCamera->lookAt(glm::vec3(0.0f,0.0f,1000.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
-	m_pCamera->update(0.0f);
+	ConfigureGLFW();
+	ConfigureOpenGL();
 
+	EnableVSync(false);
+
+	m_rm.LoadResourceFile("base.r");
+
+	m_pFonts.reset(new FontEngine(&m_rm,1024*8,m_pCamera));
+	m_pLines.reset(new LineEngine(&m_rm,1024*8,m_pCamera));
+	m_pSprites.reset(new SpriteEngine(&m_rm,1024*20,m_pCamera));
+
+}
+
+oglRenderer::~oglRenderer()
+{
+	if(m_pCamera != nullptr)
+	{
+		ReleaseCamera(m_pCamera);
+	}
+	glfwDestroyWindow(m_pWindow);
+}
+
+void oglRenderer::ConfigureGLFW()
+{
 	EnumerateDisplayAdaptors();
+	m_uiCurrentDisplayMode = m_iNumVideoModes - 1;
 
 	GLFWOpenWindowHints();
 	m_pWindow = glfwCreateWindow(m_pVideoModes[m_iNumVideoModes - 1].width, m_pVideoModes[m_iNumVideoModes - 1].height, "", NULL, NULL);
@@ -32,14 +49,10 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 	}
 
 	glfwMakeContextCurrent(m_pWindow);
+}
 
-	EnableVSync(false);
-
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glClearColor(1.0f,1.0f,1.0f,0.0f);
-
+void oglRenderer::ConfigureOpenGL()
+{
 	// Initialize GLEW
 	glewExperimental=true; // Needed in core profile
 	if (glewInit() != GLEW_OK)
@@ -47,20 +60,10 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 		throw std::string("Failed to initialize GLEW");
 	}
 
-	m_rm.LoadResourceFile("base.r");
-
-	m_pFonts.reset(new FontEngine(&m_rm,1024*8,m_pCamera));
-	m_pLines.reset(new LineEngine(&m_rm,1024*20,m_pCamera));
-	m_pSprites.reset(new SpriteEngine(&m_rm,1024*20,m_pCamera));
-
-}
-
-oglRenderer::~oglRenderer()
-{
-	m_pCamera->Release();
-	m_pCamera = nullptr;
-
-	glfwDestroyWindow(m_pWindow);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glClearColor(1.0f,1.0f,1.0f,0.0f);
 }
 
 void oglRenderer::Init(asIScriptEngine* pAS)
@@ -108,10 +111,12 @@ void oglRenderer::Present()
 {
 	ClearScreen();
 
-	m_pSprites->Render();
-	m_pFonts->Render();
-	m_pLines->Render();
-
+	if(m_pCamera != nullptr)
+	{
+		m_pSprites->Render();
+		m_pFonts->Render();
+		m_pLines->Render();
+	}
 
 	glfwSwapBuffers(m_pWindow);
 }
@@ -130,7 +135,6 @@ void oglRenderer::EnableVSync(bool enable)
 	glfwSwapInterval(enable ? 1 : 0);
 #endif
 
-
 }
 
 void oglRenderer::EnumerateDisplayAdaptors()
@@ -141,10 +145,7 @@ void oglRenderer::EnumerateDisplayAdaptors()
 
 	for(int i = 0; i < m_iNumVideoModes; ++i)
 	{
-		std::stringstream stream;
-		stream << m_pVideoModes[i].width << 'x' << m_pVideoModes[i].height;
-
-		m_VideoModeStr.push_back(stream.str());
+		m_VideoModeStr.push_back(make_pair(m_pVideoModes[i].width,m_pVideoModes[i].height));
 	}
 }
 
@@ -166,10 +167,15 @@ void oglRenderer::SetDisplayMode(int i)
 	}
 }
 
-const std::string& oglRenderer::GetDisplayModeStr(int i) const
+bool oglRenderer::GetDisplayModeStr(int i, int& width, int& height) const
 {
-	// todo: return error if i is out of the range of the vector
-	return m_VideoModeStr[i];
+	if(i >= (int)m_VideoModeStr.size())
+		return false;
+
+	width = m_VideoModeStr[i].first;
+	height = m_VideoModeStr[i].second;
+
+	return true;
 }
 
 void oglRenderer::ToggleFullscreen()
@@ -289,12 +295,11 @@ void oglRenderer::SetCamera(Camera* pCam)
 	m_pLines->SetCamera(pCam);
 	m_pSprites->SetCamera(pCam);
 
-	/*if(m_pCamera != nullptr)
+	if(m_pCamera != nullptr)
 	{
 		m_pCamera->Release();
-		m_pCamera = pCam;
-	}*/
+	}
 
-
+	m_pCamera = pCam;
 }
 

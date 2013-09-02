@@ -20,40 +20,37 @@ option(BUILD_GUI "Build GUI" OFF)
 find_package (GLEW)
 if (GLEW_FOUND)
   include_directories(${GLEW_INCLUDE_DIR})
-endif (GLEW_FOUND)
+endif ()
 
 find_package (GLFW)
 if (GLFW_FOUND)
   include_directories(${GLFW_INCLUDE_DIR})
-endif(GLFW_FOUND)
+endif()
 
 find_package (STB_IMAGE)
 if (STB_IMAGE_FOUND)
     include_directories(${STB_IMAGE_INCLUDE_DIR})
-endif (STB_IMAGE_FOUND)
+endif ()
 
 find_package (GLM)
 if (GLM_FOUND)
   include_directories(${GLM_INCLUDE_DIR})
-endif (GLM_FOUND)
+endif ()
 
 find_package (ANGELSCRIPT)
 if (ANGELSCRIPT_FOUND)
   include_directories(${ANGELSCRIPT_INCLUDE_DIR})
   include_directories(${ANGELSCRIPT_ADDON_INCLUDE_DIR})
-endif (ANGELSCRIPT_FOUND)
+endif ()
 
+include_directories("${CMAKE_SOURCE_DIR}/common")
+include_directories("${CMAKE_SOURCE_DIR}/GameEngine/interfaces")
 include_directories("${CMAKE_SOURCE_DIR}/GameEngine")
-include_directories("${CMAKE_SOURCE_DIR}/GameLauncher/interfaces")
-include_directories("${CMAKE_SOURCE_DIR}/GameLauncher")
-
-set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
 
 if(MSVC)
     # visual studio compile flags
 
-    set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /arch:SSE2 /RTC1 /W3 /MP /GR-")
+    set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /arch:SSE2 /RTC1 /W3 /GR-")
     set(CMAKE_CXX_FLAGS_RELEASE "/W3 /MP /O2 /arch:SSE2 /GR- /MD")
 else()
 
@@ -72,74 +69,39 @@ else()
 
 endif()
 
+if(WIN32)
+    # First for the generic no-config case (e.g. with mingw)
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
+    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
+    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
+    # Second, for multi-config builds (e.g. msvc)
+    foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+        string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+        set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/bin )
+        set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/bin )
+        set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/bin )
+    endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+else()
+	set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
+	set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
+endif()
+
 if(BUILD_MEMORY_MANAGER)
+	include_directories("${CMAKE_SOURCE_DIR}/MemoryManager")
     add_subdirectory(MemoryManager)
-endif(BUILD_MEMORY_MANAGER)
+endif()
 
 if(BUILD_GUI)
     add_subdirectory(GUI)
-endif(BUILD_GUI)
+endif()
 
 add_subdirectory(GameEngine)
+add_subdirectory(common)
 add_subdirectory(OpenGLRenderer)
 add_subdirectory(Input)
-#add_subdirectory(AdventureGame)
+add_subdirectory(AdventureGame)
 #add_subdirectory(MineSweeper)
 #add_subdirectory(FlockingAlgorithm)
 
-set(GAME_LAUNCHER_HEADERS
-        GameLauncher/asVM.h
-        GameLauncher/FileManager.h
-        GameLauncher/Game.h
-        GameLauncher/GameConstants.h
-        GameLauncher/GameStateMachine.h
-        #GameStateScript.h
-        GameLauncher/interfaces/IGameState.h
-        GameLauncher/interfaces/IGameState.h
-        #IGrid.h
-        GameLauncher/interfaces/IGame.h
-        GameLauncher/interfaces/IInput.h
-        GameLauncher/interfaces/IKMInput.h
-        GameLauncher/interfaces/IPlugin.h
-        GameLauncher/interfaces/IRenderer.h
-        GameLauncher/interfaces/IResourceManager.h
-        GameLauncher/PluginManager.h
-        #QuadTree.h
-        GameLauncher/RTTI.h
-        #SerializedState.h
-        GameLauncher/Singleton.h
-        #StringAlgorithms.h
-        #GameLauncher/Timer.h
-        GameLauncher/VecMath.h
-        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.h
-        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.h
-        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.h
-        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptmath/scriptmath.h
-    )
-
-set(GAME_LAUNCHER_SOURCE
-        GameLauncher/main.cpp
-        GameLauncher/asVM.cpp
-        GameLauncher/FileManager.cpp
-        GameLauncher/Game.cpp
-        GameLauncher/GameConstants.cpp
-        GameLauncher/GameStateMachine.cpp
-        #GameStateScript.cpp
-        #IGrid.inl
-        GameLauncher/PluginManager.cpp
-        #QuadTree.cpp
-        #SerializedState.cpp
-        #StringAlgorithms.cpp
-        #GameLauncher/Timer.cpp
-        GameLauncher/VecMath.cpp
-        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.cpp
-        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.cpp
-        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.cpp
-        ${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptmath/scriptmath.cpp
-        )
-
-
-add_executable(GameLauncher ${GAME_LAUNCHER_HEADERS} ${GAME_LAUNCHER_SOURCE})
-
-target_link_libraries(GameLauncher GameEngine ${GLFW_LIBRARY})
-target_link_libraries(GameLauncher ${ANGELSCRIPT_LIBRARY_RELEASE})
+add_executable(GameLauncher GameLauncher/main.cpp)
+target_link_libraries(GameLauncher GameEngine)

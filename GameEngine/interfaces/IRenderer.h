@@ -3,7 +3,7 @@
 
 #include "IPlugin.h"
 #include "IResourceManager.h"
-#include "VecMath.h"
+#include "../GameEngine/VecMath.h"
 #include <string>
 #include <glm/glm.hpp>
 
@@ -91,7 +91,7 @@ public:
 	virtual int GetNumDisplayModes() const = 0; // returns the number of video modes from EnumerateDisplayAdaptors()
 	virtual int GetCurrentDisplayMode() const = 0; // returns the current display mode
 	virtual void SetDisplayMode(int i) = 0; // set a display mode, i being the index into the displayModeList.
-	virtual const std::string& GetDisplayModeStr(int i) const = 0; // get the display mode str
+	virtual bool GetDisplayModeStr(int i, int& width, int& height) const = 0; // get the display mode, return true if success, false if error
 	virtual void ToggleFullscreen() = 0; // todo: need to implement
 
 	///add more functions...

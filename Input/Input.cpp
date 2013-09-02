@@ -1,6 +1,4 @@
 
-#define GLFW_DLL
-
 #include <GLFW/glfw3.h>
 #include <angelscript.h>
 #include "Input.h"

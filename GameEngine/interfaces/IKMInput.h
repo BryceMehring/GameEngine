@@ -2,7 +2,7 @@
 #define _IKMINPUT_
 
 #include "IInput.h"
-#include "VecMath.h"
+#include "../GameEngine/VecMath.h"
 
 // Keyboard/Mouse plugin
 class IKMInput : public IInputPlugin

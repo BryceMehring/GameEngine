@@ -1,6 +1,16 @@
 #ifndef _REFCOUNTING_
 #define _REFCOUNTING_
 
+#ifdef _WIN32
+#ifdef COMMON_EXPORT
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __declspec(dllimport)
+#endif
+#else
+#define EXPORT
+#endif
+
 class RefCounting
 {
 public:
@@ -13,18 +23,15 @@ public:
 	*/
 
 	// constructor sets the counter of references to 1
-	RefCounting();
+	EXPORT RefCounting();
 
-	int GetCounter() const;
+	EXPORT int GetCounter() const;
 
 	// increases counter
-	virtual void AddRef();
+	EXPORT virtual void AddRef();
 
 	// decreases counter, if it reaches 0, the object will then be deleted
-	virtual void Release();
-
-	static int GetAddRefCount();
-	static int GetAddReleaseCount();
+	EXPORT virtual void Release();
 
 protected:
 
@@ -32,9 +39,6 @@ protected:
 	virtual ~RefCounting() {}
 
 private:
-
-	static int s_iAddRef;
-	static int s_iRelease;
 
 	int m_iCounter;
 
