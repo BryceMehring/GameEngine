@@ -61,6 +61,8 @@ private:
 	void CreateIndexBuffer();
 
 	void DeleteBuffers();
+
+    void GetStringRec(const Charset* font,const char* str, const glm::vec2& scale, Math::FRECT& out) const;
 };
 
 #endif // _FONTENGINE_
