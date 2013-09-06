@@ -99,8 +99,6 @@ void Game::Update()
 
 void Game::Draw()
 {
-	DrawFPS();
-
 	if(m_bConsoleEnabled)
 	{
 		//m_pConsole->Render(*m_pRenderer);
@@ -114,28 +112,6 @@ void Game::Draw()
 
 	// Present the screen
 	m_pRenderer->Present();
-}
-
-void Game::DrawFPS()
-{
-	std::ostringstream out;
-	out <<"FPS: " << GetFps() << endl;
-	out<<glfwGetTime()<<endl;
-	//out <<width<<"x"<<height<<endl;
-	//out <<m_fDT<<endl;
-
-	m_pRenderer->DrawString(out.str().c_str(),glm::vec3(0.0f,0.0f,-5.0f),glm::vec2(15.0f),glm::vec3(1.0f));
-}
-
-void Game::DrawCursor()
-{
-	const ::glm::vec2& pos = m_pInput->GetTransformedMousePos();
-
-	glm::mat4 T = glm::translate(pos.x + 2,pos.y - 3,0.0f);
-	T = glm::scale(T, 7.0f,8.5f,1.0f);
-
-	//m_pRenderer->DrawSprite("cursor",T);
-
 }
 
 void Game::DrawSelectionRect()
@@ -212,7 +188,7 @@ void Game::RegisterScript()
 
 GameInfo::GameInfo() : m_fTimeElapsed(0.0), m_uiFrames(0), m_uiFPS(0)
 {
-	
+
 }
 
 unsigned int GameInfo::GetFPS() const

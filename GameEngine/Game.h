@@ -60,7 +60,7 @@ public:
 
 	// ignore, working on this
 	EXPORT void LoadPlugins();
-	
+
 	// Get Functions
 	// todo: provide const overloaded versions
 	EXPORT IRenderer& GetRenderer();
@@ -106,10 +106,7 @@ private:
 	void UpdateFPS();
 
 	void Draw();
-	void DrawCursor();
 	void DrawSelectionRect();
-	void DrawFPS();
-
 
 	// Prevent copying
 	Game(const Game&);
