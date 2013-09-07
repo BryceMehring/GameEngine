@@ -20,6 +20,8 @@ public:
 
 	EXPORT glm::vec3& pos(); // Position of the camera
 
+	EXPORT bool IsVisible(const glm::vec3& min, const glm::vec3& max) const;
+
 	// creates the view matrix
 	// pos = pos of camera
 	// target = where the camera should look
@@ -53,11 +55,15 @@ private:
 	glm::vec3 m_UpW; // up vector
 	glm::vec3 m_LookW; // target vector
 
+	glm::vec4 m_planes[6];
+
 	float m_width; // Width of the 2D field view
 	float m_height; // Height of the 2D field view
 
 	friend EXPORT Camera* CreateCamera();
 	friend EXPORT void ReleaseCamera(Camera*);
+
+	void BuildFrustumPlanes();
 
 	// no copying
 	Camera(const Camera&);
