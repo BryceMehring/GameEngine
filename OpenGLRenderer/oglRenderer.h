@@ -78,7 +78,7 @@ public:
 	virtual int GetNumDisplayModes() const;
 	virtual int GetCurrentDisplayMode() const;
 	virtual void SetDisplayMode(int i);
-	virtual bool GetDisplayModeStr(int i, int& width, int& height) const;
+	virtual bool GetDisplayMode(int i, int& width, int& height) const;
 	virtual void ToggleFullscreen();
 
 private:

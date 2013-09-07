@@ -63,7 +63,7 @@ void oglRenderer::ConfigureOpenGL()
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
-	glClearColor(1.0f,1.0f,1.0f,0.0f);
+	glClearColor(0.0f,0.0f,0.0f,0.0f);
 }
 
 void oglRenderer::Init(asIScriptEngine* pAS)
@@ -167,7 +167,7 @@ void oglRenderer::SetDisplayMode(int i)
 	}
 }
 
-bool oglRenderer::GetDisplayModeStr(int i, int& width, int& height) const
+bool oglRenderer::GetDisplayMode(int i, int& width, int& height) const
 {
 	if(i >= (int)m_VideoModeStr.size())
 		return false;
