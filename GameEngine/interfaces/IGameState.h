@@ -14,7 +14,7 @@ public:
 	// Called only once when the plugin is destroyed
 	virtual void Destroy(class Game& game) = 0;
 
-	// Called every frame to update the date of the game
+	// Called every frame to update the state of the game
 	virtual void Update(class Game& game) = 0;
 
 	// Called every frame to render the game
