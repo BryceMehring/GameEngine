@@ -91,7 +91,7 @@ public:
 	virtual int GetNumDisplayModes() const = 0; // returns the number of video modes from EnumerateDisplayAdaptors()
 	virtual int GetCurrentDisplayMode() const = 0; // returns the current display mode
 	virtual void SetDisplayMode(int i) = 0; // set a display mode, i being the index into the displayModeList.
-	virtual bool GetDisplayModeStr(int i, int& width, int& height) const = 0; // get the display mode, return true if success, false if error
+	virtual bool GetDisplayMode(int i, int& width, int& height) const = 0; // get the display mode, return true if success, false if error
 	virtual void ToggleFullscreen() = 0; // todo: need to implement
 
 	///add more functions...

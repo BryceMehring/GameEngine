@@ -19,7 +19,7 @@ public:
 		  const glm::vec2& center = glm::vec2(0.0f));
 	virtual ~IGrid() {}
 
-	virtual int Update(IKMInput&) = 0;
+	virtual int Update(class IKMInput&) = 0;
 
 	// Render calls RenderTileCallback for each tile
 	virtual void Render(class IRenderer& renderer);
