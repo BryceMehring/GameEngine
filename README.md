@@ -12,12 +12,14 @@ Set GameLauncher as the startup project, and build the solution in Visual Studio
 
 To run a game, the command line argument must be set to name of the Game Project that the Game Engine should load first.
 
+When creating an out of source game plugin, copy or use symbolic links to link the game plugin module into GameEngine/bin.
+
 ==========
 
-The compiled output will be located in source in a directory called bin.
+The compiled output will be located in source in GameEngine/bin
 How the github folder should look on windows:
 
-`GameEngine/ - this is the root of the repo
+GameEngine/ - this is the root of the repo
 
 glfw/
 
@@ -27,7 +29,7 @@ glm/
 
 angelscript/
 
-stb_image/stb_image.c`
+stb_image/stb_image.c
 
 Dependencies
 ==========
