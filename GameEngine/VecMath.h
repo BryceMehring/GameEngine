@@ -4,7 +4,6 @@
 #ifndef _VECMATH_
 #define _VECMATH_
 
-#include <string>
 #include <vector>
 #include <glm/glm.hpp>
 
@@ -93,19 +92,10 @@ bool Intersects(const Circle& c1, const FRECT& R1);
 bool Intersects(const Circle& c1, const Circle& c2);
 bool Intersects(const FRECT& c1, const FRECT& c2);
 
-
 bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly2);
 
 // ray casting algorithm
 bool IsPointInPolygon(const glm::vec2* pArray, unsigned int length, const glm::vec2& P);
-
-// returns a random float in the range of [a,b]
-float GetRandFloat(float a, float b);
-unsigned int GetRandInt(unsigned int a, unsigned int b);
-
-bool InRange(float value, float min, float max);
-
-bool Equals(float a, float b, float diff = 0.0001f);
 
 // collision interface
 

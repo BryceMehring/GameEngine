@@ -250,28 +250,6 @@ bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly
 	return ret;
 }
 
-float GetRandFloat(float a, float b)
-{
-	// todo: need to check this
-	float fRand = rand() / (RAND_MAX + 1.0f);
-	return fRand*(b - a) + a;
-}
-
-unsigned int GetRandInt(unsigned int a, unsigned int b)
-{
-	return a + (rand() % b);
-}
-
-bool InRange(float value, float min, float max)
-{
-	return ((value >= min) && (value <= max));
-}
-
-bool Equals(float a, float b, float diff)
-{
-	return fabsf(a - b) < diff;
-}
-
 
 void RegisterScriptVecMath(::asIScriptEngine* pEngine)
 {
