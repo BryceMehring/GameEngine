@@ -19,19 +19,7 @@ class IRenderer : public IPlugin
 {
 public:
 
-	// clears the screen
-	virtual void ClearScreen() = 0;
-
-	// draw everything to screen
-	virtual void Present() = 0;
-
-	// Returns the resource manager
-	virtual IResourceManager& GetResourceManager() = 0;
-
 	// Lines
-
-	virtual void GetLineWidthRange(glm::vec2& out) const = 0; // Gets the range of the width of the lines supported on the current hardware, x = min, y = max
-
 	virtual void DrawLine(const glm::vec3* pArray, // array of 3d vertices to draw
 						  unsigned int length, // number of vertices
 						  float fWidth = 3.0f, // the width of the line
@@ -39,7 +27,6 @@ public:
 						  const glm::mat4& t = glm::mat4(1.0f)) = 0; // transformation to apply to the line
 
 	// Fonts
-	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const = 0;
 	virtual void DrawString(const char* str, // the string that gets drawn
 							const glm::vec3& pos, // pos of the text in world space
 							const glm::vec2& scale = glm::vec2(10.0f), // scaling the text
@@ -55,20 +42,23 @@ public:
 							const std::string& tech = "sprite"
 							) = 0;
 
+	virtual IResourceManager& GetResourceManager() = 0; // Returns the resource manager
+
+	virtual void GetCurrentDisplayMode(int& monitor, int& mode) const = 0; // returns the current display mode given the monitor
+	virtual bool GetDisplayMode(int monitor, int mode, int& width, int& height) const = 0; // get the display mode, return true if success, false if error
+	virtual int  GetNumMonitors() const = 0;
+	virtual int  GetNumDisplayModes(int monitor) const = 0; // returns the number of video modes for the given monitor
+	virtual void GetLineWidthRange(glm::vec2& out) const = 0; // Gets the range of the width of the lines supported on the current hardware, x = min, y = max
+	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const = 0;
+	virtual void SetCamera(class Camera*) = 0; // Sets the camera to use
+	virtual void SetClearColor(const glm::vec3& color) = 0; // Color of the screen after it gets cleared
+	virtual void SetDisplayMode(int mode) = 0; // sets the display mode
 	virtual bool SetShaderValue(const std::string& shader, const std::string& location, float value ) = 0;
 	virtual bool SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value ) = 0;
 
-	// ignore for now, working on this
-	virtual void SetCamera(class Camera*) = 0;
-
-
-	// config
 	virtual void EnableVSync(bool) = 0;
-	virtual int  GetNumMonitors() const = 0;
-	virtual int  GetNumDisplayModes(int monitor) const = 0; // returns the number of video modes for the given monitor
-	virtual void GetCurrentDisplayMode(int& monitor, int& mode) const = 0; // returns the current display mode given the monitor
-	virtual void SetDisplayMode(int mode) = 0; // sets a display mode
-	virtual bool GetDisplayMode(int monitor, int mode, int& width, int& height) const = 0; // get the display mode, return true if success, false if error
+
+	virtual void Present() = 0; // draw everything to screen
 
 protected:
 

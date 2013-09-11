@@ -37,50 +37,48 @@ public:
 	virtual void Destroy(class asIScriptEngine*);
 
 	// IRenderer
-
-	virtual void ClearScreen();
+	virtual void SetClearColor(const glm::vec3& color);
 	virtual void Present();
 
-	// textures
-	virtual IResourceManager& GetResourceManager();
-
 	// Lines
-	virtual void GetLineWidthRange(glm::vec2& out) const;
-	virtual void DrawLine(const glm::vec3* pArray, unsigned int length, float width, const glm::vec4& color, const glm::mat4& t);
-
+	virtual void DrawLine(const glm::vec3* pArray, // array of 3d vertices to draw
+						  unsigned int length, // number of vertices
+						  float fWidth = 3.0f, // the width of the line
+						  const glm::vec4& color = glm::vec4(1.0f), // color of the line
+						  const glm::mat4& t = glm::mat4(1.0f)); // transformation to apply to the line
 
 	// Fonts
-	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;
-
-	//virtual void DrawString(const char* str, const glm::vec3& pos, const DrawTextInfo&);
 	virtual void DrawString(const char* str, // the string that gets drawn
-							const glm::vec3& pos, // World pos of the text, where the text starts getting drawn from
-							const glm::vec2& scale, // size of the text
-							const glm::vec3& color, // color of the text blended together with the texture
-							const char* font, // the desired font, may be null if you wish to use the default font
-							FontAlignment options
-							);
+							const glm::vec3& pos, // pos of the text in world space
+							const glm::vec2& scale = glm::vec2(10.0f), // scaling the text
+							const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
+							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
+							FontAlignment options = FontAlignment::Left);
 
 	virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
 							const glm::mat4& transformation, // transformation applied to the sprite
-							const glm::vec2& tiling, // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
-							unsigned int iCellId, // cellId if multiple frames are stored together in the same sprite image
-							const std::string& tech
+							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
+							unsigned int iCellId , // cellId if multiple frames are stored together in the same sprite image
+							const std::string& tech = "sprite"
 							);
 
+	virtual IResourceManager& GetResourceManager(); // Returns the resource manager
+
+	virtual void GetCurrentDisplayMode(int& monitor, int& mode) const; // returns the current display mode given the monitor
+	virtual bool GetDisplayMode(int monitor, int mode, int& width, int& height) const; // get the display mode, return true if success, false if error
+	virtual int  GetNumMonitors() const;
+	virtual int  GetNumDisplayModes(int monitor) const; // returns the number of video modes for the given monitor
+	virtual void GetLineWidthRange(glm::vec2& out) const; // Gets the range of the width of the lines supported on the current hardware, x = min, y = max
+	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;
+	virtual void SetCamera(class Camera*); // Sets the camera to use
+	virtual void SetClearColor(const glm::vec3& color); // Color of the screen after it gets cleared
+	virtual void SetDisplayMode(int mode); // sets the display mode
 	virtual bool SetShaderValue(const std::string& shader, const std::string& location, float value );
 	virtual bool SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value );
 
-
-	virtual void SetCamera(class Camera*);
-
-	// config
 	virtual void EnableVSync(bool);
-	virtual int  GetNumMonitors() const;
-	virtual int  GetNumDisplayModes(int monitor) const;
-	virtual void GetCurrentDisplayMode(int& monitor, int& mode) const;
-	virtual void SetDisplayMode(int mode);
-	virtual bool GetDisplayMode(int monitor, int mode, int& width, int& height) const;
+
+	virtual void Present(); // draw everything to screen
 
 private:
 

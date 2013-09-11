@@ -165,14 +165,14 @@ void oglRenderer::GLFWOpenWindowHints()
 	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
 }
 
-void oglRenderer::ClearScreen()
+void oglRenderer::SetClearColor(const glm::vec3& color)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(color.x,color.y,color.z,0.0f);
 }
 
 void oglRenderer::Present()
 {
-	ClearScreen();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if(m_pCamera != nullptr)
 	{
