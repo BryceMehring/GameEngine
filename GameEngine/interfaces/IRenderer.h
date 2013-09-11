@@ -3,7 +3,7 @@
 
 #include "IPlugin.h"
 #include "IResourceManager.h"
-#include "../GameEngine/VecMath.h"
+#include "VecMath.h"
 #include <string>
 #include <glm/glm.hpp>
 
@@ -13,23 +13,6 @@ enum class FontAlignment
 	Center,
 	Right
 };
-
-/*struct DrawTextInfo
-{
-	DrawTextInfo(const std::string& t, const glm::vec3 p, const glm::vec2& s) : text(t), pos(p), scale(s) {}
-	DrawTextInfo(const std::string& t, const glm::vec3 p, const glm::vec3& c) : text(t), pos(p), color(c) {}
-	DrawTextInfo(const std::string& t, const glm::vec3 p, const std::string& f) : text(t), pos(p), font(f) {}
-	DrawTextInfo(const std::string& t, const glm::vec3 p, const FontAlignment o) : text(t), pos(p), options(o) {}
-
-	std::string text;
-	glm::vec3 pos;
-	glm::vec2 scale = glm::vec2(10.0f);
-	glm::vec3 color = glm::vec3(1.0f);
-	std::string font = "font";
-
-	FontAlignment options = FontAlignment::Left;
-};*/
-
 
 // Renderer plugin interface
 class IRenderer : public IPlugin
@@ -57,8 +40,6 @@ public:
 
 	// Fonts
 	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const = 0;
-
-	//virtual void DrawString(const char* str, const glm::vec3& pos, const DrawTextInfo& = DrawTextInfo()) = 0;
 	virtual void DrawString(const char* str, // the string that gets drawn
 							const glm::vec3& pos, // pos of the text in world space
 							const glm::vec2& scale = glm::vec2(10.0f), // scaling the text
@@ -82,19 +63,13 @@ public:
 
 
 	// config
-	virtual void EnableVSync(bool) = 0; // todo: need to implement
+	virtual void EnableVSync(bool) = 0;
+	virtual int  GetNumMonitors() const = 0;
+	virtual int  GetNumDisplayModes(int monitor) const = 0; // returns the number of video modes for the given monitor
+	virtual void GetCurrentDisplayMode(int& monitor, int& mode) const = 0; // returns the current display mode given the monitor
+	virtual void SetDisplayMode(int mode) = 0; // sets a display mode
+	virtual bool GetDisplayMode(int monitor, int mode, int& width, int& height) const = 0; // get the display mode, return true if success, false if error
 
-	// Queries the computer to get a list of valid display modes supported by their vid card
-	// 0 = Highest Res
-	// N = Lowest Res where N is the number of display modes
-	virtual void EnumerateDisplayAdaptors() = 0;
-	virtual int GetNumDisplayModes() const = 0; // returns the number of video modes from EnumerateDisplayAdaptors()
-	virtual int GetCurrentDisplayMode() const = 0; // returns the current display mode
-	virtual void SetDisplayMode(int i) = 0; // set a display mode, i being the index into the displayModeList.
-	virtual bool GetDisplayMode(int i, int& width, int& height) const = 0; // get the display mode, return true if success, false if error
-	virtual void ToggleFullscreen() = 0; // todo: need to implement
-
-	///add more functions...
 protected:
 
 	virtual ~IRenderer() {}

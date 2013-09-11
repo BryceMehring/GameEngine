@@ -23,6 +23,8 @@ class oglRenderer : public IRenderer
 {
 public:
 
+	static void MonitorCallback(GLFWmonitor*,int);
+
 	oglRenderer();
 	virtual ~oglRenderer();
 
@@ -74,14 +76,15 @@ public:
 
 	// config
 	virtual void EnableVSync(bool);
-	virtual void EnumerateDisplayAdaptors();
-	virtual int GetNumDisplayModes() const;
-	virtual int GetCurrentDisplayMode() const;
-	virtual void SetDisplayMode(int i);
-	virtual bool GetDisplayMode(int i, int& width, int& height) const;
-	virtual void ToggleFullscreen();
+	virtual int  GetNumMonitors() const;
+	virtual int  GetNumDisplayModes(int monitor) const;
+	virtual void GetCurrentDisplayMode(int& monitor, int& mode) const;
+	virtual void SetDisplayMode(int mode);
+	virtual bool GetDisplayMode(int monitor, int mode, int& width, int& height) const;
 
 private:
+
+	static oglRenderer* s_pThis;
 
 	Camera* m_pCamera;
 
@@ -92,20 +95,24 @@ private:
 	std::auto_ptr<LineEngine> m_pLines;
 	std::auto_ptr<SpriteEngine> m_pSprites;
 
-	// todo: turn this into a vector?
-	const GLFWvidmode* m_pVideoModes;
-	int m_iNumVideoModes;
+	GLFWmonitor** m_pMonitors;
+	int m_iMonitorCount;
 
-	std::vector<std::pair<int,int>> m_VideoModeStr;
+	std::vector<std::pair<const GLFWvidmode*,int>> m_videoModes;
 
-	int m_uiCurrentDisplayMode;
+	int m_iCurrentMonitor;
+	int m_iCurrentDisplayMode;
+
 	bool m_bFullscreen;
 
 	// Helper functions
 	void ConfigureGLFW();
 	void ConfigureOpenGL();
+	void EnumerateDisplayAdaptors();
 	void GLFWOpenWindowHints();
 	bool CheckShader(const std::string& shader, const std::string& location, GLuint& shaderID, GLuint& outLocation) const;
+	void ParseVideoSettingsFile();
+	void SaveDisplayList();
 };
 
 #endif // _OGLRENDERER_

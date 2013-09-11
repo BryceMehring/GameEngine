@@ -53,7 +53,6 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 
 void SpriteEngine::FillVertexBuffer()
 {
-
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 	SpriteVertex* pVert = (SpriteVertex*)glMapBufferRange(GL_ARRAY_BUFFER , 0, m_iMaxLength * sizeof(SpriteVertex), GL_MAP_WRITE_BIT);
 

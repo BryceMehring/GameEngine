@@ -48,6 +48,8 @@ endif()
 
 add_definitions(-DGAME_ENGINE_EXPORT)
 
+Install(TARGETS GameEngine LIBRARY DESTINATION ./)
+
 
   
   

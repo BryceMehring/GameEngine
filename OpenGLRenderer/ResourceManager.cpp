@@ -6,7 +6,7 @@
 #include <cstring>
 
 #ifdef _MSC_VER
-#pragma warning(disable: 4996) 
+#pragma warning(disable: 4996)
 #endif
 #include <stb_image.c>
 
@@ -23,7 +23,7 @@ unsigned int log2(unsigned int v)
 	  {
 		v >>= S[i];
 		r |= S[i];
-	  } 
+	  }
 	}
 
 	return r;
@@ -44,7 +44,7 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::LoadResourceFile(const std::string& file)
 {
-	
+
 	std::fstream in(file,std::ios::in);
 
 	assert(in.is_open());
@@ -79,7 +79,7 @@ void ResourceManager::LoadResourceFile(const std::string& file)
 			}
 			assert(bSuccess);
 		}
-			
+
 	}
 
 	in.close();
@@ -150,7 +150,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R,GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R,GL_MIRRORED_REPEAT);
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 	assert(glGetError() == GL_NO_ERROR);

@@ -16,7 +16,7 @@ void Function()
 CCircle::CCircle(const Circle& circle) : m_circle(circle)
 {
 	//Delegate<void,void> testFunction;
-	
+
 }
 
 bool CCircle::Intersects(const ICollisionPolygon& other) const
@@ -257,11 +257,6 @@ void RegisterScriptVecMath(::asIScriptEngine* pEngine)
 	DBAS(pEngine->RegisterObjectType("vec2",sizeof(glm::vec2),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
 	DBAS(pEngine->RegisterObjectProperty("vec2","float x",offsetof(glm::vec2,x)));
 	DBAS(pEngine->RegisterObjectProperty("vec2","float y",offsetof(glm::vec2,y)));
-
-	DBAS(pEngine->RegisterGlobalFunction("bool InRange(float,float,float)",asFUNCTION(InRange),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("float rand(float,float)",asFUNCTION(GetRandFloat),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("uint rand(uint,uint)",asFUNCTION(GetRandInt),asCALL_CDECL));
-	DBAS(pEngine->RegisterGlobalFunction("float clamp(float,float,float)",asFUNCTIONPR(glm::clamp<float>,(const float&, const float&, const float&), float),asCALL_CDECL));
 }
 
 } // Math

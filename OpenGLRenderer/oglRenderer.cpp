@@ -3,6 +3,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -11,12 +12,23 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin()
 	return new oglRenderer();
 }
 
-oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nullptr), m_pLines(nullptr), m_pSprites(nullptr), m_bFullscreen(false)
+oglRenderer* oglRenderer::s_pThis = nullptr;
+
+void oglRenderer::MonitorCallback(GLFWmonitor* monitor, int state)
 {
+	s_pThis->EnumerateDisplayAdaptors();
+}
+
+oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nullptr),
+	m_pLines(nullptr), m_pSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
+	m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_bFullscreen(false)
+{
+	s_pThis = this;
+
+	ParseVideoSettingsFile();
 	ConfigureGLFW();
 	ConfigureOpenGL();
-
-	EnableVSync(false);
+	EnableVSync(true);
 
 	m_rm.LoadResourceFile("base.r");
 
@@ -28,37 +40,102 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 
 oglRenderer::~oglRenderer()
 {
-	if(m_pCamera != nullptr)
-	{
-		ReleaseCamera(m_pCamera);
-	}
+	SaveDisplayList();
+	ReleaseCamera(m_pCamera);
 	glfwDestroyWindow(m_pWindow);
+}
+
+void oglRenderer::ParseVideoSettingsFile()
+{
+	std::ifstream stream("videoModes.txt");
+	int iMonitorCounter = 0;
+	int iDisplayCounter = 0;
+
+	if(stream.is_open())
+	{
+		std::string line;
+		while(std::getline(stream,line))
+		{
+			std::istringstream inStream(line);
+
+			string subLine;
+			inStream >> subLine;
+
+			if(subLine == "Monitor")
+			{
+				iMonitorCounter++;
+				iDisplayCounter = 0;
+			}
+			else if(!line.empty() && line.back() == '*')
+			{
+				m_iCurrentMonitor = iMonitorCounter - 1;
+				m_iCurrentDisplayMode = iDisplayCounter - 1;
+
+				break;
+			}
+
+			iDisplayCounter++;
+		}
+
+		stream.close();
+	}
+}
+
+void oglRenderer::SaveDisplayList()
+{
+	std::ofstream stream("videoModes.txt");
+
+	if(stream.is_open())
+	{
+		for(unsigned int i = 0; i < m_videoModes.size(); ++i)
+		{
+			stream << "Monitor " << i << endl;
+
+			const GLFWvidmode* pModes = m_videoModes[i].first;
+
+			for(int j = m_videoModes[i].second - 1; j >= 0; --j)
+			{
+				int index = m_videoModes[i].second - j - 1;
+				stream << index << ": " << pModes[j].width << ' ' << pModes[j].height << ' ' << pModes[j].refreshRate;
+
+				if(i == m_iCurrentMonitor && index == m_iCurrentDisplayMode)
+				{
+					stream << " *";
+				}
+
+				stream << endl;
+			}
+
+			stream << endl;
+		}
+
+		stream.close();
+	}
+
 }
 
 void oglRenderer::ConfigureGLFW()
 {
 	EnumerateDisplayAdaptors();
-	m_uiCurrentDisplayMode = m_iNumVideoModes - 1;
-
 	GLFWOpenWindowHints();
-	m_pWindow = glfwCreateWindow(m_pVideoModes[m_iNumVideoModes - 1].width, m_pVideoModes[m_iNumVideoModes - 1].height, "", NULL, NULL);
-	if(m_pWindow == nullptr)
-	{
-		glfwTerminate();
-		throw std::string("Failed to create window");
-	}
+
+	auto iter = m_videoModes[m_iCurrentMonitor];
+	m_pWindow = glfwCreateWindow(iter.first[iter.second - m_iCurrentDisplayMode - 1].width, // width
+											iter.first[iter.second - m_iCurrentDisplayMode - 1].height, // height
+											"", // window title
+											m_pMonitors[m_iCurrentMonitor], // monitor to display on
+											NULL); // not used
+	assert(m_pWindow != nullptr);
 
 	glfwMakeContextCurrent(m_pWindow);
+	glfwSetMonitorCallback(MonitorCallback);
 }
 
 void oglRenderer::ConfigureOpenGL()
 {
 	// Initialize GLEW
-	glewExperimental=true; // Needed in core profile
-	if (glewInit() != GLEW_OK)
-	{
-		throw std::string("Failed to initialize GLEW");
-	}
+	glewExperimental = true; // Needed in core profile
+	assert(glewInit() == GLEW_OK);
 
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -66,23 +143,9 @@ void oglRenderer::ConfigureOpenGL()
 	glClearColor(0.0f,0.0f,0.0f,0.0f);
 }
 
-void oglRenderer::Init(asIScriptEngine* pAS)
-{
-	pAS->BeginConfigGroup("renderer");
-	(pAS->RegisterObjectType("renderer",0,asOBJ_REF | asOBJ_NOHANDLE));
-	//(pAS->RegisterObjectMethod("renderer","int mouseX()",asMETHOD(oglRenderer,MouseX),asCALL_THISCALL));
-	//(pAS->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(DirectInput,MouseY),asCALL_THISCALL));
-	//(pAS->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(DirectInput,MouseZ),asCALL_THISCALL));
-	//(pAS->RegisterGlobalProperty("IKMInput input",this));
-	// todo: implement this later
+void oglRenderer::Init(asIScriptEngine* pAS) {}
 
-	pAS->EndConfigGroup();
-}
-
-void oglRenderer::Destroy(asIScriptEngine* pAS)
-{
-	// todo: implement this later
-}
+void oglRenderer::Destroy(asIScriptEngine* pAS) {}
 
 DLLType oglRenderer::GetPluginType() const
 {
@@ -139,68 +202,58 @@ void oglRenderer::EnableVSync(bool enable)
 
 void oglRenderer::EnumerateDisplayAdaptors()
 {
-	m_pVideoModes = glfwGetVideoModes(glfwGetPrimaryMonitor(),&m_iNumVideoModes);
+	m_pMonitors = glfwGetMonitors(&m_iMonitorCount);
 
-	m_VideoModeStr.reserve(m_iNumVideoModes);
+	m_videoModes.resize(m_iMonitorCount);
 
-	for(int i = 0; i < m_iNumVideoModes; ++i)
+	for(unsigned int i = 0; i < m_videoModes.size(); ++i)
 	{
-		m_VideoModeStr.push_back(make_pair(m_pVideoModes[i].width,m_pVideoModes[i].height));
+		int size = 0;
+		const GLFWvidmode* pVidMode = nullptr;
+
+		pVidMode = glfwGetVideoModes(m_pMonitors[i],&size);
+
+		m_videoModes[i].first = pVidMode;
+		m_videoModes[i].second = size;
 	}
 }
 
-int oglRenderer::GetNumDisplayModes() const
+int oglRenderer::GetNumMonitors() const
 {
-	return m_iNumVideoModes;
+	return m_iMonitorCount;
 }
 
-int oglRenderer::GetCurrentDisplayMode() const
+int oglRenderer::GetNumDisplayModes(int monitor) const
 {
-	return m_uiCurrentDisplayMode;
+	return m_videoModes[monitor].second;
+}
+
+void oglRenderer::GetCurrentDisplayMode(int& monitor, int& mode) const
+{
+	monitor = m_iCurrentMonitor;
+	mode = m_iCurrentDisplayMode;
 }
 
 void oglRenderer::SetDisplayMode(int i)
 {
-	if(i < GetNumDisplayModes() && i >= 0)
+	auto pairedVideoMode = m_videoModes[m_iCurrentMonitor];
+	if(i < pairedVideoMode.second && i >= 0)
 	{
-		glfwSetWindowSize(m_pWindow,m_pVideoModes[i].width,m_pVideoModes[i].height);
+		glfwSetWindowSize(m_pWindow,pairedVideoMode.first[i].width,pairedVideoMode.first[i].height);
 	}
 }
 
-bool oglRenderer::GetDisplayMode(int i, int& width, int& height) const
+bool oglRenderer::GetDisplayMode(int monitor, int i, int& width, int& height) const
 {
-	if(i >= (int)m_VideoModeStr.size())
+	auto monitorModes = m_videoModes[monitor];
+
+	if(i >= monitorModes.second)
 		return false;
 
-	width = m_VideoModeStr[i].first;
-	height = m_VideoModeStr[i].second;
+	width = monitorModes.first[i].width;
+	height = monitorModes.first[i].height;
 
 	return true;
-}
-
-void oglRenderer::ToggleFullscreen()
-{
-	/*m_bFullscreen = !m_bFullscreen;
-
-	glfwCloseWindow();
-
-	GLFWOpenWindowHints();
-
-	if(m_bFullscreen)
-	{
-		CreateWindow(m_VideoModes[m_uiCurrentDisplayMode].Width,
-					   m_VideoModes[m_uiCurrentDisplayMode].Height,GLFW_FULLSCREEN);
-	}
-	else
-	{
-		CreateWindow(800,600,GLFW_WINDOW);
-	}
-
-	m_pFonts->OnReset();
-	m_pLines->OnReset();
-	m_pSprites->OnReset();
-	m_rm.Clear();*/
-
 }
 
 IResourceManager& oglRenderer::GetResourceManager()
