@@ -282,9 +282,9 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float f
 	m_pLines->DrawLine(pArray,length,fWidth,color,T);
 }
 
-void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec2& tiling, unsigned int iCellId, const std::string& tech)
+void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec3& color, const glm::vec2& tiling, unsigned int iCellId, const std::string& tech)
 {
-	m_pSprites->DrawSprite(tech,texture,transformation,tiling,iCellId);
+	m_pSprites->DrawSprite(tech,texture,transformation,color,tiling,iCellId);
 }
 
 bool oglRenderer::CheckShader(const std::string& shader, const string& location,  GLuint& shaderID, GLuint& outLocation) const

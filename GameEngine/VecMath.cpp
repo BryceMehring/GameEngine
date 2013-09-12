@@ -52,7 +52,6 @@ void CCircle::GetNormal(const glm::vec2& pos, glm::vec2& out) const
 {
 	out = pos - m_circle.center;
 	out = glm::normalize(out);
-	//D3DXVec2Normalize(&out,&out);
 }
 
 void CCircle::GetAABB(AABB& aabb) const

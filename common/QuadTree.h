@@ -12,7 +12,6 @@
 #include <list>
 #include <assert.h>
 #include "IRender.h"
-#include "RTTI.h"
 #include "VecMath.h"
 
 class ISpatialObject : public IRender
@@ -51,7 +50,8 @@ public:
 	// operations
 	bool Insert(ISpatialObject& obj);
 
-	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj = nullptr);
+	void QueryNearObjects(const ISpatialObject* pObj, std::vector<ISpatialObject*>& out);
+	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out);
 
 	void Render(IRenderer& renderer);
 
@@ -83,6 +83,8 @@ private:
 
 	// Subdivides the current node/R into 4 sub nodes
 	void SubDivide();
+
+	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj);
 };
 
 // todo: need to create a better public/protected/private interface
@@ -114,43 +116,5 @@ protected:
 	void LoopDown(unsigned int index);
 	void LoopUp();
 };
-
-/*class QuadTree : public IRender
-{
-public:
-
-	// constructor/destructor
-	QuadTree(const Math::FRECT& R);
-	virtual ~QuadTree();
-
-	// adds a point to the quadtree
-	// recursive
-	bool Insert(ISpatialObject&);
-	void Erase(ISpatialObject&);
-
-	bool IsWithin(ISpatialObject&) const;
-
-	void FindNearObjects(const Math::ICollisionPolygon* pPoly,std::vector<ISpatialObject*>& out);
-	void FindNearNodes(const Math::ICollisionPolygon* pPoly, std::vector<Node*>& out);
-	void FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out);
-
-	template< class T >
-	void Update(ISpatialObject& obj, const T& funct)
-	{
-		Erase(obj);
-		funct();
-		Insert(obj);
-	}
-
-	void SaveToFile(std::string& file);
-	void LoadFile(const std::string& file);
-
-	virtual void Render(class IRenderer&);
-
-	const Math::FRECT& GetRect() const { return m_pRoot->GetRect(); }
-
-private:
-	Node* m_pRoot;
-};*/
 
 #endif // _QUADTREE_

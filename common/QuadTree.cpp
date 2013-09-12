@@ -42,7 +42,7 @@ bool QuadTree::HasPoint() const
 
 bool QuadTree::IsFull() const
 {
-	return (m_Objects.size()) >= (16);
+	return (m_Objects.size()) >= (32); // 16
 }
 
 
@@ -84,11 +84,11 @@ void QuadTree::Render(IRenderer& renderer)
 
 			::glm::vec3 pos[5] =
 			{
-				glm::vec3(R.topLeft.x,R.topLeft.y,-10.0f),
-				glm::vec3(R.bottomRight.x,R.topLeft.y,-10.0f),
-				glm::vec3(R.bottomRight.x,R.bottomRight.y,-10.0f),
-				glm::vec3(R.topLeft.x,R.bottomRight.y,-10.0f),
-				glm::vec3(R.topLeft.x,R.topLeft.y,-10.0f),
+				glm::vec3(R.topLeft.x,R.topLeft.y,-20.0f),
+				glm::vec3(R.bottomRight.x,R.topLeft.y,-20.0f),
+				glm::vec3(R.bottomRight.x,R.bottomRight.y,-20.0f),
+				glm::vec3(R.topLeft.x,R.bottomRight.y,-20.0f),
+				glm::vec3(R.topLeft.x,R.topLeft.y,-20.0f),
 			};
 
 			renderer.DrawLine(pos,5);
@@ -154,8 +154,7 @@ void QuadTree::RInsert(ISpatialObject& obj)
 		const Math::FRECT& subR = nodes[i]->R.GetRect();
 
 		// if the current node is full
-		// if((pNode->IsFull()) && subR.Height() > 10.0f)
-		if((pNode->IsFull()) && subR.Height() > 4.0f)
+		if(pNode->IsFull() && subR.Height() > 4.0f)
 		{
 			if(!pNode->IsDivided())
 			{
@@ -167,18 +166,6 @@ void QuadTree::RInsert(ISpatialObject& obj)
 		}
 		else
 		{
-			/*if(obj.CanSendCollisionMsg())
-			{
-				for(auto iter = pNode->m_Objects.begin(); iter != pNode->m_Objects.end(); ++iter)
-				{
-					if((*iter)->GetCollisionPolygon().Intersects(obj.GetCollisionPolygon()))
-					{
-						obj.SendCollisionMsg(**iter);
-						//(*iter)->SendCollisionMsg(obj);
-					}
-				}
-			}*/
-
 			pNode->m_Objects.push_back(&obj);
 		}
 	}
@@ -200,6 +187,16 @@ void QuadTree::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Qu
 			out.push_back(&subNode);
 		}
 	}
+}
+
+void QuadTree::QueryNearObjects(const ISpatialObject* pObj, std::vector<ISpatialObject*>& out)
+{
+	QueryNearObjects(pObj->GetCollisionPolygon(),out,pObj);
+}
+
+void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out)
+{
+	QueryNearObjects(poly,out,nullptr);
 }
 
 void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj)
@@ -318,7 +315,7 @@ void NodeIterator::LoopUp()
 		} while(index == MAX_NODES);
 	}
 
-    if(index != (unsigned int)-1)
+	if(index != (unsigned int)-1)
 	{
 		LoopDown(index);
 	}
@@ -338,96 +335,5 @@ void NodeIterator::Increment()
 		}
 	}
 }
-
-// constructor
-/*QuadTree::QuadTree(const Math::FRECT& R)
-{
-	m_pRoot = new Node(R);
-}
-
-// Destructor
-QuadTree::~QuadTree()
-{
-	delete m_pRoot;
-	m_pRoot = nullptr;
-}
-
-bool QuadTree::IsWithin(ISpatialObject& obj) const
-{
-	return m_pRoot->IsWithin(obj);
-}
-
-bool QuadTree::Insert(ISpatialObject& obj)
-{
-	return m_pRoot->Insert(obj);
-}
-
-void QuadTree::Erase(ISpatialObject& obj)
-{
-	m_pRoot->Erase(obj);
-}
-
-void QuadTree::FindNearObjects(const Math::ICollisionPolygon* pPoly, std::vector<ISpatialObject*>& out)
-{
-	m_pRoot->QueryNearObjects(*pPoly,out);
-}
-
-void QuadTree::FindNearNodes(const Math::ICollisionPolygon* pPoly, std::vector<Node*>& out)
-{
-	m_pRoot->FindNearNodes(*pPoly,out);
-}
-
-void QuadTree::FindNearNodes(const ISpatialObject* pObj, std::vector<Node*>& out)
-{
-	m_pRoot->FindNearNodes(pObj->GetCollisionPolygon(),out);
-}
-
-void QuadTree::SaveToFile(std::string& file)
-{
-	file += ".quad";
-	std::fstream fout(file.c_str(),ios::out);
-
-	if(fout)
-	{
-		queue<Node*> verts;
-		verts.push(m_pRoot);
-
-		int iCurrentHeight = 0;
-
-		while(!verts.empty())
-		{
-			Node* pFront = verts.front();
-			verts.pop();
-
-			if(pFront->HasPoint())
-			{
-				if(iCurrentHeight != pFront->m_iHeight)
-				{
-					fout<<endl<<pFront->m_iHeight<<":  ";
-				}
-
-				iCurrentHeight = pFront->m_iHeight;
-
-				// write to file here
-				fout<<pFront->m_Objects.size()<<",";
-			}
-
-			for(unsigned int i = 0; i < pFront->m_Nodes.size(); ++i)
-			{
-				verts.push(&pFront->m_Nodes[i]);
-			}
-		}
-
-		fout.close();
-
-		system(file.c_str());
-	}
-}
-
-void QuadTree::Render(IRenderer& renderer)
-{
-	m_pRoot->Render(renderer);
-}*/
-
 
 
