@@ -18,7 +18,7 @@ public:
 
 	virtual ~IResourceManager() {}
 
-	/*  Loads a resource file
+	/**
 		(Image file types support:
 
 		JPEG baseline (no JPEG progressive)
@@ -31,24 +31,28 @@ public:
 		GIF (*comp always reports as 4-channel)
 		HDR (radiance rgbE format)
 		PIC (Softimage PIC)
+	**/
 
-		resource file structure:
-		texture UniqueStringID PathToImage/img.png
-		shader UniqueStringID3 PathToShader/VertexShader.vert PathToShader/FragmentShader.frag
-	*/
+	/** Loads a resource file
+	 * resource file structure:
+	 * texture UniqueStringID PathToImage/img.png
+	 * shader UniqueStringID3 PathToShader/VertexShader.vert PathToShader/FragmentShader.frag
+	 **/
 	virtual void LoadResourceFile(const std::string& file) = 0;
 
-	// Loads a texture
-	// id: uniqueID to be used
-	// file: img
-	// return: true if the texture is or was loaded, false on error
+	/** Loads a texture
+	 * id: uniqueID to be used
+	 * file: img
+	 * return: true if the texture is or was loaded, false on error
+	 **/
 	virtual bool LoadTexture(const std::string& id, const std::string& file) = 0;
 
-	// loads a shader
-	// id: uniqueID to be used
-	// vert: vert shader file
-	// frag: frag shader file
-	// return: true if the shader was loaded, false on error
+	/** loads a shader
+	 * id: uniqueID to be used
+	 * vert: vert shader file
+	 * frag: frag shader file
+	 * return: true if the shader was loaded, false on error
+	 **/
 	virtual bool LoadShader(const std::string& id, const std::string& vert, const std::string& frag) = 0;
 
 	// return via parameter texture info for a stringID

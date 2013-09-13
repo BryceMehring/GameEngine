@@ -13,17 +13,19 @@ struct SpriteVertex
 {
 	glm::vec3 pos;
 	glm::vec2 tex;
+	glm::vec3 color;
 	glm::vec2 tiling;
 };
 
 struct Sprite
 {
-	Sprite(const glm::mat4& transform, const glm::vec2& tile, unsigned int cell)
-        : T(transform), tiling(tile), iCellId(cell)
+	Sprite(const glm::mat4& transform,const glm::vec3& col, const glm::vec2& tile, unsigned int cell)
+		: T(transform), color(col), tiling(tile), iCellId(cell)
 	{
 	}
 
 	glm::mat4 T;
+	glm::vec3 color;
 	glm::vec2 tiling;
 	unsigned int iCellId;
 };
@@ -38,12 +40,13 @@ class SpriteEngine
 {
 public:
 
-    SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam);
+	SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam);
 	~SpriteEngine();
 
-	void DrawSprite(const std::string& tech,  
+	void DrawSprite(const std::string& tech,
 					const std::string& texture,
 					const glm::mat4& transformation,
+					const glm::vec3& color,
 					const glm::vec2& tiling,
 					unsigned int iCellId
 					);
@@ -64,8 +67,8 @@ private:
 	unsigned int m_uiVertexBuffer;
 	unsigned int m_uiIndexBuffer;
 
-    unsigned int m_iCurrentLength;
-    const unsigned int m_iMaxLength;
+	unsigned int m_iCurrentLength;
+	const unsigned int m_iMaxLength;
 
 	std::map<int,Layer> m_spriteLayers;
 

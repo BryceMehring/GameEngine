@@ -30,6 +30,7 @@ void SpriteEngine::CreateVertexBuffer()
 void SpriteEngine::DrawSprite(const std::string& tech,
 							  const std::string& texture,
 							  const glm::mat4& transformation,
+							  const glm::vec3& color,
 							  const glm::vec2& tiling,
 							  unsigned int iCellId)
 {
@@ -41,7 +42,7 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 		if( pShader != nullptr && pTex != nullptr)
 		{
 			Layer& layer = m_spriteLayers[(int)transformation[3].z];
-			layer.sprites[tech][texture].push_back(Sprite(transformation,tiling,iCellId));
+			layer.sprites[tech][texture].push_back(Sprite(transformation,color,tiling,iCellId));
 			++m_iCurrentLength;
 		}
 	}
@@ -53,7 +54,6 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 
 void SpriteEngine::FillVertexBuffer()
 {
-
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 	SpriteVertex* pVert = (SpriteVertex*)glMapBufferRange(GL_ARRAY_BUFFER , 0, m_iMaxLength * sizeof(SpriteVertex), GL_MAP_WRITE_BIT);
 
@@ -83,24 +83,28 @@ void SpriteEngine::FillVertexBuffer()
 					// filling in the vertices
 					pVert[0].pos = (sprites[i].T * glm::vec4(-0.5f,0.5f,0.0f,1.0f)).xyz();
 					pVert[0].tex = topLeft;
+					pVert[0].color = sprites[i].color;
 					pVert[0].tiling = sprites[i].tiling;
 					//pVert[0].dy = sprites[i].dy;
 
 
 					pVert[1].pos = (sprites[i].T * glm::vec4(-0.5f,-0.5f,0.0,1.0f)).xyz();
 					pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y);
+					pVert[1].color = sprites[i].color;
 					pVert[1].tiling = sprites[i].tiling;
 					//pVert[1].dx = sprites[i].dx;
 					//pVert[1].dy = sprites[i].dx;
 
 					pVert[2].pos = (sprites[i].T * glm::vec4(0.5f,0.5f,0.0,1.0f)).xyz();
 					pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y);
+					pVert[2].color = sprites[i].color;
 					pVert[2].tiling = sprites[i].tiling;
 					//pVert[2].dx = sprites[i].dx;
 					//pVert[2].dy = sprites[i].dx;
 
 					pVert[3].pos = (sprites[i].T * glm::vec4(0.5f,-0.5f,0.0,1.0f)).xyz();
 					pVert[3].tex = bottomRight;
+					pVert[3].color = sprites[i].color;
 					pVert[3].tiling = sprites[i].tiling;
 					// pVert[3].dx = sprites[i].dx;
 					// pVert[3].dy = sprites[i].dy;
@@ -143,6 +147,7 @@ void SpriteEngine::Render()
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
 
 	// Loop over all the layers
 	for(auto layerIter = m_spriteLayers.begin(); layerIter != m_spriteLayers.end(); ++layerIter)
@@ -156,6 +161,7 @@ void SpriteEngine::Render()
 
 			GLuint vertexPosition_modelspaceID = glGetAttribLocation(pShader->GetID(), "vertexPosition_modelspace");
 			GLuint vertexUV = glGetAttribLocation(pShader->GetID(), "vertexUV");
+			GLuint vertexColor = glGetAttribLocation(pShader->GetID(), "vertexColor");
 			GLuint vertexTiling = glGetAttribLocation(pShader->GetID(), "vertexTiling");
 
 			glUseProgram(pShader->GetID());
@@ -179,7 +185,16 @@ void SpriteEngine::Render()
 						);
 
 			glVertexAttribPointer(
-						vertexTiling,					// attribute 2
+						vertexColor,					// attribute 2
+						3,                  // size
+						GL_FLOAT,           // type
+						GL_FALSE,           // normalized?
+						sizeof(SpriteVertex),  // stride
+						(void*)offsetof(struct SpriteVertex, color) // array buffer offset
+						);
+
+			glVertexAttribPointer(
+						vertexTiling,					// attribute 3
 						2,                  // size
 						GL_FLOAT,           // type
 						GL_FALSE,           // normalized?
@@ -217,6 +232,7 @@ void SpriteEngine::Render()
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
+	glDisableVertexAttribArray(3);
 
 	m_spriteLayers.clear();
 	m_iCurrentLength = 0;

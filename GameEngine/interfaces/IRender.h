@@ -6,16 +6,6 @@ class IRender
 {
 public:
 
-	enum IRenderType
-	{
-		//Text,
-		Picture,
-		Mesh,
-		Line,
-		Polygon,
-		// todo:add more here
-	};
-
 	virtual ~IRender() {}
 
 	//virtual IRenderType GetRenderType() const = 0;
