@@ -16,6 +16,7 @@ include("${CMAKE_SOURCE_DIR}/CMake/CompileFlags.cmake")
 
 option(BUILD_MEMORY_MANAGER "Build Memory Manager" OFF)
 option(BUILD_GUI "Build GUI" OFF)
+option(ENABLE_CPACK "Enable CPack" OFF)
 
 find_package (GLEW)
 if (GLEW_FOUND)
@@ -84,13 +85,15 @@ add_subdirectory(Input)
 add_executable(GameLauncher GameLauncher/main.cpp)
 target_link_libraries(GameLauncher GameEngine)
 
-set(CPACK_GENERATOR "ZIP")
-include(InstallRequiredSystemLibraries)
-include(CPack)
+if(ENABLE_CPACK)
+	set(CPACK_GENERATOR "ZIP")
+	include(InstallRequiredSystemLibraries)
+	include(CPack)
 
-install(TARGETS GameLauncher RUNTIME DESTINATION ./)
-install(FILES base.r DESTINATION ./)
-install(DIRECTORY textures/ DESTINATION textures/)
-install(DIRECTORY shaders/ DESTINATION shaders/)
+	install(TARGETS GameLauncher RUNTIME DESTINATION ./)
+	install(FILES base.r DESTINATION ./)
+	install(DIRECTORY textures/ DESTINATION textures/)
+	install(DIRECTORY shaders/ DESTINATION shaders/)
+endif(ENABLE_CPACK)
 
 

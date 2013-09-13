@@ -35,7 +35,7 @@ set(GAME_ENGINE_SOURCE
 		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.cpp
 		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptmath/scriptmath.cpp
 		)
-	
+
 # build the game engine
 add_library(GameEngine SHARED ${GAME_ENGINE_HEADERS} ${GAME_ENGINE_SOURCE})
 target_link_libraries(GameEngine ${GLFW_LIBRARY})
@@ -48,11 +48,13 @@ endif()
 
 add_definitions(-DGAME_ENGINE_EXPORT)
 
-Install(TARGETS GameEngine LIBRARY DESTINATION ./)
+if(ENABLE_CPACK)
+	Install(TARGETS GameEngine LIBRARY DESTINATION ./)
+endif(ENABLE_CPACK)
 
 
-  
-  
-  
-  
-  
+
+
+
+
+
