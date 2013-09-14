@@ -9,17 +9,17 @@ enum class DLLType
 	// more dll types here
 };
 
-// Plugin Interface 
+// Plugin Interface
 class IPlugin
 {
 public:
-	
+
 
 	/*
 		Base Plug-in class.
 	*/
 
-	friend class PluginManager;
+	friend class PluginInfo;
 
 	// returns the type of the plug-in
 	virtual DLLType GetPluginType() const = 0;
@@ -36,7 +36,7 @@ public:
 protected:
 
 	virtual ~IPlugin() {}
-	
+
 };
 
 #endif // _IPLUGIN_

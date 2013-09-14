@@ -1,4 +1,4 @@
-// Programmed by Bryce Mehring 
+// Programmed by Bryce Mehring
 // 1/12/2011
 
 #ifndef _PLUGIN_MANAGER_
@@ -18,19 +18,14 @@
 #include <map>
 #include <vector>
 #include <string>
-
-struct PluginInfo
-{
-	IPlugin* pPlugin;
-	void* mod;
-};
+#include <memory>
 
 // Manages loading and freeing of all plugins
 class PluginManager
 {
 public:
 
-	/* 
+	/*
 	   This class manages all of the dll plugins. It will load and unload them when needed.
 	*/
 
@@ -51,7 +46,7 @@ public:
 	// Note: Each plugin must export: "IPlugin* CreatePlugin(asIScriptEngine* as)" used to create the plugin
 	// The extension is not needed to be added to the string. On linux, there is no need to prefix the dll's with 'lib'
 	IPlugin* LoadDLL(const std::string& dllName);
-	
+
 	// Frees the plugin given
 	// todo: need to return if this function succeeded or not
 	void FreePlugin(DLLType type);
@@ -68,7 +63,7 @@ public:
 private:
 
 	class asIScriptEngine* m_pAS;
-	typedef std::map<DLLType,PluginInfo> plugin_type;
+	typedef std::map<DLLType,std::shared_ptr<struct PluginInfo>> plugin_type;
 	plugin_type m_plugins; // the list of all plugins
 
 	// Helper functions
