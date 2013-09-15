@@ -19,7 +19,7 @@ public:
 		Base Plug-in class.
 	*/
 
-	friend class PluginInfo;
+	friend struct PluginInfo;
 
 	// returns the type of the plug-in
 	virtual DLLType GetPluginType() const = 0;
