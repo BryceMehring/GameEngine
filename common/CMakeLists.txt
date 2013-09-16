@@ -1,8 +1,8 @@
 
 
-set(COMMON_HEADERS Camera.h RefCounting.h)
+set(COMMON_HEADERS Camera.h RefCounting.h VecMath.h)
 
-set(COMMON_SOURCE Camera.cpp RefCounting.cpp)
+set(COMMON_SOURCE Camera.cpp RefCounting.cpp VecMath.cpp)
 
 # build the game engine
 add_library(common SHARED ${COMMON_HEADERS} ${COMMON_SOURCE})

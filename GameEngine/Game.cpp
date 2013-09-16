@@ -1,6 +1,7 @@
 
 #include "Game.h"
 #include "FileManager.h"
+#include "ResourceFileLoader.h"
 #include <string>
 #include <ctime>
 #include <iomanip>
@@ -19,6 +20,7 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 	m_plugins.SetAS(m_vm.GetScriptEngine());
 	LoadPlugins();
 
+	LoadResourceFile("base.r",*this);
 	//m_pInput->LoadKeyBindFile("bind.txt");
 
 	RegisterScript();

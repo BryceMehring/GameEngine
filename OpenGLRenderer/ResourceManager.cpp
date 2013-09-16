@@ -10,25 +10,6 @@
 #endif
 #include <stb_image.c>
 
-unsigned int log2(unsigned int v)
-{
-	const unsigned int b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
-	const unsigned int S[] = {1, 2, 4, 8, 16};
-	int i;
-
-	register unsigned int r = 0; // result of log2(v) will go here
-	for (i = 4; i >= 0; i--) // unroll for speed...
-	{
-	  if (v & b[i])
-	  {
-		v >>= S[i];
-		r |= S[i];
-	  }
-	}
-
-	return r;
-}
-
 IResource::~IResource()
 {
 }
@@ -40,49 +21,6 @@ ResourceManager::ResourceManager()
 ResourceManager::~ResourceManager()
 {
 	Clear();
-}
-
-void ResourceManager::LoadResourceFile(const std::string& file)
-{
-
-	std::fstream in(file,std::ios::in);
-
-	assert(in.is_open());
-
-	std::string line;
-	while(std::getline(in,line))
-	{
-		std::stringstream stream(line);
-
-		std::string type;
-		stream >> type;
-
-		std::string id;
-		stream >> id;
-
-		std::string fileName;
-		stream >> fileName;
-
-		if(fileName.size() > 0)
-		{
-			bool bSuccess = true;
-			if(type == "texture")
-			{
-				bSuccess = LoadTexture(id,fileName);
-			}
-			else if(type == "shader")
-			{
-				std::string fileName2;
-				stream >> fileName2;
-
-				bSuccess = LoadShader(id,fileName,fileName2);
-			}
-			assert(bSuccess);
-		}
-
-	}
-
-	in.close();
 }
 
 void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat)
@@ -155,8 +93,8 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	glGenerateMipmap(GL_TEXTURE_2D);
 	assert(glGetError() == GL_NO_ERROR);
 
-	std::fstream in;
-	in.open(file + ".fnt",std::ios::in);
+	std::ifstream in;
+	in.open(file + ".fnt");
 	if(in.is_open())
 	{
 		// Load font
@@ -169,7 +107,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	}
 	else
 	{
-		in.open(file + ".txt",std::ios::in);
+		in.open(file + ".txt");
 		if(in)
 		{
 			in >> spriteWidth >> spriteHeight;
@@ -326,7 +264,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 	return bFoundMVP;
 }
 
-void ResourceManager::ParseFont(std::fstream& stream, Charset& CharsetDesc)
+void ResourceManager::ParseFont(std::ifstream& stream, Charset& CharsetDesc)
 {
 	std::string Line;
 	std::string Read, Key, Value;

@@ -33,13 +33,6 @@ public:
 		PIC (Softimage PIC)
 	**/
 
-	/** Loads a resource file
-	 * resource file structure:
-	 * texture UniqueStringID PathToImage/img.png
-	 * shader UniqueStringID3 PathToShader/VertexShader.vert PathToShader/FragmentShader.frag
-	 **/
-	virtual void LoadResourceFile(const std::string& file) = 0;
-
 	/** Loads a texture
 	 * id: uniqueID to be used
 	 * file: img

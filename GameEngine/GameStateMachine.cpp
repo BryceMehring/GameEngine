@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "FileManager.h"
+#include "ResourceFileLoader.h"
 #include <GLFW/glfw3.h>
 
 using namespace std;
@@ -14,7 +15,7 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 	assert(pPlugin != nullptr);
 	assert(pPlugin->GetPluginType() == DLLType::Game);
 
-	game.GetRenderer().GetResourceManager().LoadResourceFile(string(pPlugin->GetName()) + ".r");
+	LoadResourceFile(string(pPlugin->GetName()) + ".r",game);
 
 	m_pCurrentState = static_cast<IGameState*>(pPlugin);
 	m_pCurrentState->Init(game);

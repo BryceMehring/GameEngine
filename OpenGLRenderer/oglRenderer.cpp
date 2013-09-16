@@ -30,8 +30,6 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 	ConfigureOpenGL();
 	EnableVSync(true);
 
-	m_rm.LoadResourceFile("base.r");
-
 	m_pFonts.reset(new FontEngine(&m_rm,1024*8,m_pCamera));
 	m_pLines.reset(new LineEngine(&m_rm,1024*8,m_pCamera));
 	m_pSprites.reset(new SpriteEngine(&m_rm,1024*20,m_pCamera));

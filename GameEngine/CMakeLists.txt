@@ -15,7 +15,7 @@ set(GAME_ENGINE_HEADERS
 		interfaces/IResourceManager.h
 		PluginManager.h
 		Singleton.h
-		VecMath.h
+		ResourceFileLoader.h
 		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.h
 		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.h
 		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.h
@@ -29,7 +29,7 @@ set(GAME_ENGINE_SOURCE
 		GameStateMachine.cpp
 		GLFWInit.cpp
 		PluginManager.cpp
-		VecMath.cpp
+		ResourceFileLoader.cpp
 		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.cpp
 		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.cpp
 		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.cpp

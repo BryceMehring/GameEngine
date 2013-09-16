@@ -168,8 +168,6 @@ public:
 	ResourceManager();
 	virtual ~ResourceManager();
 
-	virtual void LoadResourceFile(const std::string& file);
-
 	virtual bool LoadTexture(const std::string& id, const std::string& file);
 
 	virtual bool LoadShader(const std::string& id, const std::string& vert, const std::string& frag);
@@ -189,7 +187,7 @@ private:
 	ResourceMap m_resources;
 
 	void GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat);
-	void ParseFont(std::fstream& stream, Charset& CharsetDesc);
+	void ParseFont(std::ifstream& stream, Charset& CharsetDesc);
 
 	bool CreateShaderInstance(const std::string& id, GLuint programID);
 };
