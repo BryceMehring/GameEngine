@@ -1,6 +1,12 @@
 cmake_minimum_required (VERSION 2.8)
 project (GameEngine CXX)
 
+option(BUILD_EXAMPLES "Build Examples" OFF)
+option(BUILD_QUADTREE "Build QuadTree" OFF)
+option(BUILD_MEMORY_MANAGER "Build Memory Manager" OFF)
+option(BUILD_GUI "Build GUI" OFF)
+option(ENABLE_CPACK "Enable CPack" OFF)
+
 # The version number.
 set (ENGINE_VERSION_MAJOR 1)
 set (ENGINE_VERSION_MINOR 0)
@@ -10,45 +16,6 @@ if( MSVC )
 		message( SEND_ERROR "Visual Studio 11 is needed to compile the code" )
 	endif()
 endif()
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules")
-include("${CMAKE_SOURCE_DIR}/CMake/CompileFlags.cmake")
-
-option(BUILD_EXAMPLES "Build Examples" OFF)
-option(BUILD_QUADTREE "Build QuadTree" OFF)
-option(BUILD_MEMORY_MANAGER "Build Memory Manager" OFF)
-option(BUILD_GUI "Build GUI" OFF)
-option(ENABLE_CPACK "Enable CPack" OFF)
-
-find_package (GLEW)
-if (GLEW_FOUND)
-  include_directories(${GLEW_INCLUDE_DIR})
-endif ()
-
-find_package (GLFW)
-if (GLFW_FOUND)
-  include_directories(${GLFW_INCLUDE_DIR})
-endif()
-
-find_package (STB_IMAGE)
-if (STB_IMAGE_FOUND)
-	include_directories(${STB_IMAGE_INCLUDE_DIR})
-endif ()
-
-find_package (GLM)
-if (GLM_FOUND)
-  include_directories(${GLM_INCLUDE_DIR})
-endif ()
-
-find_package (ANGELSCRIPT)
-if (ANGELSCRIPT_FOUND)
-  include_directories(${ANGELSCRIPT_INCLUDE_DIR})
-  include_directories(${ANGELSCRIPT_ADDON_INCLUDE_DIR})
-endif ()
-
-include_directories("${CMAKE_SOURCE_DIR}/common")
-include_directories("${CMAKE_SOURCE_DIR}/GameEngine/interfaces")
-include_directories("${CMAKE_SOURCE_DIR}/GameEngine")
 
 if(WIN32)
 	# First for the generic no-config case (e.g. with mingw)
@@ -66,6 +33,29 @@ else()
 	set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
 	set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin)
 endif()
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules")
+include("${CMAKE_SOURCE_DIR}/CMake/CompileFlags.cmake")
+
+find_package (GLEW)
+include_directories(${GLEW_INCLUDE_DIR})
+
+find_package (GLFW)
+include_directories(${GLFW_INCLUDE_DIR})
+
+find_package (STB_IMAGE)
+include_directories(${STB_IMAGE_INCLUDE_DIR})
+
+find_package (GLM)
+include_directories(${GLM_INCLUDE_DIR})
+
+find_package (ANGELSCRIPT)
+include_directories(${ANGELSCRIPT_INCLUDE_DIR})
+include_directories(${ANGELSCRIPT_ADDON_INCLUDE_DIR})
+
+include_directories("${CMAKE_SOURCE_DIR}/common")
+include_directories("${CMAKE_SOURCE_DIR}/GameEngine/interfaces")
+include_directories("${CMAKE_SOURCE_DIR}/GameEngine")
 
 if(BUILD_MEMORY_MANAGER)
 	include_directories("${CMAKE_SOURCE_DIR}/MemoryManager")

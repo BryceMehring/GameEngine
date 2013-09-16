@@ -1,40 +1,18 @@
+file(GLOB_RECURSE GAME_ENGINE_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+file(GLOB_RECURSE GAME_ENGINE_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
-
-set(GAME_ENGINE_HEADERS
-		asVM.h
-		FileManager.h
-		Game.h
-		GameStateMachine.h
-		GLFWInit.h
-		interfaces/IGameState.h
-		interfaces/IGameState.h
-		interfaces/IInput.h
-		interfaces/IKMInput.h
-		interfaces/IPlugin.h
-		interfaces/IRenderer.h
-		interfaces/IResourceManager.h
-		PluginManager.h
-		Singleton.h
-		ResourceFileLoader.h
-		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.h
-		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.h
-		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.h
-		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptmath/scriptmath.h
+list(APPEND GAME_ENGINE_HEADERS
+	${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.h
+	${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.h
+	${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.h
+	${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptmath/scriptmath.h
 	)
-
-set(GAME_ENGINE_SOURCE
-		asVM.cpp
-		FileManager.cpp
-		Game.cpp
-		GameStateMachine.cpp
-		GLFWInit.cpp
-		PluginManager.cpp
-		ResourceFileLoader.cpp
-		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.cpp
-		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.cpp
-		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.cpp
-		${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptmath/scriptmath.cpp
-		)
+list(APPEND GAME_ENGINE_SOURCE
+	${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptbuilder/scriptbuilder.cpp
+	${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptstdstring/scriptstdstring.cpp
+	${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scripthelper/scripthelper.cpp
+	${ANGELSCRIPT_ADDON_INCLUDE_DIR}/scriptmath/scriptmath.cpp
+	)
 
 # build the game engine
 add_library(GameEngine SHARED ${GAME_ENGINE_HEADERS} ${GAME_ENGINE_SOURCE})
