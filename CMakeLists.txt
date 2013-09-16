@@ -98,12 +98,13 @@ target_link_libraries(GameLauncher GameEngine)
 
 if(ENABLE_CPACK)
 	set(CPACK_GENERATOR "ZIP")
+	set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "./")
 	include(InstallRequiredSystemLibraries)
 	include(CPack)
 
 	install(TARGETS GameLauncher RUNTIME DESTINATION ./)
 	install(FILES base.r DESTINATION ./)
-	install(DIRECTORY textures/ DESTINATION textures/)
+	install(DIRECTORY textures/ DESTINATION textures/ FILES_MATCHING REGEX ".*(\\.png)")
 	install(DIRECTORY shaders/ DESTINATION shaders/)
 endif(ENABLE_CPACK)
 

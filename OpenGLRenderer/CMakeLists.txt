@@ -27,4 +27,8 @@ endif(WIN32)
 
 add_definitions(-DGLFW_DLL -DPLUGIN_EXPORTS)
 
+if(ENABLE_CPACK)
+	Install(TARGETS renderer LIBRARY DESTINATION ./)
+endif(ENABLE_CPACK)
+
 
