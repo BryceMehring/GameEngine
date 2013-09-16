@@ -49,7 +49,7 @@ endif()
 add_definitions(-DGAME_ENGINE_EXPORT)
 
 if(ENABLE_CPACK)
-	Install(TARGETS GameEngine LIBRARY DESTINATION ./)
+	Install(TARGETS GameEngine DESTINATION ./)
 endif(ENABLE_CPACK)
 
 

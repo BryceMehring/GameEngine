@@ -27,6 +27,7 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 *.cbp
+*CPack*
 
 #visual studio
 *.vcxproj
@@ -44,6 +45,7 @@ install_manifest.txt
 *.sdf
 *.pdb
 *.cxx
+*.unsuccessfulbuild
 
 # Packages #
 ############
