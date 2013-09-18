@@ -20,7 +20,7 @@ public:
 
 	virtual ~ISpatialObject() {}
 
-	virtual glm::vec2 GetPos() const = 0;
+	virtual const glm::vec3& GetPos() const = 0;
 	virtual glm::vec2 GetDir() const = 0;
 	virtual float GetSpeed() const = 0;
 
