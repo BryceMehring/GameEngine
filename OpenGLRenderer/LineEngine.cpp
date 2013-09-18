@@ -6,13 +6,6 @@
 LineEngine::LineEngine(ResourceManager* pRM, unsigned int maxLength, Camera* pCam)
 	: m_iMaxLength(maxLength), m_iCurrentLength(0), m_pCamera(pCam), m_pRM(pRM)
 {
-	// check to make sure that the line shader is loaded
-	IResource* pResource = m_pRM->GetResource("lineShader");
-	if(pResource == nullptr || (pResource->GetType() != ResourceType::Shader))
-	{
-		throw std::string("Error: Line Shader is not loaded");
-	}
-
 	CreateVertexBuffer();
 
 	// Get the range of widths supported by the hardware

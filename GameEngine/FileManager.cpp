@@ -5,14 +5,26 @@
 
 using namespace std;
 
+FileManager::FileManager()
+{
+	m_timer.Start();
+
+	m_file.open("GameLog.txt");
+	unsigned int counter = 2;
+	while(!m_file.is_open())
+	{
+		std::stringstream stream;
+		stream << counter++;
+
+		m_file.open("GameLog_" + stream.str() + ".txt");
+	}
+}
+
 FileManager::~FileManager()
 {
-	fstream out("log.txt",ios::out);
-
-	if(out.is_open())
+	if(m_file.is_open())
 	{
-		out << m_buffer.str() << endl;
-		out.close();
+		m_file.close();
 	}
 }
 
