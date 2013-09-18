@@ -1,5 +1,4 @@
 #include "GameStateScript.h"
-#include "RTTI.h"
 #include "Game.h"
 #include "FileManager.h"
 
@@ -18,7 +17,7 @@ void GameStateScript::Exec(Game& game, const std::string& file)
 
 std::string GameStateScript::GetPathName(const std::string& file) const
 {
-	return ("..//Scripts/" + (this->GetType()->GetName()) + '/' + file);
+    return (std::string("..//Scripts/") + (this->GetName()) + '/' + file);
 }
 
 void GameStateScript::Init(Game& game)
