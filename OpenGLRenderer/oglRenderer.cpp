@@ -19,9 +19,9 @@ void oglRenderer::MonitorCallback(GLFWmonitor* monitor, int state)
 	s_pThis->EnumerateDisplayAdaptors();
 }
 
-oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nullptr),
+oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pOrthoCamera(nullptr), m_pWindow(nullptr), m_pFonts(nullptr),
 	m_pLines(nullptr), m_pSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
-	m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_bFullscreen(false)
+	m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::World), m_bFullscreen(false)
 {
 	s_pThis = this;
 
@@ -30,9 +30,18 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pWindow(nullptr), m_pFonts(nu
 	ConfigureOpenGL();
 	EnableVSync(true);
 
-	m_pFonts.reset(new FontEngine(&m_rm,1024*8,m_pCamera));
-	m_pLines.reset(new LineEngine(&m_rm,1024*8,m_pCamera));
-	m_pSprites.reset(new SpriteEngine(&m_rm,1024*20,m_pCamera));
+	m_pOrthoCamera = CreateCamera();
+
+	// build camera, move this code elsewhere
+	int width, height;
+	glfwGetFramebufferSize(m_pWindow,&width,&height);
+	m_pOrthoCamera->setLens(width,height,0.1f,5000.0f);
+	m_pOrthoCamera->lookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_pOrthoCamera->update();
+
+	m_pFonts.reset(new FontEngine(&m_rm,1024*8,m_pCamera,m_pOrthoCamera));
+	m_pLines.reset(new LineEngine(&m_rm,1024*8,m_pCamera,m_pOrthoCamera));
+	m_pSprites.reset(new SpriteEngine(&m_rm,1024*20,m_pCamera,m_pOrthoCamera));
 
 }
 
@@ -40,6 +49,7 @@ oglRenderer::~oglRenderer()
 {
 	SaveDisplayList();
 	ReleaseCamera(m_pCamera);
+	ReleaseCamera(m_pOrthoCamera);
 	glfwDestroyWindow(m_pWindow);
 }
 
@@ -121,7 +131,7 @@ void oglRenderer::ConfigureGLFW()
 	m_pWindow = glfwCreateWindow(iter.first[iter.second - m_iCurrentDisplayMode - 1].width, // width
 											iter.first[iter.second - m_iCurrentDisplayMode - 1].height, // height
 											"", // window title
-											m_pMonitors[m_iCurrentMonitor], // monitor to display on
+											NULL, // monitor to display on
 											NULL); // not used
 	assert(m_pWindow != nullptr);
 
@@ -259,15 +269,19 @@ IResourceManager& oglRenderer::GetResourceManager()
 	return m_rm;
 }
 
+void oglRenderer::SetRenderSpace(RenderSpace space)
+{
+	m_renderSpace = space;
+}
+
 void oglRenderer::GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const
 {
 	m_pFonts->GetStringRec(str,scale,out);
 }
 
-
 void oglRenderer::DrawString(const char* str, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, const char* font, FontAlignment options)
 {
-	m_pFonts->DrawString(str,font,pos,scale,color,options);
+	m_pFonts->DrawString(str,font,pos,scale,color,options,m_renderSpace);
 }
 
 void oglRenderer::GetLineWidthRange(glm::vec2& out) const
@@ -277,12 +291,12 @@ void oglRenderer::GetLineWidthRange(glm::vec2& out) const
 
 void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float fWidth, const glm::vec4& color, const glm::mat4& T)
 {
-	m_pLines->DrawLine(pArray,length,fWidth,color,T);
+	m_pLines->DrawLine(pArray,length,fWidth,color,T,m_renderSpace);
 }
 
 void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec3& color, const glm::vec2& tiling, unsigned int iCellId, const std::string& tech)
 {
-	m_pSprites->DrawSprite(tech,texture,transformation,color,tiling,iCellId);
+	m_pSprites->DrawSprite(tech,texture,transformation,color,tiling,iCellId,m_renderSpace);
 }
 
 bool oglRenderer::CheckShader(const std::string& shader, const string& location,  GLuint& shaderID, GLuint& outLocation) const

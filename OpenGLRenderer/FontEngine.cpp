@@ -5,9 +5,12 @@
 
 #include <stddef.h>
 
-FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam) :
-	m_pRm(pRm), m_pCamera(pCam), m_iMaxLength(2*maxLength)
+FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam, Camera* pOrthoCam) :
+	m_pRm(pRm), m_iMaxLength(2*maxLength)
 {
+	m_pCamera[0] = pCam;
+	m_pCamera[1] = pOrthoCam;
+
 	OnReset();
 }
 
@@ -65,7 +68,7 @@ void FontEngine::GetStringRec(const Charset* font,const char* str, const glm::ve
 
 }
 
-void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, FontAlignment options)
+void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, FontAlignment options,	RenderSpace space)
 {
 	if(str == nullptr)
 		return;
@@ -73,9 +76,17 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& 
 	if(font == nullptr)
 		font = "font";
 
-	m_textSubsets[font].push_back(DrawTextInfo(str,pos,scale,color,options));
+	if(space == RenderSpace::Screen)
+	{
+		m_textSubsets[1][font].push_back(DrawTextInfo(str,pos,scale,color,options));
+	}
+	else
+	{
+		m_textSubsets[0][font].push_back(DrawTextInfo(str,pos,scale,color,options));
+	}
 
 }
+
 
 void FontEngine::OnReset()
 {
@@ -100,7 +111,7 @@ void FontEngine::CreateVertexBuffer()
 
 void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 {
-	output.resize(m_textSubsets.size());
+	output.resize(m_textSubsets[0].size() + m_textSubsets[1].size());
 
 	// bind the vertex buffer that we are going to write to
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
@@ -110,102 +121,107 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 
 	unsigned int iCurrentVert = 0;
 	unsigned int iSubsetIndex = 0;
-	// Loop over all texture subsets and write them to the vertex buffer
-	for(auto iter = m_textSubsets.begin(); iter != m_textSubsets.end(); ++iter)
+
+	// loop over all render spaces
+	for(unsigned int i = 0; i < 2; ++i)
 	{
-		unsigned int iSubsetLength = 0;
-
-		// Loop over all fonts with the current texture
-		for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
+		// Loop over all texture subsets and write them to the vertex buffer
+		for(auto iter = m_textSubsets[i].begin(); iter != m_textSubsets[i].end(); ++iter)
 		{
-			// Get the current font
-			const Charset* font = static_cast<const Charset*>(m_pRm->GetResource(iter->first));
-			const char* str = subIter->text.c_str();
+			unsigned int iSubsetLength = 0;
 
-			// If the text needs to be aligned to center or right
-			if(subIter->options != FontAlignment::Left)
+			// Loop over all fonts with the current texture
+			for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
 			{
-				Math::FRECT drawRec;
-				GetStringRec(font,str,subIter->scale,drawRec);
+				// Get the current font
+				const Charset* font = static_cast<const Charset*>(m_pRm->GetResource(iter->first));
+				const char* str = subIter->text.c_str();
 
-				float fHalfWidth = (drawRec.Width() / 2.0f);
-
-				subIter->pos.x -= fHalfWidth;
-
-				if (subIter->options == FontAlignment::Right)
+				// If the text needs to be aligned to center or right
+				if(subIter->options != FontAlignment::Left)
 				{
+					Math::FRECT drawRec;
+					GetStringRec(font,str,subIter->scale,drawRec);
+
+					float fHalfWidth = (drawRec.Width() / 2.0f);
+
 					subIter->pos.x -= fHalfWidth;
-				}
-			}
-			else
-			{
-				// left, do nothing
-			}
 
-			// World pos of aligned text to be rendered
-			glm::vec3 posW(subIter->pos); // World pos of where the text will be drawn
-
-			// Loop over the entire string and write to the vertex buffer
-			while((iCurrentVert < m_iMaxLength) && *str)
-			{
-				char character = *str++; // character to draw
-
-				if(character != ' ' && character != '\n' && character != '\t')
-				{
-					int index = iCurrentVert * 4;
-
-					const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)character]; // font info about the character to draw
-
-					float fAdvance = (subIter->scale.x * charInfo.Width / (float)font->GetWidth()); // How much we will advance from the current character
-
-					// calc tex coords
-					glm::vec2 topLeft((charInfo.x / (float)font->GetWidth()),charInfo.y / (float)font->GetHeight());
-					glm::vec2 bottomRight(((charInfo.x+charInfo.Width) / (float)font->GetWidth()),(charInfo.y+charInfo.Height) / (float)font->GetHeight());
-
-					v[index].pos = glm::vec3(posW.x,0.5f * subIter->scale.y + posW.y,posW.z);
-					v[index].uv = topLeft;
-					v[index].color = subIter->color;
-
-					v[index + 1].pos = glm::vec3(posW.x,-0.5f * subIter->scale.y + posW.y,posW.z);
-					v[index + 1].uv = glm::vec2(topLeft.x,bottomRight.y);
-					v[index + 1].color = subIter->color;
-
-					v[index + 2].pos = glm::vec3(fAdvance * subIter->scale.x,0.5f * subIter->scale.y,0.0f) + posW;
-					v[index + 2].uv = glm::vec2(bottomRight.x,topLeft.y);
-					v[index + 2].color = subIter->color;
-
-					v[index + 3].pos = glm::vec3(fAdvance * subIter->scale.x,-0.5f * subIter->scale.y,0.0f) + posW;
-					v[index + 3].uv = bottomRight;
-					v[index + 3].color = subIter->color;
-
-					posW.x += fAdvance * subIter->scale.x + 0.5f;
-
-					++iCurrentVert;
-					++iSubsetLength;
+					if (subIter->options == FontAlignment::Right)
+					{
+						subIter->pos.x -= fHalfWidth;
+					}
 				}
 				else
 				{
-					float fAdvance = 0.2f; // How much we will advance from the current character
+					// left, do nothing
+				}
 
-					if(character == '\n')
+				// World pos of aligned text to be rendered
+				glm::vec3 posW(subIter->pos); // World pos of where the text will be drawn
+
+				// Loop over the entire string and write to the vertex buffer
+				while((iCurrentVert < m_iMaxLength) && *str)
+				{
+					char character = *str++; // character to draw
+
+					if(character != ' ' && character != '\n' && character != '\t')
 					{
-						posW.x = subIter->pos.x;
-						posW.y -= 1.2f*subIter->scale.y;
+						int index = iCurrentVert * 4;
+
+						const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)character]; // font info about the character to draw
+
+						float fAdvance = (subIter->scale.x * charInfo.Width / (float)font->GetWidth()); // How much we will advance from the current character
+
+						// calc tex coords
+						glm::vec2 topLeft((charInfo.x / (float)font->GetWidth()),charInfo.y / (float)font->GetHeight());
+						glm::vec2 bottomRight(((charInfo.x+charInfo.Width) / (float)font->GetWidth()),(charInfo.y+charInfo.Height) / (float)font->GetHeight());
+
+						v[index].pos = glm::vec3(posW.x,0.5f * subIter->scale.y + posW.y,posW.z);
+						v[index].uv = topLeft;
+						v[index].color = subIter->color;
+
+						v[index + 1].pos = glm::vec3(posW.x,-0.5f * subIter->scale.y + posW.y,posW.z);
+						v[index + 1].uv = glm::vec2(topLeft.x,bottomRight.y);
+						v[index + 1].color = subIter->color;
+
+						v[index + 2].pos = glm::vec3(fAdvance * subIter->scale.x,0.5f * subIter->scale.y,0.0f) + posW;
+						v[index + 2].uv = glm::vec2(bottomRight.x,topLeft.y);
+						v[index + 2].color = subIter->color;
+
+						v[index + 3].pos = glm::vec3(fAdvance * subIter->scale.x,-0.5f * subIter->scale.y,0.0f) + posW;
+						v[index + 3].uv = bottomRight;
+						v[index + 3].color = subIter->color;
+
+						posW.x += fAdvance * subIter->scale.x + 0.5f;
+
+						++iCurrentVert;
+						++iSubsetLength;
 					}
 					else
 					{
-						if(character == '\t')
-						{
-							fAdvance *= 4.0f;
-						}
+						float fAdvance = 0.2f; // How much we will advance from the current character
 
-						posW.x += fAdvance * subIter->scale.x + 0.5f;
+						if(character == '\n')
+						{
+							posW.x = subIter->pos.x;
+							posW.y -= 1.2f*subIter->scale.y;
+						}
+						else
+						{
+							if(character == '\t')
+							{
+								fAdvance *= 4.0f;
+							}
+
+							posW.x += fAdvance * subIter->scale.x + 0.5f;
+						}
 					}
 				}
 			}
-		}
 
-		output[iSubsetIndex++] = iSubsetLength;
+			output[iSubsetIndex++] = iSubsetLength;
+		}
 	}
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -214,7 +230,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 void FontEngine::Render()
 {
 	// if there is nothing to draw, do nothing
-	if(m_textSubsets.empty())
+	if(m_textSubsets[0].empty() && m_textSubsets[1].empty())
 		return;
 
 	std::vector<unsigned int> numChar;
@@ -228,16 +244,13 @@ void FontEngine::Render()
 	// use the shader
 	glUseProgram(pShader->GetID());
 
-	// set shader parameters
-	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
-
 	GLuint vertexPosition_modelspaceID = glGetAttribLocation(pShader->GetID(), "vertexPosition_modelspace");
 	GLuint vertexUV = glGetAttribLocation(pShader->GetID(), "vertexUV");
 	GLuint vertexColor = glGetAttribLocation(pShader->GetID(), "vertexColor");
 
 	// Create our vertex structure in OpenGL
-	glEnableVertexAttribArray(0);
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
+	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
 				vertexPosition_modelspaceID,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
 				3,                  // size
@@ -277,20 +290,27 @@ void FontEngine::Render()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	unsigned int uiStartingIndex = 0;
-	unsigned int i = 0;
-	for(auto iter = m_textSubsets.begin(); iter != m_textSubsets.end(); ++iter, ++i)
+	// loop over all render spaces
+	for(unsigned int n = 0; n < 2; ++n)
 	{
-		const IResource* pCurrentTexture = m_pRm->GetResource(iter->first);
+		// set shader parameters
+		glUniformMatrix4fv(pShader->GetMVP(),1,false,&(m_pCamera[n]->viewProj()[0][0]));
 
-		// Set the texture to use
+		unsigned int uiStartingIndex = 0;
+		unsigned int i = 0;
+		for(auto iter = m_textSubsets[n].begin(); iter != m_textSubsets[n].end(); ++iter, ++i)
+		{
+			const IResource* pCurrentTexture = m_pRm->GetResource(iter->first);
 
-		glBindTexture(GL_TEXTURE_2D, pCurrentTexture->GetID());
-		glUniform1i(pShader->GetTextureSamplerID(),0);
+			// Set the texture to use
 
-		glDrawElements(GL_TRIANGLES, numChar[i] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
+			glBindTexture(GL_TEXTURE_2D, pCurrentTexture->GetID());
+			glUniform1i(pShader->GetTextureSamplerID(),0);
 
-		uiStartingIndex += numChar[i];
+			glDrawElements(GL_TRIANGLES, numChar[i] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
+
+			uiStartingIndex += numChar[i];
+		}
 	}
 
 	glDisable(GL_BLEND);
@@ -299,6 +319,7 @@ void FontEngine::Render()
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 
-	m_textSubsets.clear();
+	m_textSubsets[0].clear();
+	m_textSubsets[1].clear();
 }
 

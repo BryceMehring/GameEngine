@@ -17,7 +17,7 @@ void ButtonBase::Update(::IKMInput& input)
 {
 	// todo: I could optimize this by checking first if the mouse is moving
 	// then move on to check if the mouse is colliding with the button
-	if(m_sprite.IsPointWithin(input.GetTransformedMousePos()))
+	if(m_sprite.IsPointWithin(input.GetCursorPos()))
 	{
 		m_bMouseHover = true;
 	}

@@ -1,6 +1,7 @@
 #ifndef _SPRITEMANAGER_
 #define _SPRITEMANAGER_
 
+#include "IRenderer.h"
 #include "ResourceManager.h"
 #include "Camera.h"
 
@@ -40,7 +41,7 @@ class SpriteEngine
 {
 public:
 
-	SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam);
+	SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam, Camera* pOrthoCam);
 	~SpriteEngine();
 
 	void DrawSprite(const std::string& tech,
@@ -48,21 +49,22 @@ public:
 					const glm::mat4& transformation,
 					const glm::vec3& color,
 					const glm::vec2& tiling,
-					unsigned int iCellId
+					unsigned int iCellId,
+					RenderSpace space
 					);
 
 	void Render();
 
 	void OnReset();
 
-	void SetCamera(Camera* pCam) { m_pCamera = pCam; }
+	void SetCamera(Camera* pCam) { m_pCamera[0] = pCam; }
 
 private:
 
 
 	ResourceManager* m_pRM;
 
-	Camera* m_pCamera;
+	Camera* m_pCamera[2];
 
 	unsigned int m_uiVertexBuffer;
 	unsigned int m_uiIndexBuffer;
@@ -70,7 +72,7 @@ private:
 	unsigned int m_iCurrentLength;
 	const unsigned int m_iMaxLength;
 
-	std::map<int,Layer> m_spriteLayers;
+	std::map<int,Layer> m_spriteLayers[2];
 
 	void CreateIndexBuffer();
 	void CreateVertexBuffer();

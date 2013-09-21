@@ -14,6 +14,12 @@ enum class FontAlignment
 	Right
 };
 
+enum class RenderSpace
+{
+	World,
+	Screen
+};
+
 // Renderer plugin interface
 class IRenderer : public IPlugin
 {
@@ -54,6 +60,7 @@ public:
 	virtual void SetCamera(class Camera*) = 0; // Sets the camera to use
 	virtual void SetClearColor(const glm::vec3& color) = 0; // Color of the screen after it gets cleared
 	virtual void SetDisplayMode(int mode) = 0; // sets the display mode
+	virtual void SetRenderSpace(RenderSpace) = 0; // Sets the coordinate system to render all objects in(screen space or world space)
 	virtual bool SetShaderValue(const std::string& shader, const std::string& location, float value ) = 0;
 	virtual bool SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value ) = 0;
 

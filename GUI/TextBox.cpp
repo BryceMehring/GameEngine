@@ -102,7 +102,7 @@ void TextBox::UpdateScrolling(IKMInput& input, double dt)
 {
 	if(input.MouseClick(0,false))
 	{
-		m_pos.y = input.GetTransformedMousePos().y;
+		m_pos.y = input.GetCursorPos().y;
 	}
 }
 

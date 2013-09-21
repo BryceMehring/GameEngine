@@ -30,26 +30,26 @@ class FontEngine
 {
 public:
 
-	FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam);
+	FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam, Camera* pOrthoCam);
 	~FontEngine();
 
 	void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;
 
-	void DrawString(const char* str, const char* font, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, FontAlignment options);
+	void DrawString(const char* str, const char* font, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, FontAlignment options, RenderSpace space);
 
 	void Render();
 
 	void OnReset();
 
-	void SetCamera(Camera* pCam) { m_pCamera = pCam; }
+	void SetCamera(Camera* pCam) { m_pCamera[0] = pCam; }
 
 private:
 
 	ResourceManager* m_pRm;
-	Camera* m_pCamera;
+	Camera* m_pCamera[2];
 	unsigned int m_iMaxLength;
 
-	std::map<std::string,std::vector<DrawTextInfo> > m_textSubsets; // the key is the texture for the vector of DrawTextInfo
+	std::map<std::string,std::vector<DrawTextInfo>> m_textSubsets[2]; // the key is the texture for the vector of DrawTextInfo
 	unsigned int m_uiVertexBuffer;
 	unsigned int m_uiIndexBuffer;
 

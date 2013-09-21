@@ -2,10 +2,12 @@
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
 
-
-LineEngine::LineEngine(ResourceManager* pRM, unsigned int maxLength, Camera* pCam)
-	: m_iMaxLength(maxLength), m_iCurrentLength(0), m_pCamera(pCam), m_pRM(pRM)
+LineEngine::LineEngine(ResourceManager* pRM, unsigned int maxLength, Camera* pCam, Camera* pOrthoCam)
+	: m_iMaxLength(maxLength), m_iCurrentLength(0), m_pRM(pRM)
 {
+	m_pCamera[0] = pCam;
+	m_pCamera[1] = pOrthoCam;
+
 	CreateVertexBuffer();
 
 	// Get the range of widths supported by the hardware
@@ -29,7 +31,7 @@ void LineEngine::GetLineWidthRange(glm::vec2& out) const
 	out.y = m_fMaxWidth[1];
 }
 
-void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T)
+void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T, RenderSpace space)
 {
 	unsigned int uiNewLength = m_iCurrentLength + uiLength;
 	if(uiNewLength >= this->m_iMaxLength)
@@ -51,6 +53,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 	LineSubset subset;
 	subset.fWidth = glm::clamp(fWidth,m_fMaxWidth[0],m_fMaxWidth[1]);
 	subset.uiLength = uiLength;
+	subset.space = space;
 
 	m_LineSubsets.push_back(subset);
 	m_iCurrentLength = uiNewLength;
@@ -74,9 +77,6 @@ void LineEngine::Render()
 
 	glUseProgram(pShader->GetID());
 
-	// set shader parameters
-	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
-
 	glEnableVertexAttribArray(0);
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 	glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(LineVertex),(void*)0);
@@ -85,9 +85,12 @@ void LineEngine::Render()
 	glVertexAttribPointer(vertexColorID,4,GL_FLOAT,GL_FALSE,sizeof(LineVertex),(void*)sizeof(glm::vec3));
 
 	unsigned int uiStartingIndex = 0;
+
 	for(unsigned int j = 0; j < m_LineSubsets.size(); ++j)
 	{
 		glLineWidth(m_LineSubsets[j].fWidth);
+		glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera[(int)m_LineSubsets[j].space]->viewProj()[0][0]);
+
 		glDrawArrays( GL_LINE_STRIP,uiStartingIndex,m_LineSubsets[j].uiLength);
 
 		uiStartingIndex += m_LineSubsets[j].uiLength;

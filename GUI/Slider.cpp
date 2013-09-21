@@ -39,7 +39,7 @@ void Slider::Update(IKMInput& input, double dt)
 	if(input.MouseClick(0))
 	{
 		Math::FRECT R(m_end.x - m_start.x,8.0f,(m_end + m_start) / 2.0f);
-		if(R.IsPointWithin(input.GetTransformedMousePos()))
+		if(R.IsPointWithin(input.GetCursorPos()))
 		{
 			m_bUpdateEnable = true;
 		}
@@ -51,7 +51,7 @@ void Slider::Update(IKMInput& input, double dt)
 
 	if(m_bUpdateEnable)
 	{
-		const glm::vec2& mousePos = input.GetTransformedMousePos();
+		const glm::vec2& mousePos = input.GetCursorPos();
 		
 		// Move the slider to the mouse pos
 		m_pos.x = glm::clamp(mousePos.x,m_start.x,m_end.x);

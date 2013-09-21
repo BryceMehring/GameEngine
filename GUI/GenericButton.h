@@ -39,7 +39,7 @@ public:
 
 		if(input.MouseClick(0))
 		{
-			const glm::vec2& pos = input.GetTransformedMousePos();
+			const glm::vec2& pos = input.GetCursorPos();
 
 			if(m_sprite.IsPointWithin(pos))
 			{
@@ -87,7 +87,7 @@ public:
 
 		if(input.MouseRelease(0))
 		{
-			const glm::vec2& pos = input.GetTransformedMousePos();
+			const glm::vec2& pos = input.GetCursorPos();
 
 			if(m_sprite.IsPointWithin(pos))
 			{
@@ -131,7 +131,7 @@ public:
 
 		if(input.MouseClick(0))
 		{
-			const glm::vec2& pos = input.GetTransformedMousePos();
+			const glm::vec2& pos = input.GetCursorPos();
 
 			if(m_sprite.IsPointWithin(pos))
 			{

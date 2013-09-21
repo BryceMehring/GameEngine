@@ -72,6 +72,7 @@ public:
 	virtual void SetCamera(class Camera*); // Sets the camera to use
 	virtual void SetClearColor(const glm::vec3& color); // Color of the screen after it gets cleared
 	virtual void SetDisplayMode(int mode); // sets the display mode
+	virtual void SetRenderSpace(RenderSpace);
 	virtual bool SetShaderValue(const std::string& shader, const std::string& location, float value );
 	virtual bool SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value );
 
@@ -84,6 +85,7 @@ private:
 	static oglRenderer* s_pThis;
 
 	Camera* m_pCamera;
+	Camera* m_pOrthoCamera;
 
 	GLFWwindow* m_pWindow;
 
@@ -99,6 +101,8 @@ private:
 
 	int m_iCurrentMonitor;
 	int m_iCurrentDisplayMode;
+
+	RenderSpace m_renderSpace;
 
 	bool m_bFullscreen;
 
