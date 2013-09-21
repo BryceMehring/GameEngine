@@ -44,8 +44,7 @@ public:
 	virtual bool CharKeyDown(char&) const;
 
 	// Mouse
-	virtual void CursorPos(double& x, double& y) const;
-	virtual const glm::vec2& GetTransformedMousePos() const;
+	virtual const glm::vec2& GetCursorPos() const;
 	virtual bool MouseClick(int Button, bool once) const;
 	virtual bool MouseRelease(int Button, bool once) const;
 
@@ -89,7 +88,6 @@ private:
 	// helper methods
 	void Reset();
 	bool CheckKey(int Key, bool once, int flag);
-	void ClampMouse();
 	void CenterMouse();
 	void UpdateMouse(double x, double y);
 	void RegisterScript(class asIScriptEngine*);

@@ -30,13 +30,8 @@ public:
 	virtual bool MouseClick(int Button, bool once = true) const = 0;
 	virtual bool MouseRelease(int Button, bool once = true) const = 0;
 
-	//gets the mouse position
-	virtual void CursorPos(double& x, double& y) const = 0;
-
-	//virtual bool JoyPos(double& x, double& y) const = 0;
-
-	//gets mouse position in world space
-	virtual const glm::vec2& GetTransformedMousePos() const = 0;
+	//gets mouse position
+	virtual const glm::vec2& GetCursorPos() const = 0;
 
 	virtual int MouseX() const = 0; // horizontal
 	virtual int MouseY() const = 0; // vertical

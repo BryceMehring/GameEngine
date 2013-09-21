@@ -188,36 +188,8 @@ void Input::UpdateMouse(double x, double y)
 	m_tpos += m_fMouseSensistivity * glm::vec2(m_iMouseX / (float)width ,m_iMouseY / (float)height);
 
 	CenterMouse();
-	ClampMouse();
 }
-
-void Input::ClampMouse()
-{
-	if(m_tpos.x < -100.0f)
-	{
-		m_tpos.x = -100.0f;
-	}
-	else if(m_tpos.x > 100.0f)
-	{
-		m_tpos.x = 100.0f;
-	}
-
-	if(m_tpos.y < -100.0f)
-	{
-		m_tpos.y = -100.0f;
-	}
-	else if(m_tpos.y > 100.0f)
-	{
-		m_tpos.y = 100.0f;
-	}
-}
-
-void Input::CursorPos(double& x, double& y) const
-{
-	glfwGetCursorPos(glfwGetCurrentContext(),&x,&y);
-}
-
-const glm::vec2& Input::GetTransformedMousePos() const
+const glm::vec2& Input::GetCursorPos() const
 {
 	return m_tpos;
 }
