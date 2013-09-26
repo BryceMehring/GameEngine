@@ -91,29 +91,21 @@ void SpriteEngine::FillVertexBuffer()
 						pVert[0].tex = topLeft;
 						pVert[0].color = sprites[i].color;
 						pVert[0].tiling = sprites[i].tiling;
-						//pVert[0].dy = sprites[i].dy;
-
 
 						pVert[1].pos = (sprites[i].T * glm::vec4(-0.5f,-0.5f,0.0,1.0f)).xyz();
 						pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y);
 						pVert[1].color = sprites[i].color;
 						pVert[1].tiling = sprites[i].tiling;
-						//pVert[1].dx = sprites[i].dx;
-						//pVert[1].dy = sprites[i].dx;
 
 						pVert[2].pos = (sprites[i].T * glm::vec4(0.5f,0.5f,0.0,1.0f)).xyz();
 						pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y);
 						pVert[2].color = sprites[i].color;
 						pVert[2].tiling = sprites[i].tiling;
-						//pVert[2].dx = sprites[i].dx;
-						//pVert[2].dy = sprites[i].dx;
 
 						pVert[3].pos = (sprites[i].T * glm::vec4(0.5f,-0.5f,0.0,1.0f)).xyz();
 						pVert[3].tex = bottomRight;
 						pVert[3].color = sprites[i].color;
 						pVert[3].tiling = sprites[i].tiling;
-						// pVert[3].dx = sprites[i].dx;
-						// pVert[3].dy = sprites[i].dy;
 
 						pVert += 4;
 					}
@@ -178,41 +170,10 @@ void SpriteEngine::Render()
 
 				glUseProgram(pShader->GetID());
 
-				glVertexAttribPointer(
-							vertexPosition_modelspaceID, // attribute 0. No particular reason for 0, but must match the layout in the shader.
-							3,                  // size
-							GL_FLOAT,           // type
-							GL_FALSE,           // normalized?
-							sizeof(SpriteVertex),  // stride
-							(void*)0            // array buffer offset
-							);
-
-				glVertexAttribPointer(
-							vertexUV,					// attribute 1
-							2,                  // size
-							GL_FLOAT,           // type
-							GL_FALSE,           // normalized?
-							sizeof(SpriteVertex),  // stride
-							(void*)sizeof(glm::vec3) // array buffer offset
-							);
-
-				glVertexAttribPointer(
-							vertexColor,					// attribute 2
-							3,                  // size
-							GL_FLOAT,           // type
-							GL_FALSE,           // normalized?
-							sizeof(SpriteVertex),  // stride
-							(void*)offsetof(struct SpriteVertex, color) // array buffer offset
-							);
-
-				glVertexAttribPointer(
-							vertexTiling,					// attribute 3
-							2,                  // size
-							GL_FLOAT,           // type
-							GL_FALSE,           // normalized?
-							sizeof(SpriteVertex),  // stride
-							(void*)offsetof(struct SpriteVertex, tiling) // array buffer offset
-							);
+				glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)0);
+				glVertexAttribPointer(vertexUV,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)sizeof(glm::vec3));
+				glVertexAttribPointer(vertexColor,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)offsetof(SpriteVertex, color));
+				glVertexAttribPointer(vertexTiling,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)offsetof(SpriteVertex, tiling));
 
 				// set shader parameters
 				glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera[n]->viewProj()[0][0]);
