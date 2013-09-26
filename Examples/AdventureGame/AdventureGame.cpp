@@ -8,8 +8,6 @@
 #include <GLFW/glfw3.h>
 #include <sstream>
 
-RTTI_IMPL(AdventureGame);
-
 extern "C" PLUGINDECL IPlugin* CreatePlugin()
 {
 	return new AdventureGame();
@@ -116,11 +114,11 @@ void Player::Render(IRenderer& renderer)
 	glm::mat4 T = glm::translate(m_pos.x,m_pos.y,0.0f);
 	T = glm::scale(T,6.0f,12.0f,1.0f);
 
-	renderer.DrawSprite("robot",T,glm::vec2(1.0f),m_iCell);
-	renderer.DrawString("HealthBar",glm::vec2(0.0f,0.0f),glm::vec2(15.0f),glm::vec3(0.0f,0.0f,0.0f));
+	renderer.DrawSprite("robot",T,glm::vec3(1.0f),glm::vec2(1.0f),m_iCell);
+	renderer.DrawString("HealthBar",glm::vec3(0.0f),glm::vec2(15.0f),glm::vec3(0.0f));
 
 	m_pCamera->lookAt(glm::vec3(m_pos,1.0f),glm::vec3(m_pos,0.0f),glm::vec3(0.0f,1.0f,0.0f));
-	m_pCamera->update(0.0f);
+	m_pCamera->update();
 }
 
 AdventureGame::AdventureGame() : m_pPlayer(nullptr), m_pos(0,0)
@@ -128,21 +126,21 @@ AdventureGame::AdventureGame() : m_pPlayer(nullptr), m_pos(0,0)
 	
 }
 
-void AdventureGame::Init(IGame& game)
+void AdventureGame::Init(Game& game)
 {
 	Camera* pCam = CreateCamera();
 	pCam->setLens(200.0f,200.0f,0.0f,5000.0f);
 	pCam->lookAt(glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,1.0f,0.0f));
-	pCam->update(0.0f);
+	pCam->update();
 
 	m_pPlayer = new Player(pCam);
 	game.GetRenderer().SetCamera(pCam);
 }
-void AdventureGame::Destroy(IGame& game)
+void AdventureGame::Destroy(Game& game)
 {
 	delete m_pPlayer;
 }
-void AdventureGame::Update(IGame& game)
+void AdventureGame::Update(Game& game)
 {
 	Direction dir = m_pPlayer->Update(game.GetInput(),game.GetDt());
 
@@ -164,7 +162,7 @@ void AdventureGame::Update(IGame& game)
 	}
 
 }
-void AdventureGame::Draw(IGame& game)
+void AdventureGame::Draw(Game& game)
 {
 	std::ostringstream stream;
 	stream << "World Pos:("<< m_pos.x<<","<<m_pos.y<<")";
@@ -174,9 +172,9 @@ void AdventureGame::Draw(IGame& game)
 	//renderer.DrawSprite("bush",glm::translate(40.0f,40.0f,0.0f)*glm::scale(5.0f,5.0f,1.0f));
 	glm::mat4 T = glm::translate(0.0f,0.0f,-1.0f);
 	T = glm::scale(T,400.0f,400.0f,0.0f);
-	renderer.DrawSprite("grass",T,glm::vec2(20.0f,20.0f));
+	renderer.DrawSprite("grass",T,glm::vec3(20.0f,20.0f,-10.0f));
 	// game.GetInput().GetTransformedMousePos()
-	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,0.0f),glm::vec2(1.5f),glm::vec3(1.0f),0,FontAlignment::Right);
+	renderer.DrawString(stream.str().c_str(),glm::vec3(0.0f,0.0f,-10.0f),glm::vec2(1.5f),glm::vec3(1.0f),0,FontAlignment::Right);
 	this->m_pPlayer->Render(renderer);
 
 

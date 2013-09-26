@@ -2,7 +2,6 @@
 #define _ADVENTUREGAME_
 
 #include "IGameState.h"
-#include "RTTI.h"
 #include "VecMath.h"
 #include "Camera.h"
 
@@ -36,8 +35,6 @@ class AdventureGame : public IGameState
 {
 public:
 
-	RTTI_DECL;
-
 	AdventureGame();
 
 	virtual DLLType GetPluginType() const { return DLLType::Game; }
@@ -48,10 +45,10 @@ public:
 	virtual void About() const {}
 
 	// IGameState
-	virtual void Init(IGame& game);
-	virtual void Destroy(IGame& game);
-	virtual void Update(IGame& game);
-	virtual void Draw(IGame& game);
+	virtual void Init(Game& game);
+	virtual void Destroy(Game& game);
+	virtual void Update(Game& game);
+	virtual void Draw(Game& game);
 
 	virtual void Init(class asIScriptEngine*) {}
 	virtual void Destroy(class asIScriptEngine*) {}

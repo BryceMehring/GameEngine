@@ -64,18 +64,18 @@ void SpriteEngine::FillVertexBuffer()
 	for(unsigned int c = 0; c < 2; ++c)
 	{
 		// Loop over all of the layers
-		for(auto layerIter = m_spriteLayers[c].begin(); layerIter != m_spriteLayers[c].end(); ++layerIter)
+		for(auto& layerIter : m_spriteLayers[c])
 		{
 			// Loop over all sprites
-			for(auto iter = layerIter->second.sprites.begin(); iter != layerIter->second.sprites.end(); ++iter)
+			for(auto& iter : layerIter.second.sprites)
 			{
-				for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
+				for(auto& subIter : iter.second)
 				{
 					TextureInfo texInfo;
-					m_pRM->GetTextureInfo(subIter->first,texInfo); // todo: this function is not yet implemented
+					m_pRM->GetTextureInfo(subIter.first,texInfo); // todo: this function is not yet implemented
 
 					// get the list of all sprites that use the same tech and texture
-					std::vector<Sprite>& sprites = subIter->second;
+					std::vector<Sprite>& sprites = subIter.second;
 
 					for(unsigned int i = 0; i < sprites.size(); ++i)
 					{
@@ -153,15 +153,15 @@ void SpriteEngine::Render()
 	// loop over all render spaces
 	for(unsigned int n = 0; n < 2; ++n)
 	{
-		// Loop over all the layers
-		for(auto layerIter = m_spriteLayers[n].begin(); layerIter != m_spriteLayers[n].end(); ++layerIter)
+		// Loop over all of the layers
+		for(auto& layerIter : m_spriteLayers[n])
 		{
 			// Loop over all sprites with the same tech
-			for(auto techIter = layerIter->second.sprites.begin(); techIter != layerIter->second.sprites.end(); ++techIter)
+			for(auto& techIter : layerIter.second.sprites)
 			{
 				// Apply the shader tech
 
-				const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter->first));
+				const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter.first));
 
 				GLuint vertexPosition_modelspaceID = glGetAttribLocation(pShader->GetID(), "vertexPosition_modelspace");
 				GLuint vertexUV = glGetAttribLocation(pShader->GetID(), "vertexUV");
@@ -181,21 +181,21 @@ void SpriteEngine::Render()
 				glActiveTexture(GL_TEXTURE0);
 
 				// Render all sprites that use the same tech and texture
-				for(auto spriteIter = techIter->second.begin(); spriteIter != techIter->second.end(); ++spriteIter)
+				for(auto& spriteIter : techIter.second)
 				{
-					const Texture* pTexture = static_cast<const Texture*>(m_pRM->GetResource(spriteIter->first));
+					const Texture* pTexture = static_cast<const Texture*>(m_pRM->GetResource(spriteIter.first));
 
 					glBindTexture(GL_TEXTURE_2D, pTexture->GetID());
 					glUniform1i(pShader->GetTextureSamplerID(),0);
 
 					glDrawElements(
 								GL_TRIANGLES,      // mode
-								spriteIter->second.size() * 6,    // count 4
+								spriteIter.second.size() * 6,    // count 4
 								GL_UNSIGNED_SHORT,   // type
 								(GLvoid*)(uiStartingIndex * 12)  // element array buffer offset 6
 								);
 					// Increment the index to the dynamic buffer for rendering a new batch of sprites
-					uiStartingIndex += spriteIter->second.size();
+					uiStartingIndex += spriteIter.second.size();
 				}
 			}
 		}

@@ -126,30 +126,30 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 	for(unsigned int i = 0; i < 2; ++i)
 	{
 		// Loop over all texture subsets and write them to the vertex buffer
-		for(auto iter = m_textSubsets[i].begin(); iter != m_textSubsets[i].end(); ++iter)
+		for(auto& iter : m_textSubsets[i])
 		{
 			unsigned int iSubsetLength = 0;
 
 			// Loop over all fonts with the current texture
-			for(auto subIter = iter->second.begin(); subIter != iter->second.end(); ++subIter)
+			for(auto& subIter : iter.second)
 			{
 				// Get the current font
-				const Charset* font = static_cast<const Charset*>(m_pRm->GetResource(iter->first));
-				const char* str = subIter->text.c_str();
+				const Charset* font = static_cast<const Charset*>(m_pRm->GetResource(iter.first));
+				const char* str = subIter.text.c_str();
 
 				// If the text needs to be aligned to center or right
-				if(subIter->options != FontAlignment::Left)
+				if(subIter.options != FontAlignment::Left)
 				{
 					Math::FRECT drawRec;
-					GetStringRec(font,str,subIter->scale,drawRec);
+					GetStringRec(font,str,subIter.scale,drawRec);
 
 					float fHalfWidth = (drawRec.Width() / 2.0f);
 
-					subIter->pos.x -= fHalfWidth;
+					subIter.pos.x -= fHalfWidth;
 
-					if (subIter->options == FontAlignment::Right)
+					if (subIter.options == FontAlignment::Right)
 					{
-						subIter->pos.x -= fHalfWidth;
+						subIter.pos.x -= fHalfWidth;
 					}
 				}
 				else
@@ -158,7 +158,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 				}
 
 				// World pos of aligned text to be rendered
-				glm::vec3 posW(subIter->pos); // World pos of where the text will be drawn
+				glm::vec3 posW(subIter.pos); // World pos of where the text will be drawn
 
 				// Loop over the entire string and write to the vertex buffer
 				while((iCurrentVert < m_iMaxLength) && *str)
@@ -171,29 +171,29 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 
 						const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)character]; // font info about the character to draw
 
-						float fAdvance = (subIter->scale.x * charInfo.Width / (float)font->GetWidth()); // How much we will advance from the current character
+						float fAdvance = (subIter.scale.x * charInfo.Width / (float)font->GetWidth()); // How much we will advance from the current character
 
 						// calc tex coords
 						glm::vec2 topLeft((charInfo.x / (float)font->GetWidth()),charInfo.y / (float)font->GetHeight());
 						glm::vec2 bottomRight(((charInfo.x+charInfo.Width) / (float)font->GetWidth()),(charInfo.y+charInfo.Height) / (float)font->GetHeight());
 
-						v[index].pos = glm::vec3(posW.x,0.5f * subIter->scale.y + posW.y,posW.z);
+						v[index].pos = glm::vec3(posW.x,0.5f * subIter.scale.y + posW.y,posW.z);
 						v[index].uv = topLeft;
-						v[index].color = subIter->color;
+						v[index].color = subIter.color;
 
-						v[index + 1].pos = glm::vec3(posW.x,-0.5f * subIter->scale.y + posW.y,posW.z);
+						v[index + 1].pos = glm::vec3(posW.x,-0.5f * subIter.scale.y + posW.y,posW.z);
 						v[index + 1].uv = glm::vec2(topLeft.x,bottomRight.y);
-						v[index + 1].color = subIter->color;
+						v[index + 1].color = subIter.color;
 
-						v[index + 2].pos = glm::vec3(fAdvance * subIter->scale.x,0.5f * subIter->scale.y,0.0f) + posW;
+						v[index + 2].pos = glm::vec3(fAdvance * subIter.scale.x,0.5f * subIter.scale.y,0.0f) + posW;
 						v[index + 2].uv = glm::vec2(bottomRight.x,topLeft.y);
-						v[index + 2].color = subIter->color;
+						v[index + 2].color = subIter.color;
 
-						v[index + 3].pos = glm::vec3(fAdvance * subIter->scale.x,-0.5f * subIter->scale.y,0.0f) + posW;
+						v[index + 3].pos = glm::vec3(fAdvance * subIter.scale.x,-0.5f * subIter.scale.y,0.0f) + posW;
 						v[index + 3].uv = bottomRight;
-						v[index + 3].color = subIter->color;
+						v[index + 3].color = subIter.color;
 
-						posW.x += fAdvance * subIter->scale.x + 0.5f;
+						posW.x += fAdvance * subIter.scale.x + 0.5f;
 
 						++iCurrentVert;
 						++iSubsetLength;
@@ -204,8 +204,8 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 
 						if(character == '\n')
 						{
-							posW.x = subIter->pos.x;
-							posW.y -= 1.2f*subIter->scale.y;
+							posW.x = subIter.pos.x;
+							posW.y -= 1.2f*subIter.scale.y;
 						}
 						else
 						{
@@ -214,7 +214,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 								fAdvance *= 4.0f;
 							}
 
-							posW.x += fAdvance * subIter->scale.x + 0.5f;
+							posW.x += fAdvance * subIter.scale.x + 0.5f;
 						}
 					}
 				}
@@ -298,9 +298,9 @@ void FontEngine::Render()
 
 		unsigned int uiStartingIndex = 0;
 		unsigned int i = 0;
-		for(auto iter = m_textSubsets[n].begin(); iter != m_textSubsets[n].end(); ++iter, ++i)
+		for(auto& iter : m_textSubsets[n])
 		{
-			const IResource* pCurrentTexture = m_pRm->GetResource(iter->first);
+			const IResource* pCurrentTexture = m_pRm->GetResource(iter.first);
 
 			// Set the texture to use
 
