@@ -4,7 +4,7 @@
 #include "IResourceManager.h"
 #include <GL/glew.h>
 #include <map>
-#include <vector>
+#include <array>
 
 enum class ResourceType
 {
@@ -138,7 +138,10 @@ struct CharDescriptor
 class Charset : public Texture
 {
 public:
-	Charset(GLuint i, int tw, int th, int sw, int sh) : Texture(i,tw,th,sw,sh), m_Chars(256)
+
+	typedef std::array<CharDescriptor,256> FontArray;
+
+	Charset(GLuint i, int tw, int th, int sw = 1, int sh = 1) : Texture(i,tw,th,sw,sh)
 	{
 	}
 
@@ -147,7 +150,7 @@ public:
 	unsigned int GetLineHeight() const { return m_LineHeight; }
 	unsigned int GetBase() const { return m_Base; }
 	unsigned int GetPages() const { return m_Pages; }
-	const std::vector<CharDescriptor>& GetCharDescriptor() const { return m_Chars; }
+	const FontArray& GetCharDescriptor() const { return m_Chars; }
 
 	friend std::istream& operator >>(std::istream& stream, Charset& CharsetDesc);
 
@@ -160,7 +163,7 @@ private:
 	unsigned short m_LineHeight;
 	unsigned short m_Base;
 	unsigned short m_Pages;
-	std::vector<CharDescriptor> m_Chars;
+	FontArray m_Chars;
 
 	friend class ResourceManager;
 };
@@ -178,6 +181,8 @@ public:
 	bool LoadTexture(const std::string& id, const std::string& file) override;
 
 	bool LoadAnimation(const std::string& id, const std::string& file) override;
+
+	bool LoadFont(const std::string& id, const std::string& file) override;
 
 	bool LoadShader(const std::string& id, const std::string& vert, const std::string& frag) override;
 
