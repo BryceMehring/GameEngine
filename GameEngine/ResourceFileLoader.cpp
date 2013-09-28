@@ -1,19 +1,12 @@
 #include "ResourceFileLoader.h"
 #include "Game.h"
-
-#include <fstream>
-#include <sstream>
+#include "FileManager.h"
 
 void LoadResourceFile(const std::string& file, Game& game)
 {
-	std::ifstream in(file);
-
-	assert(in.is_open());
-
 	IResourceManager& gfxResourceManager = game.GetRenderer().GetResourceManager();
 
-	std::string line;
-	while(std::getline(in,line))
+	bool success = FileManager::Instance().ProccessFileByLine(file.c_str(),[&](const std::string& line) -> void
 	{
 		std::stringstream stream(line);
 
@@ -33,6 +26,10 @@ void LoadResourceFile(const std::string& file, Game& game)
 			{
 				bSuccess = gfxResourceManager.LoadTexture(id,fileName);
 			}
+			else if(type == "font")
+			{
+				bSuccess = gfxResourceManager.LoadFont(id,fileName);
+			}
 			else if(type == "shader")
 			{
 				std::string frag;
@@ -46,8 +43,6 @@ void LoadResourceFile(const std::string& file, Game& game)
 			}
 			assert(bSuccess);
 		}
-
-	}
-
-	in.close();
+	});
+	assert(success);
 }
