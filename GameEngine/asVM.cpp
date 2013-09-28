@@ -6,6 +6,7 @@
 #include "scripthelper/scripthelper.h"
 #include "scriptarray/scriptarray.h"
 #include "scriptmath/scriptmath.h"
+#include "scriptstdstring/scriptstdstring.h"
 
 #include <sstream>
 #include <ctime>
