@@ -14,18 +14,7 @@ enum class ResourceType
 	Font
 };
 
-struct CharDescriptor
-{
-	CharDescriptor() : x( 0 ), y( 0 ), Width( 0 ), Height( 0 ), XOffset( 0 ), YOffset( 0 ),
-		XAdvance( 0 ), Page( 0 ) {}
-
-	unsigned short x, y;
-	unsigned short Width, Height;
-	unsigned short XOffset, YOffset;
-	unsigned short XAdvance;
-	unsigned short Page;
-};
-
+// Resource Interface
 class IResource
 {
 public:
@@ -133,6 +122,18 @@ private:
 	GLuint m_TextureSamplerID;
 };
 
+struct CharDescriptor
+{
+	CharDescriptor() : x( 0 ), y( 0 ), Width( 0 ), Height( 0 ), XOffset( 0 ), YOffset( 0 ),
+		XAdvance( 0 ), Page( 0 ) {}
+
+	unsigned short x, y;
+	unsigned short Width, Height;
+	unsigned short XOffset, YOffset;
+	unsigned short XAdvance;
+	unsigned short Page;
+};
+
 class Charset : public Texture
 {
 public:
@@ -146,6 +147,8 @@ public:
 	unsigned int GetBase() const { return m_Base; }
 	unsigned int GetPages() const { return m_Pages; }
 	const std::vector<CharDescriptor>& GetCharDescriptor() const { return m_Chars; }
+
+	friend std::istream& operator >>(std::istream& stream, Charset& CharsetDesc);
 
 protected:
 
@@ -161,6 +164,7 @@ private:
 	friend class ResourceManager;
 };
 
+std::istream& operator >>(const std::istream& stream, Charset& out);
 
 // Resource Manager implementation
 class ResourceManager : public IResourceManager
@@ -188,9 +192,10 @@ private:
 
 	ResourceMap m_resources;
 
+	// converts # of components into the corresponding OpenGL format.
 	void GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat);
-	void ParseFont(std::ifstream& stream, Charset& CharsetDesc);
 
+	// Create shader objects from program id
 	bool CreateShaderInstance(const std::string& id, GLuint programID);
 };
 

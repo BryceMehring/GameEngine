@@ -11,9 +11,80 @@
 #endif
 #include <stb_image.c>
 
-IResource::~IResource()
+std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
 {
+	std::string Line;
+	std::string Read, Key, Value;
+	std::size_t i;
+	while( !stream.eof() )
+	{
+		std::stringstream LineStream;
+		std::getline( stream, Line );
+		LineStream << Line;
+
+		//read the line's type
+		LineStream >> Read;
+		if( Read == "common" )
+		{
+			//this holds common data
+			while( !LineStream.eof() )
+			{
+				std::stringstream Converter;
+				LineStream >> Read;
+				i = Read.find( '=' );
+				Key = Read.substr( 0, i );
+				Value = Read.substr( i + 1 );
+
+				//assign the correct value
+				Converter << Value;
+				if( Key == "lineHeight" )
+					Converter >> CharsetDesc.m_LineHeight;
+				else if( Key == "base" )
+					Converter >> CharsetDesc.m_Base;
+				else if( Key == "pages" )
+					Converter >> CharsetDesc.m_Pages;
+			}
+		}
+		else if( Read == "char" )
+		{
+			//this is data for a specific char
+			unsigned short CharID = 0;
+
+			while( !LineStream.eof() )
+			{
+				std::stringstream Converter;
+				LineStream >> Read;
+				i = Read.find( '=' );
+				Key = Read.substr( 0, i );
+				Value = Read.substr( i + 1 );
+
+				//assign the correct value
+				Converter << Value;
+				if( Key == "id" )
+					Converter >> CharID;
+				else if( Key == "x" )
+					Converter >> CharsetDesc.m_Chars[CharID].x;
+				else if( Key == "y" )
+					Converter >> CharsetDesc.m_Chars[CharID].y;
+				else if( Key == "width" )
+					Converter >> CharsetDesc.m_Chars[CharID].Width;
+				else if( Key == "height" )
+					Converter >> CharsetDesc.m_Chars[CharID].Height;
+				else if( Key == "xoffset" )
+					Converter >> CharsetDesc.m_Chars[CharID].XOffset;
+				else if( Key == "yoffset" )
+					Converter >> CharsetDesc.m_Chars[CharID].YOffset;
+				else if( Key == "xadvance" )
+					Converter >> CharsetDesc.m_Chars[CharID].XAdvance;
+				else if( Key == "page" )
+					Converter >> CharsetDesc.m_Chars[CharID].Page;
+			}
+		}
+	}
+
+	return stream;
 }
+
 
 ResourceManager::ResourceManager()
 {
@@ -95,7 +166,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	{
 		// Load font
 		Charset* pCharSet = new Charset(textureId,x,y,spriteWidth,spriteHeight);
-		ParseFont(in,*pCharSet);
+		in >> (*pCharSet);
 
 		m_resources.insert(std::make_pair(id,pCharSet));
 
@@ -219,6 +290,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 	Shader::UnifromMap atribs;
 	Shader::UnifromMap uniforms;
 
+	// Get a list of all the attributes in the shader
 	GLint atribCount;
 	glGetProgramiv(programID,GL_ACTIVE_ATTRIBUTES,&atribCount);
 	for(GLint i = 0; i < atribCount; ++i)
@@ -234,6 +306,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 		atribs.insert(std::make_pair(name,location));
 	}
 
+	// Get a list of all the uniform variables in the shader
 	GLint uniformCount = 0;
 	glGetProgramiv( programID, GL_ACTIVE_UNIFORMS, &uniformCount );
 	for(GLint i = 0; i < uniformCount; ++i)
@@ -264,6 +337,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 		}
 	}
 
+	// Each shader must at least have a MVP matrix
 	if(bFoundMVP)
 	{
 		Shader* pShader = nullptr;
@@ -280,78 +354,6 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 	}
 
 	return bFoundMVP;
-}
-
-void ResourceManager::ParseFont(std::ifstream& stream, Charset& CharsetDesc)
-{
-	std::string Line;
-	std::string Read, Key, Value;
-	std::size_t i;
-	while( !stream.eof() )
-	{
-		std::stringstream LineStream;
-		std::getline( stream, Line );
-		LineStream << Line;
-
-		//read the line's type
-		LineStream >> Read;
-		if( Read == "common" )
-		{
-			//this holds common data
-			while( !LineStream.eof() )
-			{
-				std::stringstream Converter;
-				LineStream >> Read;
-				i = Read.find( '=' );
-				Key = Read.substr( 0, i );
-				Value = Read.substr( i + 1 );
-
-				//assign the correct value
-				Converter << Value;
-				if( Key == "lineHeight" )
-					Converter >> CharsetDesc.m_LineHeight;
-				else if( Key == "base" )
-					Converter >> CharsetDesc.m_Base;
-				else if( Key == "pages" )
-					Converter >> CharsetDesc.m_Pages;
-			}
-		}
-		else if( Read == "char" )
-		{
-			//this is data for a specific char
-			unsigned short CharID = 0;
-
-			while( !LineStream.eof() )
-			{
-				std::stringstream Converter;
-				LineStream >> Read;
-				i = Read.find( '=' );
-				Key = Read.substr( 0, i );
-				Value = Read.substr( i + 1 );
-
-				//assign the correct value
-				Converter << Value;
-				if( Key == "id" )
-					Converter >> CharID;
-				else if( Key == "x" )
-					Converter >> CharsetDesc.m_Chars[CharID].x;
-				else if( Key == "y" )
-					Converter >> CharsetDesc.m_Chars[CharID].y;
-				else if( Key == "width" )
-					Converter >> CharsetDesc.m_Chars[CharID].Width;
-				else if( Key == "height" )
-					Converter >> CharsetDesc.m_Chars[CharID].Height;
-				else if( Key == "xoffset" )
-					Converter >> CharsetDesc.m_Chars[CharID].XOffset;
-				else if( Key == "yoffset" )
-					Converter >> CharsetDesc.m_Chars[CharID].YOffset;
-				else if( Key == "xadvance" )
-					Converter >> CharsetDesc.m_Chars[CharID].XAdvance;
-				else if( Key == "page" )
-					Converter >> CharsetDesc.m_Chars[CharID].Page;
-			}
-		}
-	}
 }
 
 bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) const
