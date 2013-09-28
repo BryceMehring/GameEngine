@@ -365,10 +365,12 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 	glGetProgramiv(programID,GL_ACTIVE_ATTRIBUTES,&atribCount);
 	for(GLint i = 0; i < atribCount; ++i)
 	{
-		char name[128];
+		char name[256];
 		GLint strLength;
+		GLint  size;
+		GLenum type;
 
-		glGetActiveAttrib(programID,i,sizeof(name) - 1,&strLength,0,0,&name[0]);
+		glGetActiveAttrib(programID,i,sizeof(name) - 1,&strLength,&size,&type,name);
 		name[strLength] = 0;
 
 		GLuint location = glGetAttribLocation(programID,name);
