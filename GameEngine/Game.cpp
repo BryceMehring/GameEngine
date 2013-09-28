@@ -28,6 +28,8 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 
 Game::~Game()
 {
+	FileManager::Instance().WriteToLog("Shutting Down");
+
 	m_StateMachine.RemoveState(*this);
 }
 
