@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
+#include <vector>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996)
@@ -230,6 +231,34 @@ bool ResourceManager::LoadAnimation(const std::string& id, const std::string& fi
 	return success;
 }
 
+bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
+{
+	auto iter = m_resources.find(id);
+	if(iter != m_resources.end())
+	{
+		if(iter->second->GetType() == ResourceType::Font)
+			return true; //Font already loaded
+
+		// ID is taken
+		return false;
+	}
+
+	GLuint textureID;
+	int width, height;
+	bool success;
+	if((success = CreateOpenGLTexture(file, width, height,textureID)))
+	{
+		std::ifstream in(file + ".fnt");
+		if((success = in.is_open()))
+		{
+			Charset* pCharset = new Charset(textureID,width,height);
+			in >> (*pCharset);
+
+			m_resources.insert({id,pCharset});
+		}
+	}
+	return success;
+}
 
 bool ResourceManager::LoadShader(const std::string& id, const std::string& vert, const std::string& frag)
 {
