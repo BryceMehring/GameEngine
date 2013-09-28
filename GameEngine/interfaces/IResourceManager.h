@@ -47,6 +47,13 @@ public:
 	 **/
 	virtual bool LoadAnimation(const std::string& id, const std::string& file) = 0;
 
+	/** Loads a font
+	 * id: uniqueID to be used
+	 * file: img
+	 * return: true if the font is or was loaded, false on error
+	 **/
+	virtual bool LoadFont(const std::string& id, const std::string& file) = 0;
+
 	/** loads a shader
 	 * id: uniqueID to be used
 	 * vert: vert shader file
