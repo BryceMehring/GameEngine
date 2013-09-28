@@ -1,5 +1,6 @@
 ﻿
 #include "ResourceManager.h"
+#include "FileManager.h"
 #include <sstream>
 #include <fstream>
 #include <cmath>
@@ -33,7 +34,7 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 		break;
 	case 2:
 		format = GL_RG;
-		internalFormat = GL_COMPRESSED_RG;
+		internalFormat = GL_RG;
 		break;
 
 	case 3:
@@ -78,15 +79,10 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	GLint internalFormat;
 	GetOpenGLFormat(comp,format,internalFormat);
 
-	// Give the image to OpenGL
-	//unsigned int mipmapLevels = 1 + log2(std::max(x,y));
-
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
 	assert(glGetError() == GL_NO_ERROR);
 
-	//glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R,GL_MIRRORED_REPEAT);
 
@@ -161,7 +157,7 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	int InfoLogLength;
 
 	// Compile Vertex Shader
-	printf("Compiling shader : %s\n", vert.c_str());
+	FileManager::Instance().WriteToLog(std::string("Compiling shader :") + std::string(vert.c_str()));
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	glCompileShader(VertexShaderID);
@@ -171,10 +167,12 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	std::vector<char> VertexShaderErrorMessage(InfoLogLength);
 	glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-	fprintf(stdout, "%s\n", &VertexShaderErrorMessage[0]);
+
+	if(VertexShaderErrorMessage.size() > 1)
+		FileManager::Instance().WriteToLog((char*)&VertexShaderErrorMessage[0]);
 
 	// Compile Fragment Shader
-	printf("Compiling shader : %s\n", frag.c_str());
+	FileManager::Instance().WriteToLog(std::string("Compiling shader :") + std::string(frag.c_str()));
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
 	glCompileShader(FragmentShaderID);
@@ -184,10 +182,12 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	std::vector<char> FragmentShaderErrorMessage(InfoLogLength);
 	glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-	fprintf(stdout, "%s\n", &FragmentShaderErrorMessage[0]);
+
+	if(FragmentShaderErrorMessage.size() > 1)
+		FileManager::Instance().WriteToLog(&FragmentShaderErrorMessage[0]);
 
 	// Link the program
-	fprintf(stdout, "Linking program\n");
+	FileManager::Instance().WriteToLog("Linking Program");
 	GLuint ProgramID = glCreateProgram();
 	glAttachShader(ProgramID, VertexShaderID);
 	glAttachShader(ProgramID, FragmentShaderID);
@@ -198,7 +198,9 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	std::vector<char> ProgramErrorMessage( std::max(InfoLogLength, int(1)) );
 	glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-	fprintf(stdout, "%s\n", &ProgramErrorMessage[0]);
+
+	if(ProgramErrorMessage.size() > 1)
+		FileManager::Instance().WriteToLog(&ProgramErrorMessage[0]);
 
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
@@ -214,11 +216,27 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 	bool bFoundTexture = false;
 	GLuint uiTextureLocation = 0;
 
+	Shader::UnifromMap atribs;
 	Shader::UnifromMap uniforms;
 
-	int total = 0;
-	glGetProgramiv( programID, GL_ACTIVE_UNIFORMS, &total );
-	for(int i = 0; i < total; ++i)
+	GLint atribCount;
+	glGetProgramiv(programID,GL_ACTIVE_ATTRIBUTES,&atribCount);
+	for(GLint i = 0; i < atribCount; ++i)
+	{
+		char name[128];
+		GLint strLength;
+
+		glGetActiveAttrib(programID,i,sizeof(name) - 1,&strLength,0,0,&name[0]);
+		name[strLength] = 0;
+
+		GLuint location = glGetAttribLocation(programID,name);
+
+		atribs.insert(std::make_pair(name,location));
+	}
+
+	GLint uniformCount = 0;
+	glGetProgramiv( programID, GL_ACTIVE_UNIFORMS, &uniformCount );
+	for(GLint i = 0; i < uniformCount; ++i)
 	{
 		char name[128];
 		int iNameLength = 0;
@@ -251,11 +269,11 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 		Shader* pShader = nullptr;
 		if(bFoundTexture)
 		{
-			pShader = new TexturedShader(programID,uiMVPLocation,uiTextureLocation,uniforms);
+			pShader = new TexturedShader(programID,uiMVPLocation,uiTextureLocation,std::move(atribs),std::move(uniforms));
 		}
 		else
 		{
-			pShader = new Shader(programID,uiMVPLocation,uniforms);
+			pShader = new Shader(programID,uiMVPLocation,std::move(atribs),std::move(uniforms));
 		}
 
 		m_resources.insert(std::make_pair(id,pShader));

@@ -84,7 +84,7 @@ public:
 
 	typedef std::map<std::string,GLuint> UnifromMap;
 
-	Shader(GLuint i, GLuint MVP, const UnifromMap& uniforms) : IResource(i), m_MVP(MVP), m_uniforms(uniforms)
+	Shader(GLuint i, GLuint MVP, UnifromMap&& atribs, UnifromMap&& uniforms) : IResource(i), m_MVP(MVP), m_atrib(atribs), m_uniforms(uniforms)
 	{
 	}
 
@@ -92,6 +92,7 @@ public:
 
 	GLuint GetMVP() const { return m_MVP; }
 
+	const UnifromMap& GetAtribs() const { return m_atrib; }
 	const UnifromMap& GetUniforms() const { return m_uniforms; }
 
 protected:
@@ -104,6 +105,7 @@ protected:
 private:
 
 	GLuint m_MVP;
+	UnifromMap m_atrib;
 	UnifromMap m_uniforms;
 	//std::map<std::string,unsigned int> parameters;
 
@@ -114,7 +116,7 @@ class TexturedShader : public Shader
 {
 public:
 
-	TexturedShader(GLuint i, GLuint MVP, GLuint texID, const UnifromMap& uniforms) : Shader(i,MVP,uniforms), m_TextureSamplerID(texID)
+	TexturedShader(GLuint i, GLuint MVP, GLuint texID, UnifromMap&& atribs, UnifromMap&& uniforms) : Shader(i,MVP,std::move(atribs),std::move(uniforms)), m_TextureSamplerID(texID)
 	{
 	}
 
