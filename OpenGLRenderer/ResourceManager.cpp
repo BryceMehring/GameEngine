@@ -85,6 +85,9 @@ std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
 	return stream;
 }
 
+IResource::~IResource()
+{
+}
 
 ResourceManager::ResourceManager()
 {
@@ -120,6 +123,37 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 	}
 }
 
+bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, int& height, GLuint& textureId)
+{
+	int comp;
+	unsigned char* pImg = stbi_load(file.c_str(),&width,&height,&comp,0);
+
+	// check if the image can be loaded
+	if(pImg == nullptr)
+		return false;
+
+	glGenTextures(1,&textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+
+	GLenum format;
+	GLint internalFormat;
+	GetOpenGLFormat(comp,format,internalFormat);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
+	assert(glGetError() == GL_NO_ERROR);
+
+	stbi_image_free(pImg);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R,GL_MIRRORED_REPEAT);
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+	assert(glGetError() == GL_NO_ERROR);
+
+	return true;
+}
+
 bool ResourceManager::LoadTexture(const std::string& id, const std::string& file)
 {
 	auto iter = m_resources.find(id);
@@ -132,35 +166,16 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 		return false;
 	}
 
-	int spriteWidth = 1;
-	int spriteHeight = 1;
+	GLuint textureID;
+	int width, height;
+	bool success;
+	if((success = CreateOpenGLTexture(file, width, height,textureID)))
+	{
+		m_resources.insert({id,new Texture(textureID,width,height)});
+	}
+	return success;
 
-	int x, y, comp;
-	unsigned char* pImg = stbi_load(file.c_str(),&x,&y,&comp,0);
-
-	// check if the image can be loaded
-	if(pImg == nullptr)
-		return false;
-
-	GLuint textureId;
-	glGenTextures(1,&textureId);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-
-	GLenum format;
-	GLint internalFormat;
-	GetOpenGLFormat(comp,format,internalFormat);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
-	assert(glGetError() == GL_NO_ERROR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R,GL_MIRRORED_REPEAT);
-
-	glGenerateMipmap(GL_TEXTURE_2D);
-	assert(glGetError() == GL_NO_ERROR);
-
-	std::ifstream in;
+	/*std::ifstream in;
 	in.open(file + ".fnt");
 	if(in.is_open())
 	{
@@ -168,7 +183,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 		Charset* pCharSet = new Charset(textureId,x,y,spriteWidth,spriteHeight);
 		in >> (*pCharSet);
 
-		m_resources.insert(std::make_pair(id,pCharSet));
+		m_resources.insert({id,pCharSet});
 
 		in.close();
 	}
@@ -181,12 +196,38 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 			in.close();
 		}
 
-		m_resources.insert(std::make_pair(id,new Texture(textureId,x,y,spriteWidth,spriteHeight)));
+		m_resources.insert({id,new Texture(textureId,x,y,spriteWidth,spriteHeight)});
 	}
 
-	stbi_image_free(pImg);
+	return true;*/
+}
 
-	return true;
+bool ResourceManager::LoadAnimation(const std::string& id, const std::string& file)
+{
+	auto iter = m_resources.find(id);
+	if(iter != m_resources.end())
+	{
+		if(iter->second->GetType() == ResourceType::Animation)
+			return true; //Animation already loaded
+
+		// ID is taken
+		return false;
+	}
+
+	GLuint textureID;
+	int width, height;
+	bool success;
+	if((success = CreateOpenGLTexture(file, width, height,textureID)))
+	{
+		std::ifstream in(file + ".txt");
+		if((success = in.is_open()))
+		{
+			int spriteWidth, spriteHeight;
+			in >> spriteWidth >> spriteHeight;
+			m_resources.insert({id,new Texture(textureID,width,height,spriteWidth,spriteHeight)});
+		}
+	}
+	return success;
 }
 
 
@@ -303,7 +344,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 
 		GLuint location = glGetAttribLocation(programID,name);
 
-		atribs.insert(std::make_pair(name,location));
+		atribs.insert({name,location});
 	}
 
 	// Get a list of all the uniform variables in the shader
@@ -333,7 +374,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 		}
 		else
 		{
-			uniforms.insert(std::make_pair(name,location));
+			uniforms.insert({name,location});
 		}
 	}
 
@@ -350,7 +391,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 			pShader = new Shader(programID,uiMVPLocation,std::move(atribs),std::move(uniforms));
 		}
 
-		m_resources.insert(std::make_pair(id,pShader));
+		m_resources.insert({id,pShader});
 	}
 
 	return bFoundMVP;
