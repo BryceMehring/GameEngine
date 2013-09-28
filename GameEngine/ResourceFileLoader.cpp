@@ -26,6 +26,10 @@ void LoadResourceFile(const std::string& file, Game& game)
 			{
 				bSuccess = gfxResourceManager.LoadTexture(id,fileName);
 			}
+			else if(type == "animation")
+			{
+				bSuccess = gfxResourceManager.LoadAnimation(id,fileName);
+			}
 			else if(type == "font")
 			{
 				bSuccess = gfxResourceManager.LoadFont(id,fileName);
