@@ -162,18 +162,14 @@ void SpriteEngine::Render()
 				// Apply the shader tech
 
 				const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter.first));
-
-				GLuint vertexPosition_modelspaceID = glGetAttribLocation(pShader->GetID(), "vertexPosition_modelspace");
-				GLuint vertexUV = glGetAttribLocation(pShader->GetID(), "vertexUV");
-				GLuint vertexColor = glGetAttribLocation(pShader->GetID(), "vertexColor");
-				GLuint vertexTiling = glGetAttribLocation(pShader->GetID(), "vertexTiling");
+				const TexturedShader::UnifromMap& atribMap = pShader->GetAtribs();
 
 				glUseProgram(pShader->GetID());
 
-				glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)0);
-				glVertexAttribPointer(vertexUV,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)sizeof(glm::vec3));
-				glVertexAttribPointer(vertexColor,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)offsetof(SpriteVertex, color));
-				glVertexAttribPointer(vertexTiling,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)offsetof(SpriteVertex, tiling));
+				glVertexAttribPointer(atribMap.find("vertexPosition_modelspace")->second,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)0);
+				glVertexAttribPointer(atribMap.find("vertexUV")->second,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)sizeof(glm::vec3));
+				glVertexAttribPointer(atribMap.find("vertexColor")->second,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)offsetof(SpriteVertex, color));
+				glVertexAttribPointer(atribMap.find("vertexTiling")->second,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)offsetof(SpriteVertex, tiling));
 
 				// set shader parameters
 				glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera[n]->viewProj()[0][0]);
