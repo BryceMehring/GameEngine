@@ -4,12 +4,18 @@
 
 void GameStateScript::Exec(Game& game, const std::string& file)
 {
-	bool bExists = FileManager::Instance().ProccessFileByLine(file.c_str(),[&](const std::string& line)
-	{
-		game.GetAs().ExecuteScript(line,0);
-	});
+	std::ifstream stream;
+	stream.open(file.c_str());
 
-	if(!bExists)
+	if(stream.is_open())
+	{
+		std::string line;
+		while(std::getline(stream,line))
+		{
+			game.GetAs().ExecuteScript(line,0);
+		}
+	}
+	else
 	{
 		game.GetAs().SendMessage("Could not open: " + file);
 	}

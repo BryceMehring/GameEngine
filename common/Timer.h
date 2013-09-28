@@ -3,29 +3,31 @@
 
 #include <chrono>
 
+#include "CommonExport.h"
+
 // Defines a simple High Resolution Timer
 class Timer
 {
 public:
 	// Construct the timer and initialize all of the
 	// members by resetting them to their zero-values.
-	Timer();
+	COMMON_API Timer();
 
 	// Activate the timer and poll the counter.
-	void Start();
+	COMMON_API void Start();
 
 	// Deactivate the timer and poll the counter.
-	void Stop();
+	COMMON_API void Stop();
 
 	// Stops the timer if it's active and resets all
 	// of the Timer's members to their initial values.
-	void Reset();
+	COMMON_API void Reset();
 
 	// Returns the time elapsed since Start() was called in seconds
-	double GetTime();
+	COMMON_API double GetTime();
 
 	// Returns true if the Timer is currently active
-	bool IsActive() const;
+	COMMON_API bool IsActive() const;
 
 private:
 

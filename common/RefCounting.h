@@ -1,15 +1,7 @@
 #ifndef _REFCOUNTING_
 #define _REFCOUNTING_
 
-#ifdef _WIN32
-#ifdef COMMON_EXPORT
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __declspec(dllimport)
-#endif
-#else
-#define EXPORT
-#endif
+#include "CommonExport.h"
 
 class RefCounting
 {
@@ -23,15 +15,15 @@ public:
 	*/
 
 	// constructor sets the counter of references to 1
-	EXPORT RefCounting();
+	COMMON_API RefCounting();
 
-	EXPORT int GetCounter() const;
+	COMMON_API int GetCounter() const;
 
 	// increases counter
-	EXPORT virtual void AddRef();
+	COMMON_API virtual void AddRef();
 
 	// decreases counter, if it reaches 0, the object will then be deleted
-	EXPORT virtual void Release();
+	COMMON_API virtual void Release();
 
 protected:
 

@@ -172,7 +172,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	bool success;
 	if((success = CreateOpenGLTexture(file, width, height,textureID)))
 	{
-		m_resources.insert({id,new Texture(textureID,width,height)});
+		m_resources.insert(std::make_pair(id,new Texture(textureID,width,height)));
 	}
 	return success;
 
@@ -225,7 +225,7 @@ bool ResourceManager::LoadAnimation(const std::string& id, const std::string& fi
 		{
 			int spriteWidth, spriteHeight;
 			in >> spriteWidth >> spriteHeight;
-			m_resources.insert({id,new Texture(textureID,width,height,spriteWidth,spriteHeight)});
+			m_resources.insert(std::make_pair(id,new Texture(textureID,width,height,spriteWidth,spriteHeight)));
 		}
 	}
 	return success;
@@ -254,7 +254,7 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 			Charset* pCharset = new Charset(textureID,width,height);
 			in >> (*pCharset);
 
-			m_resources.insert({id,pCharset});
+			m_resources.insert(std::make_pair(id,pCharset));
 		}
 	}
 	return success;
@@ -373,7 +373,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 
 		GLuint location = glGetAttribLocation(programID,name);
 
-		atribs.insert({name,location});
+		atribs.insert(std::make_pair(name,location));
 	}
 
 	// Get a list of all the uniform variables in the shader
@@ -403,7 +403,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 		}
 		else
 		{
-			uniforms.insert({name,location});
+			uniforms.insert(std::make_pair(name,location));
 		}
 	}
 
@@ -420,7 +420,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 			pShader = new Shader(programID,uiMVPLocation,std::move(atribs),std::move(uniforms));
 		}
 
-		m_resources.insert({id,pShader});
+		m_resources.insert(std::make_pair(id,pShader));
 	}
 
 	return bFoundMVP;

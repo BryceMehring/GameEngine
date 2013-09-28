@@ -6,7 +6,12 @@ void LoadResourceFile(const std::string& file, Game& game)
 {
 	IResourceManager& gfxResourceManager = game.GetRenderer().GetResourceManager();
 
-	bool success = FileManager::Instance().ProccessFileByLine(file.c_str(),[&](const std::string& line) -> void
+	std::ifstream stream;
+	stream.open(file.c_str());
+	assert(stream.is_open());
+
+	std::string line;
+	while(std::getline(stream,line))
 	{
 		std::stringstream stream(line);
 
@@ -47,6 +52,5 @@ void LoadResourceFile(const std::string& file, Game& game)
 			}
 			assert(bSuccess);
 		}
-	});
-	assert(success);
+	}
 }

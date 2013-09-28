@@ -182,8 +182,8 @@ void Input::UpdateMouse(double x, double y)
 
 	glfwGetWindowSize(glfwGetCurrentContext(),&width,&height);
 
-	m_iMouseX = x - (width / 2);
-	m_iMouseY = -y + (height / 2);
+	m_iMouseX = (int)x - (width / 2);
+	m_iMouseY = -(int)y + (height / 2);
 
 	m_tpos += m_fMouseSensistivity * glm::vec2(m_iMouseX / (float)width ,m_iMouseY / (float)height);
 

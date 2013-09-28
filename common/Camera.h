@@ -5,38 +5,38 @@
 #include "RefCounting.h"
 
 // Manages the matrices need to create a camera
-class  Camera : public RefCounting
+class Camera : public RefCounting
 {
 public:
 
-	EXPORT const glm::mat4& view() const; // returns the view matrix
-	EXPORT const glm::mat4& proj() const; // // returns the projection matrix
-	EXPORT const glm::mat4& viewProj() const; // returns the viewProj matrix (proj * view)
+	COMMON_API const glm::mat4& view() const; // returns the view matrix
+	COMMON_API const glm::mat4& proj() const; // // returns the projection matrix
+	COMMON_API const glm::mat4& viewProj() const; // returns the viewProj matrix (proj * view)
 
-	EXPORT const glm::mat4& look() const; // returns the view matrix
+	COMMON_API const glm::mat4& look() const; // returns the view matrix
 
-	EXPORT float GetWidth() const; // Width of the 2D field view
-	EXPORT float GetHeight() const; // Height of the 2D field view
+	COMMON_API float GetWidth() const; // Width of the 2D field view
+	COMMON_API float GetHeight() const; // Height of the 2D field view
 
-	EXPORT glm::vec3& pos(); // Position of the camera
+	COMMON_API glm::vec3& pos(); // Position of the camera
 
-	EXPORT bool IsVisible(const glm::vec3& min, const glm::vec3& max) const;
+	COMMON_API bool IsVisible(const glm::vec3& min, const glm::vec3& max) const;
 
 	// creates the view matrix
 	// pos = pos of camera
 	// target = where the camera should look
 	// up = which direction is up
-	EXPORT void lookAt(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up);
+	COMMON_API void lookAt(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up);
 
 	// Creates a 2D ortho matrix
 	// w = width of the 2D field
 	// h = height of the 2D field
 	// nearZ = near clip plane
 	// farZ = far clip plane
-	EXPORT void setLens(float w, float h, float nearZ, float farZ);
-	EXPORT void setLens(float fov, float w, float h, float nearZ, float farZ);
+	COMMON_API void setLens(float w, float h, float nearZ, float farZ);
+	COMMON_API void setLens(float fov, float w, float h, float nearZ, float farZ);
 
-	EXPORT void update();
+	COMMON_API void update();
 
 private:
 
@@ -60,8 +60,8 @@ private:
 	float m_width; // Width of the 2D field view
 	float m_height; // Height of the 2D field view
 
-	friend EXPORT Camera* CreateCamera();
-	friend EXPORT void ReleaseCamera(Camera*);
+	friend COMMON_API Camera* CreateCamera();
+	friend COMMON_API void ReleaseCamera(Camera*);
 
 	void BuildFrustumPlanes();
 
@@ -72,7 +72,7 @@ private:
 };
 
 // used to create and release cameras
-EXPORT Camera* CreateCamera();
-EXPORT void ReleaseCamera(Camera*);
+COMMON_API Camera* CreateCamera();
+COMMON_API void ReleaseCamera(Camera*);
 
 #endif // _CAMERA_

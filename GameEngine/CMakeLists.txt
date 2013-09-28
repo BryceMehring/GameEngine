@@ -16,7 +16,7 @@ list(APPEND GAME_ENGINE_SOURCE
 
 # build the game engine
 add_library(GameEngine SHARED ${GAME_ENGINE_HEADERS} ${GAME_ENGINE_SOURCE})
-target_link_libraries(GameEngine ${GLFW_LIBRARY})
+target_link_libraries(GameEngine common ${GLFW_LIBRARY})
 if(MSVC)
 	target_link_libraries(GameEngine debug ${ANGELSCRIPT_LIBRARY_DEBUG})
 	target_link_libraries(GameEngine optimized ${ANGELSCRIPT_LIBRARY_RELEASE})
