@@ -9,9 +9,10 @@
 enum class ResourceType
 {
 	Texture,
+	Animation,
+	Font,
 	Shader,
-	TexturedShader,
-	Font
+	TexturedShader
 };
 
 // Resource Interface
@@ -38,7 +39,7 @@ private:
 class Texture : public IResource
 {
 public:
-	Texture(GLuint i, int tw, int th, int sw, int sh) : IResource(i), m_iWidth(tw), m_iHeight(th), m_iCellsWidth(sw), m_iCellsHeight(sh)
+	Texture(GLuint i, int tw, int th, int sw = 1, int sh = 1) : IResource(i), m_iWidth(tw), m_iHeight(th), m_iCellsWidth(sw), m_iCellsHeight(sh)
 	{
 	}
 
@@ -174,13 +175,15 @@ public:
 	ResourceManager();
 	virtual ~ResourceManager();
 
-	virtual bool LoadTexture(const std::string& id, const std::string& file);
+	bool LoadTexture(const std::string& id, const std::string& file) override;
 
-	virtual bool LoadShader(const std::string& id, const std::string& vert, const std::string& frag);
+	bool LoadAnimation(const std::string& id, const std::string& file) override;
 
-	virtual bool GetTextureInfo(const std::string& id, TextureInfo& out) const;
+	bool LoadShader(const std::string& id, const std::string& vert, const std::string& frag) override;
 
-	virtual void Clear();
+	bool GetTextureInfo(const std::string& id, TextureInfo& out) const override;
+
+	void Clear() override;
 
 	// method only accessable in the OpenGL function to access OpenGL specific information about the resources
 	IResource* GetResource(const std::string& name);
@@ -191,6 +194,8 @@ private:
 	typedef std::map<std::string,IResource*> ResourceMap;
 
 	ResourceMap m_resources;
+
+	bool CreateOpenGLTexture(const std::string& file, int& width, int& height, GLuint& out);
 
 	// converts # of components into the corresponding OpenGL format.
 	void GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat);

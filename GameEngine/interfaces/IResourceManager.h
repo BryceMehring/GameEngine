@@ -40,6 +40,13 @@ public:
 	 **/
 	virtual bool LoadTexture(const std::string& id, const std::string& file) = 0;
 
+	/** Loads a sprite animation
+	 * id: uniqueID to be used
+	 * file: img
+	 * return: true if the sprite animation is or was loaded, false on error
+	 **/
+	virtual bool LoadAnimation(const std::string& id, const std::string& file) = 0;
+
 	/** loads a shader
 	 * id: uniqueID to be used
 	 * vert: vert shader file

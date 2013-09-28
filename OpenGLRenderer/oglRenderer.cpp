@@ -185,7 +185,7 @@ void oglRenderer::Present()
 	if(m_pCamera != nullptr)
 	{
 		m_pSprites->Render();
-		m_pFonts->Render();
+		//m_pFonts->Render();
 		m_pLines->Render();
 	}
 
