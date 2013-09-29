@@ -15,12 +15,16 @@
 
 #ifdef _WIN32
 #ifdef GAME_ENGINE_EXPORT
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __declspec(dllimport)
+#ifndef GAME_ENGINE_API
+#define GAME_ENGINE_API __declspec(dllexport)
 #endif
 #else
-#define EXPORT
+#ifndef GAME_ENGINE_API
+#define GAME_ENGINE_API __declspec(dllimport)
+#endif
+#endif
+#else
+#define GAME_ENGINE_API
 #endif
 
 class GameInfo
@@ -47,32 +51,32 @@ class Game
 public:
 
 	// Init GLFW, load dlls, load the base resource file
-	EXPORT Game();
+	GAME_ENGINE_API Game();
 
 	// Destroy everything
-	EXPORT ~Game();
+	GAME_ENGINE_API ~Game();
 
 	// Get the current state
-	EXPORT std::string GetCurrentStateName() const;
+	GAME_ENGINE_API std::string GetCurrentStateName() const;
 
 	// change the current state
-	EXPORT void SetNextState(const std::string& state);
+	GAME_ENGINE_API void SetNextState(const std::string& state);
 
 	// ignore, working on this
-	EXPORT void LoadPlugins();
+	GAME_ENGINE_API void LoadPlugins();
 
 	// Get Functions
 	// todo: provide const overloaded versions
-	EXPORT IRenderer& GetRenderer();
-	EXPORT IKMInput& GetInput();
-	EXPORT PluginManager& GetPM();
-	EXPORT asVM& GetAs();
+	__declspec(dllexport) IRenderer& GetRenderer();
+	GAME_ENGINE_API IKMInput& GetInput();
+	GAME_ENGINE_API PluginManager& GetPM();
+	GAME_ENGINE_API asVM& GetAs();
 
-	EXPORT double GetDt() const; // time diff between frames in seconds
-	EXPORT unsigned int GetFps() const;
+	GAME_ENGINE_API double GetDt() const; // time diff between frames in seconds
+	GAME_ENGINE_API unsigned int GetFps() const;
 
 	// play the game set by SetNextState
-	EXPORT int Run();
+	GAME_ENGINE_API int Run();
 
 private:
 

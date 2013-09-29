@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <glm/glm.hpp>
+#include "CommonExport.h"
 
 namespace Math
 {
@@ -26,32 +27,32 @@ public:
 // Basic rect, using floats
 struct FRECT : public IPolygon
 {
-	FRECT() {}
+	COMMON_API FRECT() {}
 
-	FRECT(const glm::vec2& topLeft, const glm::vec2& bottomRight) : topLeft(topLeft), bottomRight(bottomRight) {}
+	COMMON_API FRECT(const glm::vec2& topLeft, const glm::vec2& bottomRight) : topLeft(topLeft), bottomRight(bottomRight) {}
 
-	FRECT(float width, float height, const glm::vec2& center) :
+	COMMON_API FRECT(float width, float height, const glm::vec2& center) :
 		topLeft(center.x - width / 2.0f,center.y + height / 2.0f),
 		bottomRight(center.x + width / 2.0f,center.y - height / 2.0f) {}
 
-	glm::vec2 Middle() const { return (topLeft + bottomRight) * 0.5f; }
+	COMMON_API glm::vec2 Middle() const { return (topLeft + bottomRight) * 0.5f; }
 
-	virtual bool IsPointWithin(const glm::vec2& pos) const
+	COMMON_API virtual bool IsPointWithin(const glm::vec2& pos) const
 	{
 		return (pos.x >= topLeft.x) && (pos.x <= bottomRight.x) && (pos.y >= bottomRight.y) && (pos.y <= topLeft.y);
 	}
 
-	float Width() const
+	COMMON_API float Width() const
 	{
 		return (bottomRight.x - topLeft.x);
 	}
 
-	float Height() const
+	COMMON_API float Height() const
 	{
 		return (topLeft.y - bottomRight.y);
 	}
 
-	void SetCenter(const glm::vec2& pos)
+	COMMON_API void SetCenter(const glm::vec2& pos)
 	{
 		glm::vec2 diff = (bottomRight - topLeft)*0.5f;
 		topLeft = pos - diff;
@@ -66,8 +67,8 @@ struct FRECT : public IPolygon
 // Basic circle structure
 struct Circle : public IPolygon
 {
-	Circle() {}
-	Circle(const glm::vec2& c, float r) : center(c), r(r)
+	COMMON_API Circle() {}
+	COMMON_API Circle(const glm::vec2& c, float r) : center(c), r(r)
 	{
 	}
 
@@ -87,15 +88,15 @@ struct Circle : public IPolygon
 
 };
 
-bool Intersects(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly2); 
-bool Intersects(const Circle& c1, const FRECT& R1);
-bool Intersects(const Circle& c1, const Circle& c2);
-bool Intersects(const FRECT& c1, const FRECT& c2);
+COMMON_API bool Intersects(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly2); 
+COMMON_API bool Intersects(const Circle& c1, const FRECT& R1);
+COMMON_API bool Intersects(const Circle& c1, const Circle& c2);
+COMMON_API bool Intersects(const FRECT& c1, const FRECT& c2);
 
-bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly2);
+COMMON_API bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly2);
 
 // ray casting algorithm
-bool IsPointInPolygon(const glm::vec2* pArray, unsigned int length, const glm::vec2& P);
+COMMON_API bool IsPointInPolygon(const glm::vec2* pArray, unsigned int length, const glm::vec2& P);
 
 // collision interface
 
@@ -129,17 +130,17 @@ public:
 
 	// todo: default ctor?
 	// ctor
-	CCircle() {}
-	CCircle(const Circle& circle);
+	COMMON_API CCircle() {}
+	COMMON_API CCircle(const Circle& circle);
 
-	virtual Type GetType() const { return ICollisionPolygon::Type::Circle; }
-	virtual bool Intersects(const ICollisionPolygon& other) const;
-	virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
-	virtual void GetAABB(AABB&) const;
+	COMMON_API virtual Type GetType() const { return ICollisionPolygon::Type::Circle; }
+	COMMON_API virtual bool Intersects(const ICollisionPolygon& other) const;
+	COMMON_API virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
+	COMMON_API virtual void GetAABB(AABB&) const;
 	
 	// circle access
-	const Circle& GetCircle() const { return m_circle; }
-	Circle& GetCircle() { return m_circle; }
+	COMMON_API const Circle& GetCircle() const { return m_circle; }
+	COMMON_API Circle& GetCircle() { return m_circle; }
 
 private:
 
@@ -154,17 +155,17 @@ class CRectangle : public ICollisionPolygon
 public:
 
 	// ctror
-	CRectangle() {}
-	CRectangle(const FRECT& rect);
+	COMMON_API CRectangle() {}
+	COMMON_API CRectangle(const FRECT& rect);
 
-	virtual Type GetType() const { return ICollisionPolygon::Type::Rectangle; }
-	virtual bool Intersects(const ICollisionPolygon& other) const;
-	virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
-	virtual void GetAABB(AABB&) const;
+	COMMON_API virtual Type GetType() const { return ICollisionPolygon::Type::Rectangle; }
+	COMMON_API virtual bool Intersects(const ICollisionPolygon& other) const;
+	COMMON_API virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
+	COMMON_API virtual void GetAABB(AABB&) const;
 
 	// rect access
-	const FRECT& GetRect() const { return m_rect; }
-	FRECT& GetRect() { return m_rect; }
+	COMMON_API const FRECT& GetRect() const { return m_rect; }
+	COMMON_API FRECT& GetRect() { return m_rect; }
 
 private:
 
@@ -172,9 +173,9 @@ private:
 
 };
 
-void CreateCollionPolygon(const std::vector<glm::vec3>& poly, FRECT& out);
+COMMON_API void CreateCollionPolygon(const std::vector<glm::vec3>& poly, FRECT& out);
 
-void RegisterScriptVecMath(class asIScriptEngine* pEngine);
+COMMON_API void RegisterScriptVecMath(class asIScriptEngine* pEngine);
 
 } // math
 
