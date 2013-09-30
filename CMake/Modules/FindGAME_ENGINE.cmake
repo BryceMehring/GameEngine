@@ -5,13 +5,11 @@ find_path(GAME_ENGINE_INCLUDE_DIR IGameState.h
 	"${CMAKE_SOURCE_DIR}/../GameEngine/GameEngine"
 	)
 	
-find_path(GAME_COMMON_INCLUDE_DIR interfaces/IGame.h
-	"${CMAKE_SOURCE_DIR}/../GameEngine/common"
-	)
-	
-find_library(GAME_ENGINE_LIBRARY NAMES GameEngine PATHS "${CMAKE_SOURCE_DIR}/../GameEngine/bin")
+find_library(GAME_ENGINE_LIB NAMES GameEngine PATHS "${CMAKE_SOURCE_DIR}/../GameEngine/bin")
+find_library(GAME_ENGINE_COMMON_LIB NAMES common PATHS "${CMAKE_SOURCE_DIR}/../GameEngine/bin")
+find_library(GAME_ENGINE_QUADTREE_LIB NAMES QuadTree PATHS "${CMAKE_SOURCE_DIR}/../GameEngine/bin")
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(GAME_ENGINE REQUIRED_VARS GAME_ENGINE_INCLUDE_DIR GAME_COMMON_INCLUDE_DIR GAME_ENGINE_LIBRARY)
+find_package_handle_standard_args(GAME_ENGINE REQUIRED_VARS GAME_ENGINE_INCLUDE_DIR GAME_ENGINE_LIB GAME_ENGINE_COMMON_LIB GAME_ENGINE_QUADTREE_LIB)
 
-mark_as_advanced(GAME_ENGINE_INCLUDE_DIR GAME_ENGINE_LIBRARY GAME_COMMON_INCLUDE_DIR)
+#mark_as_advanced(GAME_ENGINE_INCLUDE_DIR GAME_ENGINE_LIB)
