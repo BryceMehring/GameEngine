@@ -244,15 +244,11 @@ void FontEngine::Render()
 	// use the shader
 	glUseProgram(pShader->GetID());
 
-	GLuint vertexPosition_modelspaceID = glGetAttribLocation(pShader->GetID(), "vertexPosition_modelspace");
-	GLuint vertexUV = glGetAttribLocation(pShader->GetID(), "vertexUV");
-	GLuint vertexColor = glGetAttribLocation(pShader->GetID(), "vertexColor");
-
 	// Create our vertex structure in OpenGL
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
-				vertexPosition_modelspaceID,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+				pShader->GetAtribs().find("vertexPosition_modelspace")->second,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
 				3,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
@@ -262,7 +258,7 @@ void FontEngine::Render()
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(
-				vertexUV,					// attribute 1
+				pShader->GetAtribs().find("vertexUV")->second,					// attribute 1
 				2,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
@@ -272,7 +268,7 @@ void FontEngine::Render()
 
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(
-				vertexColor,					// attribute 1
+				pShader->GetAtribs().find("vertexColor")->second,					// attribute 1
 				3,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
@@ -290,13 +286,14 @@ void FontEngine::Render()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	unsigned int uiStartingIndex = 0;
+
 	// loop over all render spaces
 	for(unsigned int n = 0; n < 2; ++n)
 	{
 		// set shader parameters
 		glUniformMatrix4fv(pShader->GetMVP(),1,false,&(m_pCamera[n]->viewProj()[0][0]));
 
-		unsigned int uiStartingIndex = 0;
 		unsigned int i = 0;
 		for(auto& iter : m_textSubsets[n])
 		{
