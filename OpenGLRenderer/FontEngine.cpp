@@ -233,10 +233,10 @@ void FontEngine::Render()
 	if(m_textSubsets[0].empty() && m_textSubsets[1].empty())
 		return;
 
-	std::vector<unsigned int> numChar;
+	std::vector<unsigned int> subsetLength;
 
 	// first we fill the vertex buffer with the text to render
-	FillVertexBuffer(numChar);
+	FillVertexBuffer(subsetLength);
 
 	// get the shader to use
 	const TexturedShader* pShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader"));
@@ -287,26 +287,26 @@ void FontEngine::Render()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	unsigned int uiStartingIndex = 0;
+	unsigned int uiSubset = 0;
 
 	// loop over all render spaces
 	for(unsigned int n = 0; n < 2; ++n)
 	{
-		// set shader parameters
+		// set the transformation matrix
 		glUniformMatrix4fv(pShader->GetMVP(),1,false,&(m_pCamera[n]->viewProj()[0][0]));
 
-		unsigned int i = 0;
+		// loop over all text subsets
 		for(auto& iter : m_textSubsets[n])
 		{
 			const IResource* pCurrentTexture = m_pRm->GetResource(iter.first);
 
 			// Set the texture to use
-
 			glBindTexture(GL_TEXTURE_2D, pCurrentTexture->GetID());
 			glUniform1i(pShader->GetTextureSamplerID(),0);
 
-			glDrawElements(GL_TRIANGLES, numChar[i] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
+			glDrawElements(GL_TRIANGLES, subsetLength[uiSubset] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
 
-			uiStartingIndex += numChar[i];
+			uiStartingIndex += subsetLength[uiSubset++];
 		}
 	}
 

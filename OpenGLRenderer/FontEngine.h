@@ -54,7 +54,7 @@ private:
 	unsigned int m_uiIndexBuffer;
 
 	// Fills the vertex buffer with all of the text subsets
-	// output is the number of characters to draw for each font texture, in the correct sorted order
+	// output is the number of characters to draw in each subset
 	void FillVertexBuffer(std::vector<unsigned int>&);
 
 	void CreateVertexBuffer();
