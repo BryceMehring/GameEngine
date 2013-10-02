@@ -67,7 +67,7 @@ public:
 
 	// Get Functions
 	// todo: provide const overloaded versions
-	__declspec(dllexport) IRenderer& GetRenderer();
+	GAME_ENGINE_API IRenderer& GetRenderer();
 	GAME_ENGINE_API IKMInput& GetInput();
 	GAME_ENGINE_API PluginManager& GetPM();
 	GAME_ENGINE_API asVM& GetAs();
