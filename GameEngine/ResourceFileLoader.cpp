@@ -2,12 +2,12 @@
 #include "Game.h"
 #include "FileManager.h"
 
-void LoadResourceFile(const std::string& file, Game& game)
+void LoadResourceFile(const std::string& file, Game& game, const std::string& folder)
 {
 	IResourceManager& gfxResourceManager = game.GetRenderer().GetResourceManager();
 
 	std::ifstream stream;
-	stream.open(file.c_str());
+	stream.open((folder + '/' + file).c_str());
 	assert(stream.is_open());
 
 	std::string line;
@@ -23,6 +23,8 @@ void LoadResourceFile(const std::string& file, Game& game)
 
 		std::string fileName;
 		stream >> fileName;
+
+		fileName = folder + '/' + fileName;
 
 		if(fileName.size() > 0)
 		{

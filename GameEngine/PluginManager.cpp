@@ -94,29 +94,23 @@ IPlugin* PluginManager::GetPlugin(DLLType type)
 	return nullptr;
 }
 
-IPlugin* PluginManager::LoadDLL(const std::string& file)
+IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 {
 	FileManager::Instance().WriteToLog("Loading " + file);
 
 	shared_ptr<PluginInfo> dll(new PluginInfo);
 
-	string dllFile = "./";
-
-#ifdef __GNUC__
-	dllFile += "lib";
-#endif
+	std::string dllFile = folder + '/' + file + ".plug";
 
 #if defined(_WIN32)
-	dllFile += file + ".dll";
 	dll->mod = LoadLibrary(dllFile.c_str());
 #else
-	dllFile += file + ".so";
 	dll->mod = dlopen(dllFile.c_str(),RTLD_NOW);
 #endif
 
 	if(dll->mod == nullptr)
 	{
-		FileManager::Instance().WriteToLog("Cannot open: " + file);
+		FileManager::Instance().WriteToLog("Cannot open: " + dllFile);
 #ifdef _WIN32
 		FileManager::Instance().WriteToLog(GetLastError());
 #else
@@ -158,7 +152,7 @@ IPlugin* PluginManager::LoadDLL(const std::string& file)
 	else
 	{
 		// insert plugin into map
-		m_plugins.insert(make_pair(type,dll));
+		m_plugins.insert({type,dll});
 	}
 
 	// return the plugin interface

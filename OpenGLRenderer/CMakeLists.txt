@@ -20,4 +20,7 @@ if(ENABLE_CPACK)
 	Install(TARGETS renderer LIBRARY DESTINATION ./)
 endif(ENABLE_CPACK)
 
+set_target_properties(renderer PROPERTIES PREFIX "")
+set_target_properties(renderer PROPERTIES SUFFIX ".plug")
+
 
