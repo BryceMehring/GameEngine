@@ -7,13 +7,10 @@
 using namespace std;
 
 template< class T >
-void WriteGeneric(const T& data, double time, std::ofstream& file)
+void WriteGeneric(const T& data, double time)
 {
-	stringstream stream;
-	stream << time << ": " << data;
-
-	file << stream.str() << endl;
-	cout << stream.str() << endl;
+	cout << time << ": " << data << endl;
+	clog << time << ": " << data << endl;
 }
 
 Log& Log::Instance()
@@ -27,6 +24,7 @@ Log::Log()
 	m_timer.Start();
 
 	m_file.open("GameLog.txt");
+	//m_file.
 	unsigned int counter = 2;
 	while(!m_file.is_open())
 	{
@@ -35,6 +33,9 @@ Log::Log()
 
 		m_file.open("GameLog_" + stream.str() + ".txt");
 	}
+
+	// redirect clog to m_file
+	clog.rdbuf(m_file.rdbuf());
 }
 
 Log::~Log()
@@ -47,41 +48,41 @@ Log::~Log()
 
 void Log::Write(const std::string& str)
 {
-	WriteGeneric(str,m_timer.GetTime(),m_file);
+	WriteGeneric(str,m_timer.GetTime());
 }
 
 void Log::Write(const char* str)
 {
-	WriteGeneric(str,m_timer.GetTime(),m_file);
+	WriteGeneric(str,m_timer.GetTime());
 }
 
 void Log::Write(unsigned int i)
 {
-	WriteGeneric(i,m_timer.GetTime(),m_file);
+	WriteGeneric(i,m_timer.GetTime());
 }
 
 void Log::Write(unsigned long i)
 {
-	WriteGeneric(i,m_timer.GetTime(),m_file);
+	WriteGeneric(i,m_timer.GetTime());
 }
 
 void Log::Write(int i)
 {
-	WriteGeneric(i,m_timer.GetTime(),m_file);
+	WriteGeneric(i,m_timer.GetTime());
 }
 void Log::Write(float f)
 {
-	WriteGeneric(f,m_timer.GetTime(),m_file);
+	WriteGeneric(f,m_timer.GetTime());
 }
 void Log::Write(double d)
 {
-	WriteGeneric(d,m_timer.GetTime(),m_file);
+	WriteGeneric(d,m_timer.GetTime());
 }
 void Log::Write(char c)
 {
-	WriteGeneric(c,m_timer.GetTime(),m_file);
+	WriteGeneric(c,m_timer.GetTime());
 }
 void Log::Write(bool b)
 {
-	WriteGeneric(b,m_timer.GetTime(),m_file);
+	WriteGeneric(b,m_timer.GetTime());
 }
