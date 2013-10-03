@@ -20,32 +20,26 @@
 #include <string>
 #include <memory>
 
-// Manages loading and freeing of all plugins
+/*
+   The PluginManager manages all of the dll plugins. It will load and unload them when needed.
+*/
 class PluginManager
 {
 public:
 
-	/*
-	   This class manages all of the dll plugins. It will load and unload them when needed.
-	*/
-
 	PluginManager();
 	~PluginManager();
 
-	//  ===== interface with dlls =====
-
-	//bool Good(const char* pFile) const; // todo: need to implement again
-
-	// returns the plugin if found, else, it returns null
+	// returns the plugin if found, else, it returns nullptr
 	const IPlugin* GetPlugin(DLLType type) const;
 	IPlugin* GetPlugin(DLLType type);
 
-	// Loads the dll
-	// returns a valid plugin if loaded
-	// returns nullptr in the case of error
-	// Note: Each plugin must export: "IPlugin* CreatePlugin(asIScriptEngine* as)" used to create the plugin
-	// The extension is not needed to be added to the string. On linux, there is no need to prefix the dll's with 'lib'
-	IPlugin* LoadDLL(std::string dllName, std::string folder = "./");
+	/* Loads a plugin dll. Plugin dlls have the extension: ".plug"
+	   returns a valid plugin if loaded
+	   returns nullptr in the case of error
+	   Note: Each plugin must export: "IPlugin* CreatePlugin()" used to create the plugin
+	 */
+	IPlugin* LoadDLL(std::string file, std::string folder = "./");
 
 	// Frees the plugin given
 	// todo: need to return if this function succeeded or not

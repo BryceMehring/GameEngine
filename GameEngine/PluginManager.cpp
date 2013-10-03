@@ -1,6 +1,5 @@
 // Programmed By Bryce Mehring
 
-// Read chapter 16, use the dynamic object mapper with the DLL files.
 #include "PluginManager.h"
 #include "Log.h"
 
