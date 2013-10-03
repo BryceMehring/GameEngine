@@ -34,7 +34,7 @@ public:
 
 	// Fonts
 	virtual void DrawString(const char* str, // the string that gets drawn
-							const glm::vec3& pos, // pos of the text in world space
+							const glm::vec3& pos, // pos of the text in the current render space
 							const glm::vec2& scale = glm::vec2(10.0f), // scaling the text
 							const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
 							const char* font = nullptr, // the desired font, may be null if you wish to use the default font

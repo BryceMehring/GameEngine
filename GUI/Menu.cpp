@@ -50,7 +50,7 @@ void Menu::AddElement(IElement* pElement)
 
 void Menu::Update(GUI* pGUI, ::IKMInput& input, double dt)
 {
-	if(input.KeyDown(32))
+	if(input.KeyPress(32))
 	{
 		if(m_pPrev != nullptr)
 		{
@@ -58,7 +58,7 @@ void Menu::Update(GUI* pGUI, ::IKMInput& input, double dt)
 		}
 	}
 
-	if(input.KeyDown(258))
+	if(input.KeyPress(258))
 	{
 		unsigned int index = pGUI->GetIndex();
 
@@ -69,7 +69,7 @@ void Menu::Update(GUI* pGUI, ::IKMInput& input, double dt)
 		pGUI->SetIndex(index);
 
 	}
-	else if(input.KeyDown(257))
+	else if(input.KeyPress(257))
 	{
 		unsigned int index = pGUI->GetIndex();
 		if(index < m_elements.size())

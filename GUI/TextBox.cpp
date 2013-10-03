@@ -63,11 +63,11 @@ void TextBox::AddKey(char Key)
 
 void TextBox::Update(IKMInput& input, double dt)
 {
-	if(input.KeyDown(259))
+	if(input.KeyPress(259))
 	{
 		Backspace();
 	}
-	else if(input.KeyDown(257))
+	else if(input.KeyPress(257))
 	{
 		Write();
 	}

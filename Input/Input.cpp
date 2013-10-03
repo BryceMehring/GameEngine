@@ -233,11 +233,11 @@ bool Input::CheckKey(int Key, bool once, int flag)
 	return bSuccess;
 }
 
-bool Input::KeyDown(int Key, bool once)
+bool Input::KeyPress(int Key, bool once)
 {
 	return CheckKey(Key,once,GLFW_PRESS);
 }
-bool Input::KeyUp(int Key, bool once)
+bool Input::KeyRelease(int Key, bool once)
 {
 	return CheckKey(Key,once,GLFW_RELEASE);
 }

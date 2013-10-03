@@ -52,7 +52,7 @@ int Game::Run()
 	double prevTimeStamp = 0.0;
 
 	// Loop while the use has not quit
-	while(!m_pInput->KeyDown(GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(glfwGetCurrentContext()))
+	while(!m_pInput->KeyPress(GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(glfwGetCurrentContext()))
 	{
 		double currentTimeStamp = glfwGetTime();
 		m_fDT = currentTimeStamp - prevTimeStamp;
@@ -85,7 +85,7 @@ void Game::Update()
 		m_NextState.clear();
 	}
 
-	if(m_pInput->KeyDown(GLFW_KEY_F8))
+	if(m_pInput->KeyPress(GLFW_KEY_F8))
 	{
 		m_pRenderer->EnableVSync(bSync);
 		bSync = !bSync;

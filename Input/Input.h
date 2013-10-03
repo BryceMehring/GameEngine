@@ -39,8 +39,8 @@ public:
 	virtual bool LoadKeyBindFile(const std::string& file);
 
 	// Keyboard
-	virtual bool KeyDown(int Key, bool once = true);
-	virtual bool KeyUp(int Key, bool once = true);
+	virtual bool KeyPress(int Key, bool once = true);
+	virtual bool KeyRelease(int Key, bool once = true);
 	virtual bool CharKeyDown(char&) const;
 
 	// Mouse
