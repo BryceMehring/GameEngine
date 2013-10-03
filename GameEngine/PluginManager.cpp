@@ -2,7 +2,7 @@
 
 // Read chapter 16, use the dynamic object mapper with the DLL files.
 #include "PluginManager.h"
-#include "FileManager.h"
+#include "Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -96,7 +96,7 @@ IPlugin* PluginManager::GetPlugin(DLLType type)
 
 IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 {
-	FileManager::Instance().WriteToLog("Loading " + file);
+	Log::Instance().Write("Loading " + file);
 
 	shared_ptr<PluginInfo> dll(new PluginInfo);
 
@@ -110,11 +110,11 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 
 	if(dll->mod == nullptr)
 	{
-		FileManager::Instance().WriteToLog("Cannot open: " + dllFile);
+		Log::Instance().Write("Cannot open: " + dllFile);
 #ifdef _WIN32
-		FileManager::Instance().WriteToLog(GetLastError());
+		Log::Instance().Write(GetLastError());
 #else
-		FileManager::Instance().WriteToLog(dlerror());
+		Log::Instance().Write(dlerror());
 #endif
 
 		return nullptr;
@@ -130,7 +130,7 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 
 	if(pFunct == nullptr)
 	{
-		FileManager::Instance().WriteToLog("Corrupted Shared Library: " + file);
+		Log::Instance().Write("Corrupted Shared Library: " + file);
 
 		return nullptr;
 	}

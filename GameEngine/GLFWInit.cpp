@@ -1,11 +1,11 @@
 #include "GLFWInit.h"
 #include <GLFW/glfw3.h>
 #include <cassert>
-#include "FileManager.h"
+#include "Log.h"
 
 static void ErrorCallback(int, const char* error)
 {
-	FileManager::Instance().WriteToLog(error);
+	Log::Instance().Write(error);
 	abort();
 }
 

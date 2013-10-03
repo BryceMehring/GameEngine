@@ -1,6 +1,6 @@
 
 #include "Game.h"
-#include "FileManager.h"
+#include "Log.h"
 #include "ResourceFileLoader.h"
 #include <string>
 #include <ctime>
@@ -28,7 +28,7 @@ Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
 
 Game::~Game()
 {
-	FileManager::Instance().WriteToLog("Shutting Down");
+	Log::Instance().Write("Shutting Down");
 
 	m_StateMachine.RemoveState(*this);
 }

@@ -1,5 +1,5 @@
 #include "Game.h"
-#include "FileManager.h"
+#include "Log.h"
 #include "ResourceFileLoader.h"
 #include <GLFW/glfw3.h>
 
@@ -21,7 +21,7 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 	m_pCurrentState->Init(game);
 
 	// Update change to log
-	FileManager::Instance().WriteToLog("Changing state to: " + state);
+	Log::Instance().Write("Changing state to: " + state);
 
 	// update window caption
 	glfwSetWindowTitle(glfwGetCurrentContext(),state.c_str());

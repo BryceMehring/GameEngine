@@ -44,7 +44,7 @@ asVM::asVM() : m_iExeScript(0)
 
 	RegisterStdString(m_pEngine);
 
-	//::FileManager::Instance().RegisterScript(*this);
+	//::Log::Instance().RegisterScript(*this);
 	//::RegisterStrAlgorScript(*this);
 
 	// turn off auto GARBAGE_COLLECT

@@ -1,6 +1,6 @@
 ﻿
 #include "ResourceManager.h"
-#include "FileManager.h"
+#include "Log.h"
 #include <sstream>
 #include <fstream>
 #include <cmath>
@@ -298,7 +298,7 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	int InfoLogLength;
 
 	// Compile Vertex Shader
-	FileManager::Instance().WriteToLog(std::string("Compiling shader :") + std::string(vert.c_str()));
+	Log::Instance().Write(std::string("Compiling shader :") + std::string(vert.c_str()));
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	glCompileShader(VertexShaderID);
@@ -310,10 +310,10 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
 
 	if(VertexShaderErrorMessage.size() > 1)
-		FileManager::Instance().WriteToLog((char*)&VertexShaderErrorMessage[0]);
+		Log::Instance().Write((char*)&VertexShaderErrorMessage[0]);
 
 	// Compile Fragment Shader
-	FileManager::Instance().WriteToLog(std::string("Compiling shader :") + std::string(frag.c_str()));
+	Log::Instance().Write(std::string("Compiling shader :") + std::string(frag.c_str()));
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
 	glCompileShader(FragmentShaderID);
@@ -325,10 +325,10 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
 
 	if(FragmentShaderErrorMessage.size() > 1)
-		FileManager::Instance().WriteToLog(&FragmentShaderErrorMessage[0]);
+		Log::Instance().Write(&FragmentShaderErrorMessage[0]);
 
 	// Link the program
-	FileManager::Instance().WriteToLog("Linking Program");
+	Log::Instance().Write("Linking Program");
 	GLuint ProgramID = glCreateProgram();
 	glAttachShader(ProgramID, VertexShaderID);
 	glAttachShader(ProgramID, FragmentShaderID);
@@ -341,7 +341,7 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
 
 	if(ProgramErrorMessage.size() > 1)
-		FileManager::Instance().WriteToLog(&ProgramErrorMessage[0]);
+		Log::Instance().Write(&ProgramErrorMessage[0]);
 
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);

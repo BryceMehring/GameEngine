@@ -42,7 +42,7 @@ bool QuadTree::HasPoint() const
 
 bool QuadTree::IsFull() const
 {
-	return (m_Objects.size()) >= (32); // 16
+	return (m_Objects.size()) >= (16); // 16
 }
 
 

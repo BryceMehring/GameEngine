@@ -1,6 +1,8 @@
 #include "ResourceFileLoader.h"
 #include "Game.h"
-#include "FileManager.h"
+#include "Log.h"
+
+#include <sstream>
 
 void LoadResourceFile(const std::string& file, Game& game, const std::string& folder)
 {
