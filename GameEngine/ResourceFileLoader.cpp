@@ -26,10 +26,11 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 		std::string fileName;
 		stream >> fileName;
 
-		fileName = folder + '/' + fileName;
-
-		if(fileName.size() > 0)
+		if(!fileName.empty())
 		{
+			fileName = folder + '/' + fileName;
+			Log::Instance().Write("Loading: " + fileName);
+
 			bool bSuccess = true;
 			if(type == "texture")
 			{
@@ -54,6 +55,12 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 			{
 
 			}
+			else
+			{
+				Log::Instance().Write("invalid resource type");
+				assert(false);
+			}
+
 			assert(bSuccess);
 		}
 	}
