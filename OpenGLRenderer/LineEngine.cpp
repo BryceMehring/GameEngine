@@ -58,7 +58,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
-	m_LineSubsets.push_back(LineSubset(glm::clamp(fWidth,m_lineSizeMin,m_lineSizeMax),uiLength,space));
+	m_LineSubsets.push_back(LineSubset(uiLength,glm::clamp(fWidth,m_lineSizeMin,m_lineSizeMax),space));
 	m_iCurrentLength = uiNewLength;
 }
 
