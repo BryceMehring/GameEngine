@@ -9,9 +9,8 @@ LineEngine::LineEngine(ResourceManager* pRM, unsigned int maxLength, Camera* pCa
 	m_pCamera[1] = pOrthoCam;
 
 	CreateVertexBuffer();
+	GetLineWidthRange();
 
-	// Get the range of widths supported by the hardware
-	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE,m_fMaxWidth);
 }
 LineEngine::~LineEngine()
 {
@@ -25,10 +24,19 @@ void LineEngine::CreateVertexBuffer()
 	glBufferData(GL_ARRAY_BUFFER,sizeof(LineVertex) * m_iMaxLength,0,GL_DYNAMIC_DRAW);
 }
 
-void LineEngine::GetLineWidthRange(glm::vec2& out) const
+void LineEngine::GetLineWidthRange(float& min, float& max) const
 {
-	out.x = m_fMaxWidth[0];
-	out.y = m_fMaxWidth[1];
+	min = m_lineSizeMin;
+	max = m_lineSizeMax;
+}
+
+void LineEngine::GetLineWidthRange()
+{
+	float lineWidth[2];
+	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE,lineWidth);
+
+	m_lineSizeMin = lineWidth[0];
+	m_lineSizeMax = lineWidth[1];
 }
 
 void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T, RenderSpace space)
@@ -50,12 +58,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
-	LineSubset subset;
-	subset.fWidth = glm::clamp(fWidth,m_fMaxWidth[0],m_fMaxWidth[1]);
-	subset.uiLength = uiLength;
-	subset.space = space;
-
-	m_LineSubsets.push_back(subset);
+	m_LineSubsets.push_back(LineSubset(glm::clamp(fWidth,m_lineSizeMin,m_lineSizeMax),uiLength,space));
 	m_iCurrentLength = uiNewLength;
 }
 
@@ -91,7 +94,7 @@ void LineEngine::Render()
 		glLineWidth(m_LineSubsets[j].fWidth);
 		glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera[(int)m_LineSubsets[j].space]->viewProj()[0][0]);
 
-		glDrawArrays( GL_LINE_STRIP,uiStartingIndex,m_LineSubsets[j].uiLength);
+		glDrawArrays(GL_LINE_STRIP,uiStartingIndex,m_LineSubsets[j].uiLength);
 
 		uiStartingIndex += m_LineSubsets[j].uiLength;
 	}

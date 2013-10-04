@@ -282,9 +282,9 @@ void oglRenderer::DrawString(const char* str, const glm::vec3& pos, const glm::v
 	m_pFonts->DrawString(str,font,pos,scale,color,options,m_renderSpace);
 }
 
-void oglRenderer::GetLineWidthRange(glm::vec2& out) const
+void oglRenderer::GetLineWidthRange(float& min, float& max) const
 {
-	m_pLines->GetLineWidthRange(out);
+	m_pLines->GetLineWidthRange(min, max);
 }
 
 void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float fWidth, const glm::vec4& color, const glm::mat4& T)

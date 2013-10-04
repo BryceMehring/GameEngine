@@ -13,6 +13,9 @@ struct LineVertex
 
 struct LineSubset
 {
+	LineSubset(unsigned int length, float width, RenderSpace rs) :
+		uiLength(length), fWidth(width), space(rs) {}
+
 	unsigned int uiLength;
 	float fWidth;
 	RenderSpace space;
@@ -25,7 +28,7 @@ public:
 	LineEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam, Camera* pOrthoCam);
 	~LineEngine();
 
-	void GetLineWidthRange(glm::vec2& out) const;
+	void GetLineWidthRange(float& min, float& max) const;
 
 	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T, RenderSpace space);
 
@@ -43,11 +46,15 @@ private:
 	Camera* m_pCamera[2];
 	ResourceManager* m_pRM;
 
-	float m_fMaxWidth[2]; // todo: this should not be an array.
+	float m_lineSizeMin;
+	float m_lineSizeMax;
 
 	std::vector<LineSubset> m_LineSubsets;
 
 	void CreateVertexBuffer();
+
+	// Get the range of widths supported by the hardware
+	void GetLineWidthRange();
 
 };
 
