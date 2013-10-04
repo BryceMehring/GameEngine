@@ -193,7 +193,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 						v[index + 3].uv = bottomRight;
 						v[index + 3].color = subIter.color;
 
-						posW.x += fAdvance * subIter.scale.x + 0.5f;
+						posW.x += fAdvance * subIter.scale.x;
 
 						++iCurrentVert;
 						++iSubsetLength;
