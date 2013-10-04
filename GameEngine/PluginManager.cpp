@@ -33,10 +33,7 @@ PluginInfo::PluginInfo() : pPlugin(nullptr), mod(nullptr)
 
 PluginInfo::~PluginInfo()
 {
-	if(pPlugin != nullptr)
-	{
-		delete pPlugin;
-	}
+	delete pPlugin;
 
 	if(mod != nullptr)
 	{
