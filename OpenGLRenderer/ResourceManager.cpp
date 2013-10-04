@@ -175,32 +175,6 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 		m_resources.insert(std::make_pair(id,new Texture(textureID,width,height)));
 	}
 	return success;
-
-	/*std::ifstream in;
-	in.open(file + ".fnt");
-	if(in.is_open())
-	{
-		// Load font
-		Charset* pCharSet = new Charset(textureId,x,y,spriteWidth,spriteHeight);
-		in >> (*pCharSet);
-
-		m_resources.insert({id,pCharSet});
-
-		in.close();
-	}
-	else
-	{
-		in.open(file + ".txt");
-		if(in)
-		{
-			in >> spriteWidth >> spriteHeight;
-			in.close();
-		}
-
-		m_resources.insert({id,new Texture(textureId,x,y,spriteWidth,spriteHeight)});
-	}
-
-	return true;*/
 }
 
 bool ResourceManager::LoadAnimation(const std::string& id, const std::string& file)
