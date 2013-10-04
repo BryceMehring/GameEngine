@@ -87,7 +87,7 @@ void Camera::setLens(float w, float h, float nearZ, float farZ)
 {
 	m_width = w;
 	m_height = h;
-	m_Proj = glm::ortho(0.0f,w,0.0f,h,nearZ,farZ);
+	m_Proj = glm::ortho(-w/2,w/2,-h/2,h/2,nearZ,farZ); // glm::ortho(0.0f,w,0.0f,h,nearZ,farZ);
 }
 
 void Camera::setLens(float fov, float w, float h, float nearZ, float farZ)
