@@ -7,26 +7,21 @@
 #include <queue>
 #include <fstream>
 
-#define MAX_NODES 4
-#define GET_INDEX(Node1) (Node1->m_Previous == nullptr) ? -1l : (MAX_NODES - (&Node1->m_Previous->m_Nodes[MAX_NODES - 1] - Node1))
-
 using namespace std;
 
-QuadTree::QuadTree() : m_Previous(nullptr), m_iHeight(0)
+QuadTree::QuadTree(const Math::FRECT& rect, unsigned int nodeCapacity, unsigned int height, QuadTree* pPrevious) : 
+	m_Rect(rect), m_iHeight(height), m_Previous(pPrevious), m_iCapacity(nodeCapacity)
 {
 }
 
-QuadTree::QuadTree(const Math::FRECT& R) : R(R), m_Previous(nullptr), m_iHeight(0)
+QuadTree::QuadTree(const Math::FRECT& R, unsigned int nodeCapacity) : m_Rect(R), m_Previous(nullptr), m_iHeight(0), m_iCapacity(nodeCapacity)
 {
 	SubDivide();
-}
-QuadTree::~QuadTree()
-{
 }
 
 bool QuadTree::IsWithin(ISpatialObject& obj) const
 {
-	return R.Intersects(obj.GetCollisionPolygon());
+	return m_Rect.Intersects(obj.GetCollisionPolygon());
 }
 
 
@@ -35,27 +30,25 @@ bool QuadTree::IsDivided() const
 	return (!m_Nodes.empty());
 }
 
-bool QuadTree::HasPoint() const
+bool QuadTree::HasObjects() const
 {
 	return (!m_Objects.empty());
 }
 
 bool QuadTree::IsFull() const
 {
-	return (m_Objects.size()) >= (16); // 16
+	return (m_Objects.size() >= m_iCapacity);
 }
 
 
 void QuadTree::SubDivide()
 {
-	const Math::FRECT& rect = R.GetRect();
+	const Math::FRECT& rect = m_Rect.GetRect();
 
 	// this will divide the current rect into MAX_NODES new rectangles
 	glm::vec2 middle = rect.Middle();
 	const glm::vec2& topLeft = rect.topLeft;
 	const glm::vec2& bottomRight = rect.bottomRight;
-
-	m_Nodes.resize(4);
 
 	Math::FRECT subRects[] =
 	{
@@ -65,20 +58,27 @@ void QuadTree::SubDivide()
 		Math::FRECT(middle,bottomRight)
 	};
 
+	m_Nodes.reserve(4);
+
 	// Loop over all rects, and create them
-	for(unsigned int i = 0; i < m_Nodes.size(); ++i)
+	for(unsigned int i = 0; i < 4; ++i)
 	{
-		m_Nodes[i].R = subRects[i];
-		m_Nodes[i].m_iHeight = m_iHeight + 1;
-		m_Nodes[i].m_Previous = this;
+		m_Nodes.push_back(QuadTree(subRects[i],m_iCapacity,m_iHeight + 1,this));
+
+		for(auto& iter : m_Objects)
+		{
+			m_Nodes[i].Insert(*iter);
+		}
 	}
+
+	m_Objects.clear();
 }
 
 void QuadTree::Render(IRenderer& renderer)
 {
 	for(NodeIterator iter = this; (*iter) != nullptr; ++iter)
 	{
-		if(iter->HasPoint())
+		if(iter->HasObjects())
 		{
 			const Math::FRECT& R = iter->GetRect();
 
@@ -98,31 +98,30 @@ void QuadTree::Render(IRenderer& renderer)
 
 void QuadTree::Erase(ISpatialObject& obj)
 {
-	std::vector<QuadTree*> nodes;
-	stack<QuadTree*> theStack;
-
-	theStack.push(this);
-
-	while(!theStack.empty())
+	if(IsDivided())
 	{
-		QuadTree* pTop = theStack.top();
-		theStack.pop();
+		const Math::ICollisionPolygon& poly = obj.GetCollisionPolygon();
 
-		pTop->FindNearNodes(obj.GetCollisionPolygon(),nodes);
-
-		// as we iterate over the near nodes
-		for(unsigned int i = 0; i < nodes.size(); ++i)
+		// Loop through all of the sub nodes
+		for(unsigned int i = 0; i < m_Nodes.size(); ++i)
 		{
-			QuadTree* pNode = nodes[i];
-			auto& objList = pNode->m_Objects;
+			QuadTree& subNode = m_Nodes[i];
 
-			auto iter = std::find(objList.begin(),objList.end(),&obj);
-			if(iter != objList.end())
+			if(subNode.m_Rect.Intersects(poly))
 			{
-				objList.erase(iter);
+				subNode.Erase(obj);
 			}
+		}
+	}
+	else
+	{
+		//m_Objects.erase(&obj);
 
-			theStack.push(pNode);
+		auto iter = std::find(m_Objects.begin(),m_Objects.end(),&obj);
+
+		if(iter != m_Objects.end())
+		{
+			m_Objects.erase(iter);
 		}
 	}
 }
@@ -142,37 +141,39 @@ void QuadTree::RInsert(ISpatialObject& obj)
 {
 	// find the near nodes to pObj
 
-	std::vector<QuadTree*> nodes;
-
-	FindNearNodes(obj.GetCollisionPolygon(),nodes);
-
-	// as we iterate over the near nodes
-	for(unsigned int i = 0; i < nodes.size(); ++i)
+	if(IsDivided())
 	{
-		QuadTree* pNode = nodes[i];
+		std::vector<QuadTree*> nodes;
 
-		const Math::FRECT& subR = nodes[i]->R.GetRect();
+		FindNearNodes(obj.GetCollisionPolygon(),nodes);
 
-		// if the current node is full
-		if(pNode->IsFull() && subR.Height() > 4.0f)
+		// as we iterate over the near nodes
+		for(unsigned int i = 0; i < nodes.size(); ++i)
 		{
-			if(!pNode->IsDivided())
+			QuadTree* pNode = nodes[i];
+
+			const Math::FRECT& subR = nodes[i]->m_Rect.GetRect();
+
+			// if the current node is full
+			if(pNode->IsFull() && subR.Height() > 4.0f)
 			{
-				pNode->SubDivide();
+				if(!pNode->IsDivided())
+				{
+					pNode->SubDivide();
+				}
 			}
 
-			// recursive call
 			pNode->RInsert(obj);
 		}
-		else
-		{
-			pNode->m_Objects.push_back(&obj);
-		}
+	}
+	else
+	{
+		m_Objects.push_back(&obj);
+		//m_Objects.insert(&obj);
 	}
 
 }
 
-// this method is recursive, for simplicity
 void QuadTree::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<QuadTree*>& out)
 {
 	out.clear();
@@ -182,7 +183,7 @@ void QuadTree::FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<Qu
 	{
 		QuadTree& subNode = m_Nodes[i];
 
-		if(subNode.R.Intersects(poly))
+		if(subNode.m_Rect.Intersects(poly))
 		{
 			out.push_back(&subNode);
 		}
@@ -216,27 +217,32 @@ void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector
 		{
 			QuadTree& subNode = pTop->m_Nodes[i];
 
-			if(subNode.R.Intersects(poly))
+			if(subNode.m_Rect.Intersects(poly))
 			{
-				auto& objList = subNode.m_Objects;
-
-				for(auto iter = objList.begin(); iter != objList.end(); ++iter)
+				if(!subNode.IsDivided())
 				{
-					if(pObj == nullptr || (pObj != nullptr && (&pObj->GetCollisionPolygon()) != (&(*iter)->GetCollisionPolygon())))
-					{
-						if((*iter)->GetCollisionPolygon().Intersects(poly))
-						{
-							auto onceFilterIter = onceFilter.insert(*iter);
+					auto& objList = subNode.m_Objects;
 
-							if(onceFilterIter.second)
+					for(auto iter = objList.begin(); iter != objList.end(); ++iter)
+					{
+						if(pObj == nullptr || (pObj != nullptr && (&pObj->GetCollisionPolygon()) != (&(*iter)->GetCollisionPolygon())))
+						{
+							if((*iter)->GetCollisionPolygon().Intersects(poly))
 							{
-								out.push_back(*iter);
+								auto onceFilterIter = onceFilter.insert(*iter);
+
+								if(onceFilterIter.second)
+								{
+									out.push_back(*iter);
+								}
 							}
 						}
 					}
 				}
-
-				theStack.push(&subNode);
+				else
+				{
+					theStack.push(&subNode);
+				}
 			}
 		}
 	}
@@ -289,8 +295,7 @@ bool NodeIterator::operator!=(const NodeIterator& node)
 
 unsigned int NodeIterator::GetIndex() const
 {
-	return GET_INDEX(m_pNode);
-	//return index;
+	return (m_pNode->m_Previous == nullptr) ? -1l : (4 - (&m_pNode->m_Previous->m_Nodes[3] - m_pNode));
 }
 
 void NodeIterator::LoopDown(unsigned int index)
@@ -305,14 +310,14 @@ void NodeIterator::LoopUp()
 
 	m_pNode = m_pNode->m_Previous;
 
-	if(index >= MAX_NODES)
+	if(index >= 4)
 	{
 		do
 		{
 			index = GetIndex();
 			m_pNode = m_pNode->m_Previous;
 
-		} while(index == MAX_NODES);
+		} while(index == 4);
 	}
 
 	if(index != (unsigned int)-1)

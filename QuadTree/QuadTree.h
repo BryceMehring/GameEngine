@@ -1,8 +1,5 @@
 // Programmed by Bryce Mehring
-// 1/2/2012
-
 // todo: need to clean up the interfaces.
-// todo: need to update the quadtree so that it grows upwards when no objects are in the node.
 
 #ifndef _QUADTREE_
 #define _QUADTREE_
@@ -33,61 +30,64 @@ class QuadTree
 {
 public:
 
-	typedef std::list<ISpatialObject*> LIST_DTYPE;
+	QuadTree(const Math::FRECT& R, unsigned int nodeCapacity);
 
-	friend class NodeIterator;
-
-	// constructors
-	QuadTree();
-	QuadTree(const Math::FRECT& R);
-	~QuadTree();
-
+	// removes obj from the quadtree
 	void Erase(ISpatialObject& obj);
 
-	// returns true if P lies within the rectangle
+	// returns true if obj lies within the quadtree
 	bool IsWithin(ISpatialObject& obj) const;
 
 	// operations
 	bool Insert(ISpatialObject& obj);
 
+	// returns all objects in the quadtree that collide with pObj or poly via the out parameter
 	void QueryNearObjects(const ISpatialObject* pObj, std::vector<ISpatialObject*>& out);
 	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out);
 
+	// Draws the quadtree rectangles
 	void Render(IRenderer& renderer);
 
-	const Math::FRECT& GetRect() const { return R.GetRect(); }
+	// Returns the quadtree rectangle
+	const Math::FRECT& GetRect() const { return m_Rect.GetRect(); }
 
 private:
 
-	// The rectangle of the current node
-	Math::CRectangle R;
-	LIST_DTYPE m_Objects;
-
-	std::vector<QuadTree> m_Nodes;
-	QuadTree* m_Previous;
-
-	int m_iHeight;
-
-	// --- helper functions ---
+	QuadTree(const Math::FRECT& rect, unsigned int nodeCapacity, unsigned int height, QuadTree* pPrevious);
 
 	void FindNearNodes(const Math::ICollisionPolygon& poly, std::vector<QuadTree*>& out);
 
 	// recursive insertion algorithm
 	void RInsert(ISpatialObject& obj);
 
-	// Returns true if this node is divided.
+	// Returns true if this node is divided
 	bool IsDivided() const;
 
-	bool HasPoint() const;
+	// Returns true if this node has objects inserted into it
+	bool HasObjects() const;
 	bool IsFull() const;
 
 	// Subdivides the current node/R into 4 sub nodes
 	void SubDivide();
 
 	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj);
+
+private:
+
+	typedef std::vector<ISpatialObject*> LIST_DTYPE;
+
+	friend class NodeIterator;
+
+	Math::CRectangle m_Rect;
+	LIST_DTYPE m_Objects;
+
+	std::vector<QuadTree> m_Nodes;
+	QuadTree* const m_Previous;
+
+	int m_iCapacity;
+	const int m_iHeight;
 };
 
-// todo: need to create a better public/protected/private interface
 class NodeIterator
 {
 public:
