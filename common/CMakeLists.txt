@@ -15,6 +15,10 @@ set(COMMON_SOURCE
     Timer.cpp
     Log.cpp)
 
-# build the game engine
+# build the common shared lib
 add_library(common SHARED ${COMMON_HEADERS} ${COMMON_SOURCE})
 add_definitions(-DCOMMON_EXPORT)
+
+if(ENABLE_CPACK)
+	install(TARGETS common RUNTIME DESTINATION ./)
+endif(ENABLE_CPACK)
