@@ -1,10 +1,6 @@
 #ifndef _OGLRENDERER_
 #define _OGLRENDERER_
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-
 #include "IRenderer.h"
 #include "PluginManager.h"
 #include "FontEngine.h"

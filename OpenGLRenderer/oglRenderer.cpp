@@ -32,14 +32,16 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pOrthoCamera(nullptr), m_pWin
 
 	m_pOrthoCamera = CreateCamera();
 
+	int width, height;
+	glfwGetFramebufferSize(m_pWindow,&width, &height);
 	// build camera, move this code elsewhere
-	m_pOrthoCamera->setLens(2.0f,2.0f,0.1f,5000.0f);
+	m_pOrthoCamera->setLens(width,height,0.1f,5000.0f); // 2.0f, 2.0f
 	m_pOrthoCamera->lookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_pOrthoCamera->update();
 
 	m_pFonts.reset(new FontEngine(&m_rm,1024*8,m_pCamera,m_pOrthoCamera));
 	m_pLines.reset(new LineEngine(&m_rm,1024*8,m_pCamera,m_pOrthoCamera));
-	m_pSprites.reset(new SpriteEngine(&m_rm,1024*20,m_pCamera,m_pOrthoCamera));
+	m_pSprites.reset(new SpriteEngine(&m_rm,1024*40,m_pCamera,m_pOrthoCamera));
 
 }
 
@@ -192,18 +194,7 @@ void oglRenderer::Present()
 
 void oglRenderer::EnableVSync(bool enable)
 {
-#ifdef _WIN32
-	// Turn on vertical screen sync under Windows.
-	// (I.e. it uses the WGL_EXT_swap_control extension)
-	typedef BOOL (WINAPI *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = NULL;
-	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-	if(wglSwapIntervalEXT)
-		wglSwapIntervalEXT(enable ? 1 : 0);
-#else
 	glfwSwapInterval(enable ? 1 : 0);
-#endif
-
 }
 
 void oglRenderer::EnumerateDisplayAdaptors()
