@@ -3,6 +3,12 @@
 
 using namespace std;
 
+Heap& Heap::Instance()
+{
+	static Heap instance;
+	return instance;
+}
+
 Heap::Heap() : m_uiAllocatedPools(0), MULTIPLE_OF(8), m_uiTotalWastedBytes(0)
 {
 	m_pool.resize(MAX_POOL_SIZE / MULTIPLE_OF);

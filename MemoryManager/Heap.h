@@ -3,17 +3,14 @@
 #define _HEAP_
 
 #include "MemoryPool.h"
-#include "Singleton.h"
 #include <vector>
 #include <map>
 
-class Heap : public Singleton<Heap>
+class Heap
 {
 public:
 
-	friend class Singleton<Heap>;
-
-	~Heap();
+	static Heap& Instance();
 
 	// returns a memory pool with a size to a multiple of 8
 	MemoryPool& GetPool(unsigned int size);
@@ -37,6 +34,7 @@ public:
 private:
 
 	Heap();
+	~Heap();
 
 	struct Data
 	{
