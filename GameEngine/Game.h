@@ -46,14 +46,14 @@ private:
 
 };
 
+
+// The Game class holds the main game loop and manages the successful creation of all the plugins
 class Game
 {
 public:
 
 	// Init GLFW, load dlls, load the base resource file
 	GAME_ENGINE_API Game();
-
-	// Destroy everything
 	GAME_ENGINE_API ~Game();
 
 	// Get the current state
@@ -66,16 +66,18 @@ public:
 	GAME_ENGINE_API void LoadPlugins();
 
 	// Get Functions
-	// todo: provide const overloaded versions
+	// todo: provide const overloaded versions?
 	GAME_ENGINE_API IRenderer& GetRenderer();
 	GAME_ENGINE_API IKMInput& GetInput();
 	GAME_ENGINE_API PluginManager& GetPM();
 	GAME_ENGINE_API asVM& GetAs();
 
-	GAME_ENGINE_API double GetDt() const; // time diff between frames in seconds
+	// time diff between frames in seconds
+	GAME_ENGINE_API double GetDt() const;
 	GAME_ENGINE_API unsigned int GetFps() const;
 
 	// play the game set by SetNextState
+	// this method should only be called once in the GameLauncher
 	GAME_ENGINE_API int Run();
 
 private:
