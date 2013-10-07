@@ -8,7 +8,7 @@ class IInputPlugin : public IPlugin
 {
 public:
 
-	// reset all once only data members
+	// processes input events
 	virtual void Poll() = 0;
 	
 protected:
