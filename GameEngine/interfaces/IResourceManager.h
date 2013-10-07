@@ -62,11 +62,11 @@ public:
 	 **/
 	virtual bool LoadShader(const std::string& id, const std::string& vert, const std::string& frag) = 0;
 
-	// return via parameter texture info for a stringID
+	// return via parameter texture info for a id
 	// return true if texture is found, false if not
 	virtual bool GetTextureInfo(const std::string& id, TextureInfo& out) const = 0;
 
-	// todo: need to implement these, do not use
+	// Removes and deletes all resources loaded
 	virtual void Clear() = 0;
 
 };
