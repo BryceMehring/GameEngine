@@ -8,8 +8,8 @@
 #include <vector>
 #include <list>
 #include <assert.h>
-#include "IRender.h"
 #include "VecMath.h"
+#include "IRender.h"
 
 class ISpatialObject : public IRender
 {
@@ -26,7 +26,7 @@ public:
 	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const = 0;
 };
 
-class QuadTree
+class QuadTree : public IRender
 {
 public:
 
@@ -46,7 +46,7 @@ public:
 	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out);
 
 	// Draws the quadtree rectangles
-	void Render(IRenderer& renderer);
+	void Render(IRenderer& renderer) override;
 
 	// Returns the quadtree rectangle
 	const Math::FRECT& GetRect() const { return m_Rect.GetRect(); }
