@@ -45,7 +45,8 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 
 		if( pShader != nullptr && pTex != nullptr)
 		{
-			Layer& layer = m_spriteLayers[(int)space][(int)transformation[3].z];
+			int iZorder = (int)(floor(transformation[3].z));
+			Layer& layer = m_spriteLayers[space][iZorder];
 			layer.sprites[tech][texture].push_back(Sprite(transformation,color,tiling,iCellId));
 			++m_iCurrentLength;
 		}
@@ -59,7 +60,7 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 void SpriteEngine::FillVertexBuffer()
 {
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
-	SpriteVertex* pVert = (SpriteVertex*)glMapBufferRange(GL_ARRAY_BUFFER , 0, m_iMaxLength * sizeof(SpriteVertex), GL_MAP_WRITE_BIT);
+	SpriteVertex* pVert = static_cast<SpriteVertex*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_iMaxLength * sizeof(SpriteVertex), GL_MAP_WRITE_BIT));
 
 	for(unsigned int c = 0; c < 2; ++c)
 	{
@@ -80,11 +81,11 @@ void SpriteEngine::FillVertexBuffer()
 					for(unsigned int i = 0; i < sprites.size(); ++i)
 					{
 						int x = (sprites[i].iCellId % texInfo.uiCellsWidth);
-						int y = (sprites[i].iCellId / (float)texInfo.uiCellsWidth);
+						int y = (int)(sprites[i].iCellId / (float)texInfo.uiCellsWidth);
 
 						// tex coords
-						glm::vec2 topLeft((float)x / (float)texInfo.uiCellsWidth,(float)y / (float)texInfo.uiCellsHeight);
-						glm::vec2 bottomRight((float)(x+1) / (float)texInfo.uiCellsWidth,(float)(y+1) / (float)texInfo.uiCellsHeight);
+						glm::vec2 topLeft(x / (float)(texInfo.uiCellsWidth),y / (float)(texInfo.uiCellsHeight));
+						glm::vec2 bottomRight((x+1) / (float)(texInfo.uiCellsWidth),(y+1) / (float)(texInfo.uiCellsHeight));
 
 						// filling in the vertices
 						pVert[0].pos = (sprites[i].T * glm::vec4(-0.5f,0.5f,0.0f,1.0f)).xyz();
@@ -166,10 +167,10 @@ void SpriteEngine::Render()
 
 				glUseProgram(pShader->GetID());
 
-				glVertexAttribPointer(atribMap.find("vertexPosition_modelspace")->second,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)0);
-				glVertexAttribPointer(atribMap.find("vertexUV")->second,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)sizeof(glm::vec3));
-				glVertexAttribPointer(atribMap.find("vertexColor")->second,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)offsetof(SpriteVertex, color));
-				glVertexAttribPointer(atribMap.find("vertexTiling")->second,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),(void*)offsetof(SpriteVertex, tiling));
+				glVertexAttribPointer(atribMap.find("vertexPosition_modelspace")->second,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),0);
+				glVertexAttribPointer(atribMap.find("vertexUV")->second,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),reinterpret_cast<void*>(sizeof(glm::vec3)));
+				glVertexAttribPointer(atribMap.find("vertexColor")->second,3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),reinterpret_cast<void*>(offsetof(SpriteVertex, color)));
+				glVertexAttribPointer(atribMap.find("vertexTiling")->second,2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),reinterpret_cast<void*>(offsetof(SpriteVertex, tiling)));
 
 				// set shader parameters
 				glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera[n]->viewProj()[0][0]);
@@ -185,10 +186,10 @@ void SpriteEngine::Render()
 					glUniform1i(pShader->GetTextureSamplerID(),0);
 
 					glDrawElements(
-								GL_TRIANGLES,      // mode
-								spriteIter.second.size() * 6,    // count 4
-								GL_UNSIGNED_SHORT,   // type
-								(GLvoid*)(uiStartingIndex * 12)  // element array buffer offset 6
+								GL_TRIANGLES,  
+								spriteIter.second.size() * 6,  
+								GL_UNSIGNED_SHORT,
+								reinterpret_cast<void*>(uiStartingIndex * 12)
 								);
 					// Increment the index to the dynamic buffer for rendering a new batch of sprites
 					uiStartingIndex += spriteIter.second.size();

@@ -14,7 +14,7 @@ enum class FontAlignment
 	Right
 };
 
-enum class RenderSpace
+enum RenderSpace
 {
 	World,
 	Screen

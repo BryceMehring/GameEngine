@@ -84,8 +84,8 @@ private:
 	std::vector<QuadTree> m_Nodes;
 	QuadTree* const m_Previous;
 
-	int m_iCapacity;
-	const int m_iHeight;
+	unsigned int m_iCapacity;
+	const unsigned int m_iHeight;
 };
 
 class NodeIterator

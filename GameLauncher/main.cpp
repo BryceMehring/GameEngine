@@ -16,7 +16,7 @@ int main(int size, char** cmd)
 	const char* pState = cmd[1];
 
 	// seed the random number generator
-	srand (time(0));
+	srand ((unsigned int)time(0));
 
 	Game myGame;
 	myGame.SetNextState(pState);

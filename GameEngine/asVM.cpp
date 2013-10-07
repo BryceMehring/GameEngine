@@ -29,7 +29,7 @@ struct Script
 void LineCallback(asIScriptContext *ctx, unsigned int *timeOut)
 {
 	// If the time out is reached we suspend the script
-	if( *timeOut < clock() )
+	if( *timeOut < (unsigned int)clock() )
 	{
 		ctx->Suspend();
 	}

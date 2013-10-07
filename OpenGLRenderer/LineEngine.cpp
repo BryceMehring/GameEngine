@@ -47,7 +47,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 
-	LineVertex* pLineVertex = (LineVertex*)glMapBufferRange(GL_ARRAY_BUFFER,sizeof(LineVertex) * m_iCurrentLength,sizeof(LineVertex) * uiLength,GL_MAP_WRITE_BIT);
+	LineVertex* pLineVertex = static_cast<LineVertex*>(glMapBufferRange(GL_ARRAY_BUFFER,sizeof(LineVertex) * m_iCurrentLength,sizeof(LineVertex) * uiLength,GL_MAP_WRITE_BIT));
 
 	for(unsigned int i = 0; i < uiLength && (i + uiLength < m_iMaxLength) ; ++i)
 	{
@@ -82,17 +82,17 @@ void LineEngine::Render()
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
-	glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(LineVertex),(void*)0);
+	glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(LineVertex),0);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(vertexColorID,4,GL_FLOAT,GL_FALSE,sizeof(LineVertex),(void*)sizeof(glm::vec3));
+	glVertexAttribPointer(vertexColorID,4,GL_FLOAT,GL_FALSE,sizeof(LineVertex),reinterpret_cast<void*>(sizeof(glm::vec3)));
 
 	unsigned int uiStartingIndex = 0;
 
 	for(unsigned int j = 0; j < m_LineSubsets.size(); ++j)
 	{
 		glLineWidth(m_LineSubsets[j].fWidth);
-		glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera[(int)m_LineSubsets[j].space]->viewProj()[0][0]);
+		glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera[m_LineSubsets[j].space]->viewProj()[0][0]);
 
 		glDrawArrays(GL_LINE_STRIP,uiStartingIndex,m_LineSubsets[j].uiLength);
 

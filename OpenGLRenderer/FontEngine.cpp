@@ -3,8 +3,6 @@
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
-#include <stddef.h>
-
 FontEngine::FontEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam, Camera* pOrthoCam) :
 	m_pRm(pRm), m_iMaxLength(2*maxLength)
 {
@@ -49,7 +47,8 @@ void FontEngine::GetStringRec(const Charset* font,const char* str, const glm::ve
 		// todo: need to newline calculations
 		if(*str != ' ' && *str != '\n')
 		{
-			fAdvance = scale.x * font->GetCharDescriptor()[(unsigned int)(*str)].Width / (float)font->GetWidth();
+			unsigned int index = *str;
+			fAdvance = scale.x * font->GetCharDescriptor()[index].Width / (float)(font->GetWidth());
 			pos.x += fAdvance * scale.x + 0.5f;
 		}
 		else if(*str == '\n')
@@ -76,15 +75,7 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& 
 	if(font == nullptr)
 		font = "font";
 
-	if(space == RenderSpace::Screen)
-	{
-		m_textSubsets[1][font].push_back(DrawTextInfo(str,pos,scale,color,options));
-	}
-	else
-	{
-		m_textSubsets[0][font].push_back(DrawTextInfo(str,pos,scale,color,options));
-	}
-
+	m_textSubsets[space][font].push_back(DrawTextInfo(str,pos,scale,color,options));
 }
 
 
@@ -117,7 +108,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 
 	// get the vertex buffer memory to write to
-	FontVertex* v = (FontVertex*)glMapBufferRange(GL_ARRAY_BUFFER , 0, m_iMaxLength * sizeof(FontVertex), GL_MAP_WRITE_BIT);
+	FontVertex* v = static_cast<FontVertex*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_iMaxLength * sizeof(FontVertex), GL_MAP_WRITE_BIT));
 
 	unsigned int iCurrentVert = 0;
 	unsigned int iSubsetIndex = 0;
@@ -169,13 +160,13 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 					{
 						int index = iCurrentVert * 4;
 
-						const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)character]; // font info about the character to draw
+						const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)(character)]; // font info about the character to draw
 
 						float fAdvance = (subIter.scale.x * charInfo.Width / (float)font->GetWidth()); // How much we will advance from the current character
 
 						// calc tex coords
-						glm::vec2 topLeft((charInfo.x / (float)font->GetWidth()),charInfo.y / (float)font->GetHeight());
-						glm::vec2 bottomRight(((charInfo.x+charInfo.Width) / (float)font->GetWidth()),(charInfo.y+charInfo.Height) / (float)font->GetHeight());
+						glm::vec2 topLeft((charInfo.x / (float)(font->GetWidth())),charInfo.y / (float)(font->GetHeight()));
+						glm::vec2 bottomRight(((charInfo.x+charInfo.Width) / (float)(font->GetWidth())),(charInfo.y+charInfo.Height) / (float)(font->GetHeight()));
 
 						v[index].pos = glm::vec3(posW.x,0.5f * subIter.scale.y + posW.y,posW.z);
 						v[index].uv = topLeft;
@@ -248,32 +239,32 @@ void FontEngine::Render()
 	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
-				pShader->GetAtribs().find("vertexPosition_modelspace")->second,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+				pShader->GetAtribs().find("vertexPosition_modelspace")->second,
 				3,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
 				sizeof(FontVertex),  // stride
-				(void*)0            // array buffer offset
+				0            // array buffer offset
 				);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(
-				pShader->GetAtribs().find("vertexUV")->second,					// attribute 1
+				pShader->GetAtribs().find("vertexUV")->second,
 				2,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
 				sizeof(FontVertex),  // stride
-				(void*)sizeof(glm::vec3) // array buffer offset
+				reinterpret_cast<void*>(sizeof(glm::vec3)) // array buffer offset
 				);
 
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(
-				pShader->GetAtribs().find("vertexColor")->second,					// attribute 1
+				pShader->GetAtribs().find("vertexColor")->second,	
 				3,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
 				sizeof(FontVertex),  // stride
-				(void*)offsetof(struct FontVertex,color)  // array buffer offset
+				reinterpret_cast<void*>(offsetof(struct FontVertex,color))  // array buffer offset
 				);
 
 	// Bind index buffer

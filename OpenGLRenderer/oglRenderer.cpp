@@ -35,7 +35,7 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pOrthoCamera(nullptr), m_pWin
 	int width, height;
 	glfwGetFramebufferSize(m_pWindow,&width, &height);
 	// build camera, move this code elsewhere
-	m_pOrthoCamera->setLens(width,height,0.1f,5000.0f); // 2.0f, 2.0f
+	m_pOrthoCamera->setLens((float)width,(float)height,0.1f,5000.0f); // 2.0f, 2.0f
 	m_pOrthoCamera->lookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_pOrthoCamera->update();
 
@@ -95,7 +95,7 @@ void oglRenderer::SaveDisplayList()
 
 	if(stream.is_open())
 	{
-		for(int i = 0; i < (int)m_videoModes.size(); ++i)
+		for(unsigned int i = 0; i < m_videoModes.size(); ++i)
 		{
 			stream << "Monitor " << i << endl;
 

@@ -225,5 +225,5 @@ void GameInfo::UpdateFPS(double dt)
 		diff = abs(tim1 - tim2);
 	}
 
-	m_uiFPS = ((61 / diff)+0.5f);
+	m_uiFPS = (unsigned int)((61 / diff)+0.5f);
 }
