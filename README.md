@@ -12,7 +12,7 @@ Set GameLauncher as the startup project, and build the solution in Visual Studio
 
 To run a game, the command line argument must be set to name of the Game Project that the Game Engine should load first.
 
-When creating an out of source game plugin, copy or use symbolic links to link the game plugin module into GameEngine/bin.
+When creating an out of source game plugin, copy or use symbolic links to link the game plugin folder 'plugin' into GameEngine/bin.
 
 ==========
 
