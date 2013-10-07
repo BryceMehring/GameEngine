@@ -62,7 +62,8 @@ public:
 	// change the current state
 	GAME_ENGINE_API void SetNextState(const std::string& state);
 
-	// ignore, working on this
+	// Reload component plugins
+	// todo: should add a feature that allows the user to select which plugin is loaded
 	GAME_ENGINE_API void LoadPlugins();
 
 	// Get Functions
@@ -76,15 +77,10 @@ public:
 	GAME_ENGINE_API double GetDt() const;
 	GAME_ENGINE_API unsigned int GetFps() const;
 
-	// play the game set by SetNextState
-	// this method should only be called once in the GameLauncher
-	GAME_ENGINE_API int Run();
-
 private:
 
 	GLFWInit m_glfwInit;
 
-	// Data members
 	asVM m_vm;
 	PluginManager m_plugins;
 
@@ -100,11 +96,14 @@ private:
 	IRenderer* m_pRenderer;
 	IKMInput* m_pInput;
 
-private:
-
 	std::string m_NextState;
 
-	// helper functions
+private:
+
+	// play the game set by SetNextState
+	// this method should only be called once in the GameLauncher
+	GAME_ENGINE_API int Run();
+	friend int main(int n, char**); // give access to run only in the main function
 
 	void RegisterScript();
 
