@@ -54,7 +54,7 @@ public:
 	// scroll change
 	virtual double MouseZ() const = 0;
 
-	// returns true if user clicks and out is the current selection box
+	// returns true if user clicks, out is the current selection box
 	virtual bool GetSelectedRect(Math::AABB& out) = 0;
 
 	// Cursor Sensitivity, (0,FLT_MAX]
