@@ -31,7 +31,7 @@ class FontEngine
 {
 public:
 
-	FontEngine(ResourceManager* pRm, VertexStructure* pVertexStructure, Camera* pCam = nullptr);
+	FontEngine(ResourceManager* pRm, IndexedVertexStructure* pVertexStructure, Camera* pCam = nullptr);
 
 	void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;
 
@@ -44,7 +44,7 @@ public:
 private:
 
 	ResourceManager* m_pRm;
-	VertexStructure* m_pVertexStructure;
+	IndexedVertexStructure* m_pVertexStructure;
 	Camera* m_pCamera;
 
 	std::map<std::string,std::vector<DrawTextInfo>> m_textSubsets; // the key is the texture for the vector of DrawTextInfo

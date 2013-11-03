@@ -140,7 +140,7 @@ public:
 
 	typedef std::array<CharDescriptor,256> FontArray;
 
-	Charset(GLuint i, int tw, int th, int sw = 1, int sh = 1) : Texture(i,0,tw,th,sw,sh)
+	Charset(GLuint i, unsigned char* pImg, int tw, int th, int sw = 1, int sh = 1) : Texture(i,pImg,tw,th,sw,sh)
 	{
 	}
 

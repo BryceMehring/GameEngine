@@ -49,7 +49,7 @@ class SpriteEngine : public SpriteEngineBase
 {
 public:
 
-	SpriteEngine(ResourceManager* pRm, VertexStructure* pVertexStruct, Camera* pCam = nullptr);
+	SpriteEngine(ResourceManager* pRm, IndexedVertexStructure* pVertexStruct, Camera* pCam = nullptr);
 	~SpriteEngine();
 
 	void DrawSprite(const std::string& tech,
@@ -67,7 +67,7 @@ public:
 private:
 
 	ResourceManager* m_pRM;
-	VertexStructure* m_pVertexStruct;
+	IndexedVertexStructure* m_pVertexStruct;
 
 	unsigned int m_iCurrentLength;
 

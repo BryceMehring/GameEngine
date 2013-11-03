@@ -235,7 +235,7 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 		std::ifstream in(file + ".fnt");
 		if((success = in.is_open()))
 		{
-			Charset* pCharset = new Charset(textureID,width,height);
+			Charset* pCharset = new Charset(textureID,pImg,width,height);
 			in >> (*pCharset);
 
 			m_resources.insert(std::make_pair(id,pCharset));

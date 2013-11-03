@@ -38,9 +38,9 @@ oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_
 	m_OrthoCamera.lookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_OrthoCamera.update();
 
-	VertexStructure* pFontVertexStruct = new VertexStructure(sizeof(FontVertex),1024*8);
+	IndexedVertexStructure* pSpriteVertexStructure = new IndexedVertexStructure(sizeof(SpriteVertex),1024*40);
+	IndexedVertexStructure* pFontVertexStruct = new IndexedVertexStructure(sizeof(FontVertex),1024*8);
 	VertexStructure* pLineVertexStruct = new VertexStructure(sizeof(LineVertex),1024*8);
-	VertexStructure* pSpriteVertexStructure = new VertexStructure(sizeof(SpriteVertex),1024*40);
 
 	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexStruct));
 	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexStruct,&m_OrthoCamera));

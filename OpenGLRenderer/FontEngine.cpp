@@ -3,7 +3,7 @@
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
-FontEngine::FontEngine(ResourceManager* pRm, VertexStructure* pVertexStructure, Camera* pCam) :
+FontEngine::FontEngine(ResourceManager* pRm, IndexedVertexStructure* pVertexStructure, Camera* pCam) :
 	m_pRm(pRm), m_pVertexStructure(pVertexStructure), m_pCamera(pCam) //m_iMaxLength(2*maxLength)
 {
 }

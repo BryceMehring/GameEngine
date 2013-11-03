@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <algorithm>
 
-SpriteEngine::SpriteEngine(ResourceManager* pRm, VertexStructure* pVertexStruct, Camera* pCam) :
+SpriteEngine::SpriteEngine(ResourceManager* pRm, IndexedVertexStructure* pVertexStruct, Camera* pCam) :
 	m_pRM(pRm), m_pVertexStruct(pVertexStruct), m_pCamera(pCam), m_iCurrentLength(0)
 {
 }
