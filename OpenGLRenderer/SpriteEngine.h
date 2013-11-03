@@ -4,6 +4,7 @@
 #include "IRenderer.h"
 #include "ResourceManager.h"
 #include "Camera.h"
+#include "VertexStructures.h"
 
 #include <map>
 #include <string>
@@ -37,11 +38,18 @@ struct Layer
 	std::map<std::string,TextureMap> sprites;
 };
 
-class SpriteEngine
+class SpriteEngineBase
 {
 public:
 
-	SpriteEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam, Camera* pOrthoCam);
+protected:
+};
+
+class SpriteEngine : public SpriteEngineBase
+{
+public:
+
+	SpriteEngine(ResourceManager* pRm, VertexStructure* pVertexStruct, Camera* pCam = nullptr);
 	~SpriteEngine();
 
 	void DrawSprite(const std::string& tech,
@@ -49,35 +57,24 @@ public:
 					const glm::mat4& transformation,
 					const glm::vec3& color,
 					const glm::vec2& tiling,
-					unsigned int iCellId,
-					RenderSpace space
-					);
+					unsigned int iCellId
+				   );
 
 	void Render();
 
-	void OnReset();
-
-	void SetCamera(Camera* pCam) { m_pCamera[0] = pCam; }
+	void SetCamera(Camera* pCam);
 
 private:
 
-
 	ResourceManager* m_pRM;
-
-	Camera* m_pCamera[2];
-
-	unsigned int m_uiVertexBuffer;
-	unsigned int m_uiIndexBuffer;
+	VertexStructure* m_pVertexStruct;
 
 	unsigned int m_iCurrentLength;
-	const unsigned int m_iMaxLength;
 
-	std::map<int,Layer> m_spriteLayers[2];
+	Camera* m_pCamera;
+	std::map<int,Layer> m_spriteLayers;
 
-	void CreateIndexBuffer();
-	void CreateVertexBuffer();
 	void FillVertexBuffer();
-
 };
 
 #endif

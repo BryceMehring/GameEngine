@@ -7,6 +7,7 @@
 #include "LineEngine.h"
 #include "SpriteEngine.h"
 #include "ResourceManager.h"
+#include "VertexStructures.h"
 
 #include "Camera.h"
 #include <angelscript.h>
@@ -65,7 +66,7 @@ public:
 	int  GetNumDisplayModes(int monitor) const override; // returns the number of video modes for the given monitor
 	void GetLineWidthRange(float& min, float& max) const override; // Gets the range of the width of the lines supported on the current hardware, x = min, y = max
 	void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const override;
-	void SetCamera(class Camera*) override; // Sets the camera to use
+	void SetCamera(class Camera*) override; // Sets the camera to use, this class does not have ownership of the pointer
 	void SetClearColor(const glm::vec3& color); // Color of the screen after it gets cleared
 	void SetDisplayMode(int mode) override; // sets the display mode
 	void SetRenderSpace(RenderSpace) override;
@@ -80,15 +81,20 @@ private:
 
 	static oglRenderer* s_pThis;
 
-	Camera* m_pCamera;
-	Camera* m_pOrthoCamera;
+	Camera m_OrthoCamera;
 
 	GLFWwindow* m_pWindow;
 
 	ResourceManager m_rm;
-	std::auto_ptr<FontEngine> m_pFonts;
-	std::auto_ptr<LineEngine> m_pLines;
-	std::auto_ptr<SpriteEngine> m_pSprites;
+
+	std::unique_ptr<FontEngine> m_pWorldSpaceFonts;
+	std::unique_ptr<FontEngine> m_pScreenSpaceFonts;
+
+	std::unique_ptr<LineEngine> m_pWorldSpaceLines;
+	std::unique_ptr<LineEngine> m_pScreenSpaceLines;
+
+	std::unique_ptr<SpriteEngine> m_pWorldSpaceSprites;
+	std::unique_ptr<SpriteEngine> m_pScreenSpaceSprites;
 
 	GLFWmonitor** m_pMonitors;
 	int m_iMonitorCount;
@@ -101,6 +107,8 @@ private:
 	RenderSpace m_renderSpace;
 
 	bool m_bFullscreen;
+
+	std::vector<VertexStructure*> m_vertexStructures;
 
 	// Helper functions
 	void ConfigureGLFW();

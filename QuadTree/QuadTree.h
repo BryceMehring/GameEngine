@@ -10,21 +10,7 @@
 #include <assert.h>
 #include "VecMath.h"
 #include "IRender.h"
-
-class ISpatialObject : public IRender
-{
-public:
-
-	virtual ~ISpatialObject() {}
-
-	virtual const glm::vec3& GetPos() const = 0;
-	virtual glm::vec2 GetDir() const = 0;
-	virtual float GetSpeed() const = 0;
-
-	virtual void* QueryInterface(unsigned int) const = 0;
-
-	virtual const Math::ICollisionPolygon& GetCollisionPolygon() const = 0;
-};
+#include "ISpatialObject.h"
 
 class QuadTree : public IRender
 {
@@ -86,35 +72,6 @@ private:
 
 	unsigned int m_iCapacity;
 	const unsigned int m_iHeight;
-};
-
-class NodeIterator
-{
-public:
-
-	NodeIterator(QuadTree* pNode = nullptr);
-
-	NodeIterator& operator=(QuadTree* pNode);
-	NodeIterator& operator++();
-	NodeIterator& operator++(int unused);
-
-	bool operator ==(QuadTree* pNode);
-	bool operator !=(QuadTree* pNode);
-
-	bool operator ==(const NodeIterator&);
-	bool operator !=(const NodeIterator&);
-
-	QuadTree* operator*();
-	QuadTree* operator->();
-
-protected:
-
-	QuadTree* m_pNode;
-
-	unsigned int GetIndex() const;
-	void Increment();
-	void LoopDown(unsigned int index);
-	void LoopUp();
 };
 
 #endif // _QUADTREE_

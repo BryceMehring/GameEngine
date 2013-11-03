@@ -2,26 +2,15 @@
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
 
-LineEngine::LineEngine(ResourceManager* pRM, unsigned int maxLength, Camera* pCam, Camera* pOrthoCam)
-	: m_iMaxLength(maxLength), m_iCurrentLength(0), m_pRM(pRM)
+LineEngine::LineEngine(ResourceManager* pRM, VertexStructure* pVertexStructure, RenderSpace space, Camera* pCam)
+	: m_pRM(pRM), m_pVertexStructure(pVertexStructure), m_pCamera(pCam), m_iCurrentLength(0), m_renderSpace(space)
 {
-	m_pCamera[0] = pCam;
-	m_pCamera[1] = pOrthoCam;
-
-	CreateVertexBuffer();
 	GetLineWidthRange();
-
-}
-LineEngine::~LineEngine()
-{
-	glDeleteBuffers(1,&m_uiVertexBuffer);
 }
 
-void LineEngine::CreateVertexBuffer()
+void LineEngine::SetCamera(Camera* pCam)
 {
-	glGenBuffers(1,&m_uiVertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER,m_uiVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER,sizeof(LineVertex) * m_iMaxLength,0,GL_DYNAMIC_DRAW);
+	m_pCamera = pCam;
 }
 
 void LineEngine::GetLineWidthRange(float& min, float& max) const
@@ -39,17 +28,17 @@ void LineEngine::GetLineWidthRange()
 	m_lineSizeMax = lineWidth[1];
 }
 
-void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T, RenderSpace space)
+void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T)
 {
 	unsigned int uiNewLength = m_iCurrentLength + uiLength;
-	if(uiNewLength >= this->m_iMaxLength)
+	if(uiNewLength >= m_pVertexStructure->GetLength())
 		return;
 
-	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
+	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexStructure->GetVertexBuffer());
 
 	LineVertex* pLineVertex = static_cast<LineVertex*>(glMapBufferRange(GL_ARRAY_BUFFER,sizeof(LineVertex) * m_iCurrentLength,sizeof(LineVertex) * uiLength,GL_MAP_WRITE_BIT));
 
-	for(unsigned int i = 0; i < uiLength && (i + uiLength < m_iMaxLength) ; ++i)
+	for(unsigned int i = 0; i < uiLength && (i + uiLength < m_pVertexStructure->GetLength()) ; ++i)
 	{
 		glm::vec4 pos = (T * glm::vec4(pArray[i],1.0f));
 		pLineVertex[i].pos = glm::vec3(pos.x,pos.y,pos.z);
@@ -58,14 +47,8 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
-	m_LineSubsets.push_back(LineSubset(uiLength,glm::clamp(fWidth,m_lineSizeMin,m_lineSizeMax),space));
+	m_LineSubsets.push_back(LineSubset(uiLength,glm::clamp(fWidth,m_lineSizeMin,m_lineSizeMax)));
 	m_iCurrentLength = uiNewLength;
-}
-
-void LineEngine::OnReset()
-{
-	glDeleteBuffers(1,&m_uiVertexBuffer);
-	CreateVertexBuffer();
 }
 
 void LineEngine::Render()
@@ -81,19 +64,19 @@ void LineEngine::Render()
 	glUseProgram(pShader->GetID());
 
 	glEnableVertexAttribArray(0);
-	glBindBuffer( GL_ARRAY_BUFFER , m_uiVertexBuffer);
+	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexStructure->GetVertexBuffer());
 	glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(LineVertex),0);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(vertexColorID,4,GL_FLOAT,GL_FALSE,sizeof(LineVertex),reinterpret_cast<void*>(sizeof(glm::vec3)));
+
+	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
 
 	unsigned int uiStartingIndex = 0;
 
 	for(unsigned int j = 0; j < m_LineSubsets.size(); ++j)
 	{
 		glLineWidth(m_LineSubsets[j].fWidth);
-		glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera[m_LineSubsets[j].space]->viewProj()[0][0]);
-
 		glDrawArrays(GL_LINE_STRIP,uiStartingIndex,m_LineSubsets[j].uiLength);
 
 		uiStartingIndex += m_LineSubsets[j].uiLength;

@@ -1,8 +1,8 @@
 
 
-set(QUADTREE_HEADERS QuadTree.h)
+set(QUADTREE_HEADERS QuadTree.h NodeIterator.h ISpatialObject.h)
 
-set(QUADTREE_SOURCE QuadTree.cpp)
+set(QUADTREE_SOURCE QuadTree.cpp NodeIterator.cpp)
 
 # build the QuadTree
 add_library(QuadTree STATIC ${QUADTREE_HEADERS} ${QUADTREE_SOURCE})

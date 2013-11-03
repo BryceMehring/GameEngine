@@ -19,8 +19,8 @@ void oglRenderer::MonitorCallback(GLFWmonitor* monitor, int state)
 	s_pThis->EnumerateDisplayAdaptors();
 }
 
-oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pOrthoCamera(nullptr), m_pWindow(nullptr), m_pFonts(nullptr),
-	m_pLines(nullptr), m_pSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
+oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_pScreenSpaceFonts(nullptr),
+	m_pWorldSpaceLines(nullptr), m_pScreenSpaceLines(nullptr), m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
 	m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::World), m_bFullscreen(false)
 {
 	s_pThis = this;
@@ -30,26 +30,40 @@ oglRenderer::oglRenderer() : m_pCamera(nullptr), m_pOrthoCamera(nullptr), m_pWin
 	ConfigureOpenGL();
 	EnableVSync(true);
 
-	m_pOrthoCamera = CreateCamera();
-
 	int width, height;
 	glfwGetFramebufferSize(m_pWindow,&width, &height);
+
 	// build camera, move this code elsewhere
-	m_pOrthoCamera->setLens((float)width,(float)height,0.1f,5000.0f); // 2.0f, 2.0f
-	m_pOrthoCamera->lookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
-	m_pOrthoCamera->update();
+	m_OrthoCamera.setLens((float)width,(float)height,0.1f,5000.0f); // 2.0f, 2.0f
+	m_OrthoCamera.lookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_OrthoCamera.update();
 
-	m_pFonts.reset(new FontEngine(&m_rm,1024*8,m_pCamera,m_pOrthoCamera));
-	m_pLines.reset(new LineEngine(&m_rm,1024*8,m_pCamera,m_pOrthoCamera));
-	m_pSprites.reset(new SpriteEngine(&m_rm,1024*40,m_pCamera,m_pOrthoCamera));
+	VertexStructure* pFontVertexStruct = new VertexStructure(sizeof(FontVertex),1024*8);
+	VertexStructure* pLineVertexStruct = new VertexStructure(sizeof(LineVertex),1024*8);
+	VertexStructure* pSpriteVertexStructure = new VertexStructure(sizeof(SpriteVertex),1024*40);
 
+	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexStruct));
+	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexStruct,&m_OrthoCamera));
+
+	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexStruct,World));
+	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexStruct,Screen,&m_OrthoCamera));
+
+	m_pWorldSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexStructure));
+	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexStructure,&m_OrthoCamera));
+
+	m_vertexStructures.push_back(pFontVertexStruct);
+	m_vertexStructures.push_back(pLineVertexStruct);
+	m_vertexStructures.push_back(pSpriteVertexStructure);
 }
 
 oglRenderer::~oglRenderer()
 {
+	for(auto iter : m_vertexStructures)
+	{
+		delete iter;
+	}
+
 	SaveDisplayList();
-	ReleaseCamera(m_pCamera);
-	ReleaseCamera(m_pOrthoCamera);
 	glfwDestroyWindow(m_pWindow);
 }
 
@@ -145,7 +159,8 @@ void oglRenderer::ConfigureOpenGL()
 	glewExperimental = true; // Needed in core profile
 	assert(glewInit() == GLEW_OK);
 
-	glDisable(GL_CULL_FACE);
+	//glFrontFace(GL_CW);
+	//glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glClearColor(0.0f,0.0f,0.0f,0.0f);
@@ -178,16 +193,18 @@ void oglRenderer::SetClearColor(const glm::vec3& color)
 	glClearColor(color.x,color.y,color.z,0.0f);
 }
 
+
 void oglRenderer::Present()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if(m_pCamera != nullptr)
-	{
-		m_pSprites->Render();
-		m_pFonts->Render();
-		m_pLines->Render();
-	}
+	m_pWorldSpaceSprites->Render();
+	m_pWorldSpaceLines->Render();
+	m_pWorldSpaceFonts->Render();
+
+	m_pScreenSpaceSprites->Render();
+	m_pScreenSpaceLines->Render();
+	m_pScreenSpaceFonts->Render();
 
 	glfwSwapBuffers(m_pWindow);
 }
@@ -265,27 +282,48 @@ void oglRenderer::SetRenderSpace(RenderSpace space)
 
 void oglRenderer::GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const
 {
-	m_pFonts->GetStringRec(str,scale,out);
+	//m_pFonts->GetStringRec(str,scale,out);
 }
 
 void oglRenderer::DrawString(const char* str, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, const char* font, FontAlignment options)
 {
-	m_pFonts->DrawString(str,font,pos,scale,color,options,m_renderSpace);
+	if(m_renderSpace == World)
+	{
+		m_pWorldSpaceFonts->DrawString(str,font,pos,scale,color,options);
+	}
+	else
+	{
+		m_pScreenSpaceFonts->DrawString(str,font,pos,scale,color,options);
+	}
 }
 
 void oglRenderer::GetLineWidthRange(float& min, float& max) const
 {
-	m_pLines->GetLineWidthRange(min, max);
+	m_pScreenSpaceLines->GetLineWidthRange(min, max);
 }
 
 void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float fWidth, const glm::vec4& color, const glm::mat4& T)
 {
-	m_pLines->DrawLine(pArray,length,fWidth,color,T,m_renderSpace);
+	if(m_renderSpace == World)
+	{
+		m_pWorldSpaceLines->DrawLine(pArray,length,fWidth,color,T);
+	}
+	else
+	{
+		m_pScreenSpaceLines->DrawLine(pArray,length,fWidth,color,T);
+	}
 }
 
 void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec3& color, const glm::vec2& tiling, unsigned int iCellId, const std::string& tech)
 {
-	m_pSprites->DrawSprite(tech,texture,transformation,color,tiling,iCellId,m_renderSpace);
+	if(m_renderSpace == World)
+	{
+		m_pWorldSpaceSprites->DrawSprite(tech,texture,transformation,color,tiling,iCellId);
+	}
+	else
+	{
+		m_pScreenSpaceSprites->DrawSprite(tech,texture,transformation,color,tiling,iCellId);
+	}
 }
 
 bool oglRenderer::CheckShader(const std::string& shader, const string& location,  GLuint& shaderID, GLuint& outLocation) const
@@ -345,15 +383,8 @@ bool oglRenderer::SetShaderValue(const std::string& shader, const string& locati
 
 void oglRenderer::SetCamera(Camera* pCam)
 {
-	m_pFonts->SetCamera(pCam);
-	m_pLines->SetCamera(pCam);
-	m_pSprites->SetCamera(pCam);
-
-	if(m_pCamera != nullptr)
-	{
-		m_pCamera->Release();
-	}
-
-	m_pCamera = pCam;
+	m_pWorldSpaceFonts->SetCamera(pCam);
+	m_pWorldSpaceLines->SetCamera(pCam);
+	m_pWorldSpaceSprites->SetCamera(pCam);
 }
 

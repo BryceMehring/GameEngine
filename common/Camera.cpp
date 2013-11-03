@@ -2,18 +2,6 @@
 #include "Camera.h"
 #include "glm/gtx/transform.hpp"
 
-Camera* CreateCamera()
-{
-	return new Camera();
-}
-void ReleaseCamera(Camera* pCam)
-{
-	if(pCam != nullptr)
-	{
-		pCam->Release();
-	}
-}
-
 Camera::Camera() : m_View(1.0f), m_Proj(1.0f), m_ViewProj(1.0f), m_PosW(0.0f), m_UpW(0.0f), m_LookW(0.0f), m_width(0.0f), m_height(0.0f)
 {
 }

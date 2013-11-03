@@ -20,5 +20,5 @@ add_library(common SHARED ${COMMON_HEADERS} ${COMMON_SOURCE})
 add_definitions(-DCOMMON_EXPORT)
 
 if(ENABLE_CPACK)
-	install(TARGETS common RUNTIME DESTINATION ./)
+	install(TARGETS common LIBRARY DESTINATION ./)
 endif(ENABLE_CPACK)

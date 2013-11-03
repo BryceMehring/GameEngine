@@ -1,13 +1,15 @@
 #ifndef _CAMERA_
 #define _CAMERA_
 
+#include "CommonExport.h"
 #include <glm/glm.hpp>
-#include "RefCounting.h"
 
 // Manages the matrices need to create a camera
-class Camera : public RefCounting
+class Camera
 {
 public:
+
+	Camera();
 
 	COMMON_API const glm::mat4& view() const; // returns the view matrix
 	COMMON_API const glm::mat4& proj() const; // // returns the projection matrix
@@ -40,9 +42,6 @@ public:
 
 private:
 
-	Camera();
-	virtual ~Camera() {}
-
 	void buildView();
 
 private:
@@ -60,19 +59,8 @@ private:
 	float m_width; // Width of the 2D field view
 	float m_height; // Height of the 2D field view
 
-	friend COMMON_API Camera* CreateCamera();
-	friend COMMON_API void ReleaseCamera(Camera*);
-
 	void BuildFrustumPlanes();
 
-	// no copying
-	Camera(const Camera&);
-	Camera& operator=(const Camera&);
-
 };
-
-// used to create and release cameras
-COMMON_API Camera* CreateCamera();
-COMMON_API void ReleaseCamera(Camera*);
 
 #endif // _CAMERA_

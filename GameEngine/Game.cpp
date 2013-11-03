@@ -49,14 +49,12 @@ void Game::SetNextState(const std::string& state)
 
 int Game::Run()
 {
-	double prevTimeStamp = 0.0;
+	//double prevTimeStamp = 0.0;
 
 	// Loop while the use has not quit
 	while(!m_pInput->KeyPress(GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(glfwGetCurrentContext()))
 	{
-		double currentTimeStamp = glfwGetTime();
-		m_fDT = currentTimeStamp - prevTimeStamp;
-		prevTimeStamp = currentTimeStamp;
+		glfwSetTime(0.0);
 
 		m_pInput->Poll();
 
@@ -65,6 +63,10 @@ int Game::Run()
 
 		// Render the game
 		Draw();
+
+		//double currentTimeStamp = glfwGetTime();
+		m_fDT = glfwGetTime();
+		//prevTimeStamp = currentTimeStamp;
 	}
 
 	return 0;

@@ -4,6 +4,7 @@
 #include "IRenderer.h"
 #include "Camera.h"
 #include "ResourceManager.h"
+#include "VertexStructures.h"
 
 struct LineVertex
 {
@@ -13,41 +14,38 @@ struct LineVertex
 
 struct LineSubset
 {
-	LineSubset(unsigned int length, float width, RenderSpace rs) :
-		uiLength(length), fWidth(width), space(rs) {}
+	LineSubset(unsigned int length, float width) : uiLength(length), fWidth(width) {}
 
 	unsigned int uiLength;
 	float fWidth;
-	RenderSpace space;
 };
 
 class LineEngine
 {
 public:
 
-	LineEngine(ResourceManager* pRm, unsigned int maxLength, Camera* pCam, Camera* pOrthoCam);
-	~LineEngine();
+	LineEngine(ResourceManager* pRm, VertexStructure* pVertexStructure, RenderSpace space, Camera* pCam = nullptr);
 
 	void GetLineWidthRange(float& min, float& max) const;
 
-	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T, RenderSpace space);
+	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T);
 
 	void Render();
 
-	void OnReset();
-
-	void SetCamera(Camera* pCam) { m_pCamera[0] = pCam; }
+	void SetCamera(Camera* pCam);
 
 private:
 
-	unsigned int m_uiVertexBuffer;
-	unsigned int m_iMaxLength;
-	unsigned int m_iCurrentLength;
-	Camera* m_pCamera[2];
 	ResourceManager* m_pRM;
+	VertexStructure* m_pVertexStructure;
+	Camera* m_pCamera;
+
+	unsigned int m_iCurrentLength;
 
 	float m_lineSizeMin;
 	float m_lineSizeMax;
+
+	RenderSpace m_renderSpace;
 
 	std::vector<LineSubset> m_LineSubsets;
 

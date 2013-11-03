@@ -39,7 +39,7 @@ private:
 class Texture : public IResource
 {
 public:
-	Texture(GLuint i, int tw, int th, int sw = 1, int sh = 1) : IResource(i), m_iWidth(tw), m_iHeight(th), m_iCellsWidth(sw), m_iCellsHeight(sh)
+	Texture(GLuint i, unsigned char* pImg, int tw, int th, int sw = 1, int sh = 1) : IResource(i), m_iWidth(tw), m_iHeight(th), m_iCellsWidth(sw), m_iCellsHeight(sh), m_pImg(pImg)
 	{
 	}
 
@@ -49,13 +49,11 @@ public:
 	int GetHeight() const { return m_iHeight; }
 	int GetCellsWidth() const { return m_iCellsWidth; }
 	int GetCellsHeight() const { return m_iCellsHeight; }
+	const unsigned char* GetImgData() const { return m_pImg; }
 
 protected:
 
-	virtual ~Texture()
-	{
-		glDeleteTextures(1,&GetID());
-	}
+	virtual ~Texture();
 
 private:
 
@@ -63,6 +61,7 @@ private:
 	int m_iHeight;
 	int m_iCellsWidth;
 	int m_iCellsHeight;
+	unsigned char* m_pImg;
 
 	friend class ResourceManager;
 
@@ -141,7 +140,7 @@ public:
 
 	typedef std::array<CharDescriptor,256> FontArray;
 
-	Charset(GLuint i, int tw, int th, int sw = 1, int sh = 1) : Texture(i,tw,th,sw,sh)
+	Charset(GLuint i, int tw, int th, int sw = 1, int sh = 1) : Texture(i,0,tw,th,sw,sh)
 	{
 	}
 
@@ -200,7 +199,7 @@ private:
 
 	ResourceMap m_resources;
 
-	bool CreateOpenGLTexture(const std::string& file, int& width, int& height, GLuint& out);
+	bool CreateOpenGLTexture(const std::string& file, int& width, int& height, unsigned char** pImgData, GLuint& out);
 
 	// converts # of components into the corresponding OpenGL format.
 	void GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat);

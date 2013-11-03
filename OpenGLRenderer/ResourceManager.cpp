@@ -99,6 +99,12 @@ ResourceManager::~ResourceManager()
 	Clear();
 }
 
+Texture::~Texture()
+{
+	glDeleteTextures(1,&GetID());
+	stbi_image_free(m_pImg);
+}
+
 void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat)
 {
 	switch(comp)
@@ -124,13 +130,16 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 	}
 }
 
-bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, int& height, GLuint& textureId)
+bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, int& height, unsigned char** pImgData, GLuint& textureId)
 {
+	if(pImgData == nullptr)
+		return false;
+
 	int comp;
-	unsigned char* pImg = stbi_load(file.c_str(),&width,&height,&comp,0);
+	*pImgData = stbi_load(file.c_str(),&width,&height,&comp,0);
 
 	// check if the image can be loaded
-	if(pImg == nullptr)
+	if(pImgData == nullptr)
 		return false;
 
 	glGenTextures(1,&textureId);
@@ -140,10 +149,8 @@ bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, i
 	GLint internalFormat;
 	GetOpenGLFormat(comp,format,internalFormat);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, (void*)pImg);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, (void*)(*pImgData));
 	assert(glGetError() == GL_NO_ERROR);
-
-	stbi_image_free(pImg);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -168,11 +175,12 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	}
 
 	GLuint textureID;
+	unsigned char* pImg;
 	int width, height;
 	bool success;
-	if((success = CreateOpenGLTexture(file, width, height,textureID)))
+	if((success = CreateOpenGLTexture(file, width, height, &pImg,textureID)))
 	{
-		m_resources.insert(std::make_pair(id,new Texture(textureID,width,height)));
+		m_resources.insert(std::make_pair(id,new Texture(textureID,pImg,width,height)));
 	}
 	return success;
 }
@@ -190,16 +198,17 @@ bool ResourceManager::LoadAnimation(const std::string& id, const std::string& fi
 	}
 
 	GLuint textureID;
+	unsigned char* pImg;
 	int width, height;
 	bool success;
-	if((success = CreateOpenGLTexture(file, width, height,textureID)))
+	if((success = CreateOpenGLTexture(file, width, height, &pImg,textureID)))
 	{
 		std::ifstream in(file + ".txt");
 		if((success = in.is_open()))
 		{
 			int spriteWidth, spriteHeight;
 			in >> spriteWidth >> spriteHeight;
-			m_resources.insert(std::make_pair(id,new Texture(textureID,width,height,spriteWidth,spriteHeight)));
+			m_resources.insert(std::make_pair(id,new Texture(textureID,pImg,width,height,spriteWidth,spriteHeight)));
 		}
 	}
 	return success;
@@ -218,9 +227,10 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 	}
 
 	GLuint textureID;
+	unsigned char* pImg;
 	int width, height;
 	bool success;
-	if((success = CreateOpenGLTexture(file, width, height,textureID)))
+	if((success = CreateOpenGLTexture(file, width, height, &pImg,textureID)))
 	{
 		std::ifstream in(file + ".fnt");
 		if((success = in.is_open()))
@@ -420,6 +430,7 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 	out.uiCellsWidth = pTex->m_iCellsWidth;
 	out.uiHeight = pTex->m_iHeight;
 	out.uiWidth = pTex->m_iWidth;
+	out.pImg = pTex->m_pImg;
 
 	return true;
 }

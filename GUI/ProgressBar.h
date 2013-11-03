@@ -34,6 +34,8 @@ public:
 	// sets the current progress of the bar, value must be between 0 and 1, if not, the value is clamped into this range
 	void SetProgress(float);
 
+	void SetPos(const glm::vec2& pos);
+
 private:
 
 	glm::vec2 m_pos;
