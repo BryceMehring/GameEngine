@@ -9,7 +9,10 @@ GUI::GUI(Menu* pMenu) : m_pMenu(pMenu), m_uiCurrentIndex(0)
 
 GUI::~GUI()
 {
-	m_pMenu->Release();
+	if(m_pMenu != nullptr)
+	{
+		m_pMenu->Release();
+	}
 }
 
 GUI::ChangeMenuCallback GUI::CreateCallback()

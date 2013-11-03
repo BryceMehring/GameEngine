@@ -19,7 +19,6 @@ int main(int size, char** cmd)
 	srand ((unsigned int)time(0));
 
 	Game myGame;
-	//myGame.SetNextState(pState);
-	//return myGame.Run();
-	return 0;
+	myGame.SetNextState(pState);
+	return myGame.Run();
 }
