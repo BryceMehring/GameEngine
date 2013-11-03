@@ -46,7 +46,6 @@ void GUI::SetMenu(Menu* pMenu)
 		}
 
 		m_pMenu = pMenu;
-		m_pMenu->AddRef();
 		m_uiCurrentIndex = 0;
 	}
 }
