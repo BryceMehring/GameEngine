@@ -9,7 +9,7 @@ class Camera
 {
 public:
 
-	Camera();
+	COMMON_API Camera();
 
 	COMMON_API const glm::mat4& view() const; // returns the view matrix
 	COMMON_API const glm::mat4& proj() const; // // returns the projection matrix
