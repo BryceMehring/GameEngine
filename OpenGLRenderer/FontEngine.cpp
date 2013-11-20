@@ -1,5 +1,6 @@
 #include "FontEngine.h"
 #include "GenerateBuffers.h"
+#include "VertexStructures.h"
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
@@ -77,7 +78,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
 
 	// get the vertex buffer memory to write to
-	FontVertex* v = static_cast<FontVertex*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
+	VertexPTC* v = static_cast<VertexPTC*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
 	unsigned int iCurrentVert = 0;
 	unsigned int iSubsetIndex = 0;
@@ -135,19 +136,19 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 					glm::vec2 bottomRight(((charInfo.x+charInfo.Width) / (float)(font->GetWidth())),(charInfo.y+charInfo.Height) / (float)(font->GetHeight()));
 
 					v[index].pos = glm::vec3(posW.x,0.5f * subIter.scale.y + posW.y,posW.z);
-					v[index].uv = topLeft;
+					v[index].tex = topLeft;
 					v[index].color = subIter.color;
 
 					v[index + 1].pos = glm::vec3(posW.x,-0.5f * subIter.scale.y + posW.y,posW.z);
-					v[index + 1].uv = glm::vec2(topLeft.x,bottomRight.y);
+					v[index + 1].tex = glm::vec2(topLeft.x,bottomRight.y);
 					v[index + 1].color = subIter.color;
 
 					v[index + 2].pos = glm::vec3(fAdvance * subIter.scale.x,0.5f * subIter.scale.y,0.0f) + posW;
-					v[index + 2].uv = glm::vec2(bottomRight.x,topLeft.y);
+					v[index + 2].tex = glm::vec2(bottomRight.x,topLeft.y);
 					v[index + 2].color = subIter.color;
 
 					v[index + 3].pos = glm::vec3(fAdvance * subIter.scale.x,-0.5f * subIter.scale.y,0.0f) + posW;
-					v[index + 3].uv = bottomRight;
+					v[index + 3].tex = bottomRight;
 					v[index + 3].color = subIter.color;
 
 					posW.x += fAdvance * subIter.scale.x;
@@ -208,7 +209,7 @@ void FontEngine::Render()
 				3,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
-				sizeof(FontVertex),  // stride
+				sizeof(VertexPTC),  // stride
 				0            // array buffer offset
 				);
 
@@ -218,7 +219,7 @@ void FontEngine::Render()
 				2,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
-				sizeof(FontVertex),  // stride
+				sizeof(VertexPTC),  // stride
 				reinterpret_cast<void*>(sizeof(glm::vec3)) // array buffer offset
 				);
 
@@ -228,8 +229,8 @@ void FontEngine::Render()
 				3,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?
-				sizeof(FontVertex),  // stride
-				reinterpret_cast<void*>(offsetof(struct FontVertex,color))  // array buffer offset
+				sizeof(VertexPTC),  // stride
+				reinterpret_cast<void*>(offsetof(struct VertexPTC,color))  // array buffer offset
 				);
 
 	// Bind index buffer

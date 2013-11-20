@@ -6,12 +6,6 @@
 #include "ResourceManager.h"
 #include "VertexBuffer.h"
 
-struct LineVertex
-{
-	glm::vec3 pos;
-	glm::vec4 color;
-};
-
 struct LineSubset
 {
 	LineSubset(unsigned int length, float width) : uiLength(length), fWidth(width) {}

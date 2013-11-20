@@ -1,4 +1,5 @@
 #include "LineEngine.h"
+#include "VertexStructures.h"
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
 
@@ -36,7 +37,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 
 	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
 
-	LineVertex* pLineVertex = static_cast<LineVertex*>(glMapBufferRange(GL_ARRAY_BUFFER,sizeof(LineVertex) * m_iCurrentLength,sizeof(LineVertex) * uiLength,GL_MAP_WRITE_BIT));
+	VertexPC* pLineVertex = static_cast<VertexPC*>(glMapBufferRange(GL_ARRAY_BUFFER,sizeof(VertexPC) * m_iCurrentLength,sizeof(VertexPC) * uiLength,GL_MAP_WRITE_BIT));
 
 	for(unsigned int i = 0; i < uiLength && (i + uiLength < m_pVertexBuffer->GetLength()) ; ++i)
 	{
@@ -65,10 +66,10 @@ void LineEngine::Render()
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
-	glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(LineVertex),0);
+	glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(VertexPC),0);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(vertexColorID,4,GL_FLOAT,GL_FALSE,sizeof(LineVertex),reinterpret_cast<void*>(sizeof(glm::vec3)));
+	glVertexAttribPointer(vertexColorID,4,GL_FLOAT,GL_FALSE,sizeof(VertexPC),reinterpret_cast<void*>(sizeof(glm::vec3)));
 
 	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
 

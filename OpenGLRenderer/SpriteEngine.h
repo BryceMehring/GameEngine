@@ -10,14 +10,6 @@
 #include <string>
 #include <vector>
 
-// todo: move these to another header file
-struct SpriteVertex
-{
-	glm::vec3 pos;
-	glm::vec2 tex;
-	glm::vec3 color;
-};
-
 struct Sprite
 {
 	Sprite(const glm::mat4& transform,const glm::vec3& col, const glm::vec2& tile, unsigned int cell)

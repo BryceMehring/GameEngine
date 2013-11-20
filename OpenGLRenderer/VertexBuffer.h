@@ -1,5 +1,5 @@
-#ifndef _VERTEXSTRUCTURES_
-#define _VERTEXSTRUCTURES_
+#ifndef _VERTEXBUFFER_
+#define _VERTEXBUFFER_
 
 #include <GL/glew.h>
 
@@ -36,4 +36,4 @@ private:
 };
 
 
-#endif // _VERTEXSTRUCTURES_
+#endif // _VERTEXBUFFER_

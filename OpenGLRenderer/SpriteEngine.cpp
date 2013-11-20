@@ -1,6 +1,7 @@
 #define GLM_SWIZZLE
 #include "SpriteEngine.h"
 #include "GenerateBuffers.h"
+#include "VertexStructures.h"
 
 #include <cassert>
 #include <stddef.h>
@@ -50,7 +51,7 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 void SpriteEngine::FillVertexBuffer()
 {
 	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
-	SpriteVertex* pVert = static_cast<SpriteVertex*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
+	VertexPTC* pVert = static_cast<VertexPTC*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
 	// Loop over all of the layers
 	for(auto& layerIter : m_spriteLayers)
@@ -137,9 +138,9 @@ void SpriteEngine::Render()
 
 			glUseProgram(pShader->GetID());
 
-			glVertexAttribPointer(atribMap.at("vertexPosition_modelspace"),3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),0);
-			glVertexAttribPointer(atribMap.at("vertexUV"),2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),reinterpret_cast<void*>(sizeof(glm::vec3)));
-			glVertexAttribPointer(atribMap.at("vertexColor"),3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),reinterpret_cast<void*>(offsetof(SpriteVertex, color)));
+			glVertexAttribPointer(atribMap.at("vertexPosition_modelspace"),3,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),0);
+			glVertexAttribPointer(atribMap.at("vertexUV"),2,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),reinterpret_cast<void*>(sizeof(glm::vec3)));
+			glVertexAttribPointer(atribMap.at("vertexColor"),3,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),reinterpret_cast<void*>(offsetof(struct VertexPTC, color)));
 
 			glActiveTexture(GL_TEXTURE0);
 

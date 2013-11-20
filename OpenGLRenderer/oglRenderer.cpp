@@ -1,4 +1,5 @@
 ﻿#include "oglRenderer.h"
+#include "VertexStructures.h"
 
 #include <sstream>
 #include <algorithm>
@@ -38,9 +39,9 @@ oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_
 	m_OrthoCamera.lookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_OrthoCamera.update();
 
-	IndexedVertexBuffer* pSpriteVertexBuffer = new IndexedVertexBuffer(sizeof(SpriteVertex),1024*40);
-	IndexedVertexBuffer* pFontVertexBuffer = new IndexedVertexBuffer(sizeof(FontVertex),1024*8);
-	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(LineVertex),1024*8*4);
+	IndexedVertexBuffer* pSpriteVertexBuffer = new IndexedVertexBuffer(sizeof(VertexPTC),1024*40);
+	IndexedVertexBuffer* pFontVertexBuffer = new IndexedVertexBuffer(sizeof(VertexPTC),1024*8);
+	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexPC),1024*8*4);
 
 	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexBuffer));
 	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexBuffer,&m_OrthoCamera));

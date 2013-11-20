@@ -18,14 +18,6 @@ struct DrawTextInfo
 	FontAlignment options;
 };
 
-// todo: move these to another header file
-struct FontVertex
-{
-	glm::vec3 pos;
-	glm::vec2 uv;
-	glm::vec3 color;
-};
-
 // This class manages the rendering of fonts
 class FontEngine
 {
