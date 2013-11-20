@@ -77,24 +77,20 @@ void SpriteEngine::FillVertexBuffer()
 
 					// filling in the vertices
 					pVert[0].pos = (sprites[i].T * glm::vec4(-0.5f,0.5f,0.0f,1.0f)).xyz();
-					pVert[0].tex = topLeft;
+					pVert[0].tex = topLeft * sprites[i].tiling;
 					pVert[0].color = sprites[i].color;
-					pVert[0].tiling = sprites[i].tiling;
 
 					pVert[1].pos = (sprites[i].T * glm::vec4(-0.5f,-0.5f,0.0,1.0f)).xyz();
-					pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y);
+					pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y) * sprites[i].tiling;
 					pVert[1].color = sprites[i].color;
-					pVert[1].tiling = sprites[i].tiling;
 
 					pVert[2].pos = (sprites[i].T * glm::vec4(0.5f,0.5f,0.0,1.0f)).xyz();
-					pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y);
+					pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y) * sprites[i].tiling;
 					pVert[2].color = sprites[i].color;
-					pVert[2].tiling = sprites[i].tiling;
 
 					pVert[3].pos = (sprites[i].T * glm::vec4(0.5f,-0.5f,0.0,1.0f)).xyz();
-					pVert[3].tex = bottomRight;
+					pVert[3].tex = bottomRight * sprites[i].tiling;
 					pVert[3].color = sprites[i].color;
-					pVert[3].tiling = sprites[i].tiling;
 
 					pVert += 4;
 				}
@@ -127,7 +123,6 @@ void SpriteEngine::Render()
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
 
 		// Loop over all of the layers
 	for(auto& layerIter : m_spriteLayers)
@@ -142,11 +137,9 @@ void SpriteEngine::Render()
 
 			glUseProgram(pShader->GetID());
 
-
 			glVertexAttribPointer(atribMap.at("vertexPosition_modelspace"),3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),0);
 			glVertexAttribPointer(atribMap.at("vertexUV"),2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),reinterpret_cast<void*>(sizeof(glm::vec3)));
 			glVertexAttribPointer(atribMap.at("vertexColor"),3,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),reinterpret_cast<void*>(offsetof(SpriteVertex, color)));
-			glVertexAttribPointer(atribMap.at("vertexTiling"),2,GL_FLOAT,GL_FALSE,sizeof(SpriteVertex),reinterpret_cast<void*>(offsetof(SpriteVertex, tiling)));
 
 			glActiveTexture(GL_TEXTURE0);
 
@@ -174,7 +167,6 @@ void SpriteEngine::Render()
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
-	glDisableVertexAttribArray(3);
 
 	m_spriteLayers.clear();
 	m_iCurrentLength = 0;

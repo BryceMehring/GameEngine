@@ -4,7 +4,6 @@
 attribute vec3 vertexPosition_modelspace;
 attribute vec2 vertexUV;
 attribute vec3 vertexColor;
-attribute vec2 vertexTiling;
 
 // Output data ; will be interpolated for each fragment.
 varying vec2 UV;
@@ -22,6 +21,6 @@ void main()
 	color = vertexColor;
 	
 	// UV of the vertex. No special space for this one.
-	UV = vertexUV * vertexTiling;
+        UV = vertexUV;
 }
 

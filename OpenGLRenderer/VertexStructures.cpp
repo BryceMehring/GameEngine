@@ -3,8 +3,6 @@
 
 VertexStructure::VertexStructure(GLuint vertexBufferSize, GLuint bufferLength) : m_length(bufferLength), m_size(vertexBufferSize * bufferLength)
 {
-
-
 	glGenBuffers(1,&m_vertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER,m_vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER,vertexBufferSize * bufferLength,0,GL_DYNAMIC_DRAW);
