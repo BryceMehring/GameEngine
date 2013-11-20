@@ -3,8 +3,8 @@
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
-FontEngine::FontEngine(ResourceManager* pRm, IndexedVertexStructure* pVertexStructure, Camera* pCam) :
-	m_pRm(pRm), m_pVertexStructure(pVertexStructure), m_pCamera(pCam) //m_iMaxLength(2*maxLength)
+FontEngine::FontEngine(ResourceManager* pRm, IndexedVertexBuffer* pVertexStructure, Camera* pCam) :
+	m_pRm(pRm), m_pVertexBuffer(pVertexStructure), m_pCamera(pCam) //m_iMaxLength(2*maxLength)
 {
 }
 
@@ -74,10 +74,10 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 	output.resize(m_textSubsets.size());
 
 	// bind the vertex buffer that we are going to write to
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexStructure->GetVertexBuffer());
+	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
 
 	// get the vertex buffer memory to write to
-	FontVertex* v = static_cast<FontVertex*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexStructure->GetSize(), GL_MAP_WRITE_BIT));
+	FontVertex* v = static_cast<FontVertex*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
 	unsigned int iCurrentVert = 0;
 	unsigned int iSubsetIndex = 0;
@@ -118,7 +118,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			glm::vec3 posW(subIter.pos); // World pos of where the text will be drawn
 
 			// Loop over the entire string and write to the vertex buffer
-			while((iCurrentVert < m_pVertexStructure->GetLength()) && *str)
+			while((iCurrentVert < m_pVertexBuffer->GetLength()) && *str)
 			{
 				char character = *str++; // character to draw
 
@@ -201,7 +201,7 @@ void FontEngine::Render()
 	glUseProgram(pShader->GetID());
 
 	// Create our vertex structure in OpenGL
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexStructure->GetVertexBuffer());
+	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
 				pShader->GetAtribs().find("vertexPosition_modelspace")->second,
@@ -233,7 +233,7 @@ void FontEngine::Render()
 				);
 
 	// Bind index buffer
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_pVertexStructure->GetIndexBuffer());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_pVertexBuffer->GetIndexBuffer());
 
 	// Enables one texture
 	glActiveTexture(GL_TEXTURE0);

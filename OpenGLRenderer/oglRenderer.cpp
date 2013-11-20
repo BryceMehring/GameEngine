@@ -38,27 +38,27 @@ oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_
 	m_OrthoCamera.lookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
 	m_OrthoCamera.update();
 
-	IndexedVertexStructure* pSpriteVertexStructure = new IndexedVertexStructure(sizeof(SpriteVertex),1024*40);
-	IndexedVertexStructure* pFontVertexStruct = new IndexedVertexStructure(sizeof(FontVertex),1024*8);
-	VertexStructure* pLineVertexStruct = new VertexStructure(sizeof(LineVertex),1024*8);
+	IndexedVertexBuffer* pSpriteVertexBuffer = new IndexedVertexBuffer(sizeof(SpriteVertex),1024*40);
+	IndexedVertexBuffer* pFontVertexBuffer = new IndexedVertexBuffer(sizeof(FontVertex),1024*8);
+	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(LineVertex),1024*8*4);
 
-	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexStruct));
-	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexStruct,&m_OrthoCamera));
+	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexBuffer));
+	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexBuffer,&m_OrthoCamera));
 
-	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexStruct,World));
-	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexStruct,Screen,&m_OrthoCamera));
+	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,World));
+	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,Screen,&m_OrthoCamera));
 
-	m_pWorldSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexStructure));
-	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexStructure,&m_OrthoCamera));
+	m_pWorldSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexBuffer));
+	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
 
-	m_vertexStructures.push_back(pFontVertexStruct);
-	m_vertexStructures.push_back(pLineVertexStruct);
-	m_vertexStructures.push_back(pSpriteVertexStructure);
+	m_vertexBuffers.push_back(pFontVertexBuffer);
+	m_vertexBuffers.push_back(pLineVertexBuffer);
+	m_vertexBuffers.push_back(pSpriteVertexBuffer);
 }
 
 oglRenderer::~oglRenderer()
 {
-	for(auto iter : m_vertexStructures)
+	for(auto iter : m_vertexBuffers)
 	{
 		delete iter;
 	}

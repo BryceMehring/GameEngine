@@ -2,8 +2,8 @@
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
 
-LineEngine::LineEngine(ResourceManager* pRM, VertexStructure* pVertexStructure, RenderSpace space, Camera* pCam)
-	: m_pRM(pRM), m_pVertexStructure(pVertexStructure), m_pCamera(pCam), m_iCurrentLength(0), m_renderSpace(space)
+LineEngine::LineEngine(ResourceManager* pRM, VertexBuffer* pVertexStructure, RenderSpace space, Camera* pCam)
+	: m_pRM(pRM), m_pVertexBuffer(pVertexStructure), m_pCamera(pCam), m_iCurrentLength(0), m_renderSpace(space)
 {
 	GetLineWidthRange();
 }
@@ -31,14 +31,14 @@ void LineEngine::GetLineWidthRange()
 void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T)
 {
 	unsigned int uiNewLength = m_iCurrentLength + uiLength;
-	if(uiNewLength >= m_pVertexStructure->GetLength())
+	if(uiNewLength >= m_pVertexBuffer->GetLength())
 		return;
 
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexStructure->GetVertexBuffer());
+	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
 
 	LineVertex* pLineVertex = static_cast<LineVertex*>(glMapBufferRange(GL_ARRAY_BUFFER,sizeof(LineVertex) * m_iCurrentLength,sizeof(LineVertex) * uiLength,GL_MAP_WRITE_BIT));
 
-	for(unsigned int i = 0; i < uiLength && (i + uiLength < m_pVertexStructure->GetLength()) ; ++i)
+	for(unsigned int i = 0; i < uiLength && (i + uiLength < m_pVertexBuffer->GetLength()) ; ++i)
 	{
 		glm::vec4 pos = (T * glm::vec4(pArray[i],1.0f));
 		pLineVertex[i].pos = glm::vec3(pos.x,pos.y,pos.z);
@@ -64,7 +64,7 @@ void LineEngine::Render()
 	glUseProgram(pShader->GetID());
 
 	glEnableVertexAttribArray(0);
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexStructure->GetVertexBuffer());
+	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
 	glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(LineVertex),0);
 
 	glEnableVertexAttribArray(1);

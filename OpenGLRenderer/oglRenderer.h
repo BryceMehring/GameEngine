@@ -7,7 +7,7 @@
 #include "LineEngine.h"
 #include "SpriteEngine.h"
 #include "ResourceManager.h"
-#include "VertexStructures.h"
+#include "VertexBuffer.h"
 
 #include "Camera.h"
 #include <angelscript.h>
@@ -108,7 +108,7 @@ private:
 
 	bool m_bFullscreen;
 
-	std::vector<VertexStructure*> m_vertexStructures;
+	std::vector<VertexBuffer*> m_vertexBuffers;
 
 	// Helper functions
 	void ConfigureGLFW();

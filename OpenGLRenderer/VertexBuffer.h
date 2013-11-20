@@ -3,14 +3,14 @@
 
 #include <GL/glew.h>
 
-class VertexStructure
+class VertexBuffer
 {
 public:
 
-	VertexStructure(GLuint vertexBufferSize, GLuint bufferLength);
-	virtual ~VertexStructure();
+	VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength);
+	virtual ~VertexBuffer();
 
-	GLuint GetVertexBuffer() const;
+	GLuint GetBuffer() const;
 	GLuint GetLength() const;
 	GLuint GetSize() const;
 
@@ -20,12 +20,12 @@ private:
 	GLuint m_size;
 };
 
-class IndexedVertexStructure : public VertexStructure
+class IndexedVertexBuffer : public VertexBuffer
 {
 public:
 
-	IndexedVertexStructure(GLuint vertexBufferSize, GLuint bufferLength);
-	virtual ~IndexedVertexStructure();
+	IndexedVertexBuffer(GLuint vertexBufferSize, GLuint bufferLength);
+	virtual ~IndexedVertexBuffer();
 
 	GLuint GetIndexBuffer() const;
 

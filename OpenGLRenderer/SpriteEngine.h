@@ -4,7 +4,7 @@
 #include "IRenderer.h"
 #include "ResourceManager.h"
 #include "Camera.h"
-#include "VertexStructures.h"
+#include "VertexBuffer.h"
 
 #include <map>
 #include <string>
@@ -48,7 +48,7 @@ class SpriteEngine : public SpriteEngineBase
 {
 public:
 
-	SpriteEngine(ResourceManager* pRm, IndexedVertexStructure* pVertexStruct, Camera* pCam = nullptr);
+	SpriteEngine(ResourceManager* pRm, IndexedVertexBuffer* pVertexStruct, Camera* pCam = nullptr);
 	~SpriteEngine();
 
 	void DrawSprite(const std::string& tech,
@@ -66,7 +66,7 @@ public:
 private:
 
 	ResourceManager* m_pRM;
-	IndexedVertexStructure* m_pVertexStruct;
+	IndexedVertexBuffer* m_pVertexBuffer;
 
 	unsigned int m_iCurrentLength;
 

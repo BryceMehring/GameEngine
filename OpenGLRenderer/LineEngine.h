@@ -4,7 +4,7 @@
 #include "IRenderer.h"
 #include "Camera.h"
 #include "ResourceManager.h"
-#include "VertexStructures.h"
+#include "VertexBuffer.h"
 
 struct LineVertex
 {
@@ -24,7 +24,7 @@ class LineEngine
 {
 public:
 
-	LineEngine(ResourceManager* pRm, VertexStructure* pVertexStructure, RenderSpace space, Camera* pCam = nullptr);
+	LineEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, RenderSpace space, Camera* pCam = nullptr);
 
 	void GetLineWidthRange(float& min, float& max) const;
 
@@ -37,7 +37,7 @@ public:
 private:
 
 	ResourceManager* m_pRM;
-	VertexStructure* m_pVertexStructure;
+	VertexBuffer* m_pVertexBuffer;
 	Camera* m_pCamera;
 
 	unsigned int m_iCurrentLength;

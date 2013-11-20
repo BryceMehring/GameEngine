@@ -6,8 +6,8 @@
 #include <stddef.h>
 #include <algorithm>
 
-SpriteEngine::SpriteEngine(ResourceManager* pRm, IndexedVertexStructure* pVertexStruct, Camera* pCam) :
-	m_pRM(pRm), m_pVertexStruct(pVertexStruct), m_pCamera(pCam), m_iCurrentLength(0)
+SpriteEngine::SpriteEngine(ResourceManager* pRm, IndexedVertexBuffer* pVertexStruct, Camera* pCam) :
+	m_pRM(pRm), m_pVertexBuffer(pVertexStruct), m_pCamera(pCam), m_iCurrentLength(0)
 {
 }
 
@@ -28,7 +28,7 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 							  unsigned int iCellId
 							  )
 {
-	if(m_iCurrentLength < m_pVertexStruct->GetLength())
+	if(m_iCurrentLength < m_pVertexBuffer->GetLength())
 	{
 		IResource* pShader = m_pRM->GetResource(tech);
 		IResource* pTex = m_pRM->GetResource(texture);
@@ -49,8 +49,8 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 
 void SpriteEngine::FillVertexBuffer()
 {
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexStruct->GetVertexBuffer());
-	SpriteVertex* pVert = static_cast<SpriteVertex*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexStruct->GetSize(), GL_MAP_WRITE_BIT));
+	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
+	SpriteVertex* pVert = static_cast<SpriteVertex*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
 	// Loop over all of the layers
 	for(auto& layerIter : m_spriteLayers)
@@ -111,8 +111,8 @@ void SpriteEngine::Render()
 	// First we must fill the dynamic vertex buffer with all of the sprites sorted by their tech and texture
 	FillVertexBuffer();
 
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexStruct->GetVertexBuffer());
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_pVertexStruct->GetIndexBuffer());
+	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_pVertexBuffer->GetIndexBuffer());
 
 	unsigned long uiStartingIndex = 0; // Starting index to the vertex buffer for rendering multiple textures within one shader pass
 
