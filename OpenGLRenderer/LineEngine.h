@@ -43,8 +43,6 @@ private:
 
 	std::vector<LineSubset> m_LineSubsets;
 
-	void CreateVertexBuffer();
-
 	// Get the range of widths supported by the hardware
 	void GetLineWidthRange();
 
