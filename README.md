@@ -17,7 +17,8 @@ When creating an out of source game plugin, copy or use symbolic links to link t
 ==========
 
 The compiled output will be located in source in GameEngine/bin
-How the github folder should look on windows:
+
+How the github folder should look:
 
 GameEngine/ - this is the root of the repo
 
@@ -43,7 +44,6 @@ Dependencies
 
 #### Linux: 
 
-    sudo apt-get install g++ git cmake cmake-qt-gui mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev
-    libxi-dev libxmu-dev libglm-dev libglew-dev
+    sudo apt-get install g++ git cmake cmake-qt-gui mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxi-dev libxmu-dev libglm-dev libglew-dev
 
 
