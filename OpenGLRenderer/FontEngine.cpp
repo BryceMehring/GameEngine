@@ -74,9 +74,6 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 {
 	output.resize(m_textSubsets.size());
 
-	// bind the vertex buffer that we are going to write to
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
-
 	// get the vertex buffer memory to write to
 	VertexPTC* v = static_cast<VertexPTC*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
@@ -190,9 +187,11 @@ void FontEngine::Render()
 	if(m_textSubsets.empty())
 		return;
 
-	std::vector<unsigned int> subsetLength;
+	m_pVertexBuffer->Bind();
 
 	// first we fill the vertex buffer with the text to render
+
+	std::vector<unsigned int> subsetLength;
 	FillVertexBuffer(subsetLength);
 
 	// get the shader to use
@@ -202,7 +201,6 @@ void FontEngine::Render()
 	glUseProgram(pShader->GetID());
 
 	// Create our vertex structure in OpenGL
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
 				pShader->GetAtribs().find("vertexPosition_modelspace")->second,
@@ -233,9 +231,6 @@ void FontEngine::Render()
 				reinterpret_cast<void*>(offsetof(struct VertexPTC,color))  // array buffer offset
 				);
 
-	// Bind index buffer
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_pVertexBuffer->GetIndexBuffer());
-
 	// Enables one texture
 	glActiveTexture(GL_TEXTURE0);
 
@@ -243,11 +238,11 @@ void FontEngine::Render()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	unsigned int uiStartingIndex = 0;
-	unsigned int uiSubset = 0;
-
 	// set the transformation matrix
 	glUniformMatrix4fv(pShader->GetMVP(),1,false,&(m_pCamera->viewProj()[0][0]));
+
+	unsigned int uiStartingIndex = 0;
+	unsigned int uiSubset = 0;
 
 	// loop over all text subsets
 	for(auto& iter : m_textSubsets)

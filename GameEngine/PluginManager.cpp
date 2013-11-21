@@ -49,7 +49,6 @@ PluginManager::PluginManager() : m_pAS(nullptr)
 {
 }
 
-// ===== Destructor =====
 PluginManager::~PluginManager()
 {
 	FreeAllPlugins();

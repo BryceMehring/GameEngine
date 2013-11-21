@@ -50,7 +50,6 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 
 void SpriteEngine::FillVertexBuffer()
 {
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
 	VertexPTC* pVert = static_cast<VertexPTC*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
 	// Loop over all of the layers
@@ -109,13 +108,10 @@ void SpriteEngine::Render()
 	if(m_spriteLayers.empty())
 		return;
 
+	m_pVertexBuffer->Bind();
+
 	// First we must fill the dynamic vertex buffer with all of the sprites sorted by their tech and texture
 	FillVertexBuffer();
-
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_pVertexBuffer->GetIndexBuffer());
-
-	unsigned long uiStartingIndex = 0; // Starting index to the vertex buffer for rendering multiple textures within one shader pass
 
 	// Enable blending
 	glEnable(GL_BLEND);
@@ -124,6 +120,8 @@ void SpriteEngine::Render()
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+
+	unsigned long uiStartingIndex = 0; // Starting index to the vertex buffer for rendering multiple textures within one shader pass
 
 		// Loop over all of the layers
 	for(auto& layerIter : m_spriteLayers)

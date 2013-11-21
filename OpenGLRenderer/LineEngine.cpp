@@ -35,7 +35,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 	if(uiNewLength >= m_pVertexBuffer->GetLength())
 		return;
 
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
+	m_pVertexBuffer->Bind();
 
 	VertexPC* pLineVertex = static_cast<VertexPC*>(glMapBufferRange(GL_ARRAY_BUFFER,sizeof(VertexPC) * m_iCurrentLength,sizeof(VertexPC) * uiLength,GL_MAP_WRITE_BIT));
 
@@ -54,22 +54,20 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 
 void LineEngine::Render()
 {
-	// if there is nothing to draw, do nothing
 	if(m_LineSubsets.empty())
 		return;
 
+	m_pVertexBuffer->Bind();
+
 	Shader* pShader = static_cast<Shader*>(m_pRM->GetResource("lineShader"));
-	GLuint vertexPosition_modelspaceID = glGetAttribLocation(pShader->GetID(), "vertexPosition_modelspace");
-	GLuint vertexColorID = glGetAttribLocation(pShader->GetID(), "vertexColor");
 
 	glUseProgram(pShader->GetID());
 
 	glEnableVertexAttribArray(0);
-	glBindBuffer( GL_ARRAY_BUFFER , m_pVertexBuffer->GetBuffer());
-	glVertexAttribPointer(vertexPosition_modelspaceID,3,GL_FLOAT,GL_FALSE,sizeof(VertexPC),0);
-
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(vertexColorID,4,GL_FLOAT,GL_FALSE,sizeof(VertexPC),reinterpret_cast<void*>(sizeof(glm::vec3)));
+
+	glVertexAttribPointer(pShader->GetAtribs().at("vertexPosition_modelspace"),3,GL_FLOAT,GL_FALSE,sizeof(VertexPC),0);
+	glVertexAttribPointer(pShader->GetAtribs().at("vertexColor"),4,GL_FLOAT,GL_FALSE,sizeof(VertexPC),reinterpret_cast<void*>(sizeof(glm::vec3)));
 
 	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
 

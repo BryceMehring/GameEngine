@@ -13,9 +13,9 @@ VertexBuffer::~VertexBuffer()
 	glDeleteBuffers(1,&m_vertexBuffer);
 }
 
-GLuint VertexBuffer::GetBuffer() const
+void VertexBuffer::Bind() const
 {
-	return m_vertexBuffer;
+	glBindBuffer( GL_ARRAY_BUFFER , m_vertexBuffer);
 }
 
 GLuint VertexBuffer::GetLength() const
@@ -37,9 +37,10 @@ IndexedVertexBuffer::~IndexedVertexBuffer()
 	glDeleteBuffers(1,&m_indexBuffer);
 }
 
-GLuint IndexedVertexBuffer::GetIndexBuffer() const
+void IndexedVertexBuffer::Bind() const
 {
-	return m_indexBuffer;
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_indexBuffer);
+	VertexBuffer::Bind();
 }
 
 

@@ -10,7 +10,8 @@ public:
 	VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength);
 	virtual ~VertexBuffer();
 
-	GLuint GetBuffer() const;
+	virtual void Bind() const;
+
 	GLuint GetLength() const;
 	GLuint GetSize() const;
 
@@ -27,7 +28,7 @@ public:
 	IndexedVertexBuffer(GLuint vertexBufferSize, GLuint bufferLength);
 	virtual ~IndexedVertexBuffer();
 
-	GLuint GetIndexBuffer() const;
+	virtual void Bind() const;
 
 private:
 
