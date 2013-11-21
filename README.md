@@ -17,7 +17,8 @@ When creating an out of source game plugin, copy or use symbolic links to link t
 ==========
 
 The compiled output will be located in source in GameEngine/bin
-How the github folder should look on windows:
+
+How the github folder should look:
 
 GameEngine/ - this is the root of the repo
 
