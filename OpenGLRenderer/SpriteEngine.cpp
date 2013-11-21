@@ -37,8 +37,7 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 		if( pShader != nullptr && pTex != nullptr)
 		{
 			int iZorder = (int)(floor(transformation[3].z));
-			Layer& layer = m_spriteLayers[iZorder];
-			layer.sprites[tech][texture].push_back(Sprite(transformation,color,tiling,iCellId));
+			m_spriteLayers[iZorder][tech][texture].push_back(Sprite(transformation,color,tiling,iCellId));
 			++m_iCurrentLength;
 		}
 	}
@@ -56,7 +55,7 @@ void SpriteEngine::FillVertexBuffer()
 	for(auto& layerIter : m_spriteLayers)
 	{
 		// Loop over all sprites
-		for(auto& iter : layerIter.second.sprites)
+		for(auto& iter : layerIter.second)
 		{
 			for(auto& subIter : iter.second)
 			{
@@ -127,7 +126,7 @@ void SpriteEngine::Render()
 	for(auto& layerIter : m_spriteLayers)
 	{
 		// Loop over all sprites with the same tech
-		for(auto& techIter : layerIter.second.sprites)
+		for(auto& techIter : layerIter.second)
 		{
 			// Apply the shader tech
 

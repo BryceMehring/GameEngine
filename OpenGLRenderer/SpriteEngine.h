@@ -23,20 +23,7 @@ struct Sprite
 	unsigned int iCellId;
 };
 
-struct Layer
-{
-	typedef std::map<std::string,std::vector<Sprite>> TextureMap;
-	std::map<std::string,TextureMap> sprites;
-};
-
-class SpriteEngineBase
-{
-public:
-
-protected:
-};
-
-class SpriteEngine : public SpriteEngineBase
+class SpriteEngine
 {
 public:
 
@@ -63,7 +50,7 @@ private:
 	unsigned int m_iCurrentLength;
 
 	Camera* m_pCamera;
-	std::map<int,Layer> m_spriteLayers;
+	std::map<int,std::map<std::string,std::map<std::string,std::vector<Sprite>>>> m_spriteLayers;
 
 	void FillVertexBuffer();
 };
