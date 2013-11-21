@@ -43,7 +43,6 @@ Dependencies
 
 #### Linux: 
 
-    sudo apt-get install g++ git cmake cmake-qt-gui mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev
-    libxi-dev libxmu-dev libglm-dev libglew-dev
+    sudo apt-get install g++ git cmake cmake-qt-gui mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxi-dev libxmu-dev libglm-dev libglew-dev
 
 
