@@ -34,8 +34,6 @@ public:
 	void Destroy(class asIScriptEngine*) override;
 
 	// IRenderer
-
-	// Lines
 	void DrawLine(const glm::vec3* pArray, // array of 3d vertices to draw
 						  unsigned int length, // number of vertices
 						  float fWidth = 3.0f, // the width of the line
@@ -118,6 +116,7 @@ private:
 	bool CheckShader(const std::string& shader, const std::string& location, GLuint& shaderID, GLuint& outLocation) const;
 	void ParseVideoSettingsFile();
 	void SaveDisplayList();
+	void BuildCamera();
 };
 
 #endif // _OGLRENDERER_
