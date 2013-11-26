@@ -10,6 +10,10 @@
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#pragma warning(disable:4503)
+#endif
+
 struct Sprite
 {
 	Sprite(const glm::mat4& transform,const glm::vec3& col, const glm::vec2& tile, unsigned int cell)
@@ -50,6 +54,8 @@ private:
 	unsigned int m_iCurrentLength;
 
 	Camera* m_pCamera;
+
+	// z level -> map of techniques -> map of textures -> vector of sprites
 	std::map<int,std::map<std::string,std::map<std::string,std::vector<Sprite>>>> m_spriteLayers;
 
 	void FillVertexBuffer();
