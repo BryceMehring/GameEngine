@@ -3,6 +3,7 @@
 #include "Log.h"
 #include "ResourceFileLoader.h"
 #include <string>
+#include <sstream>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -14,8 +15,7 @@
 
 using namespace std;
 
-Game::Game() : m_pConsole(nullptr), m_bConsoleEnabled(false),
-	m_fDT(0.0f), m_pRenderer(nullptr), m_pInput(nullptr)
+Game::Game() : m_fDT(0.0f), m_pRenderer(nullptr), m_pInput(nullptr), m_bDrawFPS(true)
 {
 	m_plugins.SetAS(m_vm.GetScriptEngine());
 	LoadPlugins();
@@ -49,7 +49,6 @@ void Game::SetNextState(const std::string& state)
 
 int Game::Run()
 {
-	//double prevTimeStamp = 0.0;
 
 	// Loop while the use has not quit
 	while(!m_pInput->KeyPress(GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(glfwGetCurrentContext()))
@@ -64,9 +63,7 @@ int Game::Run()
 		// Render the game
 		Draw();
 
-		//double currentTimeStamp = glfwGetTime();
 		m_fDT = glfwGetTime();
-		//prevTimeStamp = currentTimeStamp;
 	}
 
 	return 0;
@@ -87,55 +84,46 @@ void Game::Update()
 		m_NextState.clear();
 	}
 
-	if(m_pInput->KeyPress(GLFW_KEY_F8))
+	if(m_pInput->KeyPress(GLFW_KEY_F5))
 	{
 		m_pRenderer->EnableVSync(bSync);
 		bSync = !bSync;
 	}
 
-	if(m_bConsoleEnabled)
+	if(m_pInput->KeyPress(GLFW_KEY_F6))
 	{
-		//m_pConsole->Update(*m_pInput,m_fDT);
+		m_bDrawFPS = !m_bDrawFPS;
 	}
-	else
-	{
-		m_StateMachine.GetState().Update(*this);
-	}
+
+
+	m_StateMachine.GetState().Update(*this);
+
 }
 
 void Game::Draw()
 {
-	if(m_bConsoleEnabled)
-	{
-		//m_pConsole->Render(*m_pRenderer);
-	}
-	else
-	{
-		// render the current state
+	m_StateMachine.GetState().Draw(*this);
 
-		m_StateMachine.GetState().Draw(*this);
+	if(m_bDrawFPS)
+	{
+		DrawFPS();
 	}
 
-	// Present the screen
 	m_pRenderer->Present();
 }
 
-void Game::DrawSelectionRect()
+void Game::DrawFPS()
 {
-	Math::AABB R;
-	if(m_pInput->GetSelectedRect(R))
-	{
-		glm::vec3 pos[] =
-		{
-			glm::vec3(R.min.x,R.min.y,0.0f),
-			glm::vec3(R.min.x,R.max.y,0.0f),
-			glm::vec3(R.max.x,R.max.y,0.0f),
-			glm::vec3(R.max.x,R.min.y,0.0f),
-			glm::vec3(R.min.x,R.min.y,0.0f)
-		};
+	int width;
+	int height;
 
-		m_pRenderer->DrawLine(pos,sizeof(pos) / sizeof(glm::vec3));
-	}
+	std::stringstream stream;
+	stream << m_info.GetFPS();
+
+	m_pRenderer->GetDisplayMode(width,height);
+
+	m_pRenderer->SetRenderSpace(RenderSpace::Screen);
+	m_pRenderer->DrawString(stream.str().c_str(),glm::vec3(0.0f,height - 20.0f,-10.0f),glm::vec2(40.0f));
 }
 
 IRenderer& Game::GetRenderer()

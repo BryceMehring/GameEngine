@@ -84,9 +84,6 @@ private:
 	asVM m_vm;
 	PluginManager m_plugins;
 
-	class ScriptingConsole* m_pConsole; // ignore right now, working on this
-	bool m_bConsoleEnabled;/// same as above
-
 	GameStateMachine m_StateMachine;
 
 	double m_fDT;
@@ -97,6 +94,8 @@ private:
 	IKMInput* m_pInput;
 
 	std::string m_NextState;
+
+	bool m_bDrawFPS;
 
 private:
 
@@ -111,7 +110,7 @@ private:
 	void UpdateFPS();
 
 	void Draw();
-	void DrawSelectionRect();
+	void DrawFPS();
 
 	// Prevent copying
 	Game(const Game&);
