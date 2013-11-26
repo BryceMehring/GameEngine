@@ -26,6 +26,7 @@ oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_
 {
 	s_pThis = this;
 
+	EnumerateDisplayAdaptors();
 	ParseVideoSettingsFile();
 	ConfigureGLFW();
 	ConfigureOpenGL();
@@ -119,12 +120,6 @@ IResourceManager& oglRenderer::GetResourceManager()
 	return m_rm;
 }
 
-void oglRenderer::GetCurrentDisplayMode(int& monitor, int& mode) const
-{
-	monitor = m_iCurrentMonitor;
-	mode = m_iCurrentDisplayMode;
-}
-
 bool oglRenderer::GetDisplayMode(int monitor, int i, int& width, int& height) const
 {
 	auto monitorModes = m_videoModes[monitor];
@@ -132,10 +127,17 @@ bool oglRenderer::GetDisplayMode(int monitor, int i, int& width, int& height) co
 	if(i >= monitorModes.second)
 		return false;
 
-	width = monitorModes.first[i].width;
-	height = monitorModes.first[i].height;
+	int index = monitorModes.second - i - 1;
+
+	width = monitorModes.first[index].width;
+	height = monitorModes.first[index].height;
 
 	return true;
+}
+
+bool oglRenderer::GetDisplayMode(int& width, int& height) const
+{
+	return GetDisplayMode(m_iCurrentMonitor,m_iCurrentDisplayMode,width,height);
 }
 
 int oglRenderer::GetNumMonitors() const
@@ -237,7 +239,6 @@ void oglRenderer::Present()
 
 void oglRenderer::ConfigureGLFW()
 {
-	EnumerateDisplayAdaptors();
 	GLFWOpenWindowHints();
 
 	auto iter = m_videoModes[m_iCurrentMonitor];

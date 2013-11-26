@@ -51,8 +51,8 @@ public:
 
 	virtual IResourceManager& GetResourceManager() = 0; // Returns the resource manager
 
-	virtual void GetCurrentDisplayMode(int& monitor, int& mode) const = 0; // returns the current display mode given the monitor
 	virtual bool GetDisplayMode(int monitor, int mode, int& width, int& height) const = 0; // get the display mode, return true if success, false if error
+	virtual bool GetDisplayMode(int& width, int& height) const = 0; // get the current display mode, return true if success, false if error
 	virtual int  GetNumMonitors() const = 0;
 	virtual int  GetNumDisplayModes(int monitor) const = 0; // returns the number of video modes for the given monitor
 	virtual void GetLineWidthRange(float& min, float& max) const = 0; // Gets the range of the width of the lines supported on the current hardware

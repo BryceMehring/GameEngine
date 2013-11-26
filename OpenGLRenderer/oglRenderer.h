@@ -58,8 +58,8 @@ public:
 
 	IResourceManager& GetResourceManager() override; // Returns the resource manager
 
-	void GetCurrentDisplayMode(int& monitor, int& mode) const override; // returns the current display mode given the monitor
 	bool GetDisplayMode(int monitor, int mode, int& width, int& height) const override; // get the display mode, return true if success, false if error
+	bool GetDisplayMode(int& width, int& height) const override; // get the current display mode, return true if success, false if error
 	int  GetNumMonitors() const override;
 	int  GetNumDisplayModes(int monitor) const override; // returns the number of video modes for the given monitor
 	void GetLineWidthRange(float& min, float& max) const override; // Gets the range of the width of the lines supported on the current hardware, x = min, y = max
