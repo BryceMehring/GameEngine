@@ -356,7 +356,7 @@ void oglRenderer::SaveDisplayList()
 
 	if(stream.is_open())
 	{
-		for(unsigned int i = 0; i < m_videoModes.size(); ++i)
+		for(int i = 0; i < (int)m_videoModes.size(); ++i)
 		{
 			stream << "Monitor " << i << endl;
 

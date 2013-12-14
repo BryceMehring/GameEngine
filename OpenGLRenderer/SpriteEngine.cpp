@@ -8,7 +8,7 @@
 #include <algorithm>
 
 SpriteEngine::SpriteEngine(ResourceManager* pRm, IndexedVertexBuffer* pVertexStruct, Camera* pCam) :
-	m_pRM(pRm), m_pVertexBuffer(pVertexStruct), m_pCamera(pCam), m_iCurrentLength(0)
+	m_pRM(pRm), m_pVertexBuffer(pVertexStruct), m_iCurrentLength(0), m_pCamera(pCam)
 {
 }
 
