@@ -4,7 +4,7 @@
 in vec2 interpUV;
 in vec3 interpColor;
 
-out vec3 outColor;
+out vec4 outColor;
 
 // Values that stay constant for the whole mesh.
 uniform sampler2D myTextureSampler;
@@ -17,7 +17,7 @@ void main()
 	
 	if(texColor <= 0.2)
 		discard;
-	
-        outColor = vec3(texColor) * interpColor;
+		
+	outColor = vec4(vec3(texColor) * interpColor,1.0);
 	
 }
