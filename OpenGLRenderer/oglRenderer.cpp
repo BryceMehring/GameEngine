@@ -259,8 +259,11 @@ void oglRenderer::ConfigureOpenGL()
 	glewExperimental = true; // Needed in core profile
 	assert(glewInit() == GLEW_OK);
 
-	//glFrontFace(GL_CW);
-	//glEnable(GL_CULL_FACE);
+	// Check to make sure that the hardware is supported
+	assert(glewIsSupported("GL_VERSION_2_1 "
+						   "GL_ARB_map_buffer_range "
+						   "GL_EXT_framebuffer_object"));
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glClearColor(0.0f,0.0f,0.0f,0.0f);
