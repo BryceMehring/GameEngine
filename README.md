@@ -41,6 +41,7 @@ Dependencies
 * [stb_image](http://nothings.org/stb_image.c)
 * [AngelScript](http://www.angelcode.com/angelscript/)
 * [cmake](http://www.cmake.org/)
+* OpenGL 3.3 hardware support
 
 #### Linux: 
 
