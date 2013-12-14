@@ -58,7 +58,7 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 			else
 			{
 				Log::Instance().Write("invalid resource type");
-				assert(false);
+				bSuccess = false;
 			}
 
 			assert(bSuccess);
