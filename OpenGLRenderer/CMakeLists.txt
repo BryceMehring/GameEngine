@@ -17,7 +17,7 @@ endif(WIN32)
 
 set_target_properties(renderer PROPERTIES PREFIX "")
 set_target_properties(renderer PROPERTIES SUFFIX ".plug")
-add_definitions(-DGLFW_DLL -DPLUGIN_EXPORTS)
+add_definitions(-DGLFW_DLL -DGLEW_STATIC -DPLUGIN_EXPORTS)
 
 if(ENABLE_CPACK)
         Install(TARGETS renderer LIBRARY DESTINATION ./)
