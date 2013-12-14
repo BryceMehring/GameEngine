@@ -341,26 +341,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 	bool bFoundTexture = false;
 	GLuint uiTextureLocation = 0;
 
-	Shader::UnifromMap atribs;
 	Shader::UnifromMap uniforms;
-
-	// Get a list of all the attributes in the shader
-	GLint atribCount;
-	glGetProgramiv(programID,GL_ACTIVE_ATTRIBUTES,&atribCount);
-	for(GLint i = 0; i < atribCount; ++i)
-	{
-		char name[256];
-		GLint strLength;
-		GLint  size;
-		GLenum type;
-
-		glGetActiveAttrib(programID,i,sizeof(name) - 1,&strLength,&size,&type,name);
-		name[strLength] = 0;
-
-		GLuint location = glGetAttribLocation(programID,name);
-
-		atribs.insert(std::make_pair(name,location));
-	}
 
 	// Get a list of all the uniform variables in the shader
 	GLint uniformCount = 0;
@@ -399,11 +380,11 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 		Shader* pShader = nullptr;
 		if(bFoundTexture)
 		{
-			pShader = new TexturedShader(programID,uiMVPLocation,uiTextureLocation,std::move(atribs),std::move(uniforms));
+			pShader = new TexturedShader(programID,uiMVPLocation,uiTextureLocation,std::move(uniforms));
 		}
 		else
 		{
-			pShader = new Shader(programID,uiMVPLocation,std::move(atribs),std::move(uniforms));
+			pShader = new Shader(programID,uiMVPLocation,std::move(uniforms));
 		}
 
 		m_resources.insert(std::make_pair(id,pShader));

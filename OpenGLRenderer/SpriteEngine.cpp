@@ -131,13 +131,12 @@ void SpriteEngine::Render()
 			// Apply the shader tech
 
 			const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter.first));
-			const TexturedShader::UnifromMap& atribMap = pShader->GetAtribs();
 
 			glUseProgram(pShader->GetID());
 
-			glVertexAttribPointer(atribMap.at("vertexPosition_modelspace"),3,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),0);
-			glVertexAttribPointer(atribMap.at("vertexUV"),2,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),reinterpret_cast<void*>(sizeof(glm::vec3)));
-			glVertexAttribPointer(atribMap.at("vertexColor"),3,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),reinterpret_cast<void*>(offsetof(struct VertexPTC, color)));
+			glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),0);
+			glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),reinterpret_cast<void*>(sizeof(glm::vec3)));
+			glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),reinterpret_cast<void*>(offsetof(struct VertexPTC, color)));
 
 			glActiveTexture(GL_TEXTURE0);
 

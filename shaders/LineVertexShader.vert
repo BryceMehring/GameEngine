@@ -1,10 +1,10 @@
-#version 120
+#version 330
 
 // Input vertex data, different for all executions of this shader.
-attribute vec3 vertexPosition_modelspace;
-attribute vec4 vertexColor;
+layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 1) in vec3 vertexColor;
 
-varying vec4 fragmentColor;
+out vec3 fragmentColor;
 
 // Values that stay constant for the whole mesh.
 uniform mat4 MVP;

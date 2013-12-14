@@ -260,9 +260,7 @@ void oglRenderer::ConfigureOpenGL()
 	assert(glewInit() == GLEW_OK);
 
 	// Check to make sure that the hardware is supported
-	assert(glewIsSupported("GL_VERSION_2_1 "
-						   "GL_ARB_map_buffer_range "
-						   "GL_EXT_framebuffer_object"));
+	assert(glewIsSupported("GL_VERSION_3_3"));
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
@@ -289,6 +287,9 @@ void oglRenderer::EnumerateDisplayAdaptors()
 
 void oglRenderer::GLFWOpenWindowHints()
 {
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,3);
+
 	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
 }
 

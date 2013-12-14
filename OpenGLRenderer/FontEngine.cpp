@@ -202,34 +202,13 @@ void FontEngine::Render()
 
 	// Create our vertex structure in OpenGL
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(
-				pShader->GetAtribs().find("vertexPosition_modelspace")->second,
-				3,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				sizeof(VertexPTC),  // stride
-				0            // array buffer offset
-				);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTC), 0);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(
-				pShader->GetAtribs().find("vertexUV")->second,
-				2,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				sizeof(VertexPTC),  // stride
-				reinterpret_cast<void*>(sizeof(glm::vec3)) // array buffer offset
-				);
+	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE, sizeof(VertexPTC), reinterpret_cast<void*>(sizeof(glm::vec3)));
 
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(
-				pShader->GetAtribs().find("vertexColor")->second,	
-				3,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				sizeof(VertexPTC),  // stride
-				reinterpret_cast<void*>(offsetof(struct VertexPTC,color))  // array buffer offset
-				);
+	glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),reinterpret_cast<void*>(offsetof(struct VertexPTC,color)));
 
 	// Enables one texture
 	glActiveTexture(GL_TEXTURE0);

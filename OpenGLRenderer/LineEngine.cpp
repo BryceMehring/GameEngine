@@ -66,8 +66,8 @@ void LineEngine::Render()
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(pShader->GetAtribs().at("vertexPosition_modelspace"),3,GL_FLOAT,GL_FALSE,sizeof(VertexPC),0);
-	glVertexAttribPointer(pShader->GetAtribs().at("vertexColor"),4,GL_FLOAT,GL_FALSE,sizeof(VertexPC),reinterpret_cast<void*>(sizeof(glm::vec3)));
+	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(VertexPC),0);
+	glVertexAttribPointer(1,4,GL_FLOAT,GL_FALSE,sizeof(VertexPC),reinterpret_cast<void*>(sizeof(glm::vec3)));
 
 	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
 
