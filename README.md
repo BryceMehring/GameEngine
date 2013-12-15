@@ -9,10 +9,10 @@ Open CMakeLists.txt with the CMake GUI to generate projects.
 When creating an out of source game plugin, copy or use symbolic links to link the external plugin folder `plugin` into `GameEngine/bin`.
 
 #### Windows: 
-* Run `CreateWinSymLinks.bat` as an administrator to create the symbolic links
+* Run `CreateWinSymLinks.bat` as an administrator to create the symbolic links.
 * Set GameLauncher as the startup project, and build the solution in Visual Studio 2012.
+* Copy `glfw*.dll` into `GameEngine/bin`
 * To run a game, the command line argument must be set to name of the Game Project that the Game Engine should load first.
-* The only 3rd party dll required by the engine to be in the bin folder is `glfw*.dll`
 
 #### Linux: todo
 
