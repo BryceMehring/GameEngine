@@ -2,38 +2,26 @@
 #define _VERTEXBUFFER_
 
 #include <GL/glew.h>
+#include "VertexStructures.h"
 
 class VertexBuffer
 {
 public:
 
-	VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength);
-	virtual ~VertexBuffer();
+	VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bPCT = true);
+	~VertexBuffer();
 
-	virtual void Bind() const;
+	void Bind() const;
+	void BindVAO() const;
 
 	GLuint GetLength() const;
-	GLuint GetSize() const;
 
 private:
+
 	GLuint m_vertexBuffer;
-	GLuint m_length;
-	GLuint m_size;
-};
-
-class IndexedVertexBuffer : public VertexBuffer
-{
-public:
-
-	IndexedVertexBuffer(GLuint vertexBufferSize, GLuint bufferLength);
-	virtual ~IndexedVertexBuffer();
-
-	virtual void Bind() const;
-
-private:
-
 	GLuint m_indexBuffer;
-
+	GLuint m_arrayObject;
+	GLuint m_length;
 };
 
 

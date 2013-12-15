@@ -16,13 +16,13 @@
 
 struct Sprite
 {
-	Sprite(const glm::mat4& transform,const glm::vec3& col, const glm::vec2& tile, unsigned int cell)
+	Sprite(const glm::mat4& transform,const glm::vec4& col, const glm::vec2& tile, unsigned int cell)
 		: T(transform), color(col), tiling(tile), iCellId(cell)
 	{
 	}
 
 	glm::mat4 T;
-	glm::vec3 color;
+	glm::vec4 color;
 	glm::vec2 tiling;
 	unsigned int iCellId;
 };
@@ -31,13 +31,13 @@ class SpriteEngine
 {
 public:
 
-	SpriteEngine(ResourceManager* pRm, IndexedVertexBuffer* pVertexStruct, Camera* pCam = nullptr);
+	SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexStruct, Camera* pCam = nullptr);
 	~SpriteEngine();
 
 	void DrawSprite(const std::string& tech,
 					const std::string& texture,
 					const glm::mat4& transformation,
-					const glm::vec3& color,
+					const glm::vec4& color,
 					const glm::vec2& tiling,
 					unsigned int iCellId
 				   );
@@ -49,7 +49,7 @@ public:
 private:
 
 	ResourceManager* m_pRM;
-	IndexedVertexBuffer* m_pVertexBuffer;
+	VertexBuffer* m_pVertexBuffer;
 
 	unsigned int m_iCurrentLength;
 

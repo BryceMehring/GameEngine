@@ -84,8 +84,8 @@ oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_
 	BuildCamera();
 	EnableVSync(true);
 
-	IndexedVertexBuffer* pVertexBuffer = new IndexedVertexBuffer(sizeof(VertexPTC),1024*40);
-	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexPC),1024*8*4);
+	VertexBuffer* pVertexBuffer = new VertexBuffer(sizeof(VertexPCT),1024*40);
+	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexPC),1024*8*4,false);
 
 	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer));
 	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));
@@ -98,8 +98,6 @@ oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_
 
 	m_vertexBuffers.push_back(pVertexBuffer);
 	m_vertexBuffers.push_back(pLineVertexBuffer);
-
-	
 }
 
 oglRenderer::~oglRenderer()
@@ -142,7 +140,7 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float f
 	}
 }
 
-void oglRenderer::DrawString(const char* str, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, const char* font, FontAlignment options)
+void oglRenderer::DrawString(const char* str, const glm::vec3& pos, const glm::vec2& scale, const glm::vec4& color, const char* font, FontAlignment options)
 {
 	if(m_renderSpace == World)
 	{
@@ -154,7 +152,7 @@ void oglRenderer::DrawString(const char* str, const glm::vec3& pos, const glm::v
 	}
 }
 
-void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec3& color, const glm::vec2& tiling, unsigned int iCellId, const std::string& tech)
+void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec4& color, const glm::vec2& tiling, unsigned int iCellId, const std::string& tech)
 {
 	if(m_renderSpace == World)
 	{
@@ -292,7 +290,7 @@ void oglRenderer::GLFWOpenWindowHints()
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 #ifdef _DEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);

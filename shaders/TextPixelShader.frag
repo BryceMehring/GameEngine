@@ -2,7 +2,7 @@
 
 // Interpolated values from the vertex shaders
 in vec2 interpUV;
-in vec3 interpColor;
+in vec4 interpColor;
 
 out vec4 outColor;
 
@@ -18,6 +18,6 @@ void main()
 	if(texColor <= 0.2)
 		discard;
 		
-	outColor = vec4(vec3(texColor) * interpColor,1.0);
+	outColor = vec4(texColor) * interpColor;
 	
 }

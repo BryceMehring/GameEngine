@@ -9,12 +9,12 @@
 
 struct DrawTextInfo
 {
-	DrawTextInfo(const std::string& t, const glm::vec3 p, const glm::vec2& s, const glm::vec3& c, FontAlignment o) : text(t), pos(p), scale(s), color(c), options(o) {}
+	DrawTextInfo(const std::string& t, const glm::vec3 p, const glm::vec2& s, const glm::vec4& c, FontAlignment o) : text(t), pos(p), scale(s), color(c), options(o) {}
 
 	std::string text;
 	glm::vec3 pos;
 	glm::vec2 scale;
-	glm::vec3 color;
+	glm::vec4 color;
 	FontAlignment options;
 };
 
@@ -23,11 +23,11 @@ class FontEngine
 {
 public:
 
-	FontEngine(ResourceManager* pRm, IndexedVertexBuffer* pVertexStructure, Camera* pCam = nullptr);
+	FontEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Camera* pCam = nullptr);
 
 	void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;
 
-	void DrawString(const char* str, const char* font, const glm::vec3& pos, const glm::vec2& scale, const glm::vec3& color, FontAlignment options);
+	void DrawString(const char* str, const char* font, const glm::vec3& pos, const glm::vec2& scale, const glm::vec4& color, FontAlignment options);
 
 	void Render();
 
@@ -36,7 +36,7 @@ public:
 private:
 
 	ResourceManager* m_pRm;
-	IndexedVertexBuffer* m_pVertexBuffer;
+	VertexBuffer* m_pVertexBuffer;
 	Camera* m_pCamera;
 
 	std::map<std::string,std::vector<DrawTextInfo>> m_textSubsets; // the key is the texture for the vector of DrawTextInfo

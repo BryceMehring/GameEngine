@@ -3,11 +3,11 @@
 
 #include <glm/glm.hpp>
 
-struct VertexPTC
+struct VertexPCT
 {
 	glm::vec3 pos;
+	glm::vec4 color;
 	glm::vec2 tex;
-	glm::vec3 color;
 };
 
 struct VertexPC
@@ -15,5 +15,7 @@ struct VertexPC
 	glm::vec3 pos;
 	glm::vec4 color;
 };
+
+
 
 #endif // __VERTEXSTRUCTURES__

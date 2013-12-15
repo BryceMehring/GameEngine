@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <algorithm>
 
-SpriteEngine::SpriteEngine(ResourceManager* pRm, IndexedVertexBuffer* pVertexStruct, Camera* pCam) :
+SpriteEngine::SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexStruct, Camera* pCam) :
 	m_pRM(pRm), m_pVertexBuffer(pVertexStruct), m_iCurrentLength(0), m_pCamera(pCam)
 {
 }
@@ -24,7 +24,7 @@ void SpriteEngine::SetCamera(Camera* pCam)
 void SpriteEngine::DrawSprite(const std::string& tech,
 							  const std::string& texture,
 							  const glm::mat4& transformation,
-							  const glm::vec3& color,
+							  const glm::vec4& color,
 							  const glm::vec2& tiling,
 							  unsigned int iCellId
 							  )
@@ -49,7 +49,8 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 
 void SpriteEngine::FillVertexBuffer()
 {
-	VertexPTC* pVert = static_cast<VertexPTC*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
+	m_pVertexBuffer->Bind();
+	VertexPCT* pVert = static_cast<VertexPCT*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetLength(), GL_MAP_WRITE_BIT));
 
 	// Loop over all of the layers
 	for(auto& layerIter : m_spriteLayers)
@@ -76,20 +77,20 @@ void SpriteEngine::FillVertexBuffer()
 
 					// filling in the vertices
 					pVert[0].pos = (sprites[i].T * glm::vec4(-0.5f,0.5f,0.0f,1.0f)).xyz();
-					pVert[0].tex = topLeft * sprites[i].tiling;
 					pVert[0].color = sprites[i].color;
-
+					pVert[0].tex = topLeft * sprites[i].tiling;
+					
 					pVert[1].pos = (sprites[i].T * glm::vec4(-0.5f,-0.5f,0.0,1.0f)).xyz();
-					pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y) * sprites[i].tiling;
 					pVert[1].color = sprites[i].color;
-
+					pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y) * sprites[i].tiling;
+					
 					pVert[2].pos = (sprites[i].T * glm::vec4(0.5f,0.5f,0.0,1.0f)).xyz();
-					pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y) * sprites[i].tiling;
 					pVert[2].color = sprites[i].color;
+					pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y) * sprites[i].tiling;
 
 					pVert[3].pos = (sprites[i].T * glm::vec4(0.5f,-0.5f,0.0,1.0f)).xyz();
-					pVert[3].tex = bottomRight * sprites[i].tiling;
 					pVert[3].color = sprites[i].color;
+					pVert[3].tex = bottomRight * sprites[i].tiling;
 
 					pVert += 4;
 				}
@@ -107,18 +108,15 @@ void SpriteEngine::Render()
 	if(m_spriteLayers.empty())
 		return;
 
-	m_pVertexBuffer->Bind();
-
 	// First we must fill the dynamic vertex buffer with all of the sprites sorted by their tech and texture
 	FillVertexBuffer();
 
-	// Enable blending
+	m_pVertexBuffer->BindVAO();
+
+	glActiveTexture(GL_TEXTURE0);
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
 
 	unsigned long uiStartingIndex = 0; // Starting index to the vertex buffer for rendering multiple textures within one shader pass
 
@@ -129,16 +127,9 @@ void SpriteEngine::Render()
 		for(auto& techIter : layerIter.second)
 		{
 			// Apply the shader tech
-
 			const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter.first));
 
 			glUseProgram(pShader->GetID());
-
-			glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),0);
-			glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),reinterpret_cast<void*>(sizeof(glm::vec3)));
-			glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,sizeof(VertexPTC),reinterpret_cast<void*>(offsetof(struct VertexPTC, color)));
-
-			glActiveTexture(GL_TEXTURE0);
 
 			// set shader parameters
 			glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
@@ -160,10 +151,6 @@ void SpriteEngine::Render()
 	}
 
 	glDisable(GL_BLEND);
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
 
 	m_spriteLayers.clear();
 	m_iCurrentLength = 0;

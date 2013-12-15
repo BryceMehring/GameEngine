@@ -57,19 +57,13 @@ void LineEngine::Render()
 	if(m_LineSubsets.empty())
 		return;
 
-	m_pVertexBuffer->Bind();
-
 	Shader* pShader = static_cast<Shader*>(m_pRM->GetResource("lineShader"));
 
 	glUseProgram(pShader->GetID());
 
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(VertexPC),0);
-	glVertexAttribPointer(1,4,GL_FLOAT,GL_FALSE,sizeof(VertexPC),reinterpret_cast<void*>(sizeof(glm::vec3)));
-
 	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
+
+	m_pVertexBuffer->BindVAO();
 
 	unsigned int uiStartingIndex = 0;
 
@@ -80,9 +74,6 @@ void LineEngine::Render()
 
 		uiStartingIndex += m_LineSubsets[j].uiLength;
 	}
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
 
 	m_LineSubsets.clear();
 	m_iCurrentLength = 0;

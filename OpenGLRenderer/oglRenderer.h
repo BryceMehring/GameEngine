@@ -44,13 +44,13 @@ public:
 	void DrawString(const char* str, // the string that gets drawn
 							const glm::vec3& pos, // pos of the text in world space
 							const glm::vec2& scale = glm::vec2(10.0f), // scaling the text
-							const glm::vec3& color = glm::vec3(1.0f), // color of the text blended together with the texture
+							const glm::vec4& color = glm::vec4(1.0f), // color of the text blended together with the texture
 							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
 							FontAlignment options = FontAlignment::Left) override;
 
 	void DrawSprite(const std::string& texture, // texture used to draw the sprite
 							const glm::mat4& transformation, // transformation applied to the sprite
-							const glm::vec3& color = glm::vec3(1.0f),
+							const glm::vec4& color = glm::vec4(1.0f),
 							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
 							unsigned int iCellId = 0, // cellId if multiple frames are stored together in the same sprite image
 							const std::string& tech = "sprite"

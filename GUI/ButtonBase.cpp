@@ -39,7 +39,7 @@ void ButtonBase::Deselect()
 
 void ButtonBase::Render(IRenderer& renderer)
 {
-	glm::vec3 color = (m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor;
+	glm::vec4 color = glm::vec4((m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor,1.0f);
 
 	glm::vec2 pos = m_sprite.Middle();
 	glm::mat4 T = glm::translate(pos.x,pos.y,-1.0f);
