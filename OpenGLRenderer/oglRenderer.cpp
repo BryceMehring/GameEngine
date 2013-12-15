@@ -28,27 +28,28 @@ oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_
 
 	EnumerateDisplayAdaptors();
 	ParseVideoSettingsFile();
+
 	ConfigureGLFW();
 	ConfigureOpenGL();
 	BuildCamera();
 	EnableVSync(true);
 
-	IndexedVertexBuffer* pSpriteVertexBuffer = new IndexedVertexBuffer(sizeof(VertexPTC),1024*40);
-	IndexedVertexBuffer* pFontVertexBuffer = new IndexedVertexBuffer(sizeof(VertexPTC),1024*8);
+	IndexedVertexBuffer* pVertexBuffer = new IndexedVertexBuffer(sizeof(VertexPTC),1024*40);
 	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexPC),1024*8*4);
 
-	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexBuffer));
-	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexBuffer,&m_OrthoCamera));
+	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer));
+	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));
 
 	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,World));
 	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,Screen,&m_OrthoCamera));
 
-	m_pWorldSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexBuffer));
-	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
+	m_pWorldSpaceSprites.reset(new SpriteEngine(&m_rm,pVertexBuffer));
+	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));
 
-	m_vertexBuffers.push_back(pFontVertexBuffer);
+	m_vertexBuffers.push_back(pVertexBuffer);
 	m_vertexBuffers.push_back(pLineVertexBuffer);
-	m_vertexBuffers.push_back(pSpriteVertexBuffer);
+
+	
 }
 
 oglRenderer::~oglRenderer()
@@ -287,9 +288,6 @@ void oglRenderer::EnumerateDisplayAdaptors()
 
 void oglRenderer::GLFWOpenWindowHints()
 {
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,3);
-
 	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
 }
 

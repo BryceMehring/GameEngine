@@ -38,9 +38,9 @@ PluginInfo::~PluginInfo()
 	if(mod != nullptr)
 	{
 #ifdef _WIN32
-	FreeLibrary((HMODULE)mod);
+		FreeLibrary((HMODULE)mod);
 #else
-	dlclose(mod);
+		dlclose(mod);
 #endif
 	}
 }
