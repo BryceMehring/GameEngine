@@ -2,35 +2,30 @@ GameEngine
 ==========
 
 
-### To create projects:
+#### To create projects:
 
-#### Open CMakeLists.txt with the CMake GUI to generate projects
+Open CMakeLists.txt with the CMake GUI to generate projects.
 
-#### Windows: Run `CreateWinSymLinks.bat` as an administrator to create the symbolic links
+When creating an out of source game plugin, copy or use symbolic links to link the external plugin folder `plugin` into `GameEngine/bin`.
 
-Set GameLauncher as the startup project, and build the solution in Visual Studio 2012.
+#### Windows: 
+* Run `CreateWinSymLinks.bat` as an administrator to create the symbolic links
+* Set GameLauncher as the startup project, and build the solution in Visual Studio 2012.
+* To run a game, the command line argument must be set to name of the Game Project that the Game Engine should load first.
+* The only 3rd party dll required by the engine to be in the bin folder is `glfw*.dll`
 
-To run a game, the command line argument must be set to name of the Game Project that the Game Engine should load first.
-
-When creating an out of source game plugin, copy or use symbolic links to link the game plugin folder 'plugin' into GameEngine/bin.
+#### Linux: todo
 
 ==========
 
-The compiled output will be located in source in GameEngine/bin
-
 How the github folder should look:
 
-GameEngine/ - this is the root of the repo
-
-glfw/
-
-glew/
-
-glm/
-
-angelscript/
-
-stb_image/stb_image.c
+    GameEngine/ - this is the root of the repo
+    glfw/
+    glew/
+    glm/
+    angelscript/
+    stb_image/stb_image.c
 
 Dependencies
 ==========
