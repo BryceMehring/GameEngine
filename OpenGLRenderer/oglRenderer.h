@@ -109,10 +109,10 @@ private:
 	std::vector<VertexBuffer*> m_vertexBuffers;
 
 	// Helper functions
+	void GLFWOpenWindowHints();
 	void ConfigureGLFW();
 	void ConfigureOpenGL();
 	void EnumerateDisplayAdaptors();
-	void GLFWOpenWindowHints();
 	bool CheckShader(const std::string& shader, const std::string& location, GLuint& shaderID, GLuint& outLocation) const;
 	void ParseVideoSettingsFile();
 	void SaveDisplayList();

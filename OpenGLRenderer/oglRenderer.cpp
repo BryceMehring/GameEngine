@@ -1,5 +1,6 @@
 ﻿#include "oglRenderer.h"
 #include "VertexStructures.h"
+#include "../common/Log.h"
 
 #include <sstream>
 #include <algorithm>
@@ -14,6 +15,55 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin()
 }
 
 oglRenderer* oglRenderer::s_pThis = nullptr;
+
+void APIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+{
+	std::ostringstream stream;
+	stream << "OpenGL Error" << endl << "Source: ";
+
+	switch(source)
+	{
+		case GL_DEBUG_SOURCE_API: stream << "API"; break;
+		case GL_DEBUG_SOURCE_SHADER_COMPILER: stream << "GLSL compiler"; break;
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: stream << "Windowing system"; break;
+		case GL_DEBUG_SOURCE_THIRD_PARTY: stream << "External Libraries"; break;
+		case GL_DEBUG_SOURCE_APPLICATION: stream << "Application"; break;
+		case GL_DEBUG_SOURCE_OTHER: stream << "Other"; break;
+		default: stream << "Unknown"; break;
+	}
+
+	stream << endl << "Type: ";
+
+	switch(type)
+	{
+		case GL_DEBUG_TYPE_ERROR: stream << "Error"; break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: stream << "Deprecated"; break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: stream << "Undefined"; break;
+		case GL_DEBUG_TYPE_PERFORMANCE: stream << "Performance"; break;
+		case GL_DEBUG_TYPE_PORTABILITY: stream << "Portability"; break;
+		case GL_DEBUG_TYPE_OTHER: stream << "Other"; break;
+		default: stream << "Unknown"; break;
+	}
+
+	stream << endl << "Severity: ";
+	
+	switch(severity)
+	{
+		case GL_DEBUG_SEVERITY_LOW: stream << "low"; break;
+		case GL_DEBUG_SEVERITY_MEDIUM: stream << "medium"; break;
+		case GL_DEBUG_SEVERITY_HIGH: stream << "high"; break;
+		default: stream << "Unknown"; break;
+	}
+
+	stream << endl << "Message: " << message;
+
+	Log::Instance().Write(stream.str());
+
+	if(severity ==  GL_DEBUG_SEVERITY_HIGH)
+	{
+		abort();
+	}
+}
 
 void oglRenderer::MonitorCallback(GLFWmonitor* monitor, int state)
 {
@@ -238,6 +288,19 @@ void oglRenderer::Present()
 	glfwSwapBuffers(m_pWindow);
 }
 
+void oglRenderer::GLFWOpenWindowHints()
+{
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+#ifdef _DEBUG
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
+#endif
+
+	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
+}
+
 void oglRenderer::ConfigureGLFW()
 {
 	GLFWOpenWindowHints();
@@ -252,6 +315,14 @@ void oglRenderer::ConfigureGLFW()
 
 	glfwMakeContextCurrent(m_pWindow);
 	glfwSetMonitorCallback(MonitorCallback);
+
+	// Get the OpenGL version that we have created
+	int major = glfwGetWindowAttrib(m_pWindow,GLFW_CONTEXT_VERSION_MAJOR);
+	int minor = glfwGetWindowAttrib(m_pWindow,GLFW_CONTEXT_VERSION_MINOR);
+
+	std::ostringstream stream;
+	stream << "OpenGL Version: " << major << '.' << minor;
+	Log::Instance().Write(stream.str());
 }
 
 void oglRenderer::ConfigureOpenGL()
@@ -262,6 +333,14 @@ void oglRenderer::ConfigureOpenGL()
 
 	// Check to make sure that the hardware is supported
 	assert(glewIsSupported("GL_VERSION_3_3"));
+
+#ifdef _DEBUG
+	if (GLEW_ARB_debug_output)
+	{
+		glDebugMessageCallback(OpenGLErrorCallback,0);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+	}
+#endif
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
@@ -284,11 +363,6 @@ void oglRenderer::EnumerateDisplayAdaptors()
 		m_videoModes[i].first = pVidMode;
 		m_videoModes[i].second = size;
 	}
-}
-
-void oglRenderer::GLFWOpenWindowHints()
-{
-	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
 }
 
 bool oglRenderer::CheckShader(const std::string& shader, const string& location,  GLuint& shaderID, GLuint& outLocation) const
