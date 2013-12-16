@@ -150,14 +150,13 @@ bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, i
 	GetOpenGLFormat(comp,format,internalFormat);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, (void*)(*pImgData));
-	assert(glGetError() == GL_NO_ERROR);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_MIRRORED_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R,GL_MIRRORED_REPEAT);
 
 	glGenerateMipmap(GL_TEXTURE_2D);
-	assert(glGetError() == GL_NO_ERROR);
 
 	return true;
 }
@@ -282,7 +281,7 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	int InfoLogLength;
 
 	// Compile Vertex Shader
-	Log::Instance().Write(std::string("Compiling shader :") + std::string(vert.c_str()));
+	Log::Instance().Write(std::string("Compiling shader: ") + std::string(vert.c_str()));
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	glCompileShader(VertexShaderID);
@@ -297,7 +296,7 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 		Log::Instance().Write((char*)&VertexShaderErrorMessage[0]);
 
 	// Compile Fragment Shader
-	Log::Instance().Write(std::string("Compiling shader :") + std::string(frag.c_str()));
+	Log::Instance().Write(std::string("Compiling shader: ") + std::string(frag.c_str()));
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
 	glCompileShader(FragmentShaderID);
@@ -330,7 +329,7 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
 
-	return CreateShaderInstance(id,ProgramID);
+	return ((Result == GL_TRUE) && CreateShaderInstance(id,ProgramID));
 }
 
 bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint programID)

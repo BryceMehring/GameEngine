@@ -46,6 +46,7 @@ install_manifest.txt
 *.pdb
 *.cxx
 *.unsuccessfulbuild
+*.vspx
 
 # Packages #
 ############
