@@ -79,7 +79,7 @@ void Slider::Render(IRenderer& renderer)
 
 	renderer.DrawSprite(m_SpriteTexture,T);
 	renderer.DrawLine(line,2);
-	renderer.DrawString(stream.str().c_str(),glm::vec3((m_end.x + m_start.x) / 2.0f - 10.0f,m_end.y - 10.0f,0.0f),glm::vec2(2.0f));
+	renderer.DrawString(stream.str().c_str(),glm::vec3((m_end.x + m_start.x) / 2.0f - 10.0f,m_end.y - 10.0f,0.0f));
 
 }
 

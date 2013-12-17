@@ -9,7 +9,7 @@ namespace UI
 	
 
 ButtonBase::ButtonBase(const Math::FRECT& s, const glm::vec3& defaultColor,
-					   const glm::vec3& hoverColor, const glm::vec2& scale, const std::string& str) :
+					   const glm::vec3& hoverColor, float scale, const std::string& str) :
 					   m_sprite(s), m_defaultColor(defaultColor), m_hoverColor(hoverColor), m_scale(scale),
 					   m_text(str),  m_bMouseHover(false), m_bSelected(false) {}
 

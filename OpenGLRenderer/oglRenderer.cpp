@@ -140,7 +140,7 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float f
 	}
 }
 
-void oglRenderer::DrawString(const char* str, const glm::vec3& pos, const glm::vec2& scale, const glm::vec4& color, const char* font, FontAlignment options)
+void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment options)
 {
 	if(m_renderSpace == World)
 	{

@@ -14,10 +14,5 @@ void main()
 
 	// Output color = color of the texture at the specified UV
 	float texColor = texture2D(myTextureSampler,interpUV).r;
-	
-	if(texColor <= 0.2)
-		discard;
-		
 	outColor = vec4(texColor) * interpColor;
-	
 }

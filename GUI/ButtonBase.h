@@ -16,7 +16,7 @@ class ButtonBase : public IElement
 public:
 
 	ButtonBase(const Math::FRECT& s, const glm::vec3& defaultColor,
-			   const glm::vec3& hoverColor, const glm::vec2& scale, const std::string& str);
+			   const glm::vec3& hoverColor, float scale, const std::string& str);
 
 	virtual void Update(::IKMInput&);
 	virtual void Render(::IRenderer&);
@@ -33,7 +33,7 @@ protected:
 private:
 	glm::vec3 m_defaultColor;
 	glm::vec3 m_hoverColor;
-	glm::vec2 m_scale;
+	float m_scale;
 
 	std::string m_text;
 

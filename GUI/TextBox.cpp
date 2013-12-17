@@ -92,7 +92,7 @@ void TextBox::Render(IRenderer& renderer)
 	{
 		const LineData& data = *iter;
 
-		renderer.DrawString(("> " + data.line).c_str(),glm::vec3(pos,0.0f),glm::vec2(2.0f),glm::vec4(data.color,1.0f));
+		renderer.DrawString(("> " + data.line).c_str(),glm::vec3(pos,0.0f),1.0f,glm::vec4(data.color,1.0f));
 
 		pos.y -= 10.0f;
 	}

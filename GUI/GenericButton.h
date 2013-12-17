@@ -112,9 +112,9 @@ public:
 	typedef ::Delegate<void,void> DELEGATE;
 
 	GenericButton(const Math::FRECT& s, const glm::vec3& defaultColor,
-		const glm::vec3& hoverColor, const glm::vec2& textScale, const std::string& str) : ButtonBase(s,defaultColor,hoverColor,textScale,str) {}
+		const glm::vec3& hoverColor, float textScale, const std::string& str) : ButtonBase(s,defaultColor,hoverColor,textScale,str) {}
 	GenericButton(const Math::FRECT& s, const glm::vec3& defaultColor,
-		const glm::vec3& hoverColor, const glm::vec2& textScale, const std::string& str, const DELEGATE& callback) : ButtonBase(s,defaultColor,hoverColor, textScale,str), m_callback(callback) {}
+		const glm::vec3& hoverColor, float textScale, const std::string& str, const DELEGATE& callback) : ButtonBase(s,defaultColor,hoverColor, textScale,str), m_callback(callback) {}
 
 	void SetCallback(const DELEGATE& callback)
 	{

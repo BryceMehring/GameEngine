@@ -119,11 +119,11 @@ void Game::DrawFPS()
 
 	std::stringstream stream;
 	stream << m_info.GetFPS();
-
 	m_pRenderer->GetDisplayMode(width,height);
 
 	m_pRenderer->SetRenderSpace(RenderSpace::Screen);
-	m_pRenderer->DrawString(stream.str().c_str(),glm::vec3(0.0f,height - 20.0f,-10.0f),glm::vec2(40.0f));
+
+	m_pRenderer->DrawString(stream.str().c_str(),glm::vec3(0.0f,height,-10.0f));
 }
 
 IRenderer& Game::GetRenderer()
