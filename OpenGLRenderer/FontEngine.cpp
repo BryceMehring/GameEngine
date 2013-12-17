@@ -129,8 +129,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 					// font info about the character to draw
 					const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)(*str)];
 
-					int kerningOffset = 0;
-					font->GetKerningPairOffset(prevChar,*str,kerningOffset);
+					int kerningOffset = font->GetKerningPairOffset(prevChar,*str);
 
 					// calculate texture coordinates
 					glm::vec2 texTopLeft(charInfo.x / (float)(font->GetWidth()),charInfo.y / (float)(font->GetHeight()));

@@ -155,7 +155,7 @@ public:
 	unsigned int GetBase() const { return m_Base; }
 	unsigned int GetPages() const { return m_Pages; }
 	const FontArray& GetCharDescriptor() const { return m_Chars; }
-	void GetKerningPairOffset(unsigned int first, unsigned int second, int& out) const;
+	int GetKerningPairOffset(unsigned int first, unsigned int second) const;
 
 	friend std::istream& operator >>(std::istream& stream, Charset& CharsetDesc);
 
