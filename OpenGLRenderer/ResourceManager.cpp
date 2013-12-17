@@ -17,6 +17,7 @@ std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
 	std::string Line;
 	std::string Read, Key, Value;
 	std::size_t i;
+	unsigned int index = 0;
 	while( !stream.eof() )
 	{
 		std::stringstream LineStream;
@@ -81,6 +82,42 @@ std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
 					Converter >> CharsetDesc.m_Chars[CharID].Page;
 			}
 		}
+		else if(Read.find("kerning") != std::string::npos)
+		{
+			while(!LineStream.eof())
+			{
+				std::stringstream Converter;
+				LineStream >> Read;
+
+				i = Read.find('=');
+				Key = Read.substr(0,i);
+				Value = Read.substr(i + 1);
+
+				Converter << Value;
+				if(Key == "count")
+				{
+					unsigned int count = 0;
+					Converter >> count;
+
+					CharsetDesc.m_kerningPairs.resize(count);
+				}
+				else if(Key == "first")
+				{
+					Converter >> CharsetDesc.m_kerningPairs[index].first;
+				}
+				else if(Key == "second")
+				{
+					Converter >> CharsetDesc.m_kerningPairs[index].second;
+				}
+				else if(Key == "amount")
+				{
+					Converter >> CharsetDesc.m_kerningPairs[index].amount;
+					index++;
+
+					break;
+				}
+			}
+		}
 	}
 
 	return stream;
@@ -125,7 +162,7 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 
 	case 4:
 		format = GL_RGBA;
-		internalFormat = GL_RGBA;
+		internalFormat = GL_RGBA; 
 		break;
 	}
 }
@@ -153,8 +190,8 @@ bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, i
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R,GL_MIRRORED_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 

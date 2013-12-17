@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <map>
 #include <array>
+#include <vector>
 
 enum class ResourceType
 {
@@ -131,6 +132,13 @@ struct CharDescriptor
 	unsigned short Page;
 };
 
+struct KerningPair
+{
+	unsigned int first;
+	unsigned int second;
+	int amount;
+};
+
 class Charset : public Texture
 {
 public:
@@ -160,6 +168,7 @@ private:
 	unsigned short m_Base;
 	unsigned short m_Pages;
 	FontArray m_Chars;
+	std::vector<KerningPair> m_kerningPairs;
 
 	friend class ResourceManager;
 };
