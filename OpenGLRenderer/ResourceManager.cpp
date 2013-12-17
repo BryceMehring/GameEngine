@@ -156,18 +156,16 @@ Texture::~Texture()
 
 int Charset::GetKerningPairOffset(unsigned int first, unsigned int second) const
 {
-	bool success = false;
 	int offset = 0;
 	KerningPair searchValue = {first,0,0};
 
 	auto iterPair = std::equal_range(m_kerningPairs.begin(),m_kerningPairs.end(),searchValue,KerningPairFunctor());
 
-	while(!success && iterPair.first != iterPair.second)
+	while((offset == 0) && (iterPair.first != iterPair.second))
 	{
 		if(iterPair.first->second == second)
 		{
 			offset = iterPair.first->amount;
-			success = true;
 		}
 
 		++iterPair.first;
