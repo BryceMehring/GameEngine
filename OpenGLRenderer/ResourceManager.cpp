@@ -12,6 +12,16 @@
 #endif
 #include <stb_image.c>
 
+class KerningPairFunctor
+{
+public:
+
+	bool operator()(const KerningPair& a, const KerningPair& b) const
+	{
+		return a.first < b.first;
+	}
+};
+
 std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
 {
 	std::string Line;
@@ -120,6 +130,8 @@ std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
 		}
 	}
 
+	std::sort(CharsetDesc.m_kerningPairs.begin(),CharsetDesc.m_kerningPairs.end(),KerningPairFunctor());
+
 	return stream;
 }
 
@@ -140,6 +152,25 @@ Texture::~Texture()
 {
 	glDeleteTextures(1,&GetID());
 	stbi_image_free(m_pImg);
+}
+
+void Charset::GetKerningPairOffset(unsigned int first, unsigned int second, int& out) const
+{
+	bool success = false;
+	KerningPair searchValue = {first,0,0};
+
+	auto iterPair = std::equal_range(m_kerningPairs.begin(),m_kerningPairs.end(),searchValue,KerningPairFunctor());
+
+	while(!success && iterPair.first != iterPair.second)
+	{
+		if(iterPair.first->second == second)
+		{
+			out = iterPair.first->amount;
+			success = true;
+		}
+
+		++iterPair.first;
+	}
 }
 
 void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat)

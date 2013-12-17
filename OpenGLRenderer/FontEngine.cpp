@@ -119,20 +119,25 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 				// left, do nothing
 			}
 
+			char prevChar = -1;
+
 			// write the entire string to the vertex buffer
 			while((iCurrentVert < m_pVertexBuffer->GetLength()) && *str)
 			{
 				if(*str != ' ' && *str != '\n' && *str != '\t')
 				{
 					// font info about the character to draw
-					const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)(*str)]; 
+					const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)(*str)];
+
+					int kerningOffset = 0;
+					font->GetKerningPairOffset(prevChar,*str,kerningOffset);
 
 					// calculate texture coordinates
 					glm::vec2 texTopLeft(charInfo.x / (float)(font->GetWidth()),charInfo.y / (float)(font->GetHeight()));
 					glm::vec2 texBottomRight(((charInfo.x+charInfo.Width) / (float)(font->GetWidth())),(charInfo.y+charInfo.Height) / (float)(font->GetHeight()));
 
 					// calculate position
-					glm::vec3 posTopLeft(posW.x + charInfo.XOffset * iter.scale,posW.y - charInfo.YOffset * iter.scale,posW.z);
+					glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * iter.scale,posW.y - charInfo.YOffset * iter.scale,posW.z);
 					glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * iter.scale,posTopLeft.y - charInfo.Height * iter.scale,posW.z);
 
 					int index = iCurrentVert * 4;
@@ -179,6 +184,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 					}
 				}
 
+				prevChar = *str;
 				str++;
 			}
 		}
