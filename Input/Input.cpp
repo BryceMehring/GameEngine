@@ -179,13 +179,12 @@ void Input::UpdateMouse(double x, double y)
 {
 	int width = 0;
 	int height = 0;
-
 	glfwGetWindowSize(glfwGetCurrentContext(),&width,&height);
 
 	m_iMouseX = (int)x - (width / 2);
 	m_iMouseY = -(int)y + (height / 2);
 
-	m_tpos += m_fMouseSensistivity * glm::vec2(m_iMouseX / (float)width ,m_iMouseY / (float)height);
+	m_tpos += m_fMouseSensistivity * glm::vec2(m_iMouseX,m_iMouseY);
 
 	CenterMouse();
 }
