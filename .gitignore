@@ -47,6 +47,8 @@ install_manifest.txt
 *.cxx
 *.unsuccessfulbuild
 *.vspx
+*.exp
+*.ilk
 
 # Packages #
 ############
