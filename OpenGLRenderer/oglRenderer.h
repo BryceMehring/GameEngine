@@ -62,7 +62,6 @@ public:
 	bool GetDisplayMode(int& width, int& height) const override; // get the current display mode, return true if success, false if error
 	int  GetNumMonitors() const override;
 	int  GetNumDisplayModes(int monitor) const override; // returns the number of video modes for the given monitor
-	void GetLineWidthRange(float& min, float& max) const override; // Gets the range of the width of the lines supported on the current hardware, x = min, y = max
 	void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const override;
 	void SetCamera(class Camera*) override; // Sets the camera to use, this class does not have ownership of the pointer
 	void SetClearColor(const glm::vec3& color); // Color of the screen after it gets cleared

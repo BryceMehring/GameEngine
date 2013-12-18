@@ -55,7 +55,6 @@ public:
 	virtual bool GetDisplayMode(int& width, int& height) const = 0; // get the current display mode, return true if success, false if error
 	virtual int  GetNumMonitors() const = 0;
 	virtual int  GetNumDisplayModes(int monitor) const = 0; // returns the number of video modes for the given monitor
-	virtual void GetLineWidthRange(float& min, float& max) const = 0; // Gets the range of the width of the lines supported on the current hardware
 	virtual void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const = 0;
 	virtual void SetCamera(class Camera*) = 0; // Sets the camera to use
 	virtual void SetClearColor(const glm::vec3& color) = 0; // Color of the screen after it gets cleared

@@ -199,11 +199,6 @@ int oglRenderer::GetNumDisplayModes(int monitor) const
 	return m_videoModes[monitor].second;
 }
 
-void oglRenderer::GetLineWidthRange(float& min, float& max) const
-{
-	m_pScreenSpaceLines->GetLineWidthRange(min, max);
-}
-
 void oglRenderer::GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const
 {
 	//m_pFonts->GetStringRec(str,scale,out);

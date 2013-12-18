@@ -20,8 +20,6 @@ public:
 
 	LineEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, RenderSpace space, Camera* pCam = nullptr);
 
-	void GetLineWidthRange(float& min, float& max) const;
-
 	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T);
 
 	void Render();
@@ -38,14 +36,6 @@ private:
 
 	float m_lineSizeMin;
 	float m_lineSizeMax;
-
-	RenderSpace m_renderSpace;
-
-	std::vector<LineSubset> m_LineSubsets;
-
-	// Get the range of widths supported by the hardware
-	void GetLineWidthRange();
-
 };
 
 #endif // _LINEENGINE_

@@ -79,7 +79,7 @@ void QuadTree::Render(IRenderer& renderer)
 {
 	for(NodeIterator iter = this; (*iter) != nullptr; ++iter)
 	{
-		if(iter->HasObjects())
+		//if(iter->HasObjects())
 		{
 			const Math::FRECT& R = iter->GetRect();
 
@@ -92,7 +92,7 @@ void QuadTree::Render(IRenderer& renderer)
 				glm::vec3(R.topLeft.x,R.topLeft.y,-20.0f),
 			};
 
-			renderer.DrawLine(pos,5);
+			renderer.DrawLine(pos,5,20.0f);
 		}
 	}
 }

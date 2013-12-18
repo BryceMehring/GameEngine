@@ -39,13 +39,10 @@ void ProgressBar::Render(IRenderer& renderer)
 		glm::vec3(m_end,-100.0f)
 	};
 
-	float min, max;
-	renderer.GetLineWidthRange(min, max);
-
 	renderer.SetRenderSpace(World);
 
-	renderer.DrawLine(progStart,2,max,glm::vec4(1.0f,0.0f,0.0f,1.0f));
-	renderer.DrawLine(progEnd,2,max);
+	renderer.DrawLine(progStart,2,2.0f,glm::vec4(1.0f,0.0f,0.0f,1.0f));
+	renderer.DrawLine(progEnd,2,2.0f);
 }
 
 void ProgressBar::SetProgress(float v)
