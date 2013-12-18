@@ -4,8 +4,7 @@
 
 
 #include "IGameState.h"
-#include "RTTI.h"
-#include "Menu.h"
+#include "GUI.h"
 #include "IGrid.h"
 #include <stack>
 
@@ -84,8 +83,6 @@ private:
 class MineSweeper : public IGameState
 {
 public:
-
-	RTTI_DECL;
 
 	MineSweeper();
 

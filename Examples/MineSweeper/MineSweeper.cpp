@@ -1,5 +1,4 @@
 #define PLUGIN_EXPORTS
-#define GLFW_DLL
 #include "MineSweeper.h"
 #include "Timer.h"
 #include "Game.h"
@@ -7,8 +6,6 @@
 #include <glm/gtx/transform.hpp>
 #include <GLFW/glfw3.h>
 #include <sstream>
-
-RTTI_IMPL(MineSweeper);
 
 extern "C" PLUGINDECL IPlugin*  CreatePlugin()
 {
@@ -129,7 +126,7 @@ int Grid::Update(IKMInput& input)
 	{
 		glm::ivec2 arrayPos;
 		Tile* pTile = nullptr;
-		bool success = WorldSpaceToTile(input.GetTransformedMousePos(),&pTile,&arrayPos);
+		bool success = WorldSpaceToTile(input.GetCursorPos(),&pTile,&arrayPos);
 
 		if(success)
 		{
@@ -188,7 +185,9 @@ void Grid::Render(IRenderer& renderer)
 	std::ostringstream stream;
 	stream << "Mines: "<< m_uiMineCount - m_uiMarkedCount;
 
-	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,90.0f),glm::vec2(10.0f),glm::vec3(0.0f),0,FontAlignment::Center);
+	int width, height;
+	renderer.GetDisplayMode(width,height);
+	renderer.DrawString(stream.str().c_str(),glm::vec3(0.0f,height,0));
 
 	IGrid::Render(renderer);
 }
@@ -196,8 +195,8 @@ void Grid::Render(IRenderer& renderer)
 void Grid::RenderTileCallback(IRenderer& renderer, const Tile& tile, const glm::mat4& T) const
 {
 	std::ostringstream stream;
-	glm::vec2 pos(T[3].x,T[3].y);
-	glm::vec2 scale(T[0].x,T[1].y);
+	glm::vec3 pos(T[3].x,T[3].y,0.0f);
+	//glm::vec2 scale(T[0].x,T[1].y);
 
 	if(tile.selsected)
 	{
@@ -210,14 +209,14 @@ void Grid::RenderTileCallback(IRenderer& renderer, const Tile& tile, const glm::
 			stream << tile.minesNearby;
 		}
 
-		renderer.DrawString(stream.str().c_str(),pos,scale,glm::vec3(0.0f),0,FontAlignment::Center);
+		renderer.DrawString(stream.str().c_str(),pos);
 		renderer.DrawSprite("selected",T);
 	}
 	else
 	{
 		if(tile.marked)
 		{
-			renderer.DrawString("X",pos,scale,glm::vec3(0.0f),0,FontAlignment::Center);
+			renderer.DrawString("X",pos);
 		}
 
 		renderer.DrawSprite("unselected",T);
@@ -232,10 +231,6 @@ void MineSweeper::Init(Game& game)
 {
 	CreatePlayingMenu(game);
 	CreateMainMenu(game);
-	
-
-	m_timer.Reset();
-	m_timer.Start();
 }
 
 void MineSweeper::CreatePlayingMenu(Game& game)
@@ -249,7 +244,7 @@ void MineSweeper::CreatePlayingMenu(Game& game)
 
 	resetRect.SetCenter(glm::vec2(80.0f,92.0f));
 
-	UI::GenericButton<void>* pButton = new UI::GenericButton<void>(resetRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),glm::vec2(6.0f),pResetButtonText);
+	UI::GenericButton<void>* pButton = new UI::GenericButton<void>(resetRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),1.0f,pResetButtonText);
 	pButton->SetCallback(UI::GenericButton<void>::DELEGATE(this,&MineSweeper::Reset));
 
 	pMenu->AddElement(pButton);
@@ -268,7 +263,7 @@ void MineSweeper::CreateMainMenu(Game& game)
 
 	resetRect.SetCenter(glm::vec2(0.0f,20.0f));
 
-	UI::GenericButton<void>* pButton = new UI::GenericButton<void>(resetRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),glm::vec2(10.0f),pResetButtonText);
+	UI::GenericButton<void>* pButton = new UI::GenericButton<void>(resetRect,glm::vec3(0.0f),glm::vec3(1.0f,0.0f,0.0f),1.0f,pResetButtonText);
 	pButton->SetCallback(UI::GenericButton<void>::DELEGATE(this,&MineSweeper::Reset));
 
 	pMenu->AddElement(pButton);
@@ -334,5 +329,5 @@ void MineSweeper::Draw(Game& game)
 	}
 
 	m_grid.Render(renderer);
-	renderer.DrawString(stream.str().c_str(),glm::vec2(0.0f,-80.0f),glm::vec2(10.5f),glm::vec3(0.0f),0,FontAlignment::Center);
+	renderer.DrawString(stream.str().c_str(),glm::vec3(0.0f,-80.0f,0.0f),1.0f);
 }
