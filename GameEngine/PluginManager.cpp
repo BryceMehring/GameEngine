@@ -12,11 +12,29 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+//Returns the last Win32 error, in string format. Returns an empty string if there is no error.
+std::string GetLastErrorAsString()
+{
+    //Get the error message, if any.
+    DWORD errorMessageID = ::GetLastError();
+    if(errorMessageID == 0)
+        return "No error message has been recorded";
+
+    LPSTR messageBuffer = nullptr;
+    size_t size = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+    std::string message(messageBuffer, size);
+
+    //Free the buffer.
+    LocalFree(messageBuffer);
+
+    return message;
+}
 #else
 #include <dlfcn.h>
-#endif
-
-using namespace std;
+#endif // _WIN32
 
 struct PluginInfo
 {
@@ -93,7 +111,7 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 {
 	Log::Instance().Write("Loading " + file);
 
-	shared_ptr<PluginInfo> dll(new PluginInfo);
+	std::shared_ptr<PluginInfo> dll(new PluginInfo);
 
 	std::string dllFile = folder + '/' + file + ".plug";
 
@@ -107,7 +125,7 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 	{
 		Log::Instance().Write("Cannot open: " + dllFile);
 #ifdef _WIN32
-		Log::Instance().Write(GetLastError());
+		Log::Instance().Write(GetLastErrorAsString());
 #else
 		Log::Instance().Write(dlerror());
 #endif
