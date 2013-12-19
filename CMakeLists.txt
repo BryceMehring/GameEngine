@@ -12,13 +12,15 @@ set (ENGINE_VERSION_MAJOR 1)
 set (ENGINE_VERSION_MINOR 0)
 
 if( MSVC )
-	if(NOT ${CMAKE_GENERATOR} STREQUAL "Visual Studio 11")
-		message( SEND_ERROR "Visual Studio 11 is needed to compile the code" )
+	string(COMPARE GREATER ${CMAKE_GENERATOR} "Visual Studio 10" VS_COMPATABILITY)
+	if(NOT ${VS_COMPATABILITY})
+		message( SEND_ERROR "At least Visual Studio 2012 is needed to build the code" )
 	endif()
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules")
 include("${CMAKE_SOURCE_DIR}/CMake/CompileFlags.cmake")
+include("${CMAKE_SOURCE_DIR}/CMake/ConfigurePluginExtension.cmake")
 include("${CMAKE_SOURCE_DIR}/CMake/RedirectOutputTo.cmake")
 
 RedirectOutputTo("bin")
@@ -64,9 +66,7 @@ if(BUILD_QUADTREE)
 endif()
 
 if(BUILD_EXAMPLES)
-	add_subdirectory(Examples/AdventureGame)
 	add_subdirectory(Examples/MineSweeper)
-	add_subdirectory(Examples/FlockingAlgorithm)
 endif()
 
 add_executable(GameLauncher GameLauncher/main.cpp)
