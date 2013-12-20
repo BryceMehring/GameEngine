@@ -22,7 +22,7 @@ void IGrid<T>::Render(class IRenderer& renderer) const
 		for(int j = 0; j < m_numTiles.x; ++j)
 		{
 			glm::vec2 pos(tileSize.x * j - (m_gridSize.x / 2.0f) + (tileSize.x / 2.0f), tileSize.y * i - (m_gridSize.y / 2.0f) + (tileSize.y / 2.0f));
-			glm::mat4 transformation(glm::translate(pos.x + m_center.x,pos.y + m_center.y,-2.0f));
+			glm::mat4 transformation(glm::translate(pos.x + m_center.x,pos.y + m_center.y,m_center.z));
 			transformation = glm::scale(transformation,tileSize.x,tileSize.y,1.0f);
 
 			RenderTileCallback(renderer,m_tiles[index],transformation);
@@ -129,7 +129,7 @@ void IGrid<T>::SetNumTiles(const glm::ivec2& size)
 }
 
 template< class T >
-void IGrid<T>::SetCenter(const glm::vec2& center)
+void IGrid<T>::SetCenter(const glm::vec3& center)
 {
 	m_center = center;
 }
@@ -153,7 +153,7 @@ const glm::ivec2& IGrid<T>::GetNumTiles() const
 }
 
 template< class T >
-const glm::vec2& IGrid<T>::GetCenter() const
+const glm::vec3& IGrid<T>::GetCenter() const
 {
 	return m_center;
 }

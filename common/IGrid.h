@@ -27,12 +27,12 @@ public:
 
 	void SetGridSize(const glm::vec2& size);
 	void SetNumTiles(const glm::ivec2& size);
-	void SetCenter(const glm::vec2& center);
+	void SetCenter(const glm::vec3& center);
 
 	glm::vec2 GetTileSize() const;
 	const glm::vec2& GetGridSize() const;
 	const glm::ivec2& GetNumTiles() const;
-	const glm::vec2& GetCenter() const;
+	const glm::vec3& GetCenter() const;
 
 protected:
 
@@ -50,7 +50,7 @@ protected:
 	glm::ivec2 m_numTiles;
 	
 private:
-	glm::vec2 m_center;
+	glm::vec3 m_center;
 };
 
 #include "IGrid.inl"
