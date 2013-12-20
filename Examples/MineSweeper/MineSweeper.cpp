@@ -135,7 +135,7 @@ void Grid::Reset()
 
 void Grid::RenderTileCallback(IRenderer& renderer, const Tile& tile, const glm::mat4& T) const
 {
-	glm::vec3 pos(T[3].x,T[3].y,0.0f);
+	glm::vec3 pos(T[3].x,T[3].y,T[3].z);
 	glm::vec2 scale(T[0].x,T[1].y);
 	glm::vec3 tileSize = glm::vec3(GetTileSize(),0.0f); // todo: this calculation should be moved elsewhere
 	pos.x -= tileSize.x / 4.0f;
@@ -154,7 +154,7 @@ void Grid::RenderTileCallback(IRenderer& renderer, const Tile& tile, const glm::
 			stream << tile.minesNearby;
 		}
 
-		renderer.DrawString(stream.str().c_str(),pos,0.3f);
+		renderer.DrawString(stream.str().c_str(),pos,0.3f,glm::vec4(0.0f,0.5f,0.0f,1.0f));
 		renderer.DrawSprite("selected",T);
 	}
 	else
@@ -254,14 +254,17 @@ void MineSweeper::Init(Game& game)
 	int width, height;
 	renderer.GetDisplayMode(width,height);
 
-	m_grid.SetGridSize(glm::vec2(width / 1.2f,height / 1.2f));
-	m_grid.SetNumTiles(glm::ivec2(25,20));
-	m_grid.SetCenter(glm::vec2(width / 2, height / 2));
+	m_grid.SetGridSize(glm::vec2(width / 1.1f,height / 1.1f));
+	m_grid.SetNumTiles(glm::ivec2(30,20));
+	m_grid.SetCenter(glm::vec3(width / 2, height / 2,-2.0f));
 	m_grid.Reset();
 
 	renderer.SetRenderSpace(RenderSpace::Screen);
 
-	game.GetInput().SetCursorSensitivity(1.5f);
+	IKMInput& input = game.GetInput();
+
+	input.SetCursorSensitivity(1.5f);
+	input.SetCursorPos(glm::vec2(width / 2, height / 2));
 }
 
 void MineSweeper::Destroy(Game& game)
@@ -325,7 +328,7 @@ void MineSweeper::Draw(Game& game)
 	renderer.DrawString(stream.str().c_str(),glm::vec3(0.0f,-80.0f,0.0f),1.0f);
 
 	glm::vec2 cursorPos = game.GetInput().GetCursorPos();
-	glm::mat4 T = glm::translate(cursorPos.x,cursorPos.y,0.0f);
+	glm::mat4 T = glm::translate(cursorPos.x + 0.5f,cursorPos.y + 0.5f,0.0f);
 	T = glm::scale(T,40.0f,40.0f,1.0f);
 
 	renderer.DrawSprite("cursor",T);
