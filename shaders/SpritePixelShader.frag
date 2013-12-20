@@ -14,6 +14,6 @@ void main()
 	// Output color = color of the texture at the specified UV
     outColor = texture2D( myTextureSampler, UV ) * color;
 	
-    if(outColor.x <= 0.0)
+    if(outColor.a <= 0.0)
 		discard;
 }
