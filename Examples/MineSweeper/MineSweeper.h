@@ -35,31 +35,15 @@ class Grid : public IGrid<Tile>
 {
 public:
 
-	Grid(float width, float height, unsigned int tileWidth, unsigned int tileHeight);
+	Grid();
 
 	virtual int Update(IKMInput&);
 
-	virtual void Render(IRenderer&);
+	virtual void Render(IRenderer&) const;
 
-	virtual bool Load(std::ifstream& stream)
-	{
-		if(!stream.is_open())
-			return false;
+	virtual bool Load(std::ifstream& stream);
 
-		stream >> m_uiMineCount >> m_uiMarkedCount >> m_uiMarkedCorrectlyCount;
-
-		return IGrid<Tile>::Load(stream);
-	}
-
-	virtual bool Save(std::ofstream& stream) const
-	{
-		if(!stream.is_open())
-			return false;
-
-		stream << m_uiMineCount << " " << m_uiMarkedCount << " " << m_uiMarkedCorrectlyCount << endl;
-
-		return IGrid<Tile>::Save(stream);
-	}
+	virtual bool Save(std::ofstream& stream) const;
 
 	void Reset();
 
