@@ -179,9 +179,9 @@ void Grid::Expand(const glm::ivec2& pos)
 
 			glm::ivec2 newPos(pos.x + x,pos.y + y);
 
-            if(newPos.x < m_numTiles.x && newPos.x >= 0 && newPos.y < m_numTiles.y && newPos.y >= 0)
+			if(newPos.x < m_numTiles.x && newPos.x >= 0 && newPos.y < m_numTiles.y && newPos.y >= 0)
 			{
-                int newIndex = m_numTiles.x*newPos.y + newPos.x;
+				int newIndex = m_numTiles.x*newPos.y + newPos.x;
 
 				if(!m_tiles[newIndex].marked && !m_tiles[newIndex].mine && !m_tiles[newIndex].selsected)
 				{
@@ -213,8 +213,8 @@ void Grid::BuildGrid()
 		if(m_tiles[i].mine)
 		{
 			unsigned int uiMineCount = 0;
-            int x = i % m_numTiles.x;
-            int y = i / m_numTiles.x;
+			int x = i % m_numTiles.x;
+			int y = i / m_numTiles.x;
 			
 			for(int j = -1; j <= 1; ++j)
 			{
@@ -223,12 +223,12 @@ void Grid::BuildGrid()
 					if(k == 0 && j == 0)
 						continue;
 
-                    int newX = x + j;
-                    int newY = y + k;
+					int newX = x + j;
+					int newY = y + k;
 				
-                    if(newX < m_numTiles.x && newX >= 0 && newY < m_numTiles.y && newY >= 0)
+					if(newX < m_numTiles.x && newX >= 0 && newY < m_numTiles.y && newY >= 0)
 					{
-                        int newIndex = m_numTiles.x * newY + newX;
+						int newIndex = m_numTiles.x * newY + newX;
 						if(!m_tiles[newIndex].mine)
 						{
 							m_tiles[newIndex].minesNearby++;
