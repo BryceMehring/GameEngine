@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <vector>
+#include <fstream>
 #include "ISerializable.h"
 
 // Grid abstract interface which implements a basic way to render them, which should be abstracted into another class 
@@ -12,20 +13,26 @@ class IGrid : public ISerializable
 {
 public:
 
-	// ctor builds the grid
+	IGrid();
 	IGrid(const std::string& file);
-	IGrid(float width, float height,
-          int tileWidth, int tileHeight,
-		  const glm::vec2& center = glm::vec2(0.0f));
 	virtual ~IGrid() {}
 
 	virtual int Update(class IKMInput&) = 0;
 
 	// Render calls RenderTileCallback for each tile
-	virtual void Render(class IRenderer& renderer);
+	virtual void Render(class IRenderer& renderer) const;
 
 	virtual bool Load(std::ifstream& stream);
 	virtual bool Save(std::ofstream& stream) const;
+
+	void SetGridSize(const glm::vec2& size);
+	void SetNumTiles(const glm::ivec2& size);
+	void SetCenter(const glm::vec2& center);
+
+	glm::vec2 GetTileSize() const;
+	const glm::vec2& GetGridSize() const;
+	const glm::ivec2& GetNumTiles() const;
+	const glm::vec2& GetCenter() const;
 
 protected:
 
@@ -40,16 +47,11 @@ protected:
 
 	std::vector<T> m_tiles; // the grid
 	glm::vec2 m_gridSize;
-    int m_iNumTilesWidth; // width of the grid, in tiles
-    int m_iNumTilesiHeight; // height of the grid, in tiles
-
-	glm::vec2 m_tileSize;
+	glm::ivec2 m_numTiles;
 	
 private:
 	glm::vec2 m_center;
 };
-
-
 
 #include "IGrid.inl"
 
