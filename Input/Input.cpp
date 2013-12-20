@@ -192,6 +192,10 @@ const glm::vec2& Input::GetCursorPos() const
 {
 	return m_tpos;
 }
+void Input::SetCursorPos(glm::vec2 pos)
+{
+	m_tpos = pos;
+}
 
 bool Input::CheckKey(int Key, bool once, int flag)
 {

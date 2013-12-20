@@ -45,6 +45,8 @@ public:
 
 	// Mouse
 	virtual const glm::vec2& GetCursorPos() const;
+	virtual void SetCursorPos(glm::vec2 pos);
+
 	virtual bool MouseClick(int Button, bool once) const;
 	virtual bool MouseRelease(int Button, bool once) const;
 

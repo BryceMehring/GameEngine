@@ -38,12 +38,13 @@ public:
 	virtual bool MouseRelease(int Button, bool once = true) const = 0;
 
 	//gets cursor position in world space
-	// (0,0) is the center of the screen
-	// postive x axis --> right
-	// negative x axis --> left
-	// postive y axis --> up
-	// negaive y axis --> down
+	// +x axis --> right
+	// -x axis --> left
+	// +y axis --> up
+	// -y axis --> down
 	virtual const glm::vec2& GetCursorPos() const = 0;
+
+	virtual void SetCursorPos(glm::vec2 pos) = 0;
 
 	// horizontal acceleration
 	virtual int MouseX() const = 0;
