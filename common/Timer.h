@@ -9,8 +9,8 @@
 class Timer
 {
 public:
-	// Construct the timer and initialize all of the
-	// members by resetting them to their zero-values.
+
+	// Construct the timer initally stopped.
 	COMMON_API Timer();
 
 	// Activate the timer and poll the counter.
@@ -23,7 +23,10 @@ public:
 	// of the Timer's members to their initial values.
 	COMMON_API void Reset();
 
-	// Returns the time elapsed since Start() was called in seconds
+	// Returns the time elapsed since Start() was called in seconds,
+	// the accuracy of the time is specified by the template parameter T
+	// which can either be nanoseconds, microseconds, milliseconds, or seconds
+	template< class T = std::chrono::microseconds>
 	COMMON_API double GetTime();
 
 	// Returns true if the Timer is currently active
@@ -39,5 +42,20 @@ private:
 	std::chrono::high_resolution_clock::time_point m_start;
 	std::chrono::high_resolution_clock::time_point m_end;
 }; // class Timer
+
+template< class T >
+double Timer::GetTime()
+{
+	typedef typename T::period period;
+
+	if(m_bActive)
+	{
+		PollCounter(m_end);
+	}
+
+	T time_span = std::chrono::duration_cast<T>(m_end - m_start);
+	return time_span.count() / (double)period::den;
+}
+
 
 #endif
