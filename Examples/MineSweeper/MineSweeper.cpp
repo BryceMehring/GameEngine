@@ -212,7 +212,6 @@ void Grid::BuildGrid()
 	{
 		if(m_tiles[i].mine)
 		{
-			unsigned int uiMineCount = 0;
 			int x = i % m_numTiles.x;
 			int y = i / m_numTiles.x;
 			
