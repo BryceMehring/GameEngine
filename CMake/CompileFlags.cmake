@@ -8,7 +8,7 @@ else()
 	#MinGW and g++ compile flags
 	set(CMAKE_CXX_FLAGS "-Wall -std=c++0x -fno-rtti -pipe")
 	set(CMAKE_CXX_FLAGS_DEBUG "-Wall -std=c++0x -g -fno-rtti -pipe")
-    set(CMAKE_CXX_FLAGS_RELEASE "-Wall -std=c++0x -O2 -fno-rtti -pipe")
+	set(CMAKE_CXX_FLAGS_RELEASE "-Wall -std=c++0x -O2 -fno-rtti -pipe")
 
 	if(UNIX)
 
