@@ -23,12 +23,10 @@ public:
 	// of the Timer's members to their initial values.
 	COMMON_API void Reset();
 
-	// Returns the time elapsed since Start() was called in seconds,
-	// the accuracy of the time is specified by the template parameter T
-	// which can either be nanoseconds, microseconds, milliseconds, or seconds
+	// Returns the time elapsed since Start() was called in seconds.
 	COMMON_API double GetTime();
 
-	// Returns true if the Timer is currently active
+	// Returns true if the Timer is currently active.
 	COMMON_API bool IsActive() const;
 
 private:
