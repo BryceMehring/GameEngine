@@ -3,8 +3,6 @@
 #ifndef _GAME_
 #define _GAME_
 
-#define GLFW_DLL
-
 #include "PluginManager.h"
 #include "GameStateMachine.h"
 #include "GLFWInit.h"
@@ -26,26 +24,6 @@
 #else
 #define GAME_ENGINE_API
 #endif
-
-class GameInfo
-{
-public:
-
-	GameInfo();
-	void Update(double dt);
-
-	unsigned int GetFPS() const;
-
-private:
-
-	void UpdateFPS(double dt);
-
-	double m_fTimeElapsed;
-	unsigned int m_uiFrames;
-	unsigned int m_uiFPS;
-
-};
-
 
 // The Game class holds the main game loop and manages the successful creation of all the plugins
 class Game
@@ -73,9 +51,8 @@ public:
 	GAME_ENGINE_API PluginManager& GetPM();
 	GAME_ENGINE_API asVM& GetAs();
 
-	// time diff between frames in seconds
+	// time differential between frames in seconds
 	GAME_ENGINE_API double GetDt() const;
-	GAME_ENGINE_API unsigned int GetFps() const;
 
 private:
 
@@ -87,7 +64,9 @@ private:
 	GameStateMachine m_StateMachine;
 
 	double m_fDT;
-	GameInfo m_info;
+	double m_fTimeElapsed;
+	unsigned int m_uiFrameCounter;
+	unsigned int m_uiFPS;
 
 	// Component Interfaces
 	IRenderer* m_pRenderer;
@@ -104,17 +83,17 @@ private:
 	GAME_ENGINE_API int Run();
 	friend int main(int n, char**); // give access to run only in the main function
 
-	void RegisterScript();
-
 	void Update();
 	void UpdateFPS();
 
 	void Draw();
 	void DrawFPS();
 
+	void RegisterScript();
+
 	// Prevent copying
-	Game(const Game&);
-	Game& operator =(const Game&);
+	Game(const Game&) = delete;
+	Game& operator =(const Game&) = delete;
 
 };
 

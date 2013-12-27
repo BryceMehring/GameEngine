@@ -8,20 +8,18 @@
 #include <iomanip>
 #include <iostream>
 
-#define GLFW_DLL
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
 using namespace std;
 
-Game::Game() : m_fDT(0.0f), m_pRenderer(nullptr), m_pInput(nullptr), m_bDrawFPS(true)
+Game::Game() : m_fDT(0.0), m_fTimeElapsed(0.0), m_uiFrameCounter(0), m_uiFPS(0), m_pRenderer(nullptr), m_pInput(nullptr), m_bDrawFPS(true)
 {
 	m_plugins.SetAS(m_vm.GetScriptEngine());
 	LoadPlugins();
 
 	LoadResourceFile("base.r",*this);
-	//m_pInput->LoadKeyBindFile("bind.txt");
 
 	RegisterScript();
 }
@@ -47,83 +45,21 @@ void Game::SetNextState(const std::string& state)
 	}
 }
 
-int Game::Run()
+void Game::LoadPlugins()
 {
+	m_plugins.FreeAllPlugins();
 
-	// Loop while the use has not quit
-	while(!m_pInput->KeyPress(GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(glfwGetCurrentContext()))
-	{
-		glfwSetTime(0.0);
+	IPlugin* pPlugin = m_plugins.LoadDLL("renderer");
+	assert(pPlugin != nullptr);
+	assert(pPlugin->GetPluginType() == DLLType::Rendering); // check to make sure the renderer is actually the renderer
 
-		m_pInput->Poll();
+	m_pRenderer = static_cast<IRenderer*>(pPlugin);
 
-		// Update the game
-		Update();
+	pPlugin = m_plugins.LoadDLL("input");
+	assert(pPlugin != nullptr);
+	assert(pPlugin->GetPluginType() == DLLType::Input); // check to make sure the input is actually the input plugin
 
-		// Render the game
-		Draw();
-
-		m_fDT = glfwGetTime();
-	}
-
-	return 0;
-}
-
-void Game::Update()
-{
-	static bool bSync = false;
-	m_info.Update(m_fDT);
-
-	// If There has been a state change,
-	if(!m_NextState.empty())
-	{
-		// switch states
-		m_StateMachine.SetState(m_NextState,*this);
-
-		// Reset next state
-		m_NextState.clear();
-	}
-
-	if(m_pInput->KeyPress(GLFW_KEY_F5))
-	{
-		m_pRenderer->EnableVSync(bSync);
-		bSync = !bSync;
-	}
-
-	if(m_pInput->KeyPress(GLFW_KEY_F6))
-	{
-		m_bDrawFPS = !m_bDrawFPS;
-	}
-
-
-	m_StateMachine.GetState().Update(*this);
-
-}
-
-void Game::Draw()
-{
-	m_StateMachine.GetState().Draw(*this);
-
-	if(m_bDrawFPS)
-	{
-		DrawFPS();
-	}
-
-	m_pRenderer->Present();
-}
-
-void Game::DrawFPS()
-{
-	int width;
-	int height;
-
-	std::stringstream stream;
-	stream << "FPS: " << m_info.GetFPS();
-	m_pRenderer->GetDisplayMode(width,height);
-
-	m_pRenderer->SetRenderSpace(RenderSpace::Screen);
-
-	m_pRenderer->DrawString(stream.str().c_str(),glm::vec3(0.0f,height,-10.0f),0.5f);
+	m_pInput = static_cast<IKMInput*>(pPlugin);
 }
 
 IRenderer& Game::GetRenderer()
@@ -146,26 +82,101 @@ double Game::GetDt() const
 {
 	return m_fDT;
 }
-unsigned int Game::GetFps() const
+
+int Game::Run()
 {
-	return m_info.GetFPS();
+	Timer theTimer;
+
+	// Loop while the use has not quit
+	while(!m_pInput->KeyPress(GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(glfwGetCurrentContext()))
+	{
+		theTimer.Start();
+
+		m_pInput->Poll();
+
+		// Update the game
+		Update();
+
+		// Render the game
+		Draw();
+
+		m_fDT = theTimer.GetTime();
+	}
+
+	return 0;
 }
 
-void Game::LoadPlugins()
+void Game::Update()
 {
-	m_plugins.FreeAllPlugins();
+	static bool bSync = false;
 
-	IPlugin* pPlugin = m_plugins.LoadDLL("renderer");
-	assert(pPlugin != nullptr);
-	assert(pPlugin->GetPluginType() == DLLType::Rendering); // check to make sure the renderer is actually the renderer
+	// If There has been a state change,
+	if(!m_NextState.empty())
+	{
+		// switch states
+		m_StateMachine.SetState(m_NextState,*this);
 
-	m_pRenderer = static_cast<IRenderer*>(pPlugin);
+		// Reset next state
+		m_NextState.clear();
+	}
 
-	pPlugin = m_plugins.LoadDLL("input");
-	assert(pPlugin != nullptr);
-	assert(pPlugin->GetPluginType() == DLLType::Input); // check to make sure the input is actually the input plugin
+	if(m_pInput->KeyPress(GLFW_KEY_F5))
+	{
+		m_pRenderer->EnableVSync(bSync);
+		bSync = !bSync;
+	}
 
-	m_pInput = static_cast<IKMInput*>(pPlugin);
+	if(m_pInput->KeyPress(GLFW_KEY_F6))
+	{
+		m_bDrawFPS = !m_bDrawFPS;
+	}
+
+	if (m_bDrawFPS)
+	{
+		UpdateFPS();
+	}
+
+	m_StateMachine.GetState().Update(*this);
+
+}
+
+void Game::UpdateFPS()
+{
+	m_fTimeElapsed += m_fDT;
+	++m_uiFrameCounter;
+
+	if (m_fTimeElapsed > 0.99)
+	{
+		m_uiFPS = m_uiFrameCounter;
+		m_uiFrameCounter = 0;
+		m_fTimeElapsed = 0;
+	}
+}
+
+void Game::Draw()
+{
+	m_StateMachine.GetState().Draw(*this);
+
+	if(m_bDrawFPS)
+	{
+		DrawFPS();
+	}
+
+	m_pRenderer->Present();
+}
+
+void Game::DrawFPS()
+{
+	int width;
+	int height;
+
+	std::stringstream stream;
+	stream << "FPS: " << m_uiFPS;
+	m_pRenderer->GetDisplayMode(width,height);
+
+	m_pRenderer->SetRenderSpace(RenderSpace::Screen);
+
+	m_pRenderer->DrawString(stream.str().c_str(),glm::vec3(0.0f,height,-10.0f),0.5f);
 }
 
 void Game::RegisterScript()
@@ -178,42 +189,4 @@ void Game::RegisterScript()
 	DBAS(pEngine->RegisterGlobalProperty("Game game",(void*)this));
 
 	pEngine->Release();
-}
-
-GameInfo::GameInfo() : m_fTimeElapsed(0.0), m_uiFrames(0), m_uiFPS(0)
-{
-
-}
-
-unsigned int GameInfo::GetFPS() const
-{
-	return m_uiFPS;
-}
-
-void GameInfo::Update(double dt)
-{
-	UpdateFPS(dt);
-}
-
-void GameInfo::UpdateFPS(double dt)
-{
-	static double tim1 = 0;
-	static double tim2 = 0;
-	static double diff = 0;
-
-	m_fTimeElapsed += dt;
-	++m_uiFrames;
-
-	if ( m_uiFrames % 61 == 1 )
-	{
-		tim1 = m_fTimeElapsed;
-	}
-	else if(m_uiFrames % 61 == 0)
-	{
-		tim1 = tim2;
-		tim2 = m_fTimeElapsed;
-		diff = abs(tim1 - tim2);
-	}
-
-	m_uiFPS = (unsigned int)((61 / diff)+0.5f);
 }
