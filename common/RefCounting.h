@@ -10,7 +10,7 @@ public:
 	/*
 	Once the object(inherited from RefCounting) is created, the counter
 	will start at one. When the pointer to the object is copied, AddRef must be called to
-	increate the counter. Once the pointer is no longer needed, Release must be called to
+	increase the counter. Once the pointer is no longer needed, Release must be called to
 	decrease the counter. Once the counter reaches 0, the object will be deleted.
 	*/
 
