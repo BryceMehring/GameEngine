@@ -12,9 +12,9 @@ set (ENGINE_VERSION_MAJOR 1)
 set (ENGINE_VERSION_MINOR 0)
 
 if( MSVC )
-	string(COMPARE GREATER ${CMAKE_GENERATOR} "Visual Studio 10" VS_COMPATABILITY)
+	string(COMPARE GREATER ${CMAKE_GENERATOR} "Visual Studio 11" VS_COMPATABILITY)
 	if(NOT ${VS_COMPATABILITY})
-		message( SEND_ERROR "At least Visual Studio 2012 is needed to build the code" )
+		message( SEND_ERROR "At least Visual Studio 2013 is needed to build the code" )
 	endif()
 endif()
 
