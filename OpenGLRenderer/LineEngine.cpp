@@ -31,30 +31,33 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 		float dy = pArray[i].y - pArray[i - 1].y;
 
 		float linelength = sqrt(dx * dx + dy * dy);
-		dx /= linelength;
-		dy /= linelength;
 
-		const float px = 0.5f * fWidth * -(dy);
-		const float py = 0.5f * fWidth * dx;
+		if (linelength != 0.0f)
+		{
+			dx /= linelength;
+			dy /= linelength;
 
-		pLineVertex[0].pos = (T * glm::vec4(pArray[i - 1].x - px,pArray[i - 1].y + py,pArray[i].z,1.0f)).xyz;
-		pLineVertex[0].color = color;
+			const float px = 0.5f * fWidth * (dy);
+			const float py = 0.5f * fWidth * dx;
 
-		pLineVertex[1].pos = (T * glm::vec4(pArray[i - 1].x + px,pArray[i - 1].y - py,pArray[i].z,1.0f)).xyz;
-		pLineVertex[1].color = color;
+			pLineVertex[0].pos = (T * glm::vec4(pArray[i - 1].x - px, pArray[i - 1].y + py, pArray[i].z, 1.0f)).xyz;
+			pLineVertex[0].color = color;
 
-		pLineVertex[2].pos = (T * glm::vec4(pArray[i].x - px,pArray[i].y + py,pArray[i].z,1.0f)).xyz;
-		pLineVertex[2].color = color;
+			pLineVertex[1].pos = (T * glm::vec4(pArray[i - 1].x + px, pArray[i - 1].y - py, pArray[i].z, 1.0f)).xyz;
+			pLineVertex[1].color = color;
 
-		pLineVertex[3].pos = (T * glm::vec4(pArray[i].x + px,pArray[i].y - py,pArray[i].z,1.0f)).xyz;
-		pLineVertex[3].color = color;
+			pLineVertex[2].pos = (T * glm::vec4(pArray[i].x - px, pArray[i].y + py, pArray[i].z, 1.0f)).xyz;
+			pLineVertex[2].color = color;
 
-		pLineVertex += 4;
+			pLineVertex[3].pos = (T * glm::vec4(pArray[i].x + px, pArray[i].y - py, pArray[i].z, 1.0f)).xyz;
+			pLineVertex[3].color = color;
+
+			pLineVertex += 4;
+			m_iCurrentLength += 4;
+		}		
 	}
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
-
-	m_iCurrentLength = uiNewLength;
 }
 
 void LineEngine::Render()
