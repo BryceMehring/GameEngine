@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <map>
 #include <array>
-#include <vector>
+#include <unordered_map>
 
 enum class ResourceType
 {
@@ -132,20 +132,13 @@ struct CharDescriptor
 	unsigned short Page;
 };
 
-struct KerningPair
-{
-	unsigned int first;
-	unsigned int second;
-	int amount;
-};
-
 class Charset : public Texture
 {
 public:
 
 	typedef std::array<CharDescriptor,256> FontArray;
 
-	Charset(GLuint i, unsigned char* pImg, int tw, int th, int sw = 1, int sh = 1) : Texture(i,pImg,tw,th,sw,sh)
+	Charset(GLuint i, unsigned char* pImg, int tw, int th, int sw = 1, int sh = 1) : Texture(i, pImg, tw, th, sw, sh)
 	{
 	}
 
@@ -169,7 +162,8 @@ private:
 	unsigned short m_Base;
 	unsigned short m_Pages;
 	FontArray m_Chars;
-	std::vector<KerningPair> m_kerningPairs;
+
+	std::unordered_map<unsigned int, std::unordered_map<unsigned int, int>> m_kerningPairs;
 
 	friend class ResourceManager;
 };

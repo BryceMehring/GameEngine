@@ -2,33 +2,20 @@
 #include "ResourceManager.h"
 #include "Log.h"
 #include <sstream>
-#include <fstream>
-#include <cmath>
-#include <cstring>
-#include <vector>
-#include <algorithm>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996)
 #endif
 #include <stb_image.c>
 
-class KerningPairFunctor
-{
-public:
-
-	bool operator()(const KerningPair& a, const KerningPair& b) const
-	{
-		return a.first < b.first;
-	}
-};
 
 std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
 {
 	std::string Line;
 	std::string Read, Key, Value;
 	std::size_t i;
-	unsigned int index = 0;
+	unsigned int first = 0;
+	unsigned int second = 0;
 	while( !stream.eof() )
 	{
 		std::stringstream LineStream;
@@ -105,33 +92,23 @@ std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
 				Value = Read.substr(i + 1);
 
 				Converter << Value;
-				if(Key == "count")
+				if(Key == "first")
 				{
-					unsigned int count = 0;
-					Converter >> count;
-
-					CharsetDesc.m_kerningPairs.resize(count);
-				}
-				else if(Key == "first")
-				{
-					Converter >> CharsetDesc.m_kerningPairs[index].first;
+					Converter >> first;
 				}
 				else if(Key == "second")
 				{
-					Converter >> CharsetDesc.m_kerningPairs[index].second;
+					Converter >> second;
 				}
 				else if(Key == "amount")
 				{
-					Converter >> CharsetDesc.m_kerningPairs[index].amount;
-					index++;
-
+					Converter >> CharsetDesc.m_kerningPairs[first][second];
+					
 					break;
 				}
 			}
 		}
 	}
-
-	std::sort(CharsetDesc.m_kerningPairs.begin(),CharsetDesc.m_kerningPairs.end(),KerningPairFunctor());
 
 	return stream;
 }
@@ -158,20 +135,17 @@ Texture::~Texture()
 int Charset::GetKerningPairOffset(unsigned int first, unsigned int second) const
 {
 	int offset = 0;
-	KerningPair searchValue = {first,0,0};
-
-	auto iterPair = std::equal_range(m_kerningPairs.begin(),m_kerningPairs.end(),searchValue,KerningPairFunctor());
-
-	while((offset == 0) && (iterPair.first != iterPair.second))
+	
+	auto firstIter = m_kerningPairs.find(first);
+	if (firstIter != m_kerningPairs.end())
 	{
-		if(iterPair.first->second == second)
+		auto secondIter = firstIter->second.find(second);
+		if (secondIter != firstIter->second.end())
 		{
-			offset = iterPair.first->amount;
+			offset = secondIter->second;
 		}
-
-		++iterPair.first;
 	}
-
+	
 	return offset;
 }
 
