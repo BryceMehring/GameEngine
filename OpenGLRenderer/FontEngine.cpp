@@ -9,20 +9,14 @@ FontEngine::FontEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Cam
 {
 }
 
-void FontEngine::GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const
+void FontEngine::GetStringRec(const char* str, float scale, Math::FRECT& out) const
 {
-	if(str == nullptr)
-		return;
-
 	const Charset* font = static_cast<const Charset*>(m_pRm->GetResource("font"));
 	GetStringRec(font,str,scale,out);
 }
 
 void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment options)
 {
-	if(str == nullptr)
-		return;
-
 	if(font == nullptr)
 		font = "font";
 
@@ -34,30 +28,24 @@ void FontEngine::SetCamera(Camera* pCam)
 	m_pCamera = pCam;
 }
 
-void FontEngine::GetStringRec(const Charset* font,const char* str, const glm::vec2& scale, Math::FRECT& out) const
+void FontEngine::GetStringRec(const Charset* font, const char* str, float scale, Math::FRECT& inout) const
 {
-	// todo: need to reimplement 
-	/*glm::vec2 topLeft(0.0f,0.0f);
+	unsigned int lineHeight = font->GetLineHeight();
+	glm::vec2 topLeft = inout.topLeft;
 	glm::vec2 bottomRight(topLeft);
-	bottomRight.y -= 2.0f*scale.y;
+	bottomRight.y -= scale * lineHeight;
 
-	glm::vec2 pos(topLeft.x,bottomRight.y);
+	glm::vec3 pos(topLeft.x, bottomRight.y, 0.0f);
 
 	while(*str)
 	{
-		float fAdvance = 0.2f;
-
-		// todo: need to newline calculations
-		if(*str != ' ' && *str != '\n')
+		if (!IsSpecialCharacter(*str))
 		{
-			unsigned int index = *str;
-			fAdvance = scale.x * font->GetCharDescriptor()[index].Width / (float)(font->GetWidth());
-			pos.x += fAdvance * scale.x + 0.5f;
+			pos.x += scale * font->GetCharDescriptor()[*str].XAdvance;
 		}
-		else if(*str == '\n')
+		else
 		{
-			pos.x = 0.0f;
-			pos.y -= 1.2f*scale.y;
+			ProccessSpecialCharacter(*str, scale, lineHeight, glm::vec3(topLeft, 0.0f), pos);
 		}
 
 		bottomRight.x = glm::max(bottomRight.x,pos.x);
@@ -66,8 +54,34 @@ void FontEngine::GetStringRec(const Charset* font,const char* str, const glm::ve
 		str++;
 	}
 
-	out = Math::FRECT(topLeft,bottomRight);*/
+	inout = Math::FRECT(topLeft, bottomRight);
 
+}
+
+bool FontEngine::IsSpecialCharacter(char c) const
+{
+	return ((c == ' ') || (c == '\n') || (c == '\t'));
+}
+
+void FontEngine::ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos) const
+{
+	if (c == '\n')
+	{
+		currentPos.x = oldPos.x;
+		currentPos.y -= scale * lineHeight;
+	}
+	else
+	{
+		float advance = 20 * scale;
+		int spaceCount = 1;
+
+		if (c == '\t')
+		{
+			spaceCount = 4;
+		}
+
+		currentPos.x += advance * spaceCount;
+	}
 }
 
 void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
@@ -124,7 +138,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			// write the entire string to the vertex buffer
 			while((iCurrentVert < m_pVertexBuffer->GetLength()) && *str)
 			{
-				if(*str != ' ' && *str != '\n' && *str != '\t')
+				if (!IsSpecialCharacter(*str))
 				{
 					// font info about the character to draw
 					const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)(*str)];
@@ -136,8 +150,8 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 					glm::vec2 texBottomRight(((charInfo.x+charInfo.Width) / (float)(font->GetWidth())),(charInfo.y+charInfo.Height) / (float)(font->GetHeight()));
 
 					// calculate position
-					glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * iter.scale,posW.y - charInfo.YOffset * iter.scale,posW.z);
-					glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * iter.scale,posTopLeft.y - charInfo.Height * iter.scale,posW.z);
+					glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * iter.scale, posW.y - charInfo.YOffset * iter.scale, posW.z);
+					glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * iter.scale, posTopLeft.y - charInfo.Height * iter.scale, posW.z);
 
 					int index = iCurrentVert * 4;
 
@@ -164,23 +178,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 				}
 				else
 				{
-					if(*str == '\n')
-					{
-						posW.x = iter.pos.x;
-						posW.y -= iter.scale * font->GetLineHeight();
-					}
-					else
-					{
-						float advance = 20 * iter.scale;
-						int spaceCount = 1;
-
-						if(*str == '\t')
-						{
-							spaceCount = 4;
-						}
-
-						posW.x += advance * spaceCount;
-					}
+					ProccessSpecialCharacter(*str, iter.scale, font->GetLineHeight(), iter.pos, posW);
 				}
 
 				prevChar = *str;

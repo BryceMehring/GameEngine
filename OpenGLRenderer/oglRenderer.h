@@ -34,45 +34,77 @@ public:
 	void Destroy(class asIScriptEngine*) override;
 
 	// IRenderer
-	void DrawLine(const glm::vec3* pArray, // array of 3d vertices to draw
+
+	// DrawLine() caches a line to be drawn by Present()
+	// Note: if pArray is NULL, then DrawLine() terminates
+	virtual void DrawLine(const glm::vec3* pArray, // array of 3d vertices to draw
 						  unsigned int length, // number of vertices
 						  float fWidth = 3.0f, // the width of the line
 						  const glm::vec4& color = glm::vec4(1.0f), // color of the line
 						  const glm::mat4& t = glm::mat4(1.0f)) override; // transformation to apply to the line
 
-	// Fonts
-	void DrawString(const char* str, // the string that gets drawn
-							const glm::vec3& pos, // pos of the text in world space
-							float scale = 1.0f, // scaling the text
+	// DrawString() caches a string to be drawn by Present()
+	// Note: if either str or font is NULL, then DrawString() terminates
+	virtual void DrawString(const char* str, // the string that gets drawn
+							const glm::vec3& pos, // pos of the text in the current render space
+							float scale = 1.0f, // scaling the text, 1.0 = 1-1 mapping with the font
 							const glm::vec4& color = glm::vec4(1.0f), // color of the text blended together with the texture
 							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
-							FontAlignment options = FontAlignment::Left) override;
+							FontAlignment options = FontAlignment::Left
+							) override;
 
-	void DrawSprite(const std::string& texture, // texture used to draw the sprite
+	// DrawSprite() caches a single sprite to be drawn by Present()
+	virtual void DrawSprite(const std::string& texture, // texture used to draw the sprite
 							const glm::mat4& transformation, // transformation applied to the sprite
-							const glm::vec4& color = glm::vec4(1.0f),
+							const glm::vec4& color = glm::vec4(1.0f), // color that gets blended together with the sprite
 							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
 							unsigned int iCellId = 0, // cellId if multiple frames are stored together in the same sprite image
 							const std::string& tech = "sprite"
 							) override;
 
-	IResourceManager& GetResourceManager() override; // Returns the resource manager
+	// Returns the resource manager
+	virtual IResourceManager& GetResourceManager() override;
 
-	bool GetDisplayMode(int monitor, int mode, int& width, int& height) const override; // get the display mode, return true if success, false if error
-	bool GetDisplayMode(int& width, int& height) const override; // get the current display mode, return true if success, false if error
-	int  GetNumMonitors() const override;
-	int  GetNumDisplayModes(int monitor) const override; // returns the number of video modes for the given monitor
-	void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const override;
-	void SetCamera(class Camera*) override; // Sets the camera to use, this class does not have ownership of the pointer
-	void SetClearColor(const glm::vec3& color); // Color of the screen after it gets cleared
-	void SetDisplayMode(int mode) override; // sets the display mode
-	void SetRenderSpace(RenderSpace) override;
-	bool SetShaderValue(const std::string& shader, const std::string& location, float value ) override;
-	bool SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value ) override;
+	// Get the display mode, return true on success, false on error
+	virtual bool GetDisplayMode(int monitor, int mode, int& width, int& height) const override;
 
-	void EnableVSync(bool);
+	// Get the current display mode, return true on success, false on error
+	virtual bool GetDisplayMode(int& width, int& height) const override;
 
-	void Present(); // draw everything to screen
+	// Returns the number of monitors active on the current system
+	virtual int GetNumMonitors() const override;
+
+	// Returns the number of video modes for the given monitor
+	virtual int GetNumDisplayModes(int monitor) const override;
+
+	// Returns a tight bounding box that fits around the text,
+	// if out is expected to be in user space, set out's topLeft position vector before calling this method, 
+	// else, the bottomRight vector of out will be the width and height of the string and the topLeft vector will be zeroed
+	// Note: if str is NULL, then GetStringRec() terminates without modifying out
+	virtual void GetStringRec(const char* str, float scale, Math::FRECT& inout) const override;
+
+	// Sets the world space camera to use
+	virtual void SetCamera(class Camera*) override;
+
+	// Sets the color of the screen after it gets cleared
+	virtual void SetClearColor(const glm::vec3& color) override;
+
+	// Sets the display mode
+	virtual void SetDisplayMode(int mode) override;
+
+	// Sets the coordinate system to render all objects in(screen space or world space)
+	virtual void SetRenderSpace(RenderSpace) override;
+
+	// todo: add comments here
+	virtual bool SetShaderValue(const std::string& shader, const std::string& location, float value) override;
+	virtual bool SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value) override;
+
+	// True enables VSync
+	// False disables VSync
+	virtual void EnableVSync(bool) override;
+
+	// Render everything that has been cached so far to the back buffer and then swap the back buffer with the front buffer
+	virtual void Present() override;
 
 private:
 

@@ -25,7 +25,7 @@ public:
 
 	FontEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Camera* pCam = nullptr);
 
-	void GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const;
+	void GetStringRec(const char* str, float scale, Math::FRECT& inout) const;
 
 	void DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment options);
 
@@ -39,13 +39,19 @@ private:
 	VertexBuffer* m_pVertexBuffer;
 	Camera* m_pCamera;
 
-	std::map<std::string,std::vector<DrawTextInfo>> m_textSubsets; // the key is the texture for the vector of DrawTextInfo
+	// the key is the texture for the vector of DrawTextInfo
+	std::map<std::string,std::vector<DrawTextInfo>> m_textSubsets;
+
+	// returns true if c is a space, newline, or tab character
+	bool IsSpecialCharacter(char c) const;
+
+	void ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos) const;
 
 	// Fills the vertex buffer with all of the text subsets
 	// output is the number of characters to draw in each subset
 	void FillVertexBuffer(std::vector<unsigned int>&);
 
-    void GetStringRec(const Charset* font,const char* str, const glm::vec2& scale, Math::FRECT& out) const;
+    void GetStringRec(const Charset* font,const char* str, float scale, Math::FRECT& out) const;
 };
 
 #endif // _FONTENGINE_

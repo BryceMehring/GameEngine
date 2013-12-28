@@ -130,25 +130,31 @@ void oglRenderer::Destroy(asIScriptEngine* pAS) {}
 
 void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float fWidth, const glm::vec4& color, const glm::mat4& T)
 {
-	if(m_renderSpace == World)
+	if (pArray != nullptr)
 	{
-		m_pWorldSpaceLines->DrawLine(pArray,length,fWidth,color,T);
-	}
-	else
-	{
-		m_pScreenSpaceLines->DrawLine(pArray,length,fWidth,color,T);
+		if (m_renderSpace == World)
+		{
+			m_pWorldSpaceLines->DrawLine(pArray, length, fWidth, color, T);
+		}
+		else
+		{
+			m_pScreenSpaceLines->DrawLine(pArray, length, fWidth, color, T);
+		}
 	}
 }
 
 void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment options)
 {
-	if(m_renderSpace == World)
+	if (str != nullptr)
 	{
-		m_pWorldSpaceFonts->DrawString(str,font,pos,scale,color,options);
-	}
-	else
-	{
-		m_pScreenSpaceFonts->DrawString(str,font,pos,scale,color,options);
+		if (m_renderSpace == World)
+		{
+			m_pWorldSpaceFonts->DrawString(str, font, pos, scale, color, options);
+		}
+		else
+		{
+			m_pScreenSpaceFonts->DrawString(str, font, pos, scale, color, options);
+		}
 	}
 }
 
@@ -199,9 +205,12 @@ int oglRenderer::GetNumDisplayModes(int monitor) const
 	return m_videoModes[monitor].second;
 }
 
-void oglRenderer::GetStringRec(const char* str, const glm::vec2& scale, Math::FRECT& out) const
+void oglRenderer::GetStringRec(const char* str, float scale, Math::FRECT& inout) const
 {
-	//m_pFonts->GetStringRec(str,scale,out);
+	if (str != nullptr)
+	{
+		m_pScreenSpaceFonts->GetStringRec(str, scale, inout);
+	}
 }
 
 void oglRenderer::SetCamera(Camera* pCam)

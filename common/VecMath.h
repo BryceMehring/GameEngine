@@ -24,10 +24,12 @@ public:
 	virtual bool IsPointWithin(const glm::vec2& pos) const = 0;
 };
 
-// Basic rect, using floats
+// Basic rectangle using floats
 struct FRECT : public IPolygon
 {
 	COMMON_API FRECT() {}
+
+	COMMON_API FRECT(const glm::vec2& topLeft) : topLeft(topLeft) {}
 
 	COMMON_API FRECT(const glm::vec2& topLeft, const glm::vec2& bottomRight) : topLeft(topLeft), bottomRight(bottomRight) {}
 
