@@ -11,6 +11,9 @@ public:
 	VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bPCT = true);
 	~VertexBuffer();
 
+	VertexBuffer(const VertexBuffer&) = delete;
+	VertexBuffer& operator = (const VertexBuffer&) = delete;
+
 	void Bind() const;
 	void BindVAO() const;
 
