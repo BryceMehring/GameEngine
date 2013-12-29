@@ -39,11 +39,11 @@ void FontEngine::GetStringRec(const Charset* font, const char* str, float scale,
 
 	while(*str)
 	{
-		if ((*str) < (int)font->GetCharDescriptor().size())
+		if (font->IsValidCharacter(*str))
 		{
 			if (!IsSpecialCharacter(*str))
 			{
-				pos.x += scale * font->GetCharDescriptor()[*str].XAdvance;
+				pos.x += scale * font->GetCharDescriptor(*str).XAdvance;
 			}
 			else
 			{
@@ -149,12 +149,12 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			// write the entire string to the vertex buffer
 			while(*str && ((iCurrentVert + 4) < m_pVertexBuffer->GetLength()))
 			{
-				if ((*str) < (int)font->GetCharDescriptor().size())
+				if (font->IsValidCharacter(*str))
 				{
 					if (!IsSpecialCharacter(*str))
 					{
 						// font info about the character to draw
-						const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)(*str)];
+						const CharDescriptor& charInfo = font->GetCharDescriptor(*str);
 
 						int kerningOffset = font->GetKerningPairOffset(prevChar, *str);
 

@@ -147,7 +147,8 @@ public:
 	unsigned int GetLineHeight() const { return m_LineHeight; }
 	unsigned int GetBase() const { return m_Base; }
 	unsigned int GetPages() const { return m_Pages; }
-	const FontArray& GetCharDescriptor() const { return m_Chars; }
+	const CharDescriptor& GetCharDescriptor(char c) const { return m_Chars[c]; }
+	bool IsValidCharacter(char c) const { return c < (int)m_Chars.size() && c >= 0; }
 	int GetKerningPairOffset(unsigned int first, unsigned int second) const;
 
 	friend std::istream& operator >>(std::istream& stream, Charset& CharsetDesc);
@@ -190,7 +191,7 @@ public:
 
 	void Clear() override;
 
-	// method only accessable in the OpenGL function to access OpenGL specific information about the resources
+	// method only accessible in the OpenGL plugin to access OpenGL specific information about the resources
 	IResource* GetResource(const std::string& name);
 	const IResource* GetResource(const std::string& name) const;
 
