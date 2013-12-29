@@ -50,7 +50,7 @@ public:
 							float scale = 1.0f, // scaling the text, 1.0 = 1-1 mapping with the font
 							const glm::vec4& color = glm::vec4(1.0f), // color of the text blended together with the texture
 							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
-							FontAlignment options = FontAlignment::Left
+							FontAlignment alignment = FontAlignment::Left
 							) override;
 
 	// DrawSprite() caches a single sprite to be drawn by Present()
@@ -81,7 +81,7 @@ public:
 	// if out is expected to be in user space, set out's topLeft position vector before calling this method, 
 	// else, the bottomRight vector of out will be the width and height of the string and the topLeft vector will be zeroed
 	// Note: if str is NULL, then GetStringRec() terminates without modifying out
-	virtual void GetStringRec(const char* str, float scale, Math::FRECT& inout) const override;
+	virtual void GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const override;
 
 	// Sets the world space camera to use
 	virtual void SetCamera(class Camera*) override;

@@ -39,19 +39,22 @@ void FontEngine::GetStringRec(const Charset* font, const char* str, float scale,
 
 	while(*str)
 	{
-		if (!IsSpecialCharacter(*str))
+		if ((*str) < (int)font->GetCharDescriptor().size())
 		{
-			pos.x += scale * font->GetCharDescriptor()[*str].XAdvance;
+			if (!IsSpecialCharacter(*str))
+			{
+				pos.x += scale * font->GetCharDescriptor()[*str].XAdvance;
+			}
+			else
+			{
+				ProccessSpecialCharacter(*str, scale, lineHeight, glm::vec3(inout.topLeft, 0.0f), pos);
+
+				inout.bottomRight.y = glm::min(inout.bottomRight.y, pos.y);
+			}
+
+			inout.bottomRight.x = glm::max(inout.bottomRight.x, pos.x);
 		}
-		else
-		{
-			ProccessSpecialCharacter(*str, scale, lineHeight, glm::vec3(inout.topLeft, 0.0f), pos);
-
-			inout.bottomRight.y = glm::min(inout.bottomRight.y, pos.y);
-		}
-
-		inout.bottomRight.x = glm::max(inout.bottomRight.x, pos.x);
-
+		
 		str++;
 	}
 
@@ -146,49 +149,52 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			// write the entire string to the vertex buffer
 			while(*str && ((iCurrentVert + 4) < m_pVertexBuffer->GetLength()))
 			{
-				if (!IsSpecialCharacter(*str))
+				if ((*str) < (int)font->GetCharDescriptor().size())
 				{
-					// font info about the character to draw
-					const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)(*str)];
+					if (!IsSpecialCharacter(*str))
+					{
+						// font info about the character to draw
+						const CharDescriptor& charInfo = font->GetCharDescriptor()[(unsigned int)(*str)];
 
-					int kerningOffset = font->GetKerningPairOffset(prevChar,*str);
+						int kerningOffset = font->GetKerningPairOffset(prevChar, *str);
 
-					// calculate texture coordinates
-					glm::vec2 texTopLeft(charInfo.x / (float)(font->GetWidth()),charInfo.y / (float)(font->GetHeight()));
-					glm::vec2 texBottomRight(((charInfo.x+charInfo.Width) / (float)(font->GetWidth())),(charInfo.y+charInfo.Height) / (float)(font->GetHeight()));
+						// calculate texture coordinates
+						glm::vec2 texTopLeft(charInfo.x / (float)(font->GetWidth()), charInfo.y / (float)(font->GetHeight()));
+						glm::vec2 texBottomRight(((charInfo.x + charInfo.Width) / (float)(font->GetWidth())), (charInfo.y + charInfo.Height) / (float)(font->GetHeight()));
 
-					// calculate position
-					glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * iter.scale, posW.y - charInfo.YOffset * iter.scale, posW.z);
-					glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * iter.scale, posTopLeft.y - charInfo.Height * iter.scale, posW.z);
+						// calculate position
+						glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * iter.scale, posW.y - charInfo.YOffset * iter.scale, posW.z);
+						glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * iter.scale, posTopLeft.y - charInfo.Height * iter.scale, posW.z);
 
-					v[0].pos = posTopLeft;
-					v[0].color = iter.color;
-					v[0].tex = texTopLeft;
+						v[0].pos = posTopLeft;
+						v[0].color = iter.color;
+						v[0].tex = texTopLeft;
 
-					v[1].pos = glm::vec3(posTopLeft.x, posBottomRight.y, posW.z);
-					v[1].color = iter.color;
-					v[1].tex = glm::vec2(texTopLeft.x, texBottomRight.y);
+						v[1].pos = glm::vec3(posTopLeft.x, posBottomRight.y, posW.z);
+						v[1].color = iter.color;
+						v[1].tex = glm::vec2(texTopLeft.x, texBottomRight.y);
 
-					v[2].pos = glm::vec3(posBottomRight.x, posTopLeft.y, posW.z);
-					v[2].color = iter.color;
-					v[2].tex = glm::vec2(texBottomRight.x, texTopLeft.y);
+						v[2].pos = glm::vec3(posBottomRight.x, posTopLeft.y, posW.z);
+						v[2].color = iter.color;
+						v[2].tex = glm::vec2(texBottomRight.x, texTopLeft.y);
 
-					v[3].pos = posBottomRight;
-					v[3].color = iter.color;
-					v[3].tex = texBottomRight;
+						v[3].pos = posBottomRight;
+						v[3].color = iter.color;
+						v[3].tex = texBottomRight;
 
-					posW.x += charInfo.XAdvance * iter.scale;
+						posW.x += charInfo.XAdvance * iter.scale;
 
-					v += 4;
-					iCurrentVert += 4;
-					++iSubsetLength;
+						v += 4;
+						iCurrentVert += 4;
+						++iSubsetLength;
+					}
+					else
+					{
+						ProccessSpecialCharacter(*str, iter.scale, font->GetLineHeight(), iter.pos, posW);
+					}
+
+					prevChar = *str;
 				}
-				else
-				{
-					ProccessSpecialCharacter(*str, iter.scale, font->GetLineHeight(), iter.pos, posW);
-				}
-
-				prevChar = *str;
 				str++;
 			}
 		}
