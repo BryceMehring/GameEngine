@@ -20,8 +20,6 @@ class oglRenderer : public IRenderer
 {
 public:
 
-	static void MonitorCallback(GLFWmonitor*,int);
-
 	oglRenderer();
 	~oglRenderer();
 
@@ -106,6 +104,8 @@ public:
 	// Render everything that has been cached so far to the back buffer and then swap the back buffer with the front buffer
 	virtual void Present() override;
 
+	static void MonitorCallback(GLFWmonitor*, int);
+
 private:
 
 	static oglRenderer* s_pThis;
@@ -148,6 +148,9 @@ private:
 	void ParseVideoSettingsFile();
 	void SaveDisplayList();
 	void BuildCamera();
+
+	oglRenderer(const oglRenderer&) = delete;
+	oglRenderer& operator = (const oglRenderer&) = delete;
 };
 
 #endif // _OGLRENDERER_

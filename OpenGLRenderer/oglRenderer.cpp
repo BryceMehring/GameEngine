@@ -65,11 +65,6 @@ void APIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum 
 	}
 }
 
-void oglRenderer::MonitorCallback(GLFWmonitor* monitor, int state)
-{
-	s_pThis->EnumerateDisplayAdaptors();
-}
-
 oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_pScreenSpaceFonts(nullptr),
 	m_pWorldSpaceLines(nullptr), m_pScreenSpaceLines(nullptr), m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
 	m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::World), m_bFullscreen(false)
@@ -288,6 +283,11 @@ void oglRenderer::Present()
 	m_pScreenSpaceFonts->Render();
 
 	glfwSwapBuffers(m_pWindow);
+}
+
+void oglRenderer::MonitorCallback(GLFWmonitor* monitor, int state)
+{
+	s_pThis->EnumerateDisplayAdaptors();
 }
 
 void oglRenderer::GLFWOpenWindowHints()
