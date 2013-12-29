@@ -8,6 +8,135 @@
 #endif
 #include <stb_image.c>
 
+const GLuint& IResource::GetID() const
+{ 
+	return id;
+}
+
+Texture::Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw, int ch) : IResource(i), m_iWidth(tw),
+m_iHeight(th), m_iCellsWidth(cw), m_iCellsHeight(ch), m_iComp(comp), m_pImg(pImg)
+{
+}
+
+ResourceType Texture::GetType() const
+{ 
+	return ResourceType::Texture;
+}
+
+int Texture::GetWidth() const
+{ 
+	return m_iWidth;
+}
+
+int Texture::GetHeight() const
+{ 
+	return m_iHeight;
+}
+
+int Texture::GetCellsWidth() const
+{
+	return m_iCellsWidth;
+}
+
+int Texture::GetCellsHeight() const
+{ 
+	return m_iCellsHeight;
+}
+
+const unsigned char* Texture::GetImgData() const
+{ 
+	return m_pImg; 
+}
+
+Shader::Shader(GLuint i, GLuint MVP, UnifromMap&& uniforms) : IResource(i), m_MVP(MVP), m_uniforms(uniforms)
+{
+}
+
+Shader::~Shader()
+{
+	glDeleteProgram(GetID());
+}
+
+ResourceType Shader::GetType() const
+{ 
+	return ResourceType::Shader;
+}
+
+GLuint Shader::GetMVP() const
+{ 
+	return m_MVP;
+}
+
+const Shader::UnifromMap& Shader::GetUniforms() const 
+{ 
+	return m_uniforms;
+}
+
+TexturedShader::TexturedShader(GLuint i, GLuint MVP, GLuint texID, UnifromMap&& uniforms) : Shader(i, MVP, std::move(uniforms)),
+m_TextureSamplerID(texID)
+{
+}
+
+ResourceType TexturedShader::GetType() const
+{ 
+	return ResourceType::TexturedShader;
+}
+
+GLuint TexturedShader::GetTextureSamplerID() const
+{ 
+	return m_TextureSamplerID;
+}
+
+Charset::Charset(GLuint i, unsigned char* pImg, int comp, int tw, int th) : Texture(i, pImg, comp, tw, th, 1, 1)
+{
+}
+
+ResourceType Charset::GetType() const
+{ 
+	return ResourceType::Font;
+}
+
+unsigned int Charset::GetLineHeight() const
+{ 
+	return m_LineHeight;
+
+}
+unsigned int Charset::GetBase() const
+{ 
+	return m_Base;
+}
+
+unsigned int Charset::GetPages() const
+{ 
+	return m_Pages;
+}
+
+const CharDescriptor& Charset::GetCharDescriptor(char c) const
+{ 
+	return m_Chars[c];
+}
+
+bool Charset::IsValidCharacter(char c) const
+{ 
+	return c < (int)m_Chars.size() && c >= 0;
+}
+
+int Charset::GetKerningPairOffset(unsigned int first, unsigned int second) const
+{
+	int offset = 0;
+
+	auto firstIter = m_kerningPairs.find(first);
+	if (firstIter != m_kerningPairs.end())
+	{
+		auto secondIter = firstIter->second.find(second);
+		if (secondIter != firstIter->second.end())
+		{
+			offset = secondIter->second;
+		}
+	}
+
+	return offset;
+}
 
 std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
 {
@@ -132,23 +261,6 @@ Texture::~Texture()
 	stbi_image_free(m_pImg);
 }
 
-int Charset::GetKerningPairOffset(unsigned int first, unsigned int second) const
-{
-	int offset = 0;
-	
-	auto firstIter = m_kerningPairs.find(first);
-	if (firstIter != m_kerningPairs.end())
-	{
-		auto secondIter = firstIter->second.find(second);
-		if (secondIter != firstIter->second.end())
-		{
-			offset = secondIter->second;
-		}
-	}
-	
-	return offset;
-}
-
 void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat)
 {
 	switch(comp)
@@ -174,12 +286,11 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 	}
 }
 
-bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, int& height, unsigned char** pImgData, GLuint& textureId)
+bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, int& height, int& comp, unsigned char** pImgData, GLuint& textureId)
 {
 	if(pImgData == nullptr)
 		return false;
 
-	int comp;
 	*pImgData = stbi_load(file.c_str(),&width,&height,&comp,0);
 
 	// check if the image can be loaded
@@ -220,10 +331,11 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	GLuint textureID;
 	unsigned char* pImg;
 	int width, height;
+	int comp;
 	bool success;
-	if((success = CreateOpenGLTexture(file, width, height, &pImg,textureID)))
+	if ((success = CreateOpenGLTexture(file, width, height, comp, &pImg, textureID)))
 	{
-		m_resources.insert(std::make_pair(id,new Texture(textureID,pImg,width,height)));
+		m_resources.insert({ id, new Texture(textureID, pImg, width, height, comp) });
 	}
 	return success;
 }
@@ -243,15 +355,16 @@ bool ResourceManager::LoadAnimation(const std::string& id, const std::string& fi
 	GLuint textureID;
 	unsigned char* pImg;
 	int width, height;
+	int comp;
 	bool success;
-	if((success = CreateOpenGLTexture(file, width, height, &pImg,textureID)))
+	if ((success = CreateOpenGLTexture(file, width, height, comp, &pImg, textureID)))
 	{
 		std::ifstream in(file + ".txt");
 		if((success = in.is_open()))
 		{
 			int spriteWidth, spriteHeight;
 			in >> spriteWidth >> spriteHeight;
-			m_resources.insert(std::make_pair(id,new Texture(textureID,pImg,width,height,spriteWidth,spriteHeight)));
+			m_resources.insert({ id, new Texture(textureID, pImg, width, height, comp, spriteWidth, spriteHeight) });
 		}
 	}
 	return success;
@@ -272,16 +385,17 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 	GLuint textureID;
 	unsigned char* pImg;
 	int width, height;
+	int comp;
 	bool success;
-	if((success = CreateOpenGLTexture(file, width, height, &pImg,textureID)))
+	if ((success = CreateOpenGLTexture(file, width, height, comp, &pImg, textureID)))
 	{
 		std::ifstream in(file + ".fnt");
 		if((success = in.is_open()))
 		{
-			Charset* pCharset = new Charset(textureID,pImg,width,height);
+			Charset* pCharset = new Charset(textureID, pImg, comp, width, height);
 			in >> (*pCharset);
 
-			m_resources.insert(std::make_pair(id,pCharset));
+			m_resources.insert({ id, pCharset });
 		}
 	}
 	return success;
@@ -413,7 +527,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 		}
 		else
 		{
-			uniforms.insert(std::make_pair(name,location));
+			uniforms.insert({ name, location });
 		}
 	}
 
@@ -427,10 +541,10 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 		}
 		else
 		{
-			pShader = new Shader(programID,uiMVPLocation,std::move(uniforms));
+			pShader = new Shader(programID, uiMVPLocation, std::move(uniforms));
 		}
 
-		m_resources.insert(std::make_pair(id,pShader));
+		m_resources.insert({ id, pShader });
 	}
 
 	return bFoundMVP;
@@ -450,11 +564,13 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 
 	const Texture* pTex = static_cast<const Texture*>(pResource);
 
-	out.uiCellsHeight = pTex->m_iCellsHeight;
-	out.uiCellsWidth = pTex->m_iCellsWidth;
-	out.uiHeight = pTex->m_iHeight;
-	out.uiWidth = pTex->m_iWidth;
-	out.pImg = pTex->m_pImg;
+	out = { pTex->m_iHeight,
+			pTex->m_iWidth,
+			pTex->m_iCellsHeight,
+			pTex->m_iCellsWidth,
+			pTex->m_iComp,
+			pTex->m_pImg 
+		  };
 
 	return true;
 }

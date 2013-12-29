@@ -23,7 +23,7 @@ public:
 	IResource(GLuint i) : id(i) {}
 	virtual ResourceType GetType() const = 0;
 
-	const GLuint& GetID() const { return id; }
+	const GLuint& GetID() const;
 
 protected:
 
@@ -40,17 +40,15 @@ private:
 class Texture : public IResource
 {
 public:
-	Texture(GLuint i, unsigned char* pImg, int tw, int th, int sw = 1, int sh = 1) : IResource(i), m_iWidth(tw), m_iHeight(th), m_iCellsWidth(sw), m_iCellsHeight(sh), m_pImg(pImg)
-	{
-	}
+	Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw = 1, int ch = 1);
 
-	virtual ResourceType GetType() const { return ResourceType::Texture; }
+	virtual ResourceType GetType() const;
 
-	int GetWidth() const { return m_iWidth; }
-	int GetHeight() const { return m_iHeight; }
-	int GetCellsWidth() const { return m_iCellsWidth; }
-	int GetCellsHeight() const { return m_iCellsHeight; }
-	const unsigned char* GetImgData() const { return m_pImg; }
+	int GetWidth() const;
+	int GetHeight() const;
+	int GetCellsWidth() const;
+	int GetCellsHeight() const;
+	const unsigned char* GetImgData() const;
 
 protected:
 
@@ -62,6 +60,7 @@ private:
 	int m_iHeight;
 	int m_iCellsWidth;
 	int m_iCellsHeight;
+	int m_iComp;
 	unsigned char* m_pImg;
 
 	friend class ResourceManager;
@@ -74,22 +73,17 @@ public:
 
 	typedef std::map<std::string,GLuint> UnifromMap;
 
-	Shader(GLuint i, GLuint MVP, UnifromMap&& uniforms) : IResource(i), m_MVP(MVP), m_uniforms(uniforms)
-	{
-	}
+	Shader(GLuint i, GLuint MVP, UnifromMap&& uniforms);
 
-	virtual ResourceType GetType() const { return ResourceType::Shader; }
+	virtual ResourceType GetType() const;
 
-	GLuint GetMVP() const { return m_MVP; }
+	GLuint GetMVP() const;
 
-	const UnifromMap& GetUniforms() const { return m_uniforms; }
+	const UnifromMap& GetUniforms() const;
 
 protected:
 
-	virtual ~Shader()
-	{
-		glDeleteProgram(GetID());
-	}
+	virtual ~Shader();
 
 private:
 
@@ -103,13 +97,11 @@ class TexturedShader : public Shader
 {
 public:
 
-	TexturedShader(GLuint i, GLuint MVP, GLuint texID, UnifromMap&& uniforms) : Shader(i,MVP,std::move(uniforms)), m_TextureSamplerID(texID)
-	{
-	}
+	TexturedShader(GLuint i, GLuint MVP, GLuint texID, UnifromMap&& uniforms);
 
-	virtual ResourceType GetType() const { return ResourceType::TexturedShader; }
+	virtual ResourceType GetType() const;
 
-	GLuint GetTextureSamplerID() const { return m_TextureSamplerID; }
+	GLuint GetTextureSamplerID() const;
 
 protected:
 
@@ -122,9 +114,6 @@ private:
 
 struct CharDescriptor
 {
-	CharDescriptor() : x( 0 ), y( 0 ), Width( 0 ), Height( 0 ), XOffset( 0 ), YOffset( 0 ),
-		XAdvance( 0 ), Page( 0 ) {}
-
 	unsigned short x, y;
 	unsigned short Width, Height;
 	short XOffset, YOffset;
@@ -138,17 +127,15 @@ public:
 
 	typedef std::array<CharDescriptor,256> FontArray;
 
-	Charset(GLuint i, unsigned char* pImg, int tw, int th, int sw = 1, int sh = 1) : Texture(i, pImg, tw, th, sw, sh)
-	{
-	}
+	Charset(GLuint i, unsigned char* pImg, int comp, int tw, int th);
 
-	virtual ResourceType GetType() const { return ResourceType::Font; }
+	virtual ResourceType GetType() const;
 
-	unsigned int GetLineHeight() const { return m_LineHeight; }
-	unsigned int GetBase() const { return m_Base; }
-	unsigned int GetPages() const { return m_Pages; }
-	const CharDescriptor& GetCharDescriptor(char c) const { return m_Chars[c]; }
-	bool IsValidCharacter(char c) const { return c < (int)m_Chars.size() && c >= 0; }
+	unsigned int GetLineHeight() const;
+	unsigned int GetBase() const;
+	unsigned int GetPages() const;
+	const CharDescriptor& GetCharDescriptor(char c) const;
+	bool IsValidCharacter(char c) const;
 	int GetKerningPairOffset(unsigned int first, unsigned int second) const;
 
 	friend std::istream& operator >>(std::istream& stream, Charset& CharsetDesc);
@@ -201,7 +188,7 @@ private:
 
 	ResourceMap m_resources;
 
-	bool CreateOpenGLTexture(const std::string& file, int& width, int& height, unsigned char** pImgData, GLuint& out);
+	bool CreateOpenGLTexture(const std::string& file, int& width, int& height, int& comp, unsigned char** pImgData, GLuint& out);
 
 	// converts # of components into the corresponding OpenGL format.
 	void GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat);

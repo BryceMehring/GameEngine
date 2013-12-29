@@ -165,7 +165,7 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 	else
 	{
 		// insert plugin into map
-		m_plugins.insert(make_pair(type,dll));
+		m_plugins.insert({ type, dll });
 	}
 
 	// return the plugin interface

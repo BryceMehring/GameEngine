@@ -7,9 +7,9 @@ struct TextureInfo
 {
 	unsigned int uiWidth; // texture width
 	unsigned int uiHeight; // texture height
-	unsigned int uiComp; // number of components in the image
 	unsigned int uiCellsWidth; // number of cells horizontally, used for sprite animations
 	unsigned int uiCellsHeight; // number of cell vertically, used for sprite animations
+	unsigned int uiComp; // number of components in the image
 	const unsigned char* pImg; // img data
 };
 
