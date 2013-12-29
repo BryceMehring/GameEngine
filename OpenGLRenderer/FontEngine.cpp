@@ -9,18 +9,18 @@ FontEngine::FontEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Cam
 {
 }
 
-void FontEngine::GetStringRec(const char* str, float scale, Math::FRECT& out) const
+void FontEngine::GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
 {
 	const Charset* font = static_cast<const Charset*>(m_pRm->GetResource("font"));
-	GetStringRec(font,str,scale,out);
+	GetStringRec(font, str, scale, alignment, out);
 }
 
-void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment options)
+void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment alignment)
 {
 	if(font == nullptr)
 		font = "font";
 
-	m_textSubsets[font].push_back(DrawTextInfo(str,pos,scale,color,options));
+	m_textSubsets[font].push_back(DrawTextInfo(str,pos,scale,color,alignment));
 }
 
 void FontEngine::SetCamera(Camera* pCam)
@@ -28,14 +28,14 @@ void FontEngine::SetCamera(Camera* pCam)
 	m_pCamera = pCam;
 }
 
-void FontEngine::GetStringRec(const Charset* font, const char* str, float scale, Math::FRECT& inout) const
+void FontEngine::GetStringRec(const Charset* font, const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
 {
 	unsigned int lineHeight = font->GetLineHeight();
-	glm::vec2 topLeft = inout.topLeft;
-	glm::vec2 bottomRight(topLeft);
-	bottomRight.y -= scale * lineHeight;
 
-	glm::vec3 pos(topLeft.x, bottomRight.y, 0.0f);
+	inout.bottomRight = inout.topLeft;
+	inout.bottomRight.y -= scale * lineHeight;
+
+	glm::vec3 pos(inout.topLeft.x, inout.bottomRight.y, 0.0f);
 
 	while(*str)
 	{
@@ -45,17 +45,37 @@ void FontEngine::GetStringRec(const Charset* font, const char* str, float scale,
 		}
 		else
 		{
-			ProccessSpecialCharacter(*str, scale, lineHeight, glm::vec3(topLeft, 0.0f), pos);
+			ProccessSpecialCharacter(*str, scale, lineHeight, glm::vec3(inout.topLeft, 0.0f), pos);
+
+			inout.bottomRight.y = glm::min(inout.bottomRight.y, pos.y);
 		}
 
-		bottomRight.x = glm::max(bottomRight.x,pos.x);
-		bottomRight.y = glm::min(bottomRight.y,pos.y);
+		inout.bottomRight.x = glm::max(inout.bottomRight.x, pos.x);
 
 		str++;
 	}
 
-	inout = Math::FRECT(topLeft, bottomRight);
+	if (alignment != FontAlignment::Left)
+	{
+		glm::vec2 offset;
+		AlignTextPos(inout.bottomRight.x - inout.topLeft.x, alignment, offset);
 
+		inout.topLeft += offset;
+		inout.bottomRight += offset;
+	}
+
+}
+
+void FontEngine::AlignTextPos(float width, FontAlignment alignment, glm::vec2& out) const
+{
+	float fHalfWidth = (width / 2.0f);
+
+	out.x -= fHalfWidth;
+
+	if (alignment == FontAlignment::Right)
+	{
+		out.x -= fHalfWidth;
+	}
 }
 
 bool FontEngine::IsSpecialCharacter(char c) const
@@ -72,7 +92,7 @@ void FontEngine::ProccessSpecialCharacter(char c, float scale, unsigned int line
 	}
 	else
 	{
-		float advance = 20 * scale;
+		float advance = 25 * scale;
 		int spaceCount = 1;
 
 		if (c == '\t')
@@ -113,30 +133,18 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			glm::vec3 posW(iter.pos);
 
 			// If the text needs to be aligned to center or right
-			if(iter.options != FontAlignment::Left)
+			if(iter.alignment != FontAlignment::Left)
 			{
-				// todo: reimplement
-				/*Math::FRECT drawRec;
-				GetStringRec(font,str,iter.scale,drawRec);
+				Math::FRECT drawRec(glm::vec2(posW.x, posW.y));
+				GetStringRec(font, str, iter.scale, iter.alignment, drawRec);
 
-				float fHalfWidth = (drawRec.Width() / 2.0f);
-
-				posW.x -= fHalfWidth;
-
-				if (iter.options == FontAlignment::Right)
-				{
-					posW.x -= fHalfWidth;
-				}*/
-			}
-			else
-			{
-				// left, do nothing
+				posW.x = drawRec.topLeft.x;
 			}
 
 			char prevChar = -1;
 
 			// write the entire string to the vertex buffer
-			while((iCurrentVert < m_pVertexBuffer->GetLength()) && *str)
+			while(*str && ((iCurrentVert + 4) < m_pVertexBuffer->GetLength()))
 			{
 				if (!IsSpecialCharacter(*str))
 				{
@@ -153,27 +161,26 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 					glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * iter.scale, posW.y - charInfo.YOffset * iter.scale, posW.z);
 					glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * iter.scale, posTopLeft.y - charInfo.Height * iter.scale, posW.z);
 
-					int index = iCurrentVert * 4;
+					v[0].pos = posTopLeft;
+					v[0].color = iter.color;
+					v[0].tex = texTopLeft;
 
-					v[index].pos = posTopLeft;
-					v[index].color = iter.color;
-					v[index].tex = texTopLeft;
+					v[1].pos = glm::vec3(posTopLeft.x, posBottomRight.y, posW.z);
+					v[1].color = iter.color;
+					v[1].tex = glm::vec2(texTopLeft.x, texBottomRight.y);
 
-					v[index + 1].pos = glm::vec3(posTopLeft.x,posBottomRight.y,posW.z);
-					v[index + 1].color = iter.color;
-					v[index + 1].tex = glm::vec2(texTopLeft.x,texBottomRight.y);
+					v[2].pos = glm::vec3(posBottomRight.x, posTopLeft.y, posW.z);
+					v[2].color = iter.color;
+					v[2].tex = glm::vec2(texBottomRight.x, texTopLeft.y);
 
-					v[index + 2].pos = glm::vec3(posBottomRight.x,posTopLeft.y,posW.z);
-					v[index + 2].color = iter.color;
-					v[index + 2].tex = glm::vec2(texBottomRight.x,texTopLeft.y);	
-
-					v[index + 3].pos = posBottomRight;
-					v[index + 3].color = iter.color;
-					v[index + 3].tex = texBottomRight;
+					v[3].pos = posBottomRight;
+					v[3].color = iter.color;
+					v[3].tex = texBottomRight;
 
 					posW.x += charInfo.XAdvance * iter.scale;
 
-					++iCurrentVert;
+					v += 4;
+					iCurrentVert += 4;
 					++iSubsetLength;
 				}
 				else

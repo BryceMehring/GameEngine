@@ -143,17 +143,17 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float f
 	}
 }
 
-void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment options)
+void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment alignment)
 {
 	if (str != nullptr)
 	{
 		if (m_renderSpace == World)
 		{
-			m_pWorldSpaceFonts->DrawString(str, font, pos, scale, color, options);
+			m_pWorldSpaceFonts->DrawString(str, font, pos, scale, color, alignment);
 		}
 		else
 		{
-			m_pScreenSpaceFonts->DrawString(str, font, pos, scale, color, options);
+			m_pScreenSpaceFonts->DrawString(str, font, pos, scale, color, alignment);
 		}
 	}
 }
@@ -205,11 +205,11 @@ int oglRenderer::GetNumDisplayModes(int monitor) const
 	return m_videoModes[monitor].second;
 }
 
-void oglRenderer::GetStringRec(const char* str, float scale, Math::FRECT& inout) const
+void oglRenderer::GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
 {
 	if (str != nullptr)
 	{
-		m_pScreenSpaceFonts->GetStringRec(str, scale, inout);
+		m_pScreenSpaceFonts->GetStringRec(str, scale, alignment, inout);
 	}
 }
 

@@ -9,13 +9,13 @@
 
 struct DrawTextInfo
 {
-	DrawTextInfo(const std::string& t, const glm::vec3 p, float s, const glm::vec4& c, FontAlignment o) : text(t), pos(p), scale(s), color(c), options(o) {}
+	DrawTextInfo(const std::string& t, const glm::vec3 p, float s, const glm::vec4& c, FontAlignment o) : text(t), pos(p), scale(s), color(c), alignment(o) {}
 
 	std::string text;
 	glm::vec3 pos;
 	float scale;
 	glm::vec4 color;
-	FontAlignment options;
+	FontAlignment alignment;
 };
 
 // This class manages the rendering of fonts
@@ -25,9 +25,9 @@ public:
 
 	FontEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Camera* pCam = nullptr);
 
-	void GetStringRec(const char* str, float scale, Math::FRECT& inout) const;
+	void GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const;
 
-	void DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment options);
+	void DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment alignment);
 
 	void Render();
 
@@ -42,6 +42,8 @@ private:
 	// the key is the texture for the vector of DrawTextInfo
 	std::map<std::string,std::vector<DrawTextInfo>> m_textSubsets;
 
+	void AlignTextPos(float width, FontAlignment alignment, glm::vec2& out) const;
+
 	// returns true if c is a space, newline, or tab character
 	bool IsSpecialCharacter(char c) const;
 
@@ -51,7 +53,7 @@ private:
 	// output is the number of characters to draw in each subset
 	void FillVertexBuffer(std::vector<unsigned int>&);
 
-    void GetStringRec(const Charset* font,const char* str, float scale, Math::FRECT& out) const;
+	void GetStringRec(const Charset* font, const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const;
 };
 
 #endif // _FONTENGINE_
