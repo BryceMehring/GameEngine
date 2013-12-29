@@ -16,11 +16,6 @@
 
 struct Sprite
 {
-	Sprite(const glm::mat4& transform,const glm::vec4& col, const glm::vec2& tile, unsigned int cell)
-		: T(transform), color(col), tiling(tile), iCellId(cell)
-	{
-	}
-
 	glm::mat4 T;
 	glm::vec4 color;
 	glm::vec2 tiling;

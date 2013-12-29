@@ -36,8 +36,8 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 
 		if( pShader != nullptr && pTex != nullptr)
 		{
-			int iZorder = (int)(floor(transformation[3].z));
-			m_spriteLayers[iZorder][tech][texture].push_back(Sprite(transformation,color,tiling,iCellId));
+			int iZorder = { (int)floor(transformation[3].z) };
+			m_spriteLayers[iZorder][tech][texture].push_back({ transformation, color, tiling, iCellId });
 			++m_iCurrentLength;
 		}
 	}
@@ -53,44 +53,42 @@ void SpriteEngine::FillVertexBuffer()
 	VertexPCT* pVert = static_cast<VertexPCT*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetLength(), GL_MAP_WRITE_BIT));
 
 	// Loop over all of the layers
-	for(auto& layerIter : m_spriteLayers)
+	for (auto& layerIter : m_spriteLayers)
 	{
 		// Loop over all sprites
-		for(auto& iter : layerIter.second)
+		for (auto& techIter : layerIter.second)
 		{
-			for(auto& subIter : iter.second)
+			for (auto& textureIter : techIter.second)
 			{
 				TextureInfo texInfo;
-				m_pRM->GetTextureInfo(subIter.first,texInfo);
+				m_pRM->GetTextureInfo(textureIter.first, texInfo);
 
-				// get the list of all sprites that use the same tech and texture
-				std::vector<Sprite>& sprites = subIter.second;
-
-				for(unsigned int i = 0; i < sprites.size(); ++i)
+				// write all sprites that use the same tech and texture to the buffer
+				for (auto& iter : textureIter.second)
 				{
-					int x = (sprites[i].iCellId % texInfo.uiCellsWidth);
-					int y = (int)(sprites[i].iCellId / (float)texInfo.uiCellsWidth);
+					unsigned int x = { iter.iCellId % texInfo.uiCellsWidth };
+					unsigned int y = { iter.iCellId / texInfo.uiCellsWidth };
 
 					// tex coords
 					glm::vec2 topLeft(x / (float)(texInfo.uiCellsWidth),y / (float)(texInfo.uiCellsHeight));
 					glm::vec2 bottomRight((x+1) / (float)(texInfo.uiCellsWidth),(y+1) / (float)(texInfo.uiCellsHeight));
 
 					// filling in the vertices
-					pVert[0].pos = (sprites[i].T * glm::vec4(-0.5f,0.5f,0.0f,1.0f)).xyz();
-					pVert[0].color = sprites[i].color;
-					pVert[0].tex = topLeft * sprites[i].tiling;
+					pVert[0].pos = (iter.T * glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f)).xyz();
+					pVert[0].color = iter.color;
+					pVert[0].tex = topLeft * iter.tiling;
 					
-					pVert[1].pos = (sprites[i].T * glm::vec4(-0.5f,-0.5f,0.0,1.0f)).xyz();
-					pVert[1].color = sprites[i].color;
-					pVert[1].tex = glm::vec2(topLeft.x,bottomRight.y) * sprites[i].tiling;
+					pVert[1].pos = (iter.T * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f)).xyz();
+					pVert[1].color = iter.color;
+					pVert[1].tex = glm::vec2(topLeft.x, bottomRight.y) * iter.tiling;
 					
-					pVert[2].pos = (sprites[i].T * glm::vec4(0.5f,0.5f,0.0,1.0f)).xyz();
-					pVert[2].color = sprites[i].color;
-					pVert[2].tex = glm::vec2(bottomRight.x,topLeft.y) * sprites[i].tiling;
+					pVert[2].pos = (iter.T * glm::vec4(0.5f, 0.5f, 0.0, 1.0f)).xyz();
+					pVert[2].color = iter.color;
+					pVert[2].tex = glm::vec2(bottomRight.x, topLeft.y) * iter.tiling;
 
-					pVert[3].pos = (sprites[i].T * glm::vec4(0.5f,-0.5f,0.0,1.0f)).xyz();
-					pVert[3].color = sprites[i].color;
-					pVert[3].tex = bottomRight * sprites[i].tiling;
+					pVert[3].pos = (iter.T * glm::vec4(0.5f, -0.5f, 0.0, 1.0f)).xyz();
+					pVert[3].color = iter.color;
+					pVert[3].tex = bottomRight * iter.tiling;
 
 					pVert += 4;
 				}
