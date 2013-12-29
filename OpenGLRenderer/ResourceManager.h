@@ -127,8 +127,8 @@ struct CharDescriptor
 
 	unsigned short x, y;
 	unsigned short Width, Height;
-	unsigned short XOffset, YOffset;
-	unsigned short XAdvance;
+	short XOffset, YOffset;
+	short XAdvance;
 	unsigned short Page;
 };
 
