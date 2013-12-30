@@ -6,14 +6,6 @@
 #include "ResourceManager.h"
 #include "VertexBuffer.h"
 
-struct LineSubset
-{
-	LineSubset(unsigned int length, float width) : uiLength(length), fWidth(width) {}
-
-	unsigned int uiLength;
-	float fWidth;
-};
-
 class LineEngine
 {
 public:
@@ -33,9 +25,6 @@ private:
 	Camera* m_pCamera;
 
 	unsigned int m_iCurrentLength;
-
-	float m_lineSizeMin;
-	float m_lineSizeMax;
 };
 
 #endif // _LINEENGINE_
