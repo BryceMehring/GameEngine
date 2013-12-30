@@ -37,7 +37,7 @@ public:
 
 	Grid();
 
-	virtual int Update(IKMInput&);
+	virtual int Update(IInput&);
 
 	virtual void Render(IRenderer&) const;
 

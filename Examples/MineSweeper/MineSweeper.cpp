@@ -26,7 +26,7 @@ Grid::Grid() : m_uiMineCount(0), m_uiMarkedCount(0), m_uiMarkedCorrectlyCount(0)
 {
 }
 
-int Grid::Update(IKMInput& input)
+int Grid::Update(IInput& input)
 {
 	bool bMouse1 = input.MouseClick(0);
 	bool bMouse2 = !bMouse1 && input.MouseClick(1);
@@ -260,7 +260,7 @@ void MineSweeper::Init(Game& game)
 
 	renderer.SetRenderSpace(RenderSpace::Screen);
 
-	IKMInput& input = game.GetInput();
+	IInput& input = game.GetInput();
 
 	input.SetCursorSensitivity(1.5f);
 	input.SetCursorPos(glm::vec2(width / 2, height / 2));
@@ -281,7 +281,7 @@ void MineSweeper::Reset()
 
 void MineSweeper::Update(Game& game)
 {
-	IKMInput& input = game.GetInput();
+	IInput& input = game.GetInput();
 
 	m_fTime += game.GetDt();
 
@@ -340,7 +340,7 @@ void MineSweeper::CreatePlayingMenu(Game& game)
 	const char* pResetButtonText = "Reset";
 
 	Math::FRECT resetRect;
-	game.GetRenderer().GetStringRec(pResetButtonText,glm::vec2(6.0f),resetRect);
+	game.GetRenderer().GetStringRec(pResetButtonText,1.0f,FontAlignment::Left,resetRect);
 
 	resetRect.SetCenter(glm::vec2(80.0f,92.0f));
 
@@ -359,7 +359,7 @@ void MineSweeper::CreateMainMenu(Game& game)
 	const char* pResetButtonText = "Play Again";
 
 	Math::FRECT resetRect;
-	game.GetRenderer().GetStringRec(pResetButtonText,glm::vec2(10.0f),resetRect);
+	game.GetRenderer().GetStringRec(pResetButtonText,1.0f,FontAlignment::Left,resetRect);
 
 	resetRect.SetCenter(glm::vec2(0.0f,20.0f));
 
