@@ -10,7 +10,10 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 
 	std::ifstream stream;
 	stream.open((folder + '/' + file).c_str());
-	assert(stream.is_open());
+
+	// If the resource file does not exist, quit silently
+	if (!stream.is_open())
+		return;
 
 	std::string line;
 	while(std::getline(stream,line))

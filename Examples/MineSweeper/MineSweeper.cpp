@@ -1,4 +1,3 @@
-#define PLUGIN_EXPORTS
 #include "MineSweeper.h"
 #include "Timer.h"
 #include "Game.h"
