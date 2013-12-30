@@ -6,6 +6,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <glm/gtx/fast_square_root.hpp>
 
 using namespace std;
 
@@ -60,9 +62,11 @@ void Input::MouseScrollCallback(GLFWwindow*, double, double yOffset)
 }
 
 // Input ctor
-Input::Input() : m_fMouseSensistivity(100.0f), m_tpos(0.0f,0.0f)
+Input::Input() : m_fMouseSensistivity(100.0f), m_tpos(0.0f, 0.0f), m_iJoystickAxes(0), m_pJoystickAxes(nullptr)
 {
 	s_pThis = this;
+
+	m_fJoyDeadZone[0] = m_fJoyDeadZone[1] = 0.4f;
 
 	Reset();
 
@@ -158,20 +162,8 @@ void Input::Poll()
 {
 	Reset();
 
-	/*if(glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE)
-	{
-		int count;
-		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&count);
-		if(axes[0] > 0.2f && fabsf(axes[1]) < 0.5f)
-		{
-			m_bJoyRight = true;
-		}
-		else
-		{
-			m_bJoyRight = false;
-		}
+	UpdateJoystick();
 
-	}*/
 	glfwPollEvents();
 }
 
@@ -188,6 +180,22 @@ void Input::UpdateMouse(double x, double y)
 
 	CenterMouse();
 }
+
+void Input::UpdateJoystick()
+{
+	if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE)
+	{
+		m_pJoystickAxes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &m_iJoystickAxes);
+	}
+	else
+	{
+		for (auto& iter : m_fJoyDeadZone)
+		{
+			iter = 0.4f;
+		}
+	}
+}
+
 const glm::vec2& Input::GetCursorPos() const
 {
 	return m_tpos;
@@ -299,15 +307,64 @@ void Input::SetCursorSensitivity(float s)
 	m_fMouseSensistivity = s;
 }
 
+bool Input::IsValidJoystickConnected() const
+{
+	return (m_pJoystickAxes != nullptr) && (m_iJoystickAxes >= 5);
+}
+
+std::string Input::GetJoystickName() const
+{
+	const char* name = glfwGetJoystickName(GLFW_JOYSTICK_1);
+
+	return ((name != nullptr) ? std::string(name) : std::string());
+}
+
+void Input::SetJoystickAxesDeadZone(JoystickAxes i, float deadZone)
+{
+	m_fJoyDeadZone[(int)i] = deadZone;
+}
+
+glm::vec2 Input::GetJoystickAxes(JoystickAxes i) const
+{
+	glm::vec2 axes;
+
+	if (IsValidJoystickConnected())
+	{
+		switch (i)
+		{
+		case JoystickAxes::LS:
+			axes = glm::vec2(m_pJoystickAxes[0], m_pJoystickAxes[1]);
+			break;
+		case JoystickAxes::RS:
+			axes = glm::vec2(m_pJoystickAxes[3], m_pJoystickAxes[4]);
+			break;
+		case JoystickAxes::LT:
+		case JoystickAxes::RT:
+			axes = glm::vec2(0.0f, m_pJoystickAxes[2]);
+			break;
+		default:
+			break;
+		}
+
+		float length = glm::fastLength(axes);
+		if (length <= m_fJoyDeadZone[(int)i])
+		{
+			axes = glm::vec2();
+		}
+	}
+
+	return axes;
+}
+
 void Input::RegisterScript(asIScriptEngine* pAS)
 {
 	pAS->BeginConfigGroup("Input");
 
-	(pAS->RegisterObjectType("IKMInput",0,asOBJ_REF | asOBJ_NOHANDLE));
-	(pAS->RegisterObjectMethod("IKMInput","int mouseX()",asMETHOD(Input,MouseX),asCALL_THISCALL));
-	(pAS->RegisterObjectMethod("IKMInput","int mouseY()",asMETHOD(Input,MouseY),asCALL_THISCALL));
-	(pAS->RegisterObjectMethod("IKMInput","int mouseZ()",asMETHOD(Input,MouseZ),asCALL_THISCALL));
-	(pAS->RegisterGlobalProperty("IKMInput input",this));
+	(pAS->RegisterObjectType("IInput",0,asOBJ_REF | asOBJ_NOHANDLE));
+	(pAS->RegisterObjectMethod("IInput","int mouseX()",asMETHOD(Input,MouseX),asCALL_THISCALL));
+	(pAS->RegisterObjectMethod("IInput","int mouseY()",asMETHOD(Input,MouseY),asCALL_THISCALL));
+	(pAS->RegisterObjectMethod("IInput","int mouseZ()",asMETHOD(Input,MouseZ),asCALL_THISCALL));
+	(pAS->RegisterGlobalProperty("IInput input",this));
 
 	pAS->EndConfigGroup();
 }

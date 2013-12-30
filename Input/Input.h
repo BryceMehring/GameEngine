@@ -6,15 +6,12 @@
 
 // This is the GLFW Input Plug-in class
 // All that's needed is too implement the functions provided in the abstract interface
-#include "IKMInput.h"
+#include "IInput.h"
 #include "PluginManager.h"
 #include <unordered_map>
+#include <array>
 
-#ifdef __GNUC__
-using namespace __gnu_cxx;
-#endif
-
-class Input : public IKMInput
+class Input : public IInput
 {
 public:
 
@@ -28,38 +25,89 @@ public:
 	static void MouseScrollCallback(GLFWwindow*,double,double);
 
 	// IPlugin
+
 	virtual DLLType GetPluginType() const;
-	virtual const char* GetName() const { return "DirectInput"; }
+	virtual const char* GetName() const { return "Input"; }
 	virtual int GetVersion() const;
-
-	// IKMInput
-
-	virtual void Poll();
-
-	virtual bool LoadKeyBindFile(const std::string& file);
-
-	// Keyboard
-	virtual bool KeyPress(int Key, bool once = true);
-	virtual bool KeyRelease(int Key, bool once = true);
-	virtual bool CharKeyDown(char&) const;
-
-	// Mouse
-	virtual const glm::vec2& GetCursorPos() const;
-	virtual void SetCursorPos(glm::vec2 pos);
-
-	virtual bool MouseClick(int Button, bool once) const;
-	virtual bool MouseRelease(int Button, bool once) const;
-
-	virtual int MouseX() const;
-	virtual int MouseY() const;
-	virtual double MouseZ() const;
-
-	virtual bool GetSelectedRect(Math::AABB& out);
-
-	virtual void SetCursorSensitivity(float);
 
 	virtual void Init(class asIScriptEngine*);
 	virtual void Destroy(class asIScriptEngine*);
+
+	// IInput
+
+	virtual void Poll();
+
+	// ----- Keyboard -----
+
+	/*
+	Loads a Keybind file
+	format:
+	bind NEW_KEY OLD_KEY
+	*/
+	virtual bool LoadKeyBindFile(const std::string& file);
+
+	//note about the once parameter:
+	//true: only process the event once,
+	//false: returns true the entire period of the event
+
+	// returns true if Key is pressed
+	virtual bool KeyPress(int Key, bool once = true);
+
+	// returns true if Key is released
+	virtual bool KeyRelease(int Key, bool once = true);
+
+	// returns true if there is a character pressed, which is outputted through the parameter out
+	// note: this method should only be used for text input
+	virtual bool CharKeyDown(char& out) const;
+
+	// ----- Cursor -----
+
+	// returns true if the mouse is clicked
+	virtual bool MouseClick(int Button, bool once = true) const;
+
+	// returns true if the mouse is released
+	virtual bool MouseRelease(int Button, bool once = true) const;
+
+	//gets cursor position in world space
+	// +x axis --> right
+	// -x axis --> left
+	// +y axis --> up
+	// -y axis --> down
+	virtual const glm::vec2& GetCursorPos() const;
+
+	virtual void SetCursorPos(glm::vec2 pos);
+
+	// horizontal acceleration
+	virtual int MouseX() const;
+
+	// vertical acceleration
+	virtual int MouseY() const;
+
+	// scroll change
+	virtual double MouseZ() const;
+
+	// returns true if user clicks, out is the current selection box
+	virtual bool GetSelectedRect(Math::AABB& out);
+
+	// Cursor Sensitivity, (0,FLT_MAX]
+	virtual void SetCursorSensitivity(float);
+
+	// ----- Joysticks -----
+
+	// Returns true if a joystick is connected, false otherwise
+	virtual bool IsValidJoystickConnected() const;
+
+	// Returns the name of the connected joystick
+	// Note: If a joystick is not connected, an empty string is returned
+	virtual std::string GetJoystickName() const;
+
+	// Sets the dead zone for the specified joystick axes
+	// Dead zones are an area around the center of the joystick in which the axes will be zeroed
+	virtual void SetJoystickAxesDeadZone(JoystickAxes i, float deadZone);
+
+	// Get the current value of the joystick axes
+	// Note: If a joystick is not connected, a zeroed vec2 is returned
+	virtual glm::vec2 GetJoystickAxes(JoystickAxes i) const;
 
 private:
 
@@ -73,8 +121,6 @@ private:
 
 	unsigned int m_iCharKeyDown;
 
-	//bool m_bJoyRight;
-
 	// Mouse
 	int m_iMouseX;
 	int m_iMouseY;
@@ -87,11 +133,22 @@ private:
 	glm::vec2 m_tpos;
 	glm::vec2 m_selectedPos;
 
+	// Joysticks
+	std::array<float, (int)JoystickAxes::UNUSED> m_fJoyDeadZone;
+
+	// The number of joystick axes
+	int m_iJoystickAxes;
+
+	// points to all of the joystick axes on joystick 1
+	// glfw allocated pointer, do not delete
+	const float* m_pJoystickAxes;
+
 	// helper methods
 	void Reset();
 	bool CheckKey(int Key, bool once, int flag);
 	void CenterMouse();
 	void UpdateMouse(double x, double y);
+	void UpdateJoystick();
 	void RegisterScript(class asIScriptEngine*);
 };
 
