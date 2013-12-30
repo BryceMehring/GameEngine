@@ -48,7 +48,7 @@ void Menu::AddElement(IElement* pElement)
 	}
 }
 
-void Menu::Update(GUI* pGUI, ::IKMInput& input, double dt)
+void Menu::Update(GUI* pGUI, ::IInput& input, double dt)
 {
 	if(input.KeyPress(32))
 	{

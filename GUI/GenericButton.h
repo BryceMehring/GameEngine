@@ -3,7 +3,7 @@
 
 #include "ButtonBase.h"
 #include "Delegates.h"
-#include "IKMInput.h"
+#include "IInput.h"
 
 namespace UI
 {
@@ -33,7 +33,7 @@ public:
 	{
 		m_callback.Call(m_type);
 	}
-	virtual void Update(::IKMInput& input, double)
+	virtual void Update(::IInput& input, double)
 	{
 		ButtonBase::Update(input);
 
@@ -81,7 +81,7 @@ public:
 	{
 		m_callback.Call(m_type);
 	}
-	virtual void Update(::IKMInput& input, double)
+	virtual void Update(::IInput& input, double)
 	{
 		ButtonBase::Update(input);
 
@@ -125,7 +125,7 @@ public:
 	{
 		m_callback.Call();
 	}
-	virtual void Update(::IKMInput& input, double)
+	virtual void Update(::IInput& input, double)
 	{
 		ButtonBase::Update(input);
 

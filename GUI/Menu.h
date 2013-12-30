@@ -4,7 +4,7 @@
 #include "RefCounting.h"
 #include "GenericButton.h"
 #include "IRenderer.h"
-#include "IKMInput.h"
+#include "IInput.h"
 
 namespace UI
 {
@@ -16,7 +16,7 @@ public:
 
 	Menu();
 
-	virtual void Update(class GUI* pGUI, ::IKMInput& input, double dt);
+	virtual void Update(class GUI* pGUI, ::IInput& input, double dt);
 	virtual void Render(IRenderer& renderer);
 
 	void SetMenuTitle(const std::string& str,const glm::vec2& pos);

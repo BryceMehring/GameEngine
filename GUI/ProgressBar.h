@@ -2,7 +2,7 @@
 #define _PROGRESSBAR_
 
 #include "IElement.h"
-#include "IKMInput.h"
+#include "IInput.h"
 #include "IRenderer.h"
 #include "Delegates.h"
 #include <glm/glm.hpp>
@@ -28,7 +28,7 @@ public:
 	virtual void Deselect();
 	virtual void Trigger();
 
-	virtual void Update(IKMInput&, double dt);
+	virtual void Update(IInput&, double dt);
 	virtual void Render(IRenderer&);
 
 	// sets the current progress of the bar, value must be between 0 and 1, if not, the value is clamped into this range

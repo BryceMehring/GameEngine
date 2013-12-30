@@ -18,7 +18,7 @@ void ProgressBar::Trigger()
 {
 }
 
-void ProgressBar::Update(class IKMInput&, double dt)
+void ProgressBar::Update(class IInput&, double dt)
 {
 	if(abs(m_end.x - m_pos.x) < 0.01f || abs(m_start.x - m_pos.x) < 0.01f)
 	{

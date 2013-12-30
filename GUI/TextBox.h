@@ -2,7 +2,7 @@
 #define _TEXTBOX_
 
 #include "IElement.h"
-#include "IKMInput.h"
+#include "IInput.h"
 #include "IRenderer.h"
 
 namespace UI
@@ -19,7 +19,7 @@ public:
 	// Enters a new line
 	void Write(const std::string& line = "", const glm::vec3& color = glm::vec3(0.0f), bool bContinue = false);
 	
-	virtual void Update(IKMInput&, double dt);
+	virtual void Update(IInput&, double dt);
 	virtual void Render(IRenderer&);
 	
 	virtual void CLS();
@@ -58,10 +58,10 @@ protected:
 private:
 
 	// todo: passing around these interfaces seems redundant
-	void UpdateScrolling(class IKMInput&, double dt);
-	void UpdateCarrot(class IKMInput&);
-	void UpdateInput(class IKMInput&);
-	void UpdateTextInput(class IKMInput&);
+	void UpdateScrolling(class IInput&, double dt);
+	void UpdateCarrot(class IInput&);
+	void UpdateInput(class IInput&);
+	void UpdateTextInput(class IInput&);
 
 };
 

@@ -2,7 +2,7 @@
 #define _SLIDER_
 
 #include "IElement.h"
-#include "IKMInput.h"
+#include "IInput.h"
 #include "IRenderer.h"
 #include "Delegates.h"
 #include <string>
@@ -34,7 +34,7 @@ public:
 	virtual void Deselect();
 	virtual void Trigger();
 
-	virtual void Update(class IKMInput&, double dt);
+	virtual void Update(class IInput&, double dt);
 	virtual void Render(class IRenderer&);
 
 	// returns the current value of the slider

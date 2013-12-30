@@ -2,7 +2,7 @@
 #define CHECKBOX_H
 
 #include "IElement.h"
-#include "IKMInput.h"
+#include "IInput.h"
 #include "IRenderer.h"
 #include "Delegates.h"
 #include <glm/glm.hpp>
@@ -20,7 +20,7 @@ public:
 	virtual void Deselect();
 	virtual void Trigger();
 
-	virtual void Update(IKMInput&, double dt);
+	virtual void Update(IInput&, double dt);
 	virtual void Render(IRenderer&);
 
 };*/

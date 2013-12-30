@@ -20,7 +20,7 @@ GUI::ChangeMenuCallback GUI::CreateCallback()
 	return ChangeMenuCallback(this,&GUI::SetMenu);
 }
 
-void GUI::Update(::IKMInput& input, double dt)
+void GUI::Update(::IInput& input, double dt)
 {
 	if(m_pMenu != nullptr)
 	{

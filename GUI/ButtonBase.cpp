@@ -1,6 +1,6 @@
 #include "ButtonBase.h"
 #include "IRenderer.h"
-#include "IKMInput.h"
+#include "IInput.h"
 
 #include <glm/gtx/transform.hpp>
 
@@ -13,7 +13,7 @@ ButtonBase::ButtonBase(const Math::FRECT& s, const glm::vec3& defaultColor,
 					   m_sprite(s), m_defaultColor(defaultColor), m_hoverColor(hoverColor), m_scale(scale),
 					   m_text(str),  m_bMouseHover(false), m_bSelected(false) {}
 
-void ButtonBase::Update(::IKMInput& input)
+void ButtonBase::Update(::IInput& input)
 {
 	// todo: I could optimize this by checking first if the mouse is moving
 	// then move on to check if the mouse is colliding with the button

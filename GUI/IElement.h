@@ -2,7 +2,7 @@
 #define _IUIELEMENT_
 
 #include "RefCounting.h"
-#include "IKMInput.h"
+#include "IInput.h"
 #include "IRender.h"
 
 namespace UI
@@ -16,7 +16,7 @@ public:
 	virtual void Deselect() = 0;
 	virtual void Trigger() = 0;
 
-	virtual void Update(IKMInput&, double dt) = 0;
+	virtual void Update(IInput&, double dt) = 0;
 
 protected:
 

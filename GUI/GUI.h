@@ -3,7 +3,7 @@
 
 #include "Delegates.h"
 #include "Menu.h"
-#include "IKMInput.h"
+#include "IInput.h"
 #include "IRenderer.h"
 
 namespace UI
@@ -31,7 +31,7 @@ public:
 	void SetIndex(unsigned int i);
 	unsigned int GetIndex() const;
 
-	void Update(::IKMInput& input, double dt);
+	void Update(::IInput& input, double dt);
 	void Render(::IRenderer& renderer);
 
 private:

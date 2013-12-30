@@ -34,7 +34,7 @@ void Slider::Trigger()
 	m_callback.Call(m_fPercentage);
 }
 
-void Slider::Update(IKMInput& input, double dt)
+void Slider::Update(IInput& input, double dt)
 {
 	if(input.MouseClick(0))
 	{

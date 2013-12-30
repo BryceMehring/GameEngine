@@ -2,7 +2,7 @@
 #define _BUTTONBASE_
 
 #include "IElement.h"
-#include "IKMInput.h"
+#include "IInput.h"
 #include "IRenderer.h"
 #include "VecMath.h"
 #include <glm/glm.hpp>
@@ -18,7 +18,7 @@ public:
 	ButtonBase(const Math::FRECT& s, const glm::vec3& defaultColor,
 			   const glm::vec3& hoverColor, float scale, const std::string& str);
 
-	virtual void Update(::IKMInput&);
+	virtual void Update(::IInput&);
 	virtual void Render(::IRenderer&);
 
 	virtual void Select();

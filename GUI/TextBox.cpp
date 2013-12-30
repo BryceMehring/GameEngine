@@ -32,7 +32,7 @@ void TextBox::SaveToFile(const std::string& file) const
 
 void TextBox::Write(const string& line, const glm::vec3& color, bool c)
 {
-	m_text.push_back(LineData(line,color,c));
+	m_text.emplace_back(line,color,c);
 }
 
 void TextBox::Backspace()
@@ -45,7 +45,7 @@ void TextBox::Backspace()
 	if(size > 0)
 	{
 		// remove last character
-		text.resize(size - 1);
+		text.pop_back();
 	}
 	// If there is no text to remove, try to pop the line in the vector
 	else if(m_text.size() > 1)
@@ -61,7 +61,7 @@ void TextBox::AddKey(char Key)
 	text += Key;
 }
 
-void TextBox::Update(IKMInput& input, double dt)
+void TextBox::Update(IInput& input, double dt)
 {
 	if(input.KeyPress(259))
 	{
@@ -98,7 +98,7 @@ void TextBox::Render(IRenderer& renderer)
 	}
 }
 
-void TextBox::UpdateScrolling(IKMInput& input, double dt)
+void TextBox::UpdateScrolling(IInput& input, double dt)
 {
 	if(input.MouseClick(0,false))
 	{
