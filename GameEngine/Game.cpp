@@ -59,14 +59,14 @@ void Game::LoadPlugins()
 	assert(pPlugin != nullptr);
 	assert(pPlugin->GetPluginType() == DLLType::Input); // check to make sure the input is actually the input plugin
 
-	m_pInput = static_cast<IKMInput*>(pPlugin);
+	m_pInput = static_cast<IInput*>(pPlugin);
 }
 
 IRenderer& Game::GetRenderer()
 {
 	return *m_pRenderer;
 }
-IKMInput& Game::GetInput()
+IInput& Game::GetInput()
 {
 	return *m_pInput;
 }

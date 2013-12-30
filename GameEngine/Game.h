@@ -6,7 +6,7 @@
 #include "PluginManager.h"
 #include "GameStateMachine.h"
 #include "GLFWInit.h"
-#include "interfaces/IKMInput.h"
+#include "interfaces/IInput.h"
 #include "interfaces/IRenderer.h"
 #include "asVM.h"
 #include <string>
@@ -47,7 +47,7 @@ public:
 	// Get Functions
 	// todo: provide const overloaded versions?
 	GAME_ENGINE_API IRenderer& GetRenderer();
-	GAME_ENGINE_API IKMInput& GetInput();
+	GAME_ENGINE_API IInput& GetInput();
 	GAME_ENGINE_API PluginManager& GetPM();
 	GAME_ENGINE_API asVM& GetAs();
 
@@ -70,7 +70,7 @@ private:
 
 	// Component Interfaces
 	IRenderer* m_pRenderer;
-	IKMInput* m_pInput;
+	IInput* m_pInput;
 
 	std::string m_NextState;
 
