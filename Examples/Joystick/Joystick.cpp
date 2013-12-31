@@ -39,10 +39,14 @@ void Joystick::Update(Game& game)
 	IInput& input = game.GetInput();
 
 	// Update the position of the line with the controller
+	m_posLS += glm::vec2(200, -200) * input.GetJoystickAxes(JoystickAxes::LS) * (float)game.GetDt();
+	m_posRS += glm::vec2(200, -200) * input.GetJoystickAxes(JoystickAxes::RS) * (float)game.GetDt();
 
-	glm::vec2 LS = input.GetJoystickAxes(JoystickAxes::LS);
-	m_posLS += glm::vec2(100, -100) * input.GetJoystickAxes(JoystickAxes::LS) * glm::vec2(game.GetDt());
-	m_posRS += glm::vec2(100, -100) * input.GetJoystickAxes(JoystickAxes::RS) * glm::vec2(game.GetDt());
+	// Update the camera
+	float trigger = input.GetJoystickAxes(JoystickAxes::LT).y;
+
+	m_camera.LookAt(glm::vec3(0.0f, 0.0f, trigger * 50 + 100), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	m_camera.Update();
 }
 
 void Joystick::Draw(Game& game)
@@ -50,7 +54,7 @@ void Joystick::Draw(Game& game)
 	IInput& input = game.GetInput();
 	IRenderer& renderer = game.GetRenderer();
 
-	// Line vertices 
+	// Line vertices
 	glm::vec3 line[] =
 	{
 		glm::vec3(m_posLS.x, m_posLS.y, 0),
