@@ -45,6 +45,11 @@ void Game::SetNextState(const std::string& state)
 	}
 }
 
+void Game::Quit() const
+{
+	glfwSetWindowShouldClose(glfwGetCurrentContext(), GL_TRUE);
+}
+
 void Game::LoadPlugins()
 {
 	m_plugins.FreeAllPlugins();
@@ -85,12 +90,16 @@ double Game::GetDt() const
 
 int Game::Run()
 {
+	double fOldTime = 0.0;
 	Timer theTimer;
+	theTimer.Start();
 
 	// Loop while the use has not quit
-	while(!m_pInput->KeyPress(GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(glfwGetCurrentContext()))
+	while(!glfwWindowShouldClose(glfwGetCurrentContext()))
 	{
-		theTimer.Start();
+		double t = theTimer.GetTime();
+		m_fDT = t - fOldTime;
+		fOldTime = t;
 
 		m_pInput->Poll();
 
@@ -99,8 +108,6 @@ int Game::Run()
 
 		// Render the game
 		Draw();
-
-		m_fDT = theTimer.GetTime();
 	}
 
 	return 0;
@@ -118,6 +125,11 @@ void Game::Update()
 
 		// Reset next state
 		m_NextState.clear();
+	}
+
+	if (m_pInput->KeyPress(GLFW_KEY_ESCAPE))
+	{
+		Quit();
 	}
 
 	if(m_pInput->KeyPress(GLFW_KEY_F5))

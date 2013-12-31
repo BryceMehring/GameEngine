@@ -37,8 +37,11 @@ public:
 	// Get the current state
 	GAME_ENGINE_API std::string GetCurrentStateName() const;
 
-	// change the current state
+	// Change the current state
 	GAME_ENGINE_API void SetNextState(const std::string& state);
+
+	// Quit the game during the beginning of the next frame
+	GAME_ENGINE_API void Quit() const;
 
 	// Reload component plugins
 	// todo: should add a feature that allows the user to select which plugin is loaded
@@ -81,7 +84,7 @@ private:
 	// play the game set by SetNextState
 	// this method should only be called once in the GameLauncher
 	GAME_ENGINE_API int Run();
-	friend int main(int n, char**); // give access to run only in the main function
+	friend int main(int n, char**);
 
 	void Update();
 	void UpdateFPS();
