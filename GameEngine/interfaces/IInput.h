@@ -11,7 +11,6 @@ enum class JoystickAxes
 	RS,
 	LT,
 	RT,
-	UNUSED
 };
 
 // Input Plugin

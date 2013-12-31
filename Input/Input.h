@@ -27,7 +27,7 @@ public:
 	// IPlugin
 
 	virtual DLLType GetPluginType() const;
-	virtual const char* GetName() const { return "Input"; }
+	virtual const char* GetName() const;
 	virtual int GetVersion() const;
 
 	virtual void Init(class asIScriptEngine*);
@@ -83,7 +83,7 @@ public:
 	// vertical acceleration
 	virtual int MouseY() const;
 
-	// scroll change
+	// scroll acceleration
 	virtual double MouseZ() const;
 
 	// returns true if user clicks, out is the current selection box
@@ -126,7 +126,7 @@ private:
 	int m_iMouseY;
 	double m_fYScrollOffset;
 
-	int m_MouseClickOnce[2];
+	std::array<int, 2> m_MouseClickOnce;
 
 	float m_fMouseSensistivity;
 
@@ -134,12 +134,12 @@ private:
 	glm::vec2 m_selectedPos;
 
 	// Joysticks
-	std::array<float, (int)JoystickAxes::UNUSED> m_fJoyDeadZone;
+	std::array<float, 2> m_fJoyDeadZone;
 
 	// The number of joystick axes
 	int m_iJoystickAxes;
 
-	// points to all of the joystick axes on joystick 1
+	// Points to all of the joystick axes on joystick 1
 	// glfw allocated pointer, do not delete
 	const float* m_pJoystickAxes;
 
