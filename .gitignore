@@ -50,6 +50,7 @@ install_manifest.txt
 *.vspx
 *.exp
 *.ilk
+*.psess
 
 # Packages #
 ############
