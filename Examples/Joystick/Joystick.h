@@ -2,10 +2,13 @@
 #define _JOYSTICK_
 
 #include "IGameState.h"
+#include "../common/Camera.h"
 
 class Joystick : public IGameState
 {
 public:
+
+	Joystick();
 
 	// IPlugin
 
@@ -34,6 +37,12 @@ public:
 
 	// Called every frame to render the game
 	virtual void Draw(class Game& game);
+
+private:
+
+	Camera m_camera;
+	glm::vec2 m_posLS;
+	glm::vec2 m_posRS;
 };
 
 #endif // _JOYSTICK_
