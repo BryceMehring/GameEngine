@@ -5,44 +5,44 @@
 #include <glm/glm.hpp>
 
 // Manages the matrices need to create a camera
+// Note: In order to use this class, a view matrix must be set by lookAt() along with
+// either a perspective or orthogonal matrix via setLens()
+// update() must be called last in order to combine the matrices together
 class Camera
 {
 public:
 
 	COMMON_API Camera();
 
-	COMMON_API const glm::mat4& view() const; // returns the view matrix
-	COMMON_API const glm::mat4& proj() const; // // returns the projection matrix
-	COMMON_API const glm::mat4& viewProj() const; // returns the viewProj matrix (proj * view)
+	// Returns the view matrix
+	COMMON_API const glm::mat4& View() const; 
 
-	COMMON_API const glm::mat4& look() const; // returns the view matrix
+	// Returns the projection matrix
+	COMMON_API const glm::mat4& Proj() const; 
 
-	COMMON_API float GetWidth() const; // Width of the 2D field view
-	COMMON_API float GetHeight() const; // Height of the 2D field view
+	// Returns the viewProj matrix (proj * view)
+	COMMON_API const glm::mat4& ViewProj() const; 
 
-	COMMON_API glm::vec3& pos(); // Position of the camera
-
+	// Returns true if the area is visible in the specified area by min and max
 	COMMON_API bool IsVisible(const glm::vec3& min, const glm::vec3& max) const;
 
-	// creates the view matrix
-	// pos = pos of camera
+	// Creates the view matrix
+	// pos = position of camera
 	// target = where the camera should look
 	// up = which direction is up
-	COMMON_API void lookAt(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up);
+	COMMON_API void LookAt(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up);
 
-	// Creates a 2D ortho matrix
-	// w = width of the 2D field
-	// h = height of the 2D field
+	// Creates a perspective or orthogonal matrix
+	// fov = field of view
+	// w = width of the space
+	// h = height of the space
 	// nearZ = near clip plane
 	// farZ = far clip plane
-	COMMON_API void setLens(float w, float h, float nearZ, float farZ);
-	COMMON_API void setLens(float fov, float w, float h, float nearZ, float farZ);
+	COMMON_API void SetLens(float w, float h, float nearZ, float farZ);
+	COMMON_API void SetLens(float fov, float w, float h, float nearZ, float farZ);
 
-	COMMON_API void update();
-
-private:
-
-	void buildView();
+	// Builds the viewProj from the view matrix and the lens matrix
+	COMMON_API void Update();
 
 private:
 
@@ -50,14 +50,7 @@ private:
 	glm::mat4 m_Proj; // Projection matrix
 	glm::mat4 m_ViewProj; // Projection * View
 
-	glm::vec3 m_PosW; // World Pos
-	glm::vec3 m_UpW; // up vector
-	glm::vec3 m_LookW; // target vector
-
 	glm::vec4 m_planes[6];
-
-	float m_width; // Width of the 2D field view
-	float m_height; // Height of the 2D field view
 
 	void BuildFrustumPlanes();
 

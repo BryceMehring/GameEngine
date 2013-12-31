@@ -2,35 +2,21 @@
 #include "Camera.h"
 #include "glm/gtx/transform.hpp"
 
-Camera::Camera() : m_View(1.0f), m_Proj(1.0f), m_ViewProj(1.0f), m_PosW(0.0f), m_UpW(0.0f), m_LookW(0.0f), m_width(0.0f), m_height(0.0f)
+Camera::Camera() : m_View(1.0f), m_Proj(1.0f), m_ViewProj(1.0f)
 {
 }
 
-float Camera::GetWidth() const
-{
-	return m_width;
-}
-float Camera::GetHeight() const
-{
-	return m_height;
-}
-
-const glm::mat4& Camera::view() const
+const glm::mat4& Camera::View() const
 {
 	return m_View;
 }
-const glm::mat4& Camera::proj() const
+const glm::mat4& Camera::Proj() const
 {
 	return m_Proj;
 }
-const glm::mat4& Camera::viewProj() const
+const glm::mat4& Camera::ViewProj() const
 {
 	return m_ViewProj;
-}
-
-glm::vec3& Camera::pos()
-{
-	return m_PosW;
 }
 
 bool Camera::IsVisible(const glm::vec3& min, const glm::vec3& max) const
@@ -62,30 +48,22 @@ bool Camera::IsVisible(const glm::vec3& min, const glm::vec3& max) const
 	return true;
 }
 
-void Camera::lookAt(const glm::vec3& pos,const glm::vec3& target,const glm::vec3& up)
+void Camera::LookAt(const glm::vec3& pos,const glm::vec3& target,const glm::vec3& up)
 {
-	m_PosW = pos;
-	m_LookW = target;
-	m_UpW = up;
-
-	buildView();
+	m_View = glm::lookAt(pos, target, up);
 }
 
-void Camera::setLens(float w, float h, float nearZ, float farZ)
+void Camera::SetLens(float w, float h, float nearZ, float farZ)
 {
-	m_width = w;
-	m_height = h;
 	m_Proj = glm::ortho(0.0f,w,0.0f,h,nearZ,farZ); // left, right, bottom, top
 }
 
-void Camera::setLens(float fov, float w, float h, float nearZ, float farZ)
+void Camera::SetLens(float fov, float w, float h, float nearZ, float farZ)
 {
-	m_width = w;
-	m_height = h;
-	m_Proj =  glm::perspective(fov,w/h,nearZ,farZ);
+	m_Proj = glm::perspective(fov,w/h,nearZ,farZ);
 }
 
-void Camera::update()
+void Camera::Update()
 {
 	m_ViewProj = m_Proj * m_View;
 	BuildFrustumPlanes();
@@ -112,9 +90,4 @@ void Camera::BuildFrustumPlanes()
 		m_planes[i] /= length;
 	}
 
-}
-
-void Camera::buildView()
-{
-	m_View = glm::lookAt(m_PosW,m_LookW,m_UpW);
 }
