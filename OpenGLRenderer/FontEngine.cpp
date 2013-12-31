@@ -113,7 +113,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 
 	m_pVertexBuffer->Bind();
 
-	// get the vertex buffer memory to write to
+	// Get the vertex buffer memory to write to
 	VertexPCT* v = static_cast<VertexPCT*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetLength(), GL_MAP_WRITE_BIT));
 
 	unsigned int iCurrentVert = 0;
@@ -146,23 +146,23 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 
 			char prevChar = -1;
 
-			// write the entire string to the vertex buffer
+			// Write the entire string to the vertex buffer
 			while(*str && ((iCurrentVert + 4) < m_pVertexBuffer->GetLength()))
 			{
 				if (font->IsValidCharacter(*str))
 				{
 					if (!IsSpecialCharacter(*str))
 					{
-						// font info about the character to draw
+						// Font info about the character to draw
 						const CharDescriptor& charInfo = font->GetCharDescriptor(*str);
 
 						int kerningOffset = font->GetKerningPairOffset(prevChar, *str);
 
-						// calculate texture coordinates
+						// Calculate texture coordinates
 						glm::vec2 texTopLeft(charInfo.x / (float)(font->GetWidth()), charInfo.y / (float)(font->GetHeight()));
 						glm::vec2 texBottomRight(((charInfo.x + charInfo.Width) / (float)(font->GetWidth())), (charInfo.y + charInfo.Height) / (float)(font->GetHeight()));
 
-						// calculate position
+						// Calculate position
 						glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * iter.scale, posW.y - charInfo.YOffset * iter.scale, posW.z);
 						glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * iter.scale, posTopLeft.y - charInfo.Height * iter.scale, posW.z);
 
@@ -207,7 +207,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 
 void FontEngine::Render()
 {
-	// if there is nothing to draw, do nothing
+	// If there is nothing to draw, do nothing
 	if(m_textSubsets.empty())
 		return;
 
@@ -216,17 +216,17 @@ void FontEngine::Render()
 
 	m_pVertexBuffer->BindVAO();
 
-	// Enables one texture
+	// Enable one texture
 	glActiveTexture(GL_TEXTURE0);
 
-	// get the shader to use
+	// Get the shader to use
 	const TexturedShader* pShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader"));
 
-	// use the shader
+	// Use the shader
 	glUseProgram(pShader->GetID());
 
-	// set the transformation matrix
-	glUniformMatrix4fv(pShader->GetMVP(),1,false,&(m_pCamera->viewProj()[0][0]));
+	// Set the transformation matrix
+	glUniformMatrix4fv(pShader->GetMVP(),1,false,&(m_pCamera->ViewProj()[0][0]));
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -234,15 +234,15 @@ void FontEngine::Render()
 	unsigned int uiStartingIndex = 0;
 	unsigned int uiSubset = 0;
 
-	// loop over all text subsets
 	for(auto& iter : m_textSubsets)
 	{
 		const IResource* pCurrentTexture = m_pRm->GetResource(iter.first);
 
-		// Set the texture to use
+		// Set the current texture
 		glBindTexture(GL_TEXTURE_2D, pCurrentTexture->GetID());
 		glUniform1i(pShader->GetTextureSamplerID(),0);
 
+		// Render all strings that have the same texture
 		glDrawElements(GL_TRIANGLES, subsetLength[uiSubset] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
 
 		uiStartingIndex += subsetLength[uiSubset++];

@@ -130,7 +130,7 @@ void SpriteEngine::Render()
 			glUseProgram(pShader->GetID());
 
 			// set shader parameters
-			glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
+			glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->ViewProj()[0][0]);
 
 			// Render all sprites that use the same tech and texture
 			for(auto& spriteIter : techIter.second)

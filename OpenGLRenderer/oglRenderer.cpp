@@ -340,7 +340,7 @@ void oglRenderer::ConfigureOpenGL()
 	if (GLEW_ARB_debug_output)
 	{
 		glDebugMessageCallback(OpenGLErrorCallback,0);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	}
 #endif
 
@@ -466,9 +466,9 @@ void oglRenderer::BuildCamera()
 	int width, height;
 	glfwGetFramebufferSize(m_pWindow,&width, &height);
 
-	m_OrthoCamera.setLens((float)width,(float)height,0.1f,5000.0f); // 2.0f, 2.0f
-	m_OrthoCamera.lookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
-	m_OrthoCamera.update();
+	m_OrthoCamera.SetLens((float)width,(float)height,0.1f,5000.0f); // 2.0f, 2.0f
+	m_OrthoCamera.LookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_OrthoCamera.Update();
 }
 
 

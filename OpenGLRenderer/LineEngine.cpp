@@ -69,7 +69,7 @@ void LineEngine::Render()
 
 	glUseProgram(pShader->GetID());
 
-	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->viewProj()[0][0]);
+	glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->ViewProj()[0][0]);
 
 	m_pVertexBuffer->BindVAO();
 

@@ -20,9 +20,9 @@ void Joystick::Init(Game& game)
 
 	// Build the world space camera
 	renderer.GetDisplayMode(width, height);
-	m_camera.setLens(90.0f, (float)width, (float)height, 0.0f, 50.0f);
-	m_camera.lookAt(glm::vec3(0.0f,0.0f,100.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	m_camera.update();
+	m_camera.SetLens(90.0f, (float)width, (float)height, 0.0f, 50.0f);
+	m_camera.LookAt(glm::vec3(0.0f,0.0f,100.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	m_camera.Update();
 
 	// Give our camera to the renderer
 	renderer.SetCamera(&m_camera);
