@@ -105,6 +105,11 @@ public:
 	// Dead zones are an area around the center of the joystick in which the axes will be zeroed
 	virtual void SetJoystickAxesDeadZone(JoystickAxes i, float deadZone);
 
+	// Returns the axes and direction of the joystick axes being pushed via parameters
+	// The function returns true when any axes is pressed, else false is returned
+	// todo: replace the ints with something more meaningful
+	virtual bool GetMovingJoystickAxes(int& axes, int& dir) const;
+
 	// Get the current value of the joystick axes
 	// Note: If a joystick is not connected, a zeroed vec2 is returned
 	virtual glm::vec2 GetJoystickAxes(JoystickAxes i) const;

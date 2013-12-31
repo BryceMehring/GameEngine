@@ -8,6 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include <glm/gtx/fast_square_root.hpp>
+#include <glm/gtc/constants.hpp>
 
 using namespace std;
 
@@ -246,6 +247,46 @@ void Input::SetJoystickAxesDeadZone(JoystickAxes i, float deadZone)
 	m_fJoyDeadZone[(int)i] = deadZone;
 }
 
+bool Input::GetMovingJoystickAxes(int& outAxes, int& outDir) const
+{
+	bool success = false;
+
+	for (unsigned int i = 0; i < 2 && !success; ++i)
+	{
+		glm::vec2 axes = GetJoystickAxes((JoystickAxes)i);
+
+		// If the axes is being pushed
+		if (axes.x > 0.0f || axes.x < 0.0f || axes.y > 0.0f || axes.y < 0.0f)
+		{
+			// Get the angle of the direction in degrees
+			float angle = atan2(-axes.y, axes.x) * 180.0f / glm::pi<float>();
+
+			if (angle < 135.0f && angle > 45.0f)
+			{
+				outDir = 0; // Up
+			}
+			else if (angle > -135.0f && angle < -45.0f)
+			{
+				outDir = 1; // Down
+			}
+			else if (angle > 135.0f || angle < -135.0f)
+			{
+				outDir = 2; // Left
+			}
+			else
+			{
+				outDir = 3; // Right
+			}
+
+			outAxes = i;
+			
+			success = true;
+		}
+	}
+
+	return success;
+}
+
 glm::vec2 Input::GetJoystickAxes(JoystickAxes i) const
 {
 	glm::vec2 axes;
@@ -260,7 +301,7 @@ glm::vec2 Input::GetJoystickAxes(JoystickAxes i) const
 			}
 			else
 			{
-				axes = glm::vec2(m_pJoystickAxes[3], m_pJoystickAxes[4]);
+				axes = glm::vec2(m_pJoystickAxes[4], m_pJoystickAxes[3]);
 			}
 
 			float deadZone = m_fJoyDeadZone[(int)i];
