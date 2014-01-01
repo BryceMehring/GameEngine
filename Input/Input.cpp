@@ -62,7 +62,8 @@ void Input::MouseScrollCallback(GLFWwindow*, double, double yOffset)
 	}
 }
 
-Input::Input() : m_fMouseSensistivity(100.0f), m_tpos(0.0f, 0.0f), m_iJoystickAxes(0), m_pJoystickAxes(nullptr)
+Input::Input() : m_fMouseSensistivity(100.0f), m_tpos(0.0f, 0.0f), m_iNumJoystickAxes(0), 
+m_pJoystickAxes(nullptr), m_iNumJoystickButtons(0), m_pJoystickButtons(nullptr)
 {
 	s_pThis = this;
 
@@ -114,7 +115,7 @@ void Input::Poll()
 {
 	Reset();
 
-	m_pJoystickAxes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &m_iJoystickAxes);
+	UpdateJoystick();
 
 	glfwPollEvents();
 }
@@ -232,7 +233,7 @@ void Input::SetCursorSensitivity(float s)
 
 bool Input::IsValidJoystickConnected() const
 {
-	return (m_pJoystickAxes != nullptr) && (m_iJoystickAxes >= 5);
+	return (m_pJoystickAxes != nullptr) && (m_iNumJoystickAxes >= 5);
 }
 
 std::string Input::GetJoystickName() const
@@ -345,6 +346,16 @@ glm::vec2 Input::GetJoystickAxes(JoystickAxes i) const
 	return axes;
 }
 
+int Input::GetNumJoystickButtons() const
+{
+	return m_iNumJoystickButtons;
+}
+
+bool Input::JoystickButtonPress(int i) const
+{
+	return (i < m_iNumJoystickButtons && i >= 0) && (m_pJoystickButtons[i] == GL_TRUE);
+}
+
 void Input::Reset()
 {
 	for (auto& iter : m_MouseClickOnce)
@@ -424,7 +435,8 @@ void Input::UpdateMouse(double x, double y)
 
 void Input::UpdateJoystick()
 {
-	m_pJoystickAxes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &m_iJoystickAxes);
+	m_pJoystickAxes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &m_iNumJoystickAxes);
+	m_pJoystickButtons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &m_iNumJoystickButtons);
 }
 
 void Input::RegisterScript(asIScriptEngine* pAS)

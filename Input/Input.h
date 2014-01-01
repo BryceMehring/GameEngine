@@ -114,6 +114,12 @@ public:
 	// Note: If a joystick is not connected, a zeroed vec2 is returned
 	virtual glm::vec2 GetJoystickAxes(JoystickAxes i) const;
 
+	// Returns the number of buttons on the joystick
+	virtual int GetNumJoystickButtons() const;
+
+	// Returns true if the button is pressed, else false
+	virtual bool JoystickButtonPress(int i) const;
+
 private:
 
 	static Input* s_pThis;
@@ -142,11 +148,15 @@ private:
 	std::array<float, 2> m_fJoyDeadZone;
 
 	// The number of joystick axes
-	int m_iJoystickAxes;
+	int m_iNumJoystickAxes;
 
 	// Points to all of the joystick axes on joystick 1
 	// glfw allocated pointer, do not delete
 	const float* m_pJoystickAxes;
+
+	int m_iNumJoystickButtons;
+
+	const unsigned char* m_pJoystickButtons;
 
 	// helper methods
 	void Reset();

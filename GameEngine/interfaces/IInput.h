@@ -99,6 +99,12 @@ public:
 	// Get the current value of the joystick axes
 	// Note: If a joystick is not connected, a zeroed vec2 is returned
 	virtual glm::vec2 GetJoystickAxes(JoystickAxes i) const = 0;
+
+	// Returns the number of buttons on the joystick
+	virtual int GetNumJoystickButtons() const = 0;
+
+	// Returns true if the button is pressed, else false
+	virtual bool JoystickButtonPress(int i) const = 0;
 	
 protected:
 
