@@ -2,6 +2,8 @@
 #include "ResourceManager.h"
 #include "Log.h"
 #include <sstream>
+#include <vector>
+#include <cstring>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996)
