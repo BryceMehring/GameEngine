@@ -2,6 +2,7 @@
 #include "VecMath.h"
 #include "asVM.h"
 
+#include <glm/geometric.hpp>
 
 namespace Math
 {

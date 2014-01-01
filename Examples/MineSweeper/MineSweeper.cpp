@@ -326,8 +326,8 @@ void MineSweeper::Draw(Game& game)
 	renderer.DrawString(stream.str().c_str(),glm::vec3(0.0f,-80.0f,0.0f),1.0f);
 
 	glm::vec2 cursorPos = game.GetInput().GetCursorPos();
-	glm::mat4 T = glm::translate(cursorPos.x + 0.5f,cursorPos.y + 0.5f,0.0f);
-	T = glm::scale(T,40.0f,40.0f,1.0f);
+	glm::mat4 T = glm::translate(glm::vec3(cursorPos.x + 0.5f,cursorPos.y + 0.5f,0.0f));
+	T = glm::scale(T,glm::vec3(40.0f,40.0f,1.0f));
 
 	renderer.DrawSprite("cursor",T);
 }

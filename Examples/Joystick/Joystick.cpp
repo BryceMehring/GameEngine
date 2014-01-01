@@ -54,24 +54,41 @@ void Joystick::Draw(Game& game)
 	IInput& input = game.GetInput();
 	IRenderer& renderer = game.GetRenderer();
 
+	float dx = (m_posLS.y - m_posRS.y);
+	float dy = (m_posLS.x - m_posRS.x);
+
+	float linelength = sqrt(dx * dx + dy * dy);
+	dx /= linelength;
+	dy /= linelength;
+
 	// Line vertices
 	glm::vec3 line[] =
 	{
 		glm::vec3(m_posLS.x, m_posLS.y, 0),
-		glm::vec3(m_posRS.x, m_posRS.y, 0)
+		glm::vec3(m_posRS.x, m_posRS.y, 0),
+		glm::vec3(50 * dx + m_posLS.x, 50 * dy + m_posLS.y, 0),
+		glm::vec3(m_posLS.x, m_posLS.y, 0)
 	};
 
 	// Render the line in world space
+
 	renderer.SetRenderSpace(RenderSpace::World);
-	renderer.DrawLine(line, 2);
+	renderer.DrawLine(line, 4, 2.0f, glm::vec4(0.0f, 0.7f, .7f, .3f));
 
 	// Render the joysticks name in screen space
 	renderer.SetRenderSpace(RenderSpace::Screen);
 
 	std::ostringstream stream;
-	stream << "Joystick Name: " << input.GetJoystickName();
+	stream << "Joystick Name: " << input.GetJoystickName() << std::endl;
+
+	int axes, dir;
+	if (input.GetMovingJoystickAxes(axes, dir))
+	{
+		stream << axes << ' ' << dir;
+	}
+	
 
 	int width, height;
 	renderer.GetDisplayMode(width, height);
-	renderer.DrawString(stream.str().c_str(), glm::vec3(width / 2.0f, height, 0.0f), 0.5f, glm::vec4(1.0f), nullptr, FontAlignment::Center);
+	renderer.DrawString(stream.str().c_str(), glm::vec3(width / 4.0f, height, 0.0f), 0.5f, glm::vec4(1.0f), nullptr, FontAlignment::Left);
 }

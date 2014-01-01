@@ -4,6 +4,8 @@
 #include "IGameState.h"
 #include "../common/Camera.h"
 
+#include <glm/vec2.hpp>
+
 class Joystick : public IGameState
 {
 public:

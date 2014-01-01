@@ -3,9 +3,11 @@
 
 #include "IPlugin.h"
 #include "IResourceManager.h"
-#include "VecMath.h"
 #include <string>
-#include <glm/glm.hpp>
+#include "VecMath.h"
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
 
 enum class FontAlignment
 {

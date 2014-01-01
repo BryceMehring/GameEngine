@@ -2,6 +2,8 @@
 #include "IRenderer.h"
 #include "IInput.h"
 
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <glm/gtx/transform.hpp>
 
 namespace UI
@@ -42,8 +44,8 @@ void ButtonBase::Render(IRenderer& renderer)
 	glm::vec4 color = glm::vec4((m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor,1.0f);
 
 	glm::vec2 pos = m_sprite.Middle();
-	glm::mat4 T = glm::translate(pos.x,pos.y,-1.0f);
-	T = glm::scale(T,m_sprite.Width(),m_sprite.Height(),1.0f);
+	glm::mat4 T = glm::translate(glm::vec3(pos.x,pos.y,-1.0f));
+	T = glm::scale(T,glm::vec3(m_sprite.Width(),m_sprite.Height(),1.0f));
 
 	renderer.DrawSprite("button",T);
 	renderer.DrawString(m_text.c_str(),glm::vec3(pos.x - (m_sprite.Width() / 2.0f),pos.y,0.0f),m_scale,color);

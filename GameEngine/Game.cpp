@@ -9,8 +9,7 @@
 #include <iostream>
 
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
+#include <glm/vec3.hpp>
 
 using namespace std;
 

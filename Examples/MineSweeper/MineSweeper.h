@@ -2,10 +2,9 @@
 #define _MINESWEEPER_
 
 
-
+#include "IGrid.h"
 #include "IGameState.h"
 #include "GUI.h"
-#include "IGrid.h"
 #include <stack>
 
 enum class GameStatus

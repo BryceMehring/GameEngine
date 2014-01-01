@@ -2,7 +2,8 @@
 #define _CAMERA_
 
 #include "CommonExport.h"
-#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 
 // Manages the matrices need to create a camera
 // Note: In order to use this class, a view matrix must be set by lookAt() along with

@@ -68,8 +68,8 @@ void Slider::Render(IRenderer& renderer)
 		glm::vec3(m_end.x,m_end.y,0.0f)
 	};
 
-	glm::mat4 T = glm::translate(m_pos.x,m_pos.y,-20.0f);
-	T = glm::scale(T,40.0f,40.0f,1.0f);
+	glm::mat4 T = glm::translate(glm::vec3(m_pos.x,m_pos.y,-20.0f));
+	T = glm::scale(T,glm::vec3(40.0f,40.0f,1.0f));
 
 	std::stringstream stream;
 	stream.precision(2);
