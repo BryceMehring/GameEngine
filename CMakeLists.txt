@@ -11,17 +11,11 @@ option(ENABLE_CPACK "Enable CPack" OFF)
 set (ENGINE_VERSION_MAJOR 1)
 set (ENGINE_VERSION_MINOR 0)
 
-if( MSVC )
-	string(COMPARE GREATER ${CMAKE_GENERATOR} "Visual Studio 11" VS_COMPATABILITY)
-	if(NOT ${VS_COMPATABILITY})
-		message( SEND_ERROR "At least Visual Studio 2013 is needed to build the code" )
-	endif()
-endif()
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules")
-include("${CMAKE_SOURCE_DIR}/CMake/CompileFlags.cmake")
-include("${CMAKE_SOURCE_DIR}/CMake/ConfigurePluginExtension.cmake")
-include("${CMAKE_SOURCE_DIR}/CMake/RedirectOutputTo.cmake")
+include(${CMAKE_SOURCE_DIR}/CMake/VisualStudioVersionCheck.cmake)
+include(${CMAKE_SOURCE_DIR}/CMake/CompileFlags.cmake)
+include(${CMAKE_SOURCE_DIR}/CMake/ConfigurePluginExtension.cmake)
+include(${CMAKE_SOURCE_DIR}/CMake/RedirectOutputTo.cmake)
 
 RedirectOutputTo("bin")
 
@@ -41,17 +35,17 @@ find_package (ANGELSCRIPT)
 include_directories(${ANGELSCRIPT_INCLUDE_DIR})
 include_directories(${ANGELSCRIPT_ADDON_INCLUDE_DIR})
 
-include_directories("${CMAKE_SOURCE_DIR}/common")
-include_directories("${CMAKE_SOURCE_DIR}/GameEngine/interfaces")
-include_directories("${CMAKE_SOURCE_DIR}/GameEngine")
+include_directories(${CMAKE_SOURCE_DIR}/common)
+include_directories(${CMAKE_SOURCE_DIR}/GameEngine/interfaces)
+include_directories(${CMAKE_SOURCE_DIR}/GameEngine)
 
 if(BUILD_MEMORY_MANAGER)
-	include_directories("${CMAKE_SOURCE_DIR}/MemoryManager")
+	include_directories(${CMAKE_SOURCE_DIR}/MemoryManager)
 	add_subdirectory(MemoryManager)
 endif()
 
 if(BUILD_GUI)
-	include_directories("${CMAKE_SOURCE_DIR}/GUI")
+	include_directories(${CMAKE_SOURCE_DIR}/GUI)
 	add_subdirectory(GUI)
 endif()
 
@@ -61,7 +55,7 @@ add_subdirectory(OpenGLRenderer)
 add_subdirectory(Input)
 
 if(BUILD_QUADTREE)
-	include_directories("${CMAKE_SOURCE_DIR}/QuadTree")
+	include_directories(${CMAKE_SOURCE_DIR}/QuadTree)
 	add_subdirectory(QuadTree)
 endif()
 

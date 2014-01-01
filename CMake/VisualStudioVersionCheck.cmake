@@ -1,0 +1,6 @@
+if( MSVC )
+	string(COMPARE GREATER ${CMAKE_GENERATOR} "Visual Studio 11" VS_COMPATABILITY)
+	if(NOT ${VS_COMPATABILITY})
+		message( SEND_ERROR "At least Visual Studio 2013 is needed to build the code" )
+	endif()
+endif()
