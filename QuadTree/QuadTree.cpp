@@ -10,13 +10,13 @@
 
 using namespace std;
 
-QuadTree::QuadTree(const Math::FRECT& R, unsigned int nodeCapacity) : m_Rect(R), m_Previous(nullptr), m_iHeight(0), m_iCapacity(nodeCapacity)
+QuadTree::QuadTree(const Math::FRECT& R, unsigned int nodeCapacity) : m_Rect(R), m_Previous(nullptr), m_iCapacity(nodeCapacity), m_iHeight(0)
 {
 	SubDivide();
 }
 
 QuadTree::QuadTree(const Math::FRECT& rect, unsigned int nodeCapacity, unsigned int height, QuadTree* pPrevious) : 
-	m_Rect(rect), m_iHeight(height), m_Previous(pPrevious), m_iCapacity(nodeCapacity)
+	m_Rect(rect), m_Previous(pPrevious), m_iCapacity(nodeCapacity), m_iHeight(height)
 {
 }
 
