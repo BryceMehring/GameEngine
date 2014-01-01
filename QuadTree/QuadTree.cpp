@@ -38,16 +38,16 @@ bool QuadTree::Insert(ISpatialObject& obj)
 				const Math::FRECT& subR = subNode.m_Rect.GetRect();
 
 				// if the current node is full
-				if (subNode.IsFull() && subR.Height() > 4.0f)
+				if (subNode.IsFull() && subR.Height() > 10.0f)
 				{
 					if (!subNode.IsDivided())
 					{
 						subNode.SubDivide();
 					}
 				}
-			}
 
-			bSuccess |= subNode.Insert(obj);
+				bSuccess |= subNode.Insert(obj);
+			}
 		}
 	}
 	else
@@ -176,6 +176,7 @@ void QuadTree::SubDivide()
 	}
 
 	m_Objects.clear();
+	m_Objects.shrink_to_fit();
 }
 
 void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj)
