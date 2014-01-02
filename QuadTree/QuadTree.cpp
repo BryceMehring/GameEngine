@@ -22,42 +22,12 @@ QuadTree::QuadTree(const Math::FRECT& rect, unsigned int nodeCapacity, unsigned 
 
 bool QuadTree::Insert(ISpatialObject& obj)
 {
-	bool bSuccess = false;
-
-	if (IsDivided())
+	if (m_Rect.Intersects(obj.GetCollisionPolygon()))
 	{
-		const Math::ICollisionPolygon& collisionPoly = obj.GetCollisionPolygon();
-
-		// iterate over the near nodes
-		for (unsigned int i = 0; i < 4; ++i)
-		{
-			QuadTree& subNode = m_Nodes[i];
-
-			if (subNode.m_Rect.Intersects(collisionPoly))
-			{
-				const Math::FRECT& subR = subNode.m_Rect.GetRect();
-
-				// if the current node is full
-				if (subNode.IsFull() && subR.Height() > 10.0f)
-				{
-					if (!subNode.IsDivided())
-					{
-						subNode.SubDivide();
-					}
-				}
-
-				bSuccess |= subNode.Insert(obj);
-			}
-		}
-	}
-	else
-	{
-		m_Objects.push_back(&obj);
-		bSuccess = true;
+		return RInsert(obj);
 	}
 
-	return bSuccess;
-
+	return false;
 }
 
 void QuadTree::Erase(ISpatialObject& obj)
@@ -125,9 +95,48 @@ void QuadTree::Render(IRenderer& renderer)
 				glm::vec3(R.topLeft.x, R.topLeft.y, -20.0f),
 			};
 
-			renderer.DrawLine(pos, 5, 20.0f);
+			renderer.DrawLine(pos, 5, 4.0f);
 		}
 	}
+}
+
+bool QuadTree::RInsert(ISpatialObject& obj)
+{
+	bool bSuccess = false;
+
+	if (IsDivided())
+	{
+		const Math::ICollisionPolygon& collisionPoly = obj.GetCollisionPolygon();
+
+		// iterate over the near nodes
+		for (unsigned int i = 0; i < 4; ++i)
+		{
+			QuadTree& subNode = m_Nodes[i];
+
+			if (subNode.m_Rect.Intersects(collisionPoly))
+			{
+				const Math::FRECT& subR = subNode.m_Rect.GetRect();
+
+				// if the current node is full
+				if (subNode.IsFull() && subR.Height() > 50.0f)
+				{
+					if (!subNode.IsDivided())
+					{
+						subNode.SubDivide();
+					}
+				}
+
+				bSuccess |= subNode.RInsert(obj);
+			}
+		}
+	}
+	else
+	{
+		m_Objects.push_back(&obj);
+		bSuccess = true;
+	}
+
+	return bSuccess;
 }
 
 bool QuadTree::IsDivided() const

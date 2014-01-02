@@ -44,6 +44,10 @@ private:
 
 	QuadTree(const Math::FRECT& rect, unsigned int nodeCapacity, unsigned int height, QuadTree* pPrevious);
 
+	// Inserts obj into the quadtree
+	// returns true if obj was inserted into the quadtree, else false
+	bool RInsert(ISpatialObject& obj);
+
 	// Returns true if this node is divided
 	bool IsDivided() const;
 
