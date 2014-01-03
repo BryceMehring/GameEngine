@@ -63,7 +63,7 @@ void Input::MouseScrollCallback(GLFWwindow*, double, double yOffset)
 }
 
 Input::Input() : m_fMouseSensistivity(100.0f), m_tpos(0.0f, 0.0f), m_iNumJoystickAxes(0), 
-m_pJoystickAxes(nullptr), m_iNumJoystickButtons(0), m_pJoystickButtons(nullptr)
+m_pJoystickAxes(nullptr)
 {
 	s_pThis = this;
 
@@ -233,7 +233,7 @@ void Input::SetCursorSensitivity(float s)
 
 bool Input::IsValidJoystickConnected() const
 {
-	return (m_pJoystickAxes != nullptr) && (m_iNumJoystickAxes >= 5);
+	return (m_pJoystickAxes != nullptr) && (m_iNumJoystickAxes >= 2);
 }
 
 std::string Input::GetJoystickName() const
@@ -300,7 +300,7 @@ glm::vec2 Input::GetJoystickAxes(JoystickAxes i) const
 			{
 				axes = glm::vec2(m_pJoystickAxes[0], m_pJoystickAxes[1]);
 			}
-			else
+			else if (m_iNumJoystickAxes >= 5)
 			{
 				axes = glm::vec2(m_pJoystickAxes[4], m_pJoystickAxes[3]);
 			}
@@ -348,12 +348,12 @@ glm::vec2 Input::GetJoystickAxes(JoystickAxes i) const
 
 int Input::GetNumJoystickButtons() const
 {
-	return m_iNumJoystickButtons;
+	return m_joystickButtons.size();
 }
 
-bool Input::JoystickButtonPress(int i) const
+bool Input::JoystickButtonPress(int i, bool once) const
 {
-	return (i < m_iNumJoystickButtons && i >= 0) && (m_pJoystickButtons[i] == GL_TRUE);
+	return (i < GetNumJoystickButtons() && i >= 0) && (m_joystickButtons[i] == 1 || (!once && m_joystickButtons[i] == 2));
 }
 
 void Input::Reset()
@@ -436,7 +436,26 @@ void Input::UpdateMouse(double x, double y)
 void Input::UpdateJoystick()
 {
 	m_pJoystickAxes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &m_iNumJoystickAxes);
-	m_pJoystickButtons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &m_iNumJoystickButtons);
+
+	int count = 0;
+	const unsigned char* pJoystickButtons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
+
+	m_joystickButtons.resize(count);
+	for (int i = 0; i < count; ++i)
+	{
+		if (pJoystickButtons[i] == 1)
+		{
+			m_joystickButtons[i] += pJoystickButtons[i];
+			if (m_joystickButtons[i] > 2)
+			{
+				m_joystickButtons[i] = 2;
+			}
+		}
+		else if (pJoystickButtons[i] == 0)
+		{
+			m_joystickButtons[i] = 0;
+		}
+	}
 }
 
 void Input::RegisterScript(asIScriptEngine* pAS)

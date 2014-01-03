@@ -15,6 +15,10 @@ class Input : public IInput
 {
 public:
 
+	//note about the once parameter:
+	//true: only process the event once,
+	//false: returns true the entire period of the event
+
 	Input();
 
 	// Callbacks
@@ -45,10 +49,6 @@ public:
 	bind NEW_KEY OLD_KEY
 	*/
 	virtual bool LoadKeyBindFile(const std::string& file);
-
-	//note about the once parameter:
-	//true: only process the event once,
-	//false: returns true the entire period of the event
 
 	// returns true if Key is pressed
 	virtual bool KeyPress(int Key, bool once = true);
@@ -118,7 +118,7 @@ public:
 	virtual int GetNumJoystickButtons() const;
 
 	// Returns true if the button is pressed, else false
-	virtual bool JoystickButtonPress(int i) const;
+	virtual bool JoystickButtonPress(int i, bool once = true) const;
 
 private:
 
@@ -154,9 +154,7 @@ private:
 	// glfw allocated pointer, do not delete
 	const float* m_pJoystickAxes;
 
-	int m_iNumJoystickButtons;
-
-	const unsigned char* m_pJoystickButtons;
+	std::vector<unsigned char> m_joystickButtons;
 
 	// helper methods
 	void Reset();

@@ -18,6 +18,10 @@ class IInput : public IPlugin
 {
 public:
 
+	//note about the once parameter:
+	//true: only process the event once,
+	//false: returns true the entire period of the event
+
 	// processes input events
 	virtual void Poll() = 0;
 
@@ -29,10 +33,6 @@ public:
 	bind NEW_KEY OLD_KEY
 	*/
 	virtual bool LoadKeyBindFile(const std::string& file) = 0;
-
-	//note about the once parameter:
-	//true: only process the event once,
-	//false: returns true the entire period of the event
 
 	// returns true if Key is pressed
 	virtual bool KeyPress(int Key, bool once = true) = 0;
@@ -104,7 +104,7 @@ public:
 	virtual int GetNumJoystickButtons() const = 0;
 
 	// Returns true if the button is pressed, else false
-	virtual bool JoystickButtonPress(int i) const = 0;
+	virtual bool JoystickButtonPress(int i, bool once = true) const = 0;
 	
 protected:
 
