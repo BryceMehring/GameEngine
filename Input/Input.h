@@ -118,7 +118,10 @@ public:
 	virtual int GetNumJoystickButtons() const;
 
 	// Returns true if the button is pressed, else false
-	virtual bool JoystickButtonPress(int i, bool once = true) const;
+	virtual bool JoystickButtonPress(int button, bool once = true) const;
+
+	// Returns true if the button is pressed, else false
+	virtual bool JoystickButtonRelease(int button, bool once = true) const;
 
 private:
 

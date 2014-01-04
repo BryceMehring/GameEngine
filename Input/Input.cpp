@@ -351,9 +351,14 @@ int Input::GetNumJoystickButtons() const
 	return m_joystickButtons.size();
 }
 
-bool Input::JoystickButtonPress(int i, bool once) const
+bool Input::JoystickButtonPress(int button, bool once) const
 {
-	return (i < GetNumJoystickButtons() && i >= 0) && (m_joystickButtons[i] == 1 || (!once && m_joystickButtons[i] == 2));
+	return (button < GetNumJoystickButtons() && button >= 0) && (m_joystickButtons[button] == 1 || (!once && m_joystickButtons[button] == 2));
+}
+
+bool Input::JoystickButtonRelease(int button, bool once) const
+{
+	return (button < GetNumJoystickButtons() && button >= 0) && ((!once && m_joystickButtons[button] == 0) || (once && m_joystickButtons[button] == 3));
 }
 
 void Input::Reset()
@@ -445,7 +450,7 @@ void Input::UpdateJoystick()
 	{
 		if (pJoystickButtons[i] == 1)
 		{
-			m_joystickButtons[i] += pJoystickButtons[i];
+			m_joystickButtons[i] += 1;
 			if (m_joystickButtons[i] > 2)
 			{
 				m_joystickButtons[i] = 2;
@@ -453,7 +458,14 @@ void Input::UpdateJoystick()
 		}
 		else if (pJoystickButtons[i] == 0)
 		{
-			m_joystickButtons[i] = 0;
+			if (JoystickButtonPress(i,false))
+			{
+				m_joystickButtons[i] = 3;
+			}
+			else
+			{
+				m_joystickButtons[i] = 0;
+			}			
 		}
 	}
 }
