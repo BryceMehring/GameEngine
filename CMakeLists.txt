@@ -44,7 +44,7 @@ if(BUILD_MEMORY_MANAGER)
 	add_subdirectory(MemoryManager)
 endif()
 
-if(BUILD_GUI)
+if(BUILD_GUI OR BUILD_EXAMPLES)
 	include_directories(${CMAKE_SOURCE_DIR}/GUI)
 	add_subdirectory(GUI)
 endif()
