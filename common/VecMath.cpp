@@ -2,6 +2,7 @@
 #include "VecMath.h"
 #include "asVM.h"
 
+#include <limits>
 #include <glm/geometric.hpp>
 
 namespace Math
@@ -130,8 +131,8 @@ void CRectangle::GetAABB(AABB& aabb) const
 
 void CreateCollionPolygon(const std::vector<glm::vec3>& poly, FRECT& out)
 {
-	glm::vec2 minPoint(FLT_MAX,FLT_MAX);
-	glm::vec2 maxPoint(-FLT_MAX,-FLT_MAX);
+	glm::vec2 minPoint(std::numeric_limits<float>::max(),std::numeric_limits<float>::max());
+	glm::vec2 maxPoint(std::numeric_limits<float>::min(),std::numeric_limits<float>::min());
 
 	for(auto iter = poly.begin(); iter != poly.end(); ++iter)
 	{
@@ -224,8 +225,8 @@ bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly
 		ay /= len_v;
 
 		//Carve out the min and max values
-		float c1_min = FLT_MAX, c1_max = -FLT_MAX;
-		float c2_min = FLT_MAX, c2_max = -FLT_MAX;
+		float c1_min = std::numeric_limits<float>::max(), c1_max = std::numeric_limits<float>::min();
+		float c2_min = std::numeric_limits<float>::max(), c2_max = std::numeric_limits<float>::min();
 
 		//Project every point in c1 on the axis and store min and max
 		for(unsigned int j = 0; j < poly1.size() - 1; j++)

@@ -4,7 +4,9 @@
 #include <vector>
 #include <fstream>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtx/transform.hpp>
 #include "ISerializable.h"
 
 // Grid abstract interface which implements a basic way to render them, which should be abstracted into another class 

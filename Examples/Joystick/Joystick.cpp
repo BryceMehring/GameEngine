@@ -2,6 +2,7 @@
 #include "Game.h"
 
 #include <sstream>
+#include <cmath>
 
 extern "C" PLUGINDECL IPlugin* CreatePlugin()
 {
