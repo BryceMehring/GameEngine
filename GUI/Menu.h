@@ -2,7 +2,7 @@
 #define _MENU_
 
 #include "RefCounting.h"
-#include "ButtonBase.h"
+#include "Button.h"
 #include "IRenderer.h"
 #include "IInput.h"
 

@@ -1,5 +1,5 @@
-#ifndef _BUTTONBASE_
-#define _BUTTONBASE_
+#ifndef _BUTTON_
+#define _BUTTON_
 
 #include "IElement.h"
 #include "IInput.h"
@@ -58,4 +58,4 @@ namespace UI
 
 }
 
-#endif // _BUTTONBASE_
+#endif // _BUTTON_
