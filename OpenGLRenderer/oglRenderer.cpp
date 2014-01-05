@@ -310,11 +310,13 @@ void oglRenderer::ConfigureGLFW()
 {
 	GLFWOpenWindowHints();
 
+	bool bFullscreen = m_bFullscreen && !_DEBUG;
+
 	auto iter = m_videoModes[m_iCurrentMonitor];
 	m_pWindow = glfwCreateWindow(iter.first[iter.second - m_iCurrentDisplayMode - 1].width, // width
 								 iter.first[iter.second - m_iCurrentDisplayMode - 1].height, // height
 								 "", // window title
-								 m_bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, // monitor to display on
+								 bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, // monitor to display on
 								 NULL); // not used
 
 	assert(m_pWindow != nullptr);
@@ -357,17 +359,14 @@ void oglRenderer::EnumerateDisplayAdaptors()
 {
 	m_pMonitors = glfwGetMonitors(&m_iMonitorCount);
 
-	m_videoModes.resize(m_iMonitorCount);
+	m_videoModes.reserve(m_iMonitorCount);
 
-	for(unsigned int i = 0; i < m_videoModes.size(); ++i)
+	for (int i = 0; i < m_iMonitorCount; ++i)
 	{
 		int size = 0;
-		const GLFWvidmode* pVidMode = nullptr;
+		const GLFWvidmode* pVidMode = glfwGetVideoModes(m_pMonitors[i], &size);
 
-		pVidMode = glfwGetVideoModes(m_pMonitors[i],&size);
-
-		m_videoModes[i].first = pVidMode;
-		m_videoModes[i].second = size;
+		m_videoModes.emplace_back(pVidMode, size);
 	}
 }
 
