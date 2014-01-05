@@ -312,10 +312,11 @@ void oglRenderer::ConfigureGLFW()
 
 	auto iter = m_videoModes[m_iCurrentMonitor];
 	m_pWindow = glfwCreateWindow(iter.first[iter.second - m_iCurrentDisplayMode - 1].width, // width
-											iter.first[iter.second - m_iCurrentDisplayMode - 1].height, // height
-											"", // window title
-											NULL, // monitor to display on
-											NULL); // not used
+								 iter.first[iter.second - m_iCurrentDisplayMode - 1].height, // height
+								 "", // window title
+								 m_bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, // monitor to display on
+								 NULL); // not used
+
 	assert(m_pWindow != nullptr);
 
 	glfwMakeContextCurrent(m_pWindow);
@@ -416,10 +417,12 @@ void oglRenderer::ParseVideoSettingsFile()
 				iMonitorCounter++;
 				iDisplayCounter = 0;
 			}
-			else if(!line.empty() && line.back() == '*')
+			else if (!line.empty() && ((line.back() == 'W') || (line.back() == 'F')))
 			{
 				m_iCurrentMonitor = iMonitorCounter - 1;
 				m_iCurrentDisplayMode = iDisplayCounter - 1;
+
+				m_bFullscreen = (line.back() == 'F');
 
 				break;
 			}
@@ -450,7 +453,7 @@ void oglRenderer::SaveDisplayList()
 
 				if(i == m_iCurrentMonitor && index == m_iCurrentDisplayMode)
 				{
-					stream << " *";
+					stream << (m_bFullscreen ? 'F' : 'W');
 				}
 
 				stream << endl;
