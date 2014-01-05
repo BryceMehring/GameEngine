@@ -267,7 +267,7 @@ bool oglRenderer::SetShaderValue(const std::string& shader, const string& locati
 
 void oglRenderer::EnableVSync(bool enable)
 {
-	glfwSwapInterval(enable ? 1 : 0);
+	glfwSwapInterval(enable);
 }
 
 void oglRenderer::Present()
