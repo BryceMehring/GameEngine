@@ -52,6 +52,8 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 				std::string frag;
 				stream >> frag;
 
+				frag = folder + '/' + frag;
+
 				bSuccess = gfxResourceManager.LoadShader(id,fileName,frag);
 			}
 			else if (type == "sound")
