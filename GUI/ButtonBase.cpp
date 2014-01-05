@@ -8,47 +8,56 @@
 
 namespace UI
 {
-	
+	Button::Button(const Math::FRECT& s, const glm::vec3& defaultColor,
+		const glm::vec3& hoverColor, float scale, const std::string& str, const DELEGATE& callback) :
+		m_sprite(s), m_defaultColor(defaultColor), m_hoverColor(hoverColor), m_scale(scale),
+		m_text(str), m_callback(callback), m_bMouseHover(false), m_bSelected(false) {}
 
-ButtonBase::ButtonBase(const Math::FRECT& s, const glm::vec3& defaultColor,
-					   const glm::vec3& hoverColor, float scale, const std::string& str) :
-					   m_sprite(s), m_defaultColor(defaultColor), m_hoverColor(hoverColor), m_scale(scale),
-					   m_text(str),  m_bMouseHover(false), m_bSelected(false) {}
-
-void ButtonBase::Update(::IInput& input)
-{
-	// todo: I could optimize this by checking first if the mouse is moving
-	// then move on to check if the mouse is colliding with the button
-	if(m_sprite.IsPointWithin(input.GetCursorPos()))
+	void Button::Update(::IInput& input, double)
 	{
-		m_bMouseHover = true;
+		m_bMouseHover = m_sprite.IsPointWithin(input.GetCursorPos());
+
+		if (input.MouseClick(0))
+		{
+			const glm::vec2& pos = input.GetCursorPos();
+
+			if (m_sprite.IsPointWithin(pos))
+			{
+				Trigger();
+			}
+		}
 	}
-	else
+
+	void Button::Render(IRenderer& renderer)
 	{
-		m_bMouseHover = false;
+		glm::vec4 color = glm::vec4((m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor, 1.0f);
+
+		renderer.DrawString(m_text.c_str(), glm::vec3(m_sprite.topLeft, 0.0f), m_scale, color);
 	}
-}
 
-void ButtonBase::Select()
-{
-	m_bSelected = true;
-}
+	void Button::Select()
+	{
+		m_bSelected = true;
+	}
 
-void ButtonBase::Deselect()
-{
-	m_bSelected = false;
-}
+	void Button::Deselect()
+	{
+		m_bSelected = false;
+	}
 
-void ButtonBase::Render(IRenderer& renderer)
-{
-	glm::vec4 color = glm::vec4((m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor,1.0f);
+	void Button::Trigger()
+	{
+		m_callback();
+	}
 
-	glm::vec2 pos = m_sprite.Middle();
-	glm::mat4 T = glm::translate(glm::vec3(pos.x,pos.y,-1.0f));
-	T = glm::scale(T,glm::vec3(m_sprite.Width(),m_sprite.Height(),1.0f));
+	void Button::SetCallback(const DELEGATE& callback)
+	{
+		m_callback = callback;
+	}
 
-	renderer.DrawSprite("button",T);
-	renderer.DrawString(m_text.c_str(),glm::vec3(pos.x - (m_sprite.Width() / 2.0f),pos.y,0.0f),m_scale,color);
-}
+	void Button::SetText(std::string str)
+	{
+		m_text = str;
+	}
 
 }

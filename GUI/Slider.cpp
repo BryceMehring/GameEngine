@@ -31,7 +31,7 @@ void Slider::Trigger()
 
 	float distance = glm::length(m_start - m_pos);
 	m_fPercentage = (m_fMax - m_fMin) * distance / length + m_fMin;
-	m_callback.Call(m_fPercentage);
+	m_callback(m_fPercentage);
 }
 
 void Slider::Update(IInput& input, double dt)

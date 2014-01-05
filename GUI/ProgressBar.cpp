@@ -22,7 +22,7 @@ void ProgressBar::Update(class IInput&, double dt)
 {
 	if(abs(m_end.x - m_pos.x) < 0.01f || abs(m_start.x - m_pos.x) < 0.01f)
 	{
-		m_callback.Call();
+		m_callback();
 	}
 }
 void ProgressBar::Render(IRenderer& renderer)

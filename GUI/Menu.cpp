@@ -19,18 +19,12 @@ Menu::~Menu()
 		m_menus[i]->Release();
 	}
 }
-void Menu::SetMenuTitle(const std::string& str,const glm::vec2& pos)
-{
-	m_pos = pos;
-	m_menuTitle = str;
-}
 
-void Menu::AddMenu(Menu* pMenu, GenericButton<Menu*>* pElement, GUI* pGUI)
+void Menu::AddMenu(Menu* pMenu, Button* pElement, GUI* pGUI)
 {
 	if(pMenu != nullptr && pElement != nullptr)
 	{
-		pElement->SetCallback(pGUI->CreateCallback());
-		pElement->SetArg(pMenu);
+		pElement->SetCallback(std::bind(&GUI::SetMenu, pGUI, pMenu));
 
 		pMenu->m_pPrev = this;
 		pMenu->AddElement(pElement);
@@ -48,7 +42,7 @@ void Menu::AddElement(IElement* pElement)
 	}
 }
 
-void Menu::Update(GUI* pGUI, ::IInput& input, double dt)
+void Menu::Update(GUI* pGUI, IInput& input, double dt)
 {
 	if(input.KeyPress(32))
 	{
@@ -67,7 +61,6 @@ void Menu::Update(GUI* pGUI, ::IInput& input, double dt)
 		m_elements[index]->Select();
 
 		pGUI->SetIndex(index);
-
 	}
 	else if(input.KeyPress(257))
 	{

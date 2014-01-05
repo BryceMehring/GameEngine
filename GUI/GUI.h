@@ -1,10 +1,11 @@
 #ifndef _GUI_
 #define _GUI_
 
-#include "Delegates.h"
 #include "Menu.h"
 #include "IInput.h"
 #include "IRenderer.h"
+
+#include <functional>
 
 namespace UI
 {
@@ -15,13 +16,8 @@ class GUI
 {
 public:
 
-	typedef Delegate<void,Menu*> ChangeMenuCallback;
-
 	explicit GUI(Menu* pMenu = nullptr);
 	~GUI();
-
-	// Create a callback to change the menu
-	ChangeMenuCallback CreateCallback();
 
 	// Get/set the current menu in use
 	void SetMenu(Menu* pMenu);
@@ -31,8 +27,8 @@ public:
 	void SetIndex(unsigned int i);
 	unsigned int GetIndex() const;
 
-	void Update(::IInput& input, double dt);
-	void Render(::IRenderer& renderer);
+	void Update(IInput& input, double dt);
+	void Render(IRenderer& renderer);
 
 private:
 

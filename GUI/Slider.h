@@ -4,9 +4,10 @@
 #include "IElement.h"
 #include "IInput.h"
 #include "IRenderer.h"
-#include "Delegates.h"
 #include <string>
 #include <glm/glm.hpp>
+
+#include <functional>
 
 namespace UI
 {
@@ -17,7 +18,7 @@ class Slider : public IElement
 {
 public:
 
-	typedef Delegate<void,float> DELEGATE;
+	typedef std::function<void(float)> DELEGATE;
 
 	// Slider ctor
 	// start: starting point of the Slider
@@ -30,12 +31,12 @@ public:
 		   const glm::vec2& end,
 		   float min, float max, const std::string& tex, const DELEGATE& callback);
 
-	virtual void Select();
-	virtual void Deselect();
-	virtual void Trigger();
+	void Select() override;
+	void Deselect() override;
+	void Trigger() override;
 
-	virtual void Update(class IInput&, double dt);
-	virtual void Render(class IRenderer&);
+	void Update(class IInput&, double dt) override;
+	void Render(class IRenderer&) override;
 
 	// returns the current value of the slider
 	float GetValue() const;

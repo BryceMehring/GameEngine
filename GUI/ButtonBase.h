@@ -7,40 +7,54 @@
 #include "VecMath.h"
 #include <glm/glm.hpp>
 #include <string>
+#include <functional>
 
 namespace UI
 {
+	template< class T >
+	class GUIFactory;
 
-class ButtonBase : public IElement
-{
-public:
+	class Button : public IElement
+	{
+	public:
 
-	ButtonBase(const Math::FRECT& s, const glm::vec3& defaultColor,
-			   const glm::vec3& hoverColor, float scale, const std::string& str);
+		typedef std::function<void(void)> DELEGATE;
 
-	virtual void Update(::IInput&);
-	virtual void Render(::IRenderer&);
+		void Update(IInput&, double) override;
+		void Render(IRenderer&) override;
 
-	virtual void Select();
-	virtual void Deselect();
+		void Select() override;
+		void Deselect() override;
+		void Trigger() override;
 
-protected:
+		void SetCallback(const DELEGATE& callback);
 
-	virtual ~ButtonBase() {}
+		void SetText(std::string str);
 
-	Math::FRECT m_sprite;
+	protected:
 
-private:
-	glm::vec3 m_defaultColor;
-	glm::vec3 m_hoverColor;
-	float m_scale;
+		Button(const Math::FRECT& s, const glm::vec3& defaultColor,
+			const glm::vec3& hoverColor, float scale, const std::string& str, const DELEGATE& callback);
 
-	std::string m_text;
+		virtual ~Button() {}
 
-	bool m_bMouseHover;
-	bool m_bSelected;
+		Math::FRECT m_sprite;
 
-};
+	private:
+
+		glm::vec3 m_defaultColor;
+		glm::vec3 m_hoverColor;
+		float m_scale;
+
+		std::string m_text;
+
+		DELEGATE m_callback;
+
+		bool m_bMouseHover;
+		bool m_bSelected;
+
+		friend class GUIFactory<Button>;
+	};
 
 }
 

@@ -4,8 +4,9 @@
 #include "IElement.h"
 #include "IInput.h"
 #include "IRenderer.h"
-#include "Delegates.h"
 #include <glm/glm.hpp>
+
+#include <functional>
 
 namespace UI
 {
@@ -16,7 +17,7 @@ class ProgressBar : public IElement
 {
 public:
 
-	typedef Delegate<void,void> DELEGATE;
+	typedef std::function<void(void)> DELEGATE;
 
 	// ProgressBar ctor
 	// start: starting point of ProgressBar
@@ -24,12 +25,12 @@ public:
 	// callback: gets called whenever the progress bar reaches 1.0
 	ProgressBar(const glm::vec2& start, const glm::vec2& end, const DELEGATE& callback);
 
-	virtual void Select();
-	virtual void Deselect();
-	virtual void Trigger();
+	void Select() override;
+	void Deselect() override;
+	void Trigger() override;
 
-	virtual void Update(IInput&, double dt);
-	virtual void Render(IRenderer&);
+	void Update(IInput&, double dt) override;
+	void Render(IRenderer&) override;
 
 	// sets the current progress of the bar, value must be between 0 and 1, if not, the value is clamped into this range
 	void SetProgress(float);
