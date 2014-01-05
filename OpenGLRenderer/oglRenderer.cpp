@@ -453,7 +453,7 @@ void oglRenderer::SaveDisplayList()
 
 				if(i == m_iCurrentMonitor && index == m_iCurrentDisplayMode)
 				{
-					stream << (m_bFullscreen ? 'F' : 'W');
+					stream << ' ' << (m_bFullscreen ? 'F' : 'W');
 				}
 
 				stream << endl;
