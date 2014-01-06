@@ -20,7 +20,7 @@ void Joystick::Init(Game& game)
 	int width, height;
 
 	// Build the world space camera
-	renderer.GetDisplayMode(width, height);
+	renderer.GetDisplayMode(&width, &height);
 	m_camera.SetLens(90.0f, (float)width, (float)height, 0.0f, 50.0f);
 	m_camera.LookAt(glm::vec3(0.0f,0.0f,100.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	m_camera.Update();
@@ -74,7 +74,7 @@ void Joystick::Draw(Game& game)
 	// Render the line in world space
 
 	renderer.SetRenderSpace(RenderSpace::World);
-	renderer.DrawLine(line, 4, 2.0f, glm::vec4(0.0f, 0.7f, .7f, .3f));
+	renderer.DrawLine(line, 4, 1.0f, glm::vec4(0.0f, 0.7f, .7f, .3f));
 
 	// Render the joysticks name in screen space
 	renderer.SetRenderSpace(RenderSpace::Screen);
@@ -87,9 +87,8 @@ void Joystick::Draw(Game& game)
 	{
 		stream << axes << ' ' << dir;
 	}
-	
 
 	int width, height;
-	renderer.GetDisplayMode(width, height);
+	renderer.GetDisplayMode(&width, &height);
 	renderer.DrawString(stream.str().c_str(), glm::vec3(width / 4.0f, height, 0.0f), 0.5f, glm::vec4(1.0f), nullptr, FontAlignment::Left);
 }

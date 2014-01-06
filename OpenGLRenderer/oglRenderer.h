@@ -64,10 +64,10 @@ public:
 	virtual IResourceManager& GetResourceManager() override;
 
 	// Get the display mode, return true on success, false on error
-	virtual bool GetDisplayMode(int monitor, int mode, int& width, int& height) const override;
+	virtual bool GetDisplayMode(int monitor, int mode, int* width, int* height) const override;
 
 	// Get the current display mode, return true on success, false on error
-	virtual bool GetDisplayMode(int& width, int& height) const override;
+	virtual bool GetDisplayMode(int* width, int* height, bool* vsync = nullptr) const override;
 
 	// Returns the number of monitors active on the current system
 	virtual int GetNumMonitors() const override;
@@ -133,6 +133,7 @@ private:
 
 	RenderSpace m_renderSpace;
 
+	bool m_bVSync;
 	bool m_bFullscreen;
 
 	std::vector<VertexBuffer*> m_vertexBuffers;

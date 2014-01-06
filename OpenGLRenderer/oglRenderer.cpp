@@ -156,24 +156,41 @@ IResourceManager& oglRenderer::GetResourceManager()
 	return m_rm;
 }
 
-bool oglRenderer::GetDisplayMode(int monitor, int i, int& width, int& height) const
+bool oglRenderer::GetDisplayMode(int monitor, int i, int* width, int* height) const
 {
+	if (monitor >= m_iMonitorCount)
+		return false;
+
 	std::pair<const GLFWvidmode*,int> modes = m_videoModes[monitor];
 
-	if(i >= modes.second)
+	if (i >= modes.second)
 		return false;
 
 	int index = modes.second - i - 1;
 
-	width = modes.first[index].width;
-	height = modes.first[index].height;
+	if (width != nullptr)
+	{
+		*width = modes.first[index].width;
+	}
+
+	if (height != nullptr)
+	{
+		*height = modes.first[index].height;
+	}
 
 	return true;
 }
 
-bool oglRenderer::GetDisplayMode(int& width, int& height) const
+bool oglRenderer::GetDisplayMode(int* width, int* height, bool* vsync) const
 {
-	return GetDisplayMode(m_iCurrentMonitor,m_iCurrentDisplayMode,width,height);
+	bool status = GetDisplayMode(m_iCurrentMonitor,m_iCurrentDisplayMode,width,height);
+
+	if (vsync != nullptr)
+	{
+		*vsync = m_bVSync;
+	}
+
+	return status;
 }
 
 int oglRenderer::GetNumMonitors() const
@@ -254,6 +271,7 @@ bool oglRenderer::SetShaderValue(const std::string& shader, const string& locati
 void oglRenderer::EnableVSync(bool enable)
 {
 	glfwSwapInterval(enable);
+	m_bVSync = enable;
 }
 
 void oglRenderer::Present()
@@ -303,7 +321,7 @@ void oglRenderer::ConfigureGLFW()
 #endif
 
 	int width, height;
-	GetDisplayMode(width, height);
+	GetDisplayMode(&width, &height);
 
 	m_pWindow = glfwCreateWindow(width, height, "", bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, nullptr);
 

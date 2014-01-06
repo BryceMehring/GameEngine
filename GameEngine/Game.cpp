@@ -114,8 +114,6 @@ int Game::Run()
 
 void Game::Update()
 {
-	static bool bSync = false;
-
 	// If There has been a state change,
 	if(!m_NextState.empty())
 	{
@@ -133,8 +131,10 @@ void Game::Update()
 
 	if(m_pInput->KeyPress(GLFW_KEY_F5))
 	{
-		m_pRenderer->EnableVSync(bSync);
-		bSync = !bSync;
+		bool bVsync;
+		m_pRenderer->GetDisplayMode(nullptr, nullptr, &bVsync);
+
+		m_pRenderer->EnableVSync(!bVsync);
 	}
 
 	if(m_pInput->KeyPress(GLFW_KEY_F6))
@@ -178,12 +178,11 @@ void Game::Draw()
 
 void Game::DrawFPS()
 {
-	int width;
 	int height;
 
 	std::stringstream stream;
 	stream << "FPS: " << m_uiFPS;
-	m_pRenderer->GetDisplayMode(width,height);
+	m_pRenderer->GetDisplayMode(nullptr,&height);
 
 	m_pRenderer->SetRenderSpace(RenderSpace::Screen);
 

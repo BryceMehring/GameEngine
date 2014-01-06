@@ -95,8 +95,8 @@ void Grid::Render(IRenderer& renderer) const
 	std::ostringstream stream;
 	stream << "Mines: "<< m_uiMineCount - m_uiMarkedCount;
 
-	int width, height;
-	renderer.GetDisplayMode(width,height);
+	int height;
+	renderer.GetDisplayMode(nullptr,&height);
 	renderer.DrawString(stream.str().c_str(),glm::vec3(0.0f,height - 50.0f,0),0.5f);
 
 	IGrid::Render(renderer);
@@ -252,7 +252,7 @@ void MineSweeper::Init(Game& game)
 	IRenderer& renderer = game.GetRenderer();
 
 	int width, height;
-	renderer.GetDisplayMode(width,height);
+	renderer.GetDisplayMode(&width,&height);
 
 	m_grid.SetGridSize(glm::vec2(width / 1.1f,height / 1.1f));
 	m_grid.SetNumTiles(glm::ivec2(30,20));
@@ -327,7 +327,7 @@ void MineSweeper::Draw(Game& game)
 	m_grid.Render(renderer);
 
 	int width, height;
-	game.GetRenderer().GetDisplayMode(width, height);
+	game.GetRenderer().GetDisplayMode(&width, &height);
 	renderer.DrawString(stream.str().c_str(), glm::vec3(width - 200, height - 5, 0.0f), 0.5f,glm::vec4(1.0f),0,FontAlignment::Center);
 
 	glm::vec2 cursorPos = game.GetInput().GetCursorPos();
@@ -350,7 +350,7 @@ void MineSweeper::Draw(Game& game)
 void MineSweeper::CreatePlayingMenu(Game& game)
 {
 	int width, height;
-	game.GetRenderer().GetDisplayMode(width, height);
+	game.GetRenderer().GetDisplayMode(&width, &height);
 
 	UI::Menu* pMenu = new UI::Menu();
 
@@ -365,7 +365,7 @@ void MineSweeper::CreatePlayingMenu(Game& game)
 void MineSweeper::CreateMainMenu(Game& game)
 {
 	int width, height;
-	game.GetRenderer().GetDisplayMode(width, height);
+	game.GetRenderer().GetDisplayMode(&width, &height);
 
 	UI::Menu* pMenu = new UI::Menu();
 
