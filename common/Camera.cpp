@@ -60,7 +60,7 @@ void Camera::SetLens(float w, float h, float nearZ, float farZ)
 
 void Camera::SetLens(float fov, float w, float h, float nearZ, float farZ)
 {
-	m_Proj = glm::perspective(fov,w/h,nearZ,farZ);
+	m_Proj = glm::perspective(fov, w / h, nearZ, farZ);
 }
 
 void Camera::Update()

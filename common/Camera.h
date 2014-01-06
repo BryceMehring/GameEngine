@@ -31,7 +31,7 @@ public:
 	// pos = position of camera
 	// target = where the camera should look
 	// up = which direction is up
-	COMMON_API void LookAt(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up);
+	COMMON_API void LookAt(const glm::vec3& pos, const glm::vec3& target = glm::vec3(0.0f), const glm::vec3& up = glm::vec3(0.0f,1.0f,0.0f));
 
 	// Creates a perspective or orthogonal matrix
 	// fov = field of view
