@@ -57,10 +57,12 @@ public:
 	// Returns the resource manager
 	virtual IResourceManager& GetResourceManager() = 0;
 
-	// Get the display mode, return true on success, false on error
+	// Get the display mode on the specified monitor, return true on success, false on error
+	// either width or height may be null if their values are not needed
 	virtual bool GetDisplayMode(int monitor, int mode, int* width, int* height) const = 0; 
 
 	// Get the current display mode, return true on success, false on error
+	// either width, height, or vsync may be null if their values are not needed
 	virtual bool GetDisplayMode(int* width, int* height, bool* vsync = nullptr) const = 0; 
 
 	// Returns the number of monitors active on the current system
