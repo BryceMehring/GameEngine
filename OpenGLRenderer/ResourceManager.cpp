@@ -296,7 +296,7 @@ bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, i
 	*pImgData = stbi_load(file.c_str(),&width,&height,&comp,0);
 
 	// check if the image can be loaded
-	if(pImgData == nullptr)
+	if(*pImgData == nullptr)
 		return false;
 
 	glGenTextures(1,&textureId);
