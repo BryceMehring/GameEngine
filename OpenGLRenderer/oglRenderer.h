@@ -148,6 +148,7 @@ private:
 	bool CheckShader(const std::string& shader, const std::string& location, GLuint& shaderID, GLuint& outLocation) const;
 	void ParseVideoSettingsFile();
 	void SaveDisplayList();
+	void BuildBuffers();
 	void BuildCamera();
 
 	oglRenderer(const oglRenderer&) = delete;

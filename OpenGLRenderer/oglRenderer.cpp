@@ -74,26 +74,11 @@ oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_
 
 	EnumerateDisplayAdaptors();
 	ParseVideoSettingsFile();
-
 	ConfigureGLFW();
 	ConfigureOpenGL();
+	BuildBuffers();
 	BuildCamera();
 	EnableVSync(true);
-
-	VertexBuffer* pVertexBuffer = new VertexBuffer(sizeof(VertexPCT),1024*40);
-	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexPC),1024*8*4,false);
-
-	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer));
-	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));
-
-	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,World));
-	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,Screen,&m_OrthoCamera));
-
-	m_pWorldSpaceSprites.reset(new SpriteEngine(&m_rm,pVertexBuffer));
-	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));
-
-	m_vertexBuffers.push_back(pVertexBuffer);
-	m_vertexBuffers.push_back(pLineVertexBuffer);
 }
 
 oglRenderer::~oglRenderer()
@@ -173,15 +158,15 @@ IResourceManager& oglRenderer::GetResourceManager()
 
 bool oglRenderer::GetDisplayMode(int monitor, int i, int& width, int& height) const
 {
-	auto monitorModes = m_videoModes[monitor];
+	std::pair<const GLFWvidmode*,int> modes = m_videoModes[monitor];
 
-	if(i >= monitorModes.second)
+	if(i >= modes.second)
 		return false;
 
-	int index = monitorModes.second - i - 1;
+	int index = modes.second - i - 1;
 
-	width = monitorModes.first[index].width;
-	height = monitorModes.first[index].height;
+	width = modes.first[index].width;
+	height = modes.first[index].height;
 
 	return true;
 }
@@ -311,14 +296,16 @@ void oglRenderer::ConfigureGLFW()
 {
 	GLFWOpenWindowHints();
 
-	bool bFullscreen = m_bFullscreen && !_DEBUG;
+	bool bFullscreen = false;
 
-	auto iter = m_videoModes[m_iCurrentMonitor];
-	m_pWindow = glfwCreateWindow(iter.first[iter.second - m_iCurrentDisplayMode - 1].width, // width
-								 iter.first[iter.second - m_iCurrentDisplayMode - 1].height, // height
-								 "", // window title
-								 bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, // monitor to display on
-								 NULL); // not used
+#ifndef _DEBUG
+	bFullscreen = m_bFullscreen;
+#endif
+
+	int width, height;
+	GetDisplayMode(width, height);
+
+	m_pWindow = glfwCreateWindow(width, height, "", bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, nullptr);
 
 	assert(m_pWindow != nullptr);
 
@@ -378,13 +365,13 @@ bool oglRenderer::CheckShader(const std::string& shader, const string& location,
 	if(pResource == nullptr)
 		return false;
 
-	auto type = pResource->GetType();
+	ResourceType type = pResource->GetType();
 
 	if((type != ResourceType::Shader) && (type != ResourceType::TexturedShader))
 		return false;
 
 	const Shader* pShader = static_cast<const Shader*>(pResource);
-	const auto& unifromMap = pShader->GetUniforms();
+	const Shader::UnifromMap& unifromMap = pShader->GetUniforms();
 
 	auto iterLocation = unifromMap.find(location);
 	if(iterLocation == unifromMap.end())
@@ -467,13 +454,31 @@ void oglRenderer::SaveDisplayList()
 
 }
 
+void oglRenderer::BuildBuffers()
+{
+	VertexBuffer* pVertexBuffer = new VertexBuffer(sizeof(VertexPCT),1024*40);
+	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexPC),1024*8*4,false);
+
+	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer));
+	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));
+
+	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,World));
+	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,Screen,&m_OrthoCamera));
+
+	m_pWorldSpaceSprites.reset(new SpriteEngine(&m_rm,pVertexBuffer));
+	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));
+
+	m_vertexBuffers.push_back(pVertexBuffer);
+	m_vertexBuffers.push_back(pLineVertexBuffer);
+}
+
 void oglRenderer::BuildCamera()
 {
 	int width, height;
 	glfwGetFramebufferSize(m_pWindow,&width, &height);
 
 	m_OrthoCamera.SetLens((float)width,(float)height,0.1f,5000.0f); // 2.0f, 2.0f
-	m_OrthoCamera.LookAt(glm::vec3(0.0f,0.0f,2.0f),glm::vec3(0.0f),glm::vec3(0.0f,1.0f,0.0f));
+	m_OrthoCamera.LookAt(glm::vec3(0.0f,0.0f,2.0f));
 	m_OrthoCamera.Update();
 }
 
