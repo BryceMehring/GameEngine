@@ -15,6 +15,7 @@ extern "C" PLUGINDECL IPlugin* CreatePlugin()
 }
 
 oglRenderer* oglRenderer::s_pThis = nullptr;
+const std::string oglRenderer::s_videoModeFile = "VideoModes.txt";
 
 void APIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
 {
@@ -397,7 +398,7 @@ bool oglRenderer::CheckShader(const std::string& shader, const string& location,
 
 void oglRenderer::ParseVideoSettingsFile()
 {
-	std::ifstream stream("videoModes.txt");
+	std::ifstream stream(s_videoModeFile);
 	int iMonitorCounter = 0;
 	int iDisplayCounter = 0;
 
@@ -435,7 +436,7 @@ void oglRenderer::ParseVideoSettingsFile()
 
 void oglRenderer::SaveDisplayList()
 {
-	std::ofstream stream("videoModes.txt");
+	std::ofstream stream(s_videoModeFile);
 
 	if(stream.is_open())
 	{

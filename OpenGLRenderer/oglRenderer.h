@@ -108,8 +108,6 @@ public:
 
 private:
 
-	static oglRenderer* s_pThis;
-
 	Camera m_OrthoCamera;
 
 	GLFWwindow* m_pWindow;
@@ -138,6 +136,9 @@ private:
 	bool m_bFullscreen;
 
 	std::vector<VertexBuffer*> m_vertexBuffers;
+
+	static oglRenderer* s_pThis;
+	static const std::string s_videoModeFile;
 
 	// Helper functions
 	void GLFWOpenWindowHints();

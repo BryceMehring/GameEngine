@@ -1,6 +1,9 @@
 #output dir
 bin/
 
+GameLog.txt
+VideoModes.txt
+
 # windows
 *.exe
 
