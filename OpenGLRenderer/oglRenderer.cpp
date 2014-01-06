@@ -456,8 +456,8 @@ void oglRenderer::SaveDisplayList()
 
 void oglRenderer::BuildBuffers()
 {
-	VertexBuffer* pVertexBuffer = new VertexBuffer(sizeof(VertexPCT),1024*40);
-	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexPC),1024*8*4,false);
+	VertexBuffer* pVertexBuffer = new VertexBuffer(sizeof(VertexPCT),1024*8);
+	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexPC),1024*8,false);
 
 	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer));
 	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));
