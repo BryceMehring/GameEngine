@@ -40,7 +40,7 @@ VertexBuffer::VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bP
 	if(bPCT)
 	{
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, vertexBufferSize, reinterpret_cast<void*>(7 * sizeof(float)));
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexBufferSize, reinterpret_cast<void*>(7 * sizeof(float)));
 	}
 }
 
