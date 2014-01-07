@@ -10,7 +10,7 @@ class LineEngine
 {
 public:
 
-	LineEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, RenderSpace space, Camera* pCam = nullptr);
+	LineEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Camera* pCam = nullptr);
 
 	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T);
 

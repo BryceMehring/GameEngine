@@ -378,17 +378,11 @@ void oglRenderer::EnumerateDisplayAdaptors()
 
 bool oglRenderer::CheckShader(const std::string& shader, const string& location,  GLuint& shaderID, GLuint& outLocation) const
 {
-	const IResource* pResource = m_rm.GetResource(shader);
+	const Shader* pShader = static_cast<const Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
 
-	if(pResource == nullptr)
+	if (pShader == nullptr)
 		return false;
 
-	ResourceType type = pResource->GetType();
-
-	if((type != ResourceType::Shader) && (type != ResourceType::TexturedShader))
-		return false;
-
-	const Shader* pShader = static_cast<const Shader*>(pResource);
 	const Shader::UnifromMap& unifromMap = pShader->GetUniforms();
 
 	auto iterLocation = unifromMap.find(location);
@@ -480,8 +474,8 @@ void oglRenderer::BuildBuffers()
 	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer));
 	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));
 
-	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,World));
-	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,Screen,&m_OrthoCamera));
+	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer));
+	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,&m_OrthoCamera));
 
 	m_pWorldSpaceSprites.reset(new SpriteEngine(&m_rm,pVertexBuffer));
 	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));

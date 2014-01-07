@@ -10,7 +10,7 @@ FontEngine::FontEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Cam
 
 void FontEngine::GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
 {
-	const Charset* font = static_cast<const Charset*>(m_pRm->GetResource("font"));
+	const Charset* font = static_cast<const Charset*>(m_pRm->GetResource("font",ResourceType::Font));
 	GetStringRec(font, str, scale, alignment, out);
 }
 
@@ -128,7 +128,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 		for(auto& iter : textureIter.second)
 		{
 			// Get the current font
-			const Charset* font = static_cast<const Charset*>(m_pRm->GetResource(textureIter.first));
+			const Charset* font = static_cast<const Charset*>(m_pRm->GetResource(textureIter.first, ResourceType::Font));
 			const char* str = iter.text.c_str();
 
 			// World pos of aligned text to be rendered
@@ -219,7 +219,8 @@ void FontEngine::Render()
 	glActiveTexture(GL_TEXTURE0);
 
 	// Get the shader to use
-	const TexturedShader* pShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader"));
+	const TexturedShader* pShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader",ResourceType::TexturedShader));
+	assert(pShader != nullptr);
 
 	// Use the shader
 	glUseProgram(pShader->GetID());
@@ -235,7 +236,8 @@ void FontEngine::Render()
 
 	for(auto& iter : m_textSubsets)
 	{
-		const IResource* pCurrentTexture = m_pRm->GetResource(iter.first);
+		const IResource* pCurrentTexture = m_pRm->GetResource(iter.first,ResourceType::Font);
+		assert(pCurrentTexture != nullptr);
 
 		// Set the current texture
 		glBindTexture(GL_TEXTURE_2D, pCurrentTexture->GetID());

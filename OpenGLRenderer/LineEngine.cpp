@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
 
-LineEngine::LineEngine(ResourceManager* pRM, VertexBuffer* pVertexStructure, RenderSpace space, Camera* pCam)
+LineEngine::LineEngine(ResourceManager* pRM, VertexBuffer* pVertexStructure, Camera* pCam)
 	: m_pRM(pRM), m_pVertexBuffer(pVertexStructure), m_pCamera(pCam), m_iCurrentLength(0)
 {
 }
@@ -65,7 +65,8 @@ void LineEngine::Render()
 	if(m_iCurrentLength == 0)
 		return;
 
-	Shader* pShader = static_cast<Shader*>(m_pRM->GetResource("lineShader"));
+	Shader* pShader = static_cast<Shader*>(m_pRM->GetResource("lineShader", ResourceType::Shader));
+	assert(pShader != nullptr);
 
 	glUseProgram(pShader->GetID());
 

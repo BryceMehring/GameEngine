@@ -568,8 +568,8 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 
 	out = { pTex->m_iHeight,
 			pTex->m_iWidth,
-			pTex->m_iCellsHeight,
 			pTex->m_iCellsWidth,
+			pTex->m_iCellsHeight,
 			pTex->m_iComp,
 			pTex->m_pImg 
 		  };
@@ -586,24 +586,36 @@ void ResourceManager::Clear()
 	m_resources.clear();
 }
 
-IResource* ResourceManager::GetResource(const std::string& name)
+IResource* ResourceManager::GetResource(const std::string& name, ResourceType type)
 {
 	auto iter = m_resources.find(name);
 
-	if(iter != m_resources.end())
+	if(iter == m_resources.end())
 	{
-		return iter->second;
+		return nullptr;
 	}
-	return nullptr;
+
+	if (iter->second->GetType() != type)
+	{
+		return nullptr;
+	}
+
+	return iter->second;
 }
 
-const IResource* ResourceManager::GetResource(const std::string& name) const
+const IResource* ResourceManager::GetResource(const std::string& name, ResourceType type) const
 {
 	auto iter = m_resources.find(name);
 
-	if(iter != m_resources.end())
+	if(iter == m_resources.end())
 	{
-		return iter->second;
+		return nullptr;
 	}
-	return nullptr;
+
+	if (iter->second->GetType() != type)
+	{
+		return nullptr;
+	}
+	
+	return iter->second;
 }

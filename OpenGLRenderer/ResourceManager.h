@@ -179,8 +179,8 @@ public:
 	void Clear() override;
 
 	// method only accessible in the OpenGL plugin to access OpenGL specific information about the resources
-	IResource* GetResource(const std::string& name);
-	const IResource* GetResource(const std::string& name) const;
+	IResource* GetResource(const std::string& name, ResourceType type);
+	const IResource* GetResource(const std::string& name, ResourceType type) const;
 
 private:
 

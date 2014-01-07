@@ -29,19 +29,9 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 {
 	if(m_iCurrentLength < m_pVertexBuffer->GetLength())
 	{
-		IResource* pShader = m_pRM->GetResource(tech);
-		IResource* pTex = m_pRM->GetResource(texture);
-
-		if( pShader != nullptr && pTex != nullptr)
-		{
-			int iZorder = { (int)floor(transformation[3].z) };
-			m_spriteLayers[iZorder][tech][texture].push_back({ transformation, color, tiling, iCellId });
-			++m_iCurrentLength;
-		}
-	}
-	else
-	{
-		// todo: create some error msg
+		int iZorder = { (int)floor(transformation[3].z) };
+		m_spriteLayers[iZorder][tech][texture].push_back({ transformation, color, tiling, iCellId });
+		++m_iCurrentLength;
 	}
 }
 
@@ -58,18 +48,17 @@ void SpriteEngine::FillVertexBuffer()
 		{
 			for (auto& textureIter : techIter.second)
 			{
-				TextureInfo texInfo;
-				m_pRM->GetTextureInfo(textureIter.first, texInfo);
+				const Texture* pTex = static_cast<Texture*>(m_pRM->GetResource(textureIter.first, ResourceType::Texture));
 
 				// write all sprites that use the same tech and texture to the buffer
 				for (auto& iter : textureIter.second)
 				{
-					unsigned int x = { iter.iCellId % texInfo.uiCellsWidth };
-					unsigned int y = { iter.iCellId / texInfo.uiCellsWidth };
+					unsigned int x = iter.iCellId % pTex->GetCellsWidth();
+					unsigned int y = iter.iCellId / pTex->GetCellsWidth();
 
 					// tex coords
-					glm::vec2 topLeft(x / (float)(texInfo.uiCellsWidth),y / (float)(texInfo.uiCellsHeight));
-					glm::vec2 bottomRight((x+1) / (float)(texInfo.uiCellsWidth),(y+1) / (float)(texInfo.uiCellsHeight));
+					glm::vec2 topLeft(x / (float)(pTex->GetCellsWidth()), y / (float)(pTex->GetCellsHeight()));
+					glm::vec2 bottomRight((x + 1) / (float)(pTex->GetCellsWidth()), (y + 1) / (float)(pTex->GetCellsHeight()));
 
 					// filling in the vertices
 					pVert[0].pos = (iter.T * glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f)).xyz();
@@ -116,14 +105,15 @@ void SpriteEngine::Render()
 
 	unsigned long uiStartingIndex = 0; // Starting index to the vertex buffer for rendering multiple textures within one shader pass
 
-		// Loop over all of the layers
+	// Loop over all of the layers
 	for(auto& layerIter : m_spriteLayers)
 	{
 		// Loop over all sprites with the same tech
 		for(auto& techIter : layerIter.second)
 		{
 			// Apply the shader tech
-			const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter.first));
+			const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter.first, ResourceType::TexturedShader));
+			assert(pShader != nullptr);
 
 			glUseProgram(pShader->GetID());
 
@@ -133,7 +123,8 @@ void SpriteEngine::Render()
 			// Render all sprites that use the same tech and texture
 			for(auto& spriteIter : techIter.second)
 			{
-				const Texture* pTexture = static_cast<const Texture*>(m_pRM->GetResource(spriteIter.first));
+				const IResource* pTexture = m_pRM->GetResource(spriteIter.first, ResourceType::Texture);
+				assert(pTexture != nullptr);
 
 				glBindTexture(GL_TEXTURE_2D, pTexture->GetID());
 				glUniform1i(pShader->GetTextureSamplerID(),0);
