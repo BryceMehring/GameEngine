@@ -25,6 +25,7 @@ private:
 	GLuint m_indexBuffer;
 	GLuint m_arrayObject;
 	GLuint m_length;
+	
 };
 
 

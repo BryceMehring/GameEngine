@@ -1,10 +1,8 @@
 #define GLM_SWIZZLE
 #include "SpriteEngine.h"
-#include "GenerateBuffers.h"
 #include "VertexStructures.h"
 
 #include <cassert>
-#include <stddef.h>
 #include <algorithm>
 
 SpriteEngine::SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexStruct, Camera* pCam) :
