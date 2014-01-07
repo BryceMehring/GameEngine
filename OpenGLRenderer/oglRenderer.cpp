@@ -358,6 +358,11 @@ void oglRenderer::ConfigureOpenGL()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CW);
+	
 	glClearColor(0.0f,0.0f,0.0f,0.0f);
 }
 

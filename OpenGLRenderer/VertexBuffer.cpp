@@ -17,12 +17,11 @@ VertexBuffer::VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bP
 	for (unsigned short i = 0; i < bufferLength; ++i)
 	{
 		// Tri 1
-		indexBuffer[i * 6] = 4 * i + 1;
+		indexBuffer[i * 6] = 4 * i;
 		indexBuffer[i * 6 + 1] = 4 * i + 2;
-		indexBuffer[i * 6 + 2] = 4 * i;
+		indexBuffer[i * 6 + 2] = 4 * i + 1;
 
 		//Tri 2
-		//
 		indexBuffer[i * 6 + 3] = 4 * i + 2;
 		indexBuffer[i * 6 + 4] = 4 * i + 3;
 		indexBuffer[i * 6 + 5] = 4 * i + 1;
