@@ -105,10 +105,6 @@ int oglRenderer::GetVersion() const
 	return 0;
 }
 
-void oglRenderer::Init(asIScriptEngine* pAS) {}
-
-void oglRenderer::Destroy(asIScriptEngine* pAS) {}
-
 void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float fWidth, const glm::vec4& color, const glm::mat4& T)
 {
 	if (pArray != nullptr)

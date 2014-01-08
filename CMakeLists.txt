@@ -31,10 +31,6 @@ include_directories(${STB_IMAGE_INCLUDE_DIR})
 find_package (GLM)
 include_directories(${GLM_INCLUDE_DIR})
 
-find_package (ANGELSCRIPT)
-include_directories(${ANGELSCRIPT_INCLUDE_DIR})
-include_directories(${ANGELSCRIPT_ADDON_INCLUDE_DIR})
-
 include_directories(${CMAKE_SOURCE_DIR}/common)
 include_directories(${CMAKE_SOURCE_DIR}/GameEngine/interfaces)
 include_directories(${CMAKE_SOURCE_DIR}/GameEngine)

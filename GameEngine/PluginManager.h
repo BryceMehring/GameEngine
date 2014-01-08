@@ -28,12 +28,11 @@ class PluginManager
 public:
 
 	PluginManager();
-	~PluginManager();
 
 	// returns the plugin if found, else, it returns nullptr
 	const IPlugin* GetPlugin(DLLType type) const;
 	IPlugin* GetPlugin(DLLType type);
-
+	
 	/* Loads a plugin dll. Plugin dlls have the extension: ".plug"
 	   returns a valid plugin if loaded
 	   returns nullptr in the case of error
@@ -48,24 +47,14 @@ public:
 	// removes all plugins loaded
 	void FreeAllPlugins();
 
-	// todo: is this good to do?
-	void SetAS(class asIScriptEngine* pAS) { m_pAS = pAS; }
-
-	// todo: need to implement this?
-	void RegisterScript() {}
-
 private:
 
-	class asIScriptEngine* m_pAS;
 	typedef std::map<DLLType,std::shared_ptr<struct PluginInfo>> plugin_type;
 	plugin_type m_plugins; // the list of all plugins
 
-	// Helper functions
-	void FreePlugin(const PluginInfo& plugin);
-
 	// Prevent copying
-	PluginManager(const PluginManager&);
-	PluginManager& operator=(const PluginManager&);
+	PluginManager(const PluginManager&) = delete;
+	PluginManager& operator=(const PluginManager&) = delete;
 };
 
 typedef IPlugin* (*CREATEPLUGIN)();

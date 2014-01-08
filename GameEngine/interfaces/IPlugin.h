@@ -30,9 +30,6 @@ public:
 	// returns the version number of the plugin
 	virtual int GetVersion() const = 0;
 
-	virtual void Init(class asIScriptEngine*) = 0;
-	virtual void Destroy(class asIScriptEngine*) = 0;
-
 protected:
 
 	virtual ~IPlugin() {}

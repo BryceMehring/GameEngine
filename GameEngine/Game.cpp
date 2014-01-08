@@ -15,12 +15,9 @@ using namespace std;
 
 Game::Game() : m_fDT(0.0), m_fTimeElapsed(0.0), m_uiFrameCounter(0), m_uiFPS(0), m_pRenderer(nullptr), m_pInput(nullptr), m_bDrawFPS(true)
 {
-	m_plugins.SetAS(m_vm.GetScriptEngine());
 	LoadPlugins();
 
 	LoadResourceFile("base.r",*this);
-
-	RegisterScript();
 }
 
 Game::~Game()
@@ -70,18 +67,17 @@ IRenderer& Game::GetRenderer()
 {
 	return *m_pRenderer;
 }
+
 IInput& Game::GetInput()
 {
 	return *m_pInput;
 }
+
 PluginManager& Game::GetPM()
 {
 	return m_plugins;
 }
-asVM& Game::GetAs()
-{
-	return m_vm;
-}
+
 double Game::GetDt() const
 {
 	return m_fDT;
@@ -187,16 +183,4 @@ void Game::DrawFPS()
 	m_pRenderer->SetRenderSpace(RenderSpace::Screen);
 
 	m_pRenderer->DrawString(stream.str().c_str(),glm::vec3(0.0f,height,-10.0f),0.5f);
-}
-
-void Game::RegisterScript()
-{
-	auto pEngine = m_vm.GetScriptEngine();
-
-	DBAS(pEngine->RegisterObjectType("Game",0,asOBJ_REF | asOBJ_NOHANDLE));
-	DBAS(pEngine->RegisterObjectMethod("Game","void SetNextState(const string& in)",asMETHOD(Game,SetNextState),asCALL_THISCALL));
-	DBAS(pEngine->RegisterObjectMethod("Game","string GetCurrentStateName() const",asMETHOD(Game,GetCurrentStateName),asCALL_THISCALL));
-	DBAS(pEngine->RegisterGlobalProperty("Game game",(void*)this));
-
-	pEngine->Release();
 }

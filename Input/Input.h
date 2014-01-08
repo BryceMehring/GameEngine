@@ -10,6 +10,7 @@
 #include "PluginManager.h"
 #include <unordered_map>
 #include <array>
+#include <GLFW/glfw3.h>
 
 class Input : public IInput
 {
@@ -33,9 +34,6 @@ public:
 	virtual DLLType GetPluginType() const;
 	virtual const char* GetName() const;
 	virtual int GetVersion() const;
-
-	virtual void Init(class asIScriptEngine*);
-	virtual void Destroy(class asIScriptEngine*);
 
 	// IInput
 
@@ -165,7 +163,6 @@ private:
 	void CenterMouse();
 	void UpdateMouse(double x, double y);
 	void UpdateJoystick();
-	void RegisterScript(class asIScriptEngine*);
 };
 
 #endif

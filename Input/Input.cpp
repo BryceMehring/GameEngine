@@ -1,6 +1,4 @@
 
-#include <GLFW/glfw3.h>
-#include <angelscript.h>
 #include "Input.h"
 
 #include <iostream>
@@ -98,17 +96,6 @@ const char* Input::GetName() const
 int Input::GetVersion() const
 {
 	return 0;
-}
-
-void Input::Init(asIScriptEngine* pAS)
-{
-	RegisterScript(pAS);
-}
-
-void Input::Destroy(asIScriptEngine* pAS)
-{
-	// Remove config group from script
-	pAS->RemoveConfigGroup("Input");
 }
 
 void Input::Poll()
@@ -468,17 +455,4 @@ void Input::UpdateJoystick()
 			}			
 		}
 	}
-}
-
-void Input::RegisterScript(asIScriptEngine* pAS)
-{
-	pAS->BeginConfigGroup("Input");
-
-	(pAS->RegisterObjectType("IInput",0,asOBJ_REF | asOBJ_NOHANDLE));
-	(pAS->RegisterObjectMethod("IInput","int mouseX()",asMETHOD(Input,MouseX),asCALL_THISCALL));
-	(pAS->RegisterObjectMethod("IInput","int mouseY()",asMETHOD(Input,MouseY),asCALL_THISCALL));
-	(pAS->RegisterObjectMethod("IInput","int mouseZ()",asMETHOD(Input,MouseZ),asCALL_THISCALL));
-	(pAS->RegisterGlobalProperty("IInput input",this));
-
-	pAS->EndConfigGroup();
 }

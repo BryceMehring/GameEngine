@@ -178,8 +178,6 @@ private:
 
 COMMON_API void CreateCollionPolygon(const std::vector<glm::vec3>& poly, FRECT& out);
 
-COMMON_API void RegisterScriptVecMath(class asIScriptEngine* pEngine);
-
 } // math
 
 #endif // _VECMATH_

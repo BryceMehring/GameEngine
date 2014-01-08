@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cassert>
 #include <sstream>
-#include <angelscript.h>
 #include <iostream>
 
 #ifdef _WIN32
@@ -63,24 +62,8 @@ PluginInfo::~PluginInfo()
 	}
 }
 
-PluginManager::PluginManager() : m_pAS(nullptr)
+PluginManager::PluginManager()
 {
-}
-
-PluginManager::~PluginManager()
-{
-	FreeAllPlugins();
-	m_pAS->Release();
-}
-
-void PluginManager::FreeAllPlugins()
-{
-	for(auto iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
-	{
-		FreePlugin(*(iter->second));
-	}
-
-	m_plugins.clear();
 }
 
 const IPlugin* PluginManager::GetPlugin(DLLType type) const
@@ -111,7 +94,7 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 {
 	Log::Instance().Write("Loading " + file);
 
-	std::shared_ptr<PluginInfo> dll(new PluginInfo);
+	std::shared_ptr<PluginInfo> dll = std::make_shared<PluginInfo>();
 
 	std::string dllFile = folder + '/' + file + ".plug";
 
@@ -150,7 +133,6 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 
 	// Create the plugin
 	dll->pPlugin = pFunct();
-	dll->pPlugin->Init(m_pAS);
 
 	// Get the type of the plugin
 	DLLType type = dll->pPlugin->GetPluginType();
@@ -172,22 +154,13 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 	return dll->pPlugin;
 }
 
-void PluginManager::FreePlugin(const PluginInfo& plugin)
-{
-	if(plugin.pPlugin != nullptr)
-	{
-		plugin.pPlugin->Destroy(m_pAS);
-	}
-}
-
 void PluginManager::FreePlugin(DLLType type)
 {
-	auto iter = m_plugins.find(type);
-	if(iter != m_plugins.end())
-	{
-		FreePlugin(*(iter->second));
+	m_plugins.erase(type);
+}
 
-		m_plugins.erase(iter);
-	}
+void PluginManager::FreeAllPlugins()
+{
+	m_plugins.clear();
 }
 

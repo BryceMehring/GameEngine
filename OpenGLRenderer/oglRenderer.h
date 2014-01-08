@@ -10,7 +10,6 @@
 #include "VertexBuffer.h"
 
 #include "Camera.h"
-#include <angelscript.h>
 #include <memory>
 
 #include <GL/glew.h>
@@ -27,9 +26,6 @@ public:
 	DLLType GetPluginType() const override;
 	const char* GetName() const override;
 	int GetVersion() const override;
-
-	void Init(class asIScriptEngine*) override;
-	void Destroy(class asIScriptEngine*) override;
 
 	// IRenderer
 

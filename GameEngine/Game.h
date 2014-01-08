@@ -8,7 +8,6 @@
 #include "GLFWInit.h"
 #include "interfaces/IInput.h"
 #include "interfaces/IRenderer.h"
-#include "asVM.h"
 #include <string>
 
 #ifdef _WIN32
@@ -52,7 +51,6 @@ public:
 	GAME_ENGINE_API IRenderer& GetRenderer();
 	GAME_ENGINE_API IInput& GetInput();
 	GAME_ENGINE_API PluginManager& GetPM();
-	GAME_ENGINE_API asVM& GetAs();
 
 	// time differential between frames in seconds
 	GAME_ENGINE_API double GetDt() const;
@@ -61,7 +59,6 @@ private:
 
 	GLFWInit m_glfwInit;
 
-	asVM m_vm;
 	PluginManager m_plugins;
 
 	GameStateMachine m_StateMachine;
@@ -91,8 +88,6 @@ private:
 
 	void Draw();
 	void DrawFPS();
-
-	void RegisterScript();
 
 	// Prevent copying
 	Game(const Game&) = delete;

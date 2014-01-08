@@ -1,6 +1,5 @@
 // Programmed by Bryce Mehring
 #include "VecMath.h"
-#include "asVM.h"
 
 #include <limits>
 #include <glm/geometric.hpp>
@@ -251,13 +250,5 @@ bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly
 	return ret;
 }
 
-
-void RegisterScriptVecMath(::asIScriptEngine* pEngine)
-{
-	// todo: finish registering the vector interface to script
-	DBAS(pEngine->RegisterObjectType("vec2",sizeof(glm::vec2),asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS));
-	DBAS(pEngine->RegisterObjectProperty("vec2","float x",offsetof(glm::vec2,x)));
-	DBAS(pEngine->RegisterObjectProperty("vec2","float y",offsetof(glm::vec2,y)));
-}
 
 } // Math
