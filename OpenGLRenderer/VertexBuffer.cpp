@@ -2,17 +2,19 @@
 
 #include <vector>
 
-VertexBuffer::VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bPCT) : m_length(bufferLength)
+VertexBuffer::VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bPCT) : m_length(bufferLength), m_size(vertexBufferSize * bufferLength)
 {
 	glGenVertexArrays(1,&m_arrayObject);
 	glBindVertexArray(m_arrayObject);
 
 	glGenBuffers(1,&m_vertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER,m_vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER,vertexBufferSize * bufferLength,0,GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, m_size, 0, GL_STREAM_DRAW);
 
 	std::vector<unsigned short> indexBuffer;
 	indexBuffer.resize(6 * bufferLength);
+
+	assert(indexBuffer.size() <= USHRT_MAX);
 
 	for (unsigned short i = 0; i < bufferLength; ++i)
 	{
@@ -51,7 +53,7 @@ VertexBuffer::~VertexBuffer()
 	glDeleteVertexArrays(1,&m_arrayObject);
 }
 
-void VertexBuffer::Bind() const
+void VertexBuffer::BindVBO() const
 {
 	glBindBuffer(GL_ARRAY_BUFFER,m_vertexBuffer);
 }
@@ -65,6 +67,18 @@ GLuint VertexBuffer::GetLength() const
 {
 	return m_length;
 }
+
+GLuint VertexBuffer::GetSize() const
+{
+	return m_size;
+}
+
+GLuint VertexBuffer::GetVertexSize() const
+{
+	return m_size / m_length;
+}
+
+
 
 
 

@@ -23,7 +23,7 @@ class FontEngine
 {
 public:
 
-	FontEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Camera* pCam = nullptr);
+	FontEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam = nullptr);
 
 	void GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const;
 

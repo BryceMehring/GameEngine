@@ -5,9 +5,10 @@
 #include <cassert>
 #include <algorithm>
 
-SpriteEngine::SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexStruct, Camera* pCam) :
-	m_pRM(pRm), m_pVertexBuffer(pVertexStruct), m_iCurrentLength(0), m_pCamera(pCam)
+SpriteEngine::SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam) :
+m_pRM(pRm), m_pVertexBuffer(pVertexBuffer), m_iCurrentLength(0), m_pCamera(pCam)
 {
+	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPCT));
 }
 
 SpriteEngine::~SpriteEngine()
@@ -31,14 +32,15 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 	{
 		int iZorder = { (int)floor(transformation[3].z) };
 		m_spriteLayers[iZorder][tech][texture].push_back({ transformation, color, tiling, iCellId });
-		++m_iCurrentLength;
+		m_iCurrentLength += 4;
 	}
 }
 
 void SpriteEngine::FillVertexBuffer()
 {
-	m_pVertexBuffer->Bind();
-	VertexPCT* pVert = static_cast<VertexPCT*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetLength(), GL_MAP_WRITE_BIT));
+	m_pVertexBuffer->BindVBO();
+
+	VertexPCT* pVert = static_cast<VertexPCT*>(glMapBufferRange(GL_ARRAY_BUFFER, 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
 	// Loop over all of the layers
 	for (auto& layerIter : m_spriteLayers)
@@ -129,7 +131,7 @@ void SpriteEngine::Render()
 				glBindTexture(GL_TEXTURE_2D, pTexture->GetID());
 				glUniform1i(pShader->GetTextureSamplerID(),0);
 
-				glDrawElements(GL_TRIANGLES, spriteIter.second.size() * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
+				glDrawElements(GL_TRIANGLES, spriteIter.second.size() * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 6 * sizeof(unsigned short)));
 
 				// Increment the index to the dynamic buffer for rendering a new batch of sprites
 				uiStartingIndex += spriteIter.second.size();

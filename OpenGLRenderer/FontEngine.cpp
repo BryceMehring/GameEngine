@@ -3,9 +3,10 @@
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
-FontEngine::FontEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Camera* pCam) :
-	m_pRm(pRm), m_pVertexBuffer(pVertexStructure), m_pCamera(pCam)
+FontEngine::FontEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam) :
+m_pRm(pRm), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam)
 {
+	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPCT));
 }
 
 void FontEngine::GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
@@ -110,10 +111,10 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 {
 	output.resize(m_textSubsets.size());
 
-	m_pVertexBuffer->Bind();
+	m_pVertexBuffer->BindVBO();
 
 	// Get the vertex buffer memory to write to
-	VertexPCT* v = static_cast<VertexPCT*>(glMapBufferRange(GL_ARRAY_BUFFER , 0, m_pVertexBuffer->GetLength(), GL_MAP_WRITE_BIT));
+	VertexPCT* v = static_cast<VertexPCT*>(glMapBufferRange(GL_ARRAY_BUFFER, 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
 	unsigned int iCurrentVert = 0;
 	unsigned int iSubsetCounter = 0;
@@ -244,7 +245,7 @@ void FontEngine::Render()
 		glUniform1i(pShader->GetTextureSamplerID(),0);
 
 		// Render all strings that have the same texture
-		glDrawElements(GL_TRIANGLES, subsetLength[uiSubset] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 12));
+		glDrawElements(GL_TRIANGLES, subsetLength[uiSubset] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 6 * sizeof(unsigned short)));
 
 		uiStartingIndex += subsetLength[uiSubset++];
 	}

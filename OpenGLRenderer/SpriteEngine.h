@@ -26,7 +26,7 @@ class SpriteEngine
 {
 public:
 
-	SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexStruct, Camera* pCam = nullptr);
+	SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam = nullptr);
 	~SpriteEngine();
 
 	void DrawSprite(const std::string& tech,

@@ -4,9 +4,10 @@
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
 
-LineEngine::LineEngine(ResourceManager* pRM, VertexBuffer* pVertexStructure, Camera* pCam)
-	: m_pRM(pRM), m_pVertexBuffer(pVertexStructure), m_pCamera(pCam), m_iCurrentLength(0)
+LineEngine::LineEngine(ResourceManager* pRM, VertexBuffer* pVertexBuffer, Camera* pCam)
+: m_pRM(pRM), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam), m_iCurrentLength(0)
 {
+	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPC));
 }
 
 void LineEngine::SetCamera(Camera* pCam)
@@ -21,7 +22,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 	if(uiNewLength >= m_pVertexBuffer->GetLength())
 		return;
 
-	m_pVertexBuffer->Bind();
+	m_pVertexBuffer->BindVBO();
 
 	VertexPC* pLineVertex = static_cast<VertexPC*>(glMapBufferRange(GL_ARRAY_BUFFER,sizeof(VertexPC) * m_iCurrentLength,sizeof(VertexPC) * uiNumVertices,GL_MAP_WRITE_BIT));
 
@@ -74,7 +75,7 @@ void LineEngine::Render()
 
 	m_pVertexBuffer->BindVAO();
 
-	glDrawElements(GL_TRIANGLES,m_iCurrentLength / 4 * 6,GL_UNSIGNED_SHORT,0);
+	glDrawElements(GL_TRIANGLES, m_iCurrentLength / 4 * 6, GL_UNSIGNED_SHORT, 0);
 
 	m_iCurrentLength = 0;
 }
