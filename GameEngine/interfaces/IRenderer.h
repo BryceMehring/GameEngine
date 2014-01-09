@@ -78,7 +78,7 @@ public:
 	virtual void GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const = 0;
 
 	// Sets the world space camera to use
-	virtual void SetCamera(class Camera*) = 0; 
+	virtual void SetCamera(class PerspectiveCamera*) = 0;
 
 	// Sets the color of the screen after it gets cleared
 	virtual void SetClearColor(const glm::vec3& color) = 0; 

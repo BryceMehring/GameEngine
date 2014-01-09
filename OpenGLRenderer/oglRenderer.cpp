@@ -66,9 +66,10 @@ void APIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum 
 	}
 }
 
-oglRenderer::oglRenderer() : m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr), m_pScreenSpaceFonts(nullptr),
-	m_pWorldSpaceLines(nullptr), m_pScreenSpaceLines(nullptr), m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
-	m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::World), m_bFullscreen(false)
+oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr),
+m_pScreenSpaceFonts(nullptr), m_pWorldSpaceLines(nullptr), m_pScreenSpaceLines(nullptr),
+m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
+m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(false)
 {
 	s_pThis = this;
 
@@ -207,8 +208,9 @@ void oglRenderer::GetStringRec(const char* str, float scale, FontAlignment align
 	}
 }
 
-void oglRenderer::SetCamera(Camera* pCam)
+void oglRenderer::SetCamera(PerspectiveCamera* pCam)
 {
+	m_pWorldCamera = pCam;
 	m_pWorldSpaceFonts->SetCamera(pCam);
 	m_pWorldSpaceLines->SetCamera(pCam);
 	m_pWorldSpaceSprites->SetCamera(pCam);
@@ -221,11 +223,14 @@ void oglRenderer::SetClearColor(const glm::vec3& color)
 
 void oglRenderer::SetDisplayMode(int i)
 {
-	auto pairedVideoMode = m_videoModes[m_iCurrentMonitor];
-	if(i < pairedVideoMode.second && i >= 0)
+	std::pair<const GLFWvidmode*, int> videoMode = m_videoModes[m_iCurrentMonitor];
+	if (i < videoMode.second && i >= 0)
 	{
-		glfwSetWindowSize(m_pWindow,pairedVideoMode.first[i].width,pairedVideoMode.first[i].height);
-		BuildCamera();
+		int index = videoMode.second - i - 1;
+		glfwSetWindowSize(m_pWindow, videoMode.first[index].width, videoMode.first[index].height);
+		UpdateCamera();
+
+		m_iCurrentDisplayMode = i;
 	}
 }
 
@@ -488,11 +493,28 @@ void oglRenderer::BuildBuffers()
 void oglRenderer::BuildCamera()
 {
 	int width, height;
-	glfwGetFramebufferSize(m_pWindow,&width, &height);
+	glfwGetFramebufferSize(m_pWindow, &width, &height);
 
-	m_OrthoCamera.SetLens((float)width,(float)height,0.1f,5000.0f); // 2.0f, 2.0f
 	m_OrthoCamera.LookAt(glm::vec3(0.0f,0.0f,2.0f));
+	m_OrthoCamera.SetLens(0.0f, (float)width, (float)height, 0.1f, 5000.0f);
 	m_OrthoCamera.Update();
+}
+
+void oglRenderer::UpdateCamera()
+{
+	int width, height;
+	glfwGetFramebufferSize(m_pWindow, &width, &height);
+
+	m_OrthoCamera.UpdateAspectRatio((float)width, (float)height);
+	m_OrthoCamera.Update();
+
+	if (m_pWorldCamera != nullptr)
+	{
+		m_pWorldCamera->UpdateAspectRatio((float)width, (float)height);
+		m_pWorldCamera->Update();
+	}
+
+	glViewport(0, 0, width, height);
 }
 
 

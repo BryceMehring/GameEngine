@@ -42,7 +42,7 @@ public:
 
 private:
 
-	Camera m_camera;
+	PerspectiveCamera m_camera;
 	glm::vec2 m_posLS;
 	glm::vec2 m_posRS;
 };

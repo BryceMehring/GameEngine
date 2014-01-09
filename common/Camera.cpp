@@ -2,10 +2,6 @@
 #include "Camera.h"
 #include <glm/gtx/transform.hpp>
 
-Camera::Camera() : m_View(1.0f), m_Proj(1.0f), m_ViewProj(1.0f)
-{
-}
-
 const glm::mat4& Camera::View() const
 {
 	return m_View;
@@ -53,14 +49,15 @@ void Camera::LookAt(const glm::vec3& pos,const glm::vec3& target,const glm::vec3
 	m_View = glm::lookAt(pos, target, up);
 }
 
-void Camera::SetLens(float w, float h, float nearZ, float farZ)
-{
-	m_Proj = glm::ortho(0.0f,w,0.0f,h,nearZ,farZ); // left, right, bottom, top
-}
-
 void Camera::SetLens(float fov, float w, float h, float nearZ, float farZ)
 {
-	m_Proj = glm::perspective(fov, w / h, nearZ, farZ);
+	m_Proj = glm::ortho(0.0f, w, 0.0f, h, nearZ, farZ); // left, right, bottom, top
+}
+
+void Camera::UpdateAspectRatio(float w, float h)
+{
+	m_Proj[0][0] = 2.0f / w;
+	m_Proj[1][1] = 2.0f / h;
 }
 
 void Camera::Update()
@@ -90,4 +87,19 @@ void Camera::BuildFrustumPlanes()
 		m_planes[i] /= length;
 	}
 
+}
+
+void PerspectiveCamera::SetLens(float fov, float w, float h, float nearZ, float farZ)
+{
+	m_fov = fov;
+	m_Proj = glm::perspective(fov, w / h, nearZ, farZ);
+}
+
+void PerspectiveCamera::UpdateAspectRatio(float w, float h)
+{
+	const float rad = glm::radians(m_fov);
+
+	float tanHalfFovy = tan(rad / float(2));
+
+	m_Proj[0][0] = float(1) / ((w / h) * tanHalfFovy);
 }

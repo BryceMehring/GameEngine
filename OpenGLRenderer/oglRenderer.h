@@ -80,7 +80,7 @@ public:
 	virtual void GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const override;
 
 	// Sets the world space camera to use
-	virtual void SetCamera(class Camera*) override;
+	virtual void SetCamera(class PerspectiveCamera*) override;
 
 	// Sets the color of the screen after it gets cleared
 	virtual void SetClearColor(const glm::vec3& color) override;
@@ -107,6 +107,7 @@ public:
 private:
 
 	Camera m_OrthoCamera;
+	PerspectiveCamera* m_pWorldCamera;
 
 	GLFWwindow* m_pWindow;
 
@@ -149,6 +150,7 @@ private:
 	void SaveDisplayList();
 	void BuildBuffers();
 	void BuildCamera();
+	void UpdateCamera();
 
 	oglRenderer(const oglRenderer&) = delete;
 	oglRenderer& operator = (const oglRenderer&) = delete;

@@ -44,6 +44,10 @@ VertexBuffer::VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bP
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexBufferSize, reinterpret_cast<void*>(7 * sizeof(float)));
 	}
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 VertexBuffer::~VertexBuffer()
