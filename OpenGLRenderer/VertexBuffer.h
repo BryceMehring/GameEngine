@@ -4,16 +4,16 @@
 #include <GL/glew.h>
 #include "VertexStructures.h"
 
+// Defines a a vertex buffer which manages the creation buffers(vao and vbo) which are
+// needed to render objects
 class VertexBuffer
 {
 public:
 
-	// Construct a VertexBuffer with,
+	// Construct a VertexBuffer,
 	// vertexBufferSize: the size of the vertex structure in bytes
 	// bufferLength: the number of vertices to be part of the vertex buffer
 	// bPCT: should be true if the vertex structure uses a texture, else false
-	// Note: because unsigned shorts are used internally, the requirement
-	// bufferLength*6 <= USHRT_MAX must hold
 	VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bPCT = true);
 	~VertexBuffer();
 

@@ -105,7 +105,8 @@ void SpriteEngine::Render()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
-	unsigned long uiStartingIndex = 0; // Starting index to the vertex buffer for rendering multiple textures within one shader pass
+	// Starting index to the vertex buffer for rendering multiple textures within one shader pass
+	unsigned int uiStartingIndex = 0;
 
 	// Loop over all of the layers
 	for(auto& layerIter : m_spriteLayers)
@@ -122,19 +123,22 @@ void SpriteEngine::Render()
 			// set shader parameters
 			glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->ViewProj()[0][0]);
 
-			// Render all sprites that use the same tech and texture
-			for(auto& spriteIter : techIter.second)
+			// Loop over all sprites with the same texture
+			for(auto& texIter : techIter.second)
 			{
-				const IResource* pTexture = m_pRM->GetResource(spriteIter.first, ResourceType::Texture);
+				const IResource* pTexture = m_pRM->GetResource(texIter.first, ResourceType::Texture);
 				assert(pTexture != nullptr);
 
 				glBindTexture(GL_TEXTURE_2D, pTexture->GetID());
 				glUniform1i(pShader->GetTextureSamplerID(),0);
 
-				glDrawElements(GL_TRIANGLES, spriteIter.second.size() * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 6 * sizeof(unsigned short)));
+				// Render all sprites that use the same tech and texture
+				for (auto& spriteIter : texIter.second)
+				{
+					glDrawElementsBaseVertex(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, uiStartingIndex * 4);
 
-				// Increment the index to the dynamic buffer for rendering a new batch of sprites
-				uiStartingIndex += spriteIter.second.size();
+					++uiStartingIndex;
+				}
 			}
 		}
 	}

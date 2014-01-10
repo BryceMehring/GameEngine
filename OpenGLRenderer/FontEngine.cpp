@@ -245,9 +245,12 @@ void FontEngine::Render()
 		glUniform1i(pShader->GetTextureSamplerID(),0);
 
 		// Render all strings that have the same texture
-		glDrawElements(GL_TRIANGLES, subsetLength[uiSubset] * 6, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(uiStartingIndex * 6 * sizeof(unsigned short)));
+		for (unsigned int i = 0; i < subsetLength[uiSubset]; ++i, ++uiStartingIndex)
+		{
+			glDrawElementsBaseVertex(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, 4 * uiStartingIndex);
+		}
 
-		uiStartingIndex += subsetLength[uiSubset++];
+		++uiSubset;
 	}
 
 	glDisable(GL_BLEND);

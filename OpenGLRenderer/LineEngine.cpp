@@ -25,7 +25,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 	m_pVertexBuffer->BindVBO();
 
 	VertexPC* pLineVertex = static_cast<VertexPC*>(glMapBufferRange(GL_ARRAY_BUFFER,sizeof(VertexPC) * m_iCurrentLength,sizeof(VertexPC) * uiNumVertices,GL_MAP_WRITE_BIT));
-
+	
 	for(unsigned int i = 1; i < uiLength; ++i)
 	{
 		float dx = pArray[i].x - pArray[i - 1].x;
@@ -75,7 +75,11 @@ void LineEngine::Render()
 
 	m_pVertexBuffer->BindVAO();
 
-	glDrawElements(GL_TRIANGLES, m_iCurrentLength / 4 * 6, GL_UNSIGNED_SHORT, 0);
+	unsigned int count = m_iCurrentLength / 4 * 6;
+	for (unsigned int i = 0; i < count; ++i)
+	{
+		glDrawElementsBaseVertex(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, 4 * i);
+	}
 
 	m_iCurrentLength = 0;
 }
