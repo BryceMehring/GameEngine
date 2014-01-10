@@ -11,7 +11,7 @@ m_pRm(pRm), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam)
 
 void FontEngine::GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
 {
-	const Charset* font = static_cast<const Charset*>(m_pRm->GetResource("font",ResourceType::Font));
+	const Font* font = static_cast<const Font*>(m_pRm->GetResource("font", ResourceType::Font));
 	GetStringRec(font, str, scale, alignment, out);
 }
 
@@ -28,9 +28,9 @@ void FontEngine::SetCamera(Camera* pCam)
 	m_pCamera = pCam;
 }
 
-void FontEngine::GetStringRec(const Charset* font, const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
+void FontEngine::GetStringRec(const Font* fnt, const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
 {
-	unsigned int lineHeight = font->GetLineHeight();
+	unsigned int lineHeight = fnt->GetLineHeight();
 
 	inout.bottomRight = inout.topLeft;
 	inout.bottomRight.y -= scale * lineHeight;
@@ -39,11 +39,11 @@ void FontEngine::GetStringRec(const Charset* font, const char* str, float scale,
 
 	while(*str)
 	{
-		if (font->IsValidCharacter(*str))
+		if (fnt->IsValidCharacter(*str))
 		{
 			if (!IsSpecialCharacter(*str))
 			{
-				pos.x += scale * font->GetCharDescriptor(*str).XAdvance;
+				pos.x += scale * fnt->GetCharDescriptor(*str).XAdvance;
 			}
 			else
 			{
@@ -129,7 +129,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 		for(auto& iter : textureIter.second)
 		{
 			// Get the current font
-			const Charset* font = static_cast<const Charset*>(m_pRm->GetResource(textureIter.first, ResourceType::Font));
+			const Font* fnt = static_cast<const Font*>(m_pRm->GetResource(textureIter.first, ResourceType::Font));
 			const char* str = iter.text.c_str();
 
 			// World pos of aligned text to be rendered
@@ -139,7 +139,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			if(iter.alignment != FontAlignment::Left)
 			{
 				Math::FRECT drawRec(glm::vec2(posW.x, posW.y));
-				GetStringRec(font, str, iter.scale, iter.alignment, drawRec);
+				GetStringRec(fnt, str, iter.scale, iter.alignment, drawRec);
 
 				posW.x = drawRec.topLeft.x;
 			}
@@ -149,18 +149,18 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			// Write the entire string to the vertex buffer
 			while(*str && ((iCurrentVert + 4) < m_pVertexBuffer->GetLength()))
 			{
-				if (font->IsValidCharacter(*str))
+				if (fnt->IsValidCharacter(*str))
 				{
 					if (!IsSpecialCharacter(*str))
 					{
 						// Font info about the character to draw
-						const CharDescriptor& charInfo = font->GetCharDescriptor(*str);
+						const CharDescriptor& charInfo = fnt->GetCharDescriptor(*str);
 
-						int kerningOffset = font->GetKerningPairOffset(prevChar, *str);
+						int kerningOffset = fnt->GetKerningPairOffset(prevChar, *str);
 
 						// Calculate texture coordinates
-						glm::vec2 texTopLeft(charInfo.x / (float)(font->GetWidth()), charInfo.y / (float)(font->GetHeight()));
-						glm::vec2 texBottomRight(((charInfo.x + charInfo.Width) / (float)(font->GetWidth())), (charInfo.y + charInfo.Height) / (float)(font->GetHeight()));
+						glm::vec2 texTopLeft(charInfo.x / (float)(fnt->GetWidth()), charInfo.y / (float)(fnt->GetHeight()));
+						glm::vec2 texBottomRight(((charInfo.x + charInfo.Width) / (float)(fnt->GetWidth())), (charInfo.y + charInfo.Height) / (float)(fnt->GetHeight()));
 
 						// Calculate position
 						glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * iter.scale, posW.y - charInfo.YOffset * iter.scale, posW.z);
@@ -190,7 +190,7 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 					}
 					else
 					{
-						ProccessSpecialCharacter(*str, iter.scale, font->GetLineHeight(), iter.pos, posW);
+						ProccessSpecialCharacter(*str, iter.scale, fnt->GetLineHeight(), iter.pos, posW);
 					}
 
 					prevChar = *str;

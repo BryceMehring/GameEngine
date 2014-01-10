@@ -53,7 +53,7 @@ private:
 	// output is the number of characters to draw in each subset
 	void FillVertexBuffer(std::vector<unsigned int>&);
 
-	void GetStringRec(const Charset* font, const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const;
+	void GetStringRec(const Font* fnt, const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const;
 };
 
 #endif // _FONTENGINE_

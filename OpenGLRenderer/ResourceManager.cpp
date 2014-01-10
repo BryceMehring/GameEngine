@@ -20,9 +20,14 @@ m_iHeight(th), m_iCellsWidth(cw), m_iCellsHeight(ch), m_iComp(comp), m_pImg(pImg
 {
 }
 
-ResourceType Texture::GetType() const
-{ 
-	return ResourceType::Texture;
+void* Texture::QueryInterface(ResourceType type)
+{
+	if (type == ResourceType::Texture)
+	{
+		return (void*)this;
+	}
+
+	return nullptr;
 }
 
 int Texture::GetWidth() const
@@ -59,9 +64,14 @@ Shader::~Shader()
 	glDeleteProgram(GetID());
 }
 
-ResourceType Shader::GetType() const
-{ 
-	return ResourceType::Shader;
+void* Shader::QueryInterface(ResourceType type)
+{
+	if (type == ResourceType::Shader)
+	{
+		return (void*)this;
+	}
+
+	return nullptr;
 }
 
 GLuint Shader::GetMVP() const
@@ -79,9 +89,14 @@ m_TextureSamplerID(texID)
 {
 }
 
-ResourceType TexturedShader::GetType() const
-{ 
-	return ResourceType::TexturedShader;
+void* TexturedShader::QueryInterface(ResourceType type)
+{
+	if (type == ResourceType::TexturedShader)
+	{
+		return (void*)this;
+	}
+
+	return Shader::QueryInterface(type);
 }
 
 GLuint TexturedShader::GetTextureSamplerID() const
@@ -89,41 +104,46 @@ GLuint TexturedShader::GetTextureSamplerID() const
 	return m_TextureSamplerID;
 }
 
-Charset::Charset(GLuint i, unsigned char* pImg, int comp, int tw, int th) : Texture(i, pImg, comp, tw, th, 1, 1)
+Font::Font(GLuint i, unsigned char* pImg, int comp, int tw, int th) : Texture(i, pImg, comp, tw, th, 1, 1)
 {
 }
 
-ResourceType Charset::GetType() const
-{ 
-	return ResourceType::Font;
+void* Font::QueryInterface(ResourceType type)
+{
+	if (type == ResourceType::Font)
+	{
+		return (void*)this;
+	}
+
+	return nullptr;
 }
 
-unsigned int Charset::GetLineHeight() const
+unsigned int Font::GetLineHeight() const
 { 
 	return m_LineHeight;
 
 }
-unsigned int Charset::GetBase() const
+unsigned int Font::GetBase() const
 { 
 	return m_Base;
 }
 
-unsigned int Charset::GetPages() const
+unsigned int Font::GetPages() const
 { 
 	return m_Pages;
 }
 
-const CharDescriptor& Charset::GetCharDescriptor(char c) const
+const CharDescriptor& Font::GetCharDescriptor(char c) const
 { 
 	return m_Chars[c];
 }
 
-bool Charset::IsValidCharacter(char c) const
+bool Font::IsValidCharacter(char c) const
 { 
 	return c < (int)m_Chars.size() && c >= 0;
 }
 
-int Charset::GetKerningPairOffset(unsigned int first, unsigned int second) const
+int Font::GetKerningPairOffset(unsigned int first, unsigned int second) const
 {
 	int offset = 0;
 
@@ -140,7 +160,7 @@ int Charset::GetKerningPairOffset(unsigned int first, unsigned int second) const
 	return offset;
 }
 
-std::istream& operator >>(std::istream& stream, Charset& CharsetDesc)
+std::istream& operator >>(std::istream& stream, Font& CharsetDesc)
 {
 	std::string Line;
 	std::string Read, Key, Value;
@@ -323,9 +343,6 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	auto iter = m_resources.find(id);
 	if(iter != m_resources.end())
 	{
-		if(iter->second->GetType() == ResourceType::Texture)
-			return true; //texture already loaded
-
 		// ID is taken
 		return false;
 	}
@@ -347,9 +364,6 @@ bool ResourceManager::LoadAnimation(const std::string& id, const std::string& fi
 	auto iter = m_resources.find(id);
 	if(iter != m_resources.end())
 	{
-		if(iter->second->GetType() == ResourceType::Animation)
-			return true; //Animation already loaded
-
 		// ID is taken
 		return false;
 	}
@@ -377,9 +391,6 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 	auto iter = m_resources.find(id);
 	if(iter != m_resources.end())
 	{
-		if(iter->second->GetType() == ResourceType::Font)
-			return true; //Font already loaded
-
 		// ID is taken
 		return false;
 	}
@@ -394,7 +405,7 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 		std::ifstream in(file + ".fnt");
 		if((success = in.is_open()))
 		{
-			Charset* pCharset = new Charset(textureID, pImg, comp, width, height);
+			Font* pCharset = new Font(textureID, pImg, comp, width, height);
 			in >> (*pCharset);
 
 			m_resources.insert({ id, pCharset });
@@ -406,7 +417,7 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 bool ResourceManager::LoadShader(const std::string& id, const std::string& vert, const std::string& frag)
 {
 	auto iter = m_resources.find(id);
-	if(iter != m_resources.end() && iter->second->GetType() == ResourceType::Shader)
+	if(iter != m_resources.end() && iter->second->QueryInterface(ResourceType::Shader) != nullptr)
 	{
 		// shader already loaded
 		return true;
@@ -559,12 +570,12 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 	if(iter == m_resources.end())
 		return false;
 
-	const IResource* pResource = iter->second;
+	IResource* pResource = iter->second;
 
-	if(pResource->GetType() != ResourceType::Texture)
+	if (pResource->QueryInterface(ResourceType::Texture) != nullptr)
 		return false;
 
-	const Texture* pTex = static_cast<const Texture*>(pResource);
+	Texture* pTex = static_cast<Texture*>(pResource);
 
 	out = { pTex->m_iHeight,
 			pTex->m_iWidth,
@@ -595,12 +606,7 @@ IResource* ResourceManager::GetResource(const std::string& name, ResourceType ty
 		return nullptr;
 	}
 
-	if (iter->second->GetType() != type)
-	{
-		return nullptr;
-	}
-
-	return iter->second;
+	return static_cast<IResource*>(iter->second->QueryInterface(type));
 }
 
 const IResource* ResourceManager::GetResource(const std::string& name, ResourceType type) const
@@ -612,10 +618,5 @@ const IResource* ResourceManager::GetResource(const std::string& name, ResourceT
 		return nullptr;
 	}
 
-	if (iter->second->GetType() != type)
-	{
-		return nullptr;
-	}
-	
-	return iter->second;
+	return static_cast<const IResource*>(iter->second->QueryInterface(type));
 }

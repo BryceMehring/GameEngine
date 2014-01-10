@@ -7,6 +7,7 @@
 #include <array>
 #include <unordered_map>
 
+// Valid resource types
 enum class ResourceType
 {
 	Texture,
@@ -20,9 +21,14 @@ enum class ResourceType
 class IResource
 {
 public:
-	IResource(GLuint i) : id(i) {}
-	virtual ResourceType GetType() const = 0;
 
+	IResource(GLuint i) : id(i) {}
+
+	// Returns the interface of type
+	// If a match cannot be made, nullptr is returned
+	virtual void* QueryInterface(ResourceType type) = 0;
+
+	// Return the OpenGL object id
 	const GLuint& GetID() const;
 
 protected:
@@ -37,12 +43,13 @@ private:
 
 };
 
+// Defines a texture resource
 class Texture : public IResource
 {
 public:
 	Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw = 1, int ch = 1);
 
-	virtual ResourceType GetType() const;
+	virtual void* QueryInterface(ResourceType type) override;
 
 	int GetWidth() const;
 	int GetHeight() const;
@@ -67,6 +74,7 @@ private:
 
 };
 
+// Defines a shader resource
 class Shader : public IResource
 {
 public:
@@ -75,7 +83,7 @@ public:
 
 	Shader(GLuint i, GLuint MVP, UnifromMap&& uniforms);
 
-	virtual ResourceType GetType() const;
+	virtual void* QueryInterface(ResourceType type) override;
 
 	GLuint GetMVP() const;
 
@@ -93,13 +101,14 @@ private:
 	friend class ResourceManager;
 };
 
+// Defines a textured shader resource
 class TexturedShader : public Shader
 {
 public:
 
 	TexturedShader(GLuint i, GLuint MVP, GLuint texID, UnifromMap&& uniforms);
 
-	virtual ResourceType GetType() const;
+	virtual void* QueryInterface(ResourceType type) override;
 
 	GLuint GetTextureSamplerID() const;
 
@@ -121,15 +130,16 @@ struct CharDescriptor
 	unsigned short Page;
 };
 
-class Charset : public Texture
+// Defines a font resource
+class Font : public Texture
 {
 public:
 
 	typedef std::array<CharDescriptor,256> FontArray;
 
-	Charset(GLuint i, unsigned char* pImg, int comp, int tw, int th);
+	Font(GLuint i, unsigned char* pImg, int comp, int tw, int th);
 
-	virtual ResourceType GetType() const;
+	virtual void* QueryInterface(ResourceType type) override;
 
 	unsigned int GetLineHeight() const;
 	unsigned int GetBase() const;
@@ -138,11 +148,11 @@ public:
 	bool IsValidCharacter(char c) const;
 	int GetKerningPairOffset(unsigned int first, unsigned int second) const;
 
-	friend std::istream& operator >>(std::istream& stream, Charset& CharsetDesc);
+	friend std::istream& operator >>(std::istream& stream, Font& CharsetDesc);
 
 protected:
 
-	virtual ~Charset() {}
+	virtual ~Font() {}
 
 private:
 
@@ -156,7 +166,7 @@ private:
 	friend class ResourceManager;
 };
 
-std::istream& operator >>(const std::istream& stream, Charset& out);
+std::istream& operator >>(const std::istream& stream, Font& out);
 
 // Resource Manager implementation
 class ResourceManager : public IResourceManager
