@@ -11,7 +11,7 @@ VertexBuffer::VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bP
 	glBindBuffer(GL_ARRAY_BUFFER,m_vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, m_size, 0, GL_STREAM_DRAW);
 
-	unsigned char indexBuffer[] = { 0, 2, 1,	2, 3, 1 };
+	const unsigned char indexBuffer[] = { 0, 2, 1,	2, 3, 1 };
 
 	glGenBuffers(1, &m_indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
@@ -20,13 +20,10 @@ VertexBuffer::VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bP
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexBufferSize, 0);
 
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, vertexBufferSize, reinterpret_cast<void*>(3 * sizeof(float)));
-
 	if(bPCT)
 	{
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexBufferSize, reinterpret_cast<void*>(7 * sizeof(float)));
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, vertexBufferSize, reinterpret_cast<void*>(3 * sizeof(float)));
 	}
 
 	glBindVertexArray(0);

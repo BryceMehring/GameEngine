@@ -8,7 +8,7 @@
 SpriteEngine::SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam) :
 m_pRM(pRm), m_pVertexBuffer(pVertexBuffer), m_iCurrentLength(0), m_pCamera(pCam)
 {
-	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPCT));
+	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPT));
 }
 
 SpriteEngine::~SpriteEngine()
@@ -40,7 +40,7 @@ void SpriteEngine::FillVertexBuffer()
 {
 	m_pVertexBuffer->BindVBO();
 
-	VertexPCT* pVert = static_cast<VertexPCT*>(glMapBufferRange(GL_ARRAY_BUFFER, 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
+	VertexPT* pVert = static_cast<VertexPT*>(glMapBufferRange(GL_ARRAY_BUFFER, 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
 	// Loop over all of the layers
 	for (auto& layerIter : m_spriteLayers)
@@ -64,19 +64,15 @@ void SpriteEngine::FillVertexBuffer()
 
 					// filling in the vertices
 					pVert[0].pos = (iter.T * glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f)).xyz();
-					pVert[0].color = iter.color;
 					pVert[0].tex = topLeft * iter.tiling;
 					
 					pVert[1].pos = (iter.T * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f)).xyz();
-					pVert[1].color = iter.color;
 					pVert[1].tex = glm::vec2(topLeft.x, bottomRight.y) * iter.tiling;
 					
 					pVert[2].pos = (iter.T * glm::vec4(0.5f, 0.5f, 0.0, 1.0f)).xyz();
-					pVert[2].color = iter.color;
 					pVert[2].tex = glm::vec2(bottomRight.x, topLeft.y) * iter.tiling;
 
 					pVert[3].pos = (iter.T * glm::vec4(0.5f, -0.5f, 0.0, 1.0f)).xyz();
-					pVert[3].color = iter.color;
 					pVert[3].tex = bottomRight * iter.tiling;
 
 					pVert += 4;
@@ -118,10 +114,8 @@ void SpriteEngine::Render()
 			const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter.first, ResourceType::TexturedShader));
 			assert(pShader != nullptr);
 
-			glUseProgram(pShader->GetID());
-
-			// set shader parameters
-			glUniformMatrix4fv(pShader->GetMVP(),1,false,&m_pCamera->ViewProj()[0][0]);
+			pShader->UseShader();
+			pShader->SetMVP(m_pCamera->ViewProj());
 
 			// Loop over all sprites with the same texture
 			for(auto& texIter : techIter.second)
@@ -129,12 +123,13 @@ void SpriteEngine::Render()
 				const IResource* pTexture = m_pRM->GetResource(texIter.first, ResourceType::Texture);
 				assert(pTexture != nullptr);
 
-				glBindTexture(GL_TEXTURE_2D, pTexture->GetID());
-				glUniform1i(pShader->GetTextureSamplerID(),0);
+				pShader->BindTexture(*pTexture);
 
 				// Render all sprites that use the same tech and texture
 				for (auto& spriteIter : texIter.second)
 				{
+					pShader->SetColor(spriteIter.color);
+
 					glDrawElementsBaseVertex(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, uiStartingIndex * 4);
 
 					++uiStartingIndex;

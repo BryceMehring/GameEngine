@@ -24,6 +24,8 @@ private:
 	VertexBuffer* m_pVertexBuffer;
 	Camera* m_pCamera;
 
+	std::vector<glm::vec4> m_lineColorSubset;
+
 	unsigned int m_iCurrentLength;
 };
 

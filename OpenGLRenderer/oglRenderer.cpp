@@ -123,7 +123,7 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float f
 
 void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment alignment)
 {
-	if (str != nullptr)
+	/*if (str != nullptr)
 	{
 		if (m_renderSpace == World)
 		{
@@ -133,7 +133,7 @@ void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale,
 		{
 			m_pScreenSpaceFonts->DrawString(str, font, pos, scale, color, alignment);
 		}
-	}
+	}*/
 }
 
 void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec4& color, const glm::vec2& tiling, unsigned int iCellId, const std::string& tech)
@@ -239,34 +239,22 @@ void oglRenderer::SetRenderSpace(RenderSpace space)
 	m_renderSpace = space;
 }
 
-bool oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value )
+void oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value)
 {
-	GLuint shaderID;
-	GLuint unifromLocation;
-	bool bSuccess = CheckShader(shader,location,shaderID,unifromLocation);
-
-	if(bSuccess)
+	Shader* pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
+	if(pShader != nullptr)
 	{
-		glUseProgram(shaderID);
-		glUniform1f(unifromLocation,value);
+		pShader->SetValue(location,value);
 	}
-
-	return bSuccess;
 }
 
-bool oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value )
+void oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value)
 {
-	GLuint shaderID;
-	GLuint unifromLocation;
-	bool bSuccess = CheckShader(shader,location,shaderID,unifromLocation);
-
-	if(bSuccess)
+	Shader* pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
+	if(pShader != nullptr)
 	{
-		glUseProgram(shaderID);
-		glUniform2f(unifromLocation,value.x,value.y);
+		pShader->SetValue(location,value);
 	}
-
-	return bSuccess;
 }
 
 void oglRenderer::EnableVSync(bool enable)
@@ -382,25 +370,6 @@ void oglRenderer::EnumerateDisplayAdaptors()
 	}
 }
 
-bool oglRenderer::CheckShader(const std::string& shader, const string& location,  GLuint& shaderID, GLuint& outLocation) const
-{
-	const Shader* pShader = static_cast<const Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
-
-	if (pShader == nullptr)
-		return false;
-
-	const Shader::UnifromMap& unifromMap = pShader->GetUniforms();
-
-	auto iterLocation = unifromMap.find(location);
-	if(iterLocation == unifromMap.end())
-		return false;
-
-	shaderID = pShader->GetID();
-	outLocation = iterLocation->second;
-
-	return true;
-}
-
 void oglRenderer::ParseVideoSettingsFile()
 {
 	std::ifstream stream(s_videoModeFile);
@@ -474,8 +443,8 @@ void oglRenderer::SaveDisplayList()
 
 void oglRenderer::BuildBuffers()
 {
-	VertexBuffer* pVertexBuffer = new VertexBuffer(sizeof(VertexPCT),1024*8);
-	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexPC),1024*8,false);
+	VertexBuffer* pVertexBuffer = new VertexBuffer(sizeof(VertexPT),1024*8);
+	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexP),1024*8,false);
 
 	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer));
 	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer,&m_OrthoCamera));

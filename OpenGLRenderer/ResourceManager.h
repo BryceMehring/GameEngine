@@ -3,6 +3,9 @@
 
 #include "IResourceManager.h"
 #include <GL/glew.h>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 #include <map>
 #include <array>
 #include <unordered_map>
@@ -22,24 +25,21 @@ class IResource
 {
 public:
 
-	IResource(GLuint i) : id(i) {}
+	friend class ResourceManager;
+	friend class TexturedShader;
+	friend class Texture;
+
+	IResource(GLuint id);
 
 	// Returns the interface of type
 	// If a match cannot be made, nullptr is returned
 	virtual void* QueryInterface(ResourceType type) = 0;
 
-	// Return the OpenGL object id
-	const GLuint& GetID() const;
-
 protected:
 
-	virtual ~IResource() = 0;
+	virtual ~IResource();
 
-private:
-
-	friend class ResourceManager;
-
-	GLuint id;
+	const GLuint m_id;
 
 };
 
@@ -47,6 +47,7 @@ private:
 class Texture : public IResource
 {
 public:
+
 	Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw = 1, int ch = 1);
 
 	virtual void* QueryInterface(ResourceType type) override;
@@ -55,6 +56,7 @@ public:
 	int GetHeight() const;
 	int GetCellsWidth() const;
 	int GetCellsHeight() const;
+	int GetComponents() const;
 	const unsigned char* GetImgData() const;
 
 protected:
@@ -70,8 +72,6 @@ private:
 	int m_iComp;
 	unsigned char* m_pImg;
 
-	friend class ResourceManager;
-
 };
 
 // Defines a shader resource
@@ -81,13 +81,15 @@ public:
 
 	typedef std::map<std::string,GLuint> UnifromMap;
 
-	Shader(GLuint i, GLuint MVP, UnifromMap&& uniforms);
+	Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms);
 
 	virtual void* QueryInterface(ResourceType type) override;
 
-	GLuint GetMVP() const;
-
-	const UnifromMap& GetUniforms() const;
+	void UseShader() const;
+	void SetMVP(const glm::mat4& mvp) const;
+	void SetColor(const glm::vec4& color) const;
+	void SetValue(const std::string& location, float v);
+	void SetValue(const std::string& location, const glm::vec2& v);
 
 protected:
 
@@ -96,9 +98,8 @@ protected:
 private:
 
 	GLuint m_MVP;
+	GLuint m_color;
 	UnifromMap m_uniforms;
-
-	friend class ResourceManager;
 };
 
 // Defines a textured shader resource
@@ -106,11 +107,11 @@ class TexturedShader : public Shader
 {
 public:
 
-	TexturedShader(GLuint i, GLuint MVP, GLuint texID, UnifromMap&& uniforms);
+	TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID, UnifromMap&& uniforms);
 
 	virtual void* QueryInterface(ResourceType type) override;
 
-	GLuint GetTextureSamplerID() const;
+	void BindTexture(const IResource& texture) const;
 
 protected:
 
@@ -162,8 +163,6 @@ private:
 	FontArray m_Chars;
 
 	std::unordered_map<unsigned int, std::unordered_map<unsigned int, int>> m_kerningPairs;
-
-	friend class ResourceManager;
 };
 
 std::istream& operator >>(const std::istream& stream, Font& out);
@@ -194,7 +193,7 @@ public:
 
 private:
 
-	typedef std::map<std::string,IResource*> ResourceMap;
+	typedef std::map<std::string, IResource*> ResourceMap;
 
 	ResourceMap m_resources;
 

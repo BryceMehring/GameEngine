@@ -10,9 +10,8 @@
 #endif
 #include <stb_image.c>
 
-const GLuint& IResource::GetID() const
+IResource::IResource(GLuint id) : m_id(id)
 { 
-	return id;
 }
 
 Texture::Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw, int ch) : IResource(i), m_iWidth(tw),
@@ -50,18 +49,23 @@ int Texture::GetCellsHeight() const
 	return m_iCellsHeight;
 }
 
+int Texture::GetComponents() const
+{
+	return m_iComp;
+}
+
 const unsigned char* Texture::GetImgData() const
 { 
 	return m_pImg; 
 }
 
-Shader::Shader(GLuint i, GLuint MVP, UnifromMap&& uniforms) : IResource(i), m_MVP(MVP), m_uniforms(uniforms)
+Shader::Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms) : IResource(i), m_MVP(MVP), m_color(color), m_uniforms(uniforms)
 {
 }
 
 Shader::~Shader()
 {
-	glDeleteProgram(GetID());
+	glDeleteProgram(m_id);
 }
 
 void* Shader::QueryInterface(ResourceType type)
@@ -74,17 +78,42 @@ void* Shader::QueryInterface(ResourceType type)
 	return nullptr;
 }
 
-GLuint Shader::GetMVP() const
-{ 
-	return m_MVP;
+void Shader::UseShader() const
+{
+	glUseProgram(m_id);
 }
 
-const Shader::UnifromMap& Shader::GetUniforms() const 
-{ 
-	return m_uniforms;
+void Shader::SetMVP(const glm::mat4& mvp) const
+{
+	glUniformMatrix4fv(m_MVP,1,false,&mvp[0][0]);
 }
 
-TexturedShader::TexturedShader(GLuint i, GLuint MVP, GLuint texID, UnifromMap&& uniforms) : Shader(i, MVP, std::move(uniforms)),
+void Shader::SetColor(const glm::vec4& color) const
+{
+	glUniform4fv(m_color, 1, &color[0]);
+}
+
+void Shader::SetValue(const std::string& location, float v)
+{
+	auto iter = m_uniforms.find(location);
+
+	if(iter != m_uniforms.end())
+	{
+		glUniform1f(iter->second, v);
+	}
+}
+
+void Shader::SetValue(const std::string& location, const glm::vec2& v)
+{
+	auto iter = m_uniforms.find(location);
+
+	if(iter != m_uniforms.end())
+	{
+		glUniform2fv(iter->second, 1, &v[0]);
+	}
+}
+
+TexturedShader::TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID, UnifromMap&& uniforms) : Shader(i, MVP, color, std::move(uniforms)),
 m_TextureSamplerID(texID)
 {
 }
@@ -99,9 +128,10 @@ void* TexturedShader::QueryInterface(ResourceType type)
 	return Shader::QueryInterface(type);
 }
 
-GLuint TexturedShader::GetTextureSamplerID() const
-{ 
-	return m_TextureSamplerID;
+void TexturedShader::BindTexture(const IResource& texture) const
+{
+	glBindTexture(GL_TEXTURE_2D, texture.m_id);
+	glUniform1i(m_TextureSamplerID, 0);
 }
 
 Font::Font(GLuint i, unsigned char* pImg, int comp, int tw, int th) : Texture(i, pImg, comp, tw, th, 1, 1)
@@ -279,7 +309,7 @@ ResourceManager::~ResourceManager()
 
 Texture::~Texture()
 {
-	glDeleteTextures(1,&GetID());
+	glDeleteTextures(1,&m_id);
 	stbi_image_free(m_pImg);
 }
 
@@ -354,7 +384,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	bool success;
 	if ((success = CreateOpenGLTexture(file, width, height, comp, &pImg, textureID)))
 	{
-		m_resources.insert({ id, new Texture(textureID, pImg, width, height, comp) });
+		m_resources.emplace(id, new Texture(textureID, pImg, width, height, comp));
 	}
 	return success;
 }
@@ -380,7 +410,7 @@ bool ResourceManager::LoadAnimation(const std::string& id, const std::string& fi
 		{
 			int spriteWidth, spriteHeight;
 			in >> spriteWidth >> spriteHeight;
-			m_resources.insert({ id, new Texture(textureID, pImg, width, height, comp, spriteWidth, spriteHeight) });
+			m_resources.emplace(id, new Texture(textureID, pImg, width, height, comp, spriteWidth, spriteHeight));
 		}
 	}
 	return success;
@@ -408,7 +438,7 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 			Font* pCharset = new Font(textureID, pImg, comp, width, height);
 			in >> (*pCharset);
 
-			m_resources.insert({ id, pCharset });
+			m_resources.emplace(id, pCharset);
 		}
 	}
 	return success;
@@ -505,12 +535,6 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 
 bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint programID)
 {
-	bool bFoundMVP = false;
-	GLuint uiMVPLocation = 0;
-
-	bool bFoundTexture = false;
-	GLuint uiTextureLocation = 0;
-
 	Shader::UnifromMap uniforms;
 
 	// Get a list of all the uniform variables in the shader
@@ -528,39 +552,32 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 
 		GLuint location = glGetUniformLocation( programID, name );
 
-		if (type == GL_SAMPLER_2D)
-		{
-			uiTextureLocation = location;
-			bFoundTexture = true;
-		}
-		else if(std::strcmp(name,"MVP") == 0 && type == GL_FLOAT_MAT4)
-		{
-			uiMVPLocation = location;
-			bFoundMVP = true;
-		}
-		else
-		{
-			uniforms.insert({ name, location });
-		}
+		uniforms.emplace(name, location);
 	}
 
-	// Each shader must at least have a MVP matrix
-	if(bFoundMVP)
+	auto mvpIter = uniforms.find("MVP");
+	auto colorIter = uniforms.find("uniformColor");
+	auto textureIter = uniforms.find("textureSampler");
+
+	bool success = false;
+
+	// Each shader must at least have a MVP matrix and a color vector
+	if((success = ((mvpIter != uniforms.end()) && (colorIter != uniforms.end()))))
 	{
 		Shader* pShader = nullptr;
-		if(bFoundTexture)
+		if(textureIter != uniforms.end())
 		{
-			pShader = new TexturedShader(programID,uiMVPLocation,uiTextureLocation,std::move(uniforms));
+			pShader = new TexturedShader(programID, mvpIter->second, colorIter->second, textureIter->second, std::move(uniforms));
 		}
 		else
 		{
-			pShader = new Shader(programID, uiMVPLocation, std::move(uniforms));
+			pShader = new Shader(programID, mvpIter->second, colorIter->second, std::move(uniforms));
 		}
 
-		m_resources.insert({ id, pShader });
+		m_resources.emplace(id, pShader);
 	}
 
-	return bFoundMVP;
+	return success;
 }
 
 bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) const
@@ -570,28 +587,27 @@ bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) 
 	if(iter == m_resources.end())
 		return false;
 
-	IResource* pResource = iter->second;
+	Texture* pTexture = static_cast<Texture*>(iter->second->QueryInterface(ResourceType::Texture));
 
-	if (pResource->QueryInterface(ResourceType::Texture) != nullptr)
+	if (pTexture == nullptr)
 		return false;
 
-	Texture* pTex = static_cast<Texture*>(pResource);
-
-	out = { pTex->m_iHeight,
-			pTex->m_iWidth,
-			pTex->m_iCellsWidth,
-			pTex->m_iCellsHeight,
-			pTex->m_iComp,
-			pTex->m_pImg 
+	out = { pTexture->GetHeight(),
+			pTexture->GetWidth(),
+			pTexture->GetCellsWidth(),
+			pTexture->GetCellsHeight(),
+			pTexture->GetComponents(),
+			pTexture->GetImgData()
 		  };
 
 	return true;
 }
+
 void ResourceManager::Clear()
 {
-	for(auto iter = m_resources.begin(); iter != m_resources.end(); ++iter)
+	for(auto& iter : m_resources)
 	{
-		delete iter->second;
+		delete iter.second;
 	}
 
 	m_resources.clear();

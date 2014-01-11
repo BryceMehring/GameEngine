@@ -56,7 +56,7 @@ public:
 	 **/
 	virtual bool LoadFont(const std::string& id, const std::string& file) = 0;
 
-	/** loads a shader
+	/** Loads a shader
 	 * id: uniqueID to be used
 	 * vert: vert shader file
 	 * frag: frag shader file
