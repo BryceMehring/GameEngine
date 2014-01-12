@@ -85,7 +85,9 @@ public:
 
 	virtual void* QueryInterface(ResourceType type) override;
 
-	void UseShader() const;
+	void Bind();
+	void UnBind();
+	bool IsBound() const;
 	void SetMVP(const glm::mat4& mvp) const;
 	void SetColor(const glm::vec4& color) const;
 	void SetValue(const std::string& location, float v);
@@ -100,6 +102,7 @@ private:
 	GLuint m_MVP;
 	GLuint m_color;
 	UnifromMap m_uniforms;
+	bool m_bUse;
 };
 
 // Defines a textured shader resource

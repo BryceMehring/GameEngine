@@ -39,7 +39,7 @@ namespace UI
 									   const Button::DELEGATE& callback)
 		{
 			Math::FRECT R(pos);
-			theGame.GetRenderer().GetStringRec(str.c_str(), textScale, FontAlignment::Center, R);
+			theGame.GetRenderer().GetStringRect(str.c_str(), textScale, FontAlignment::Center, R);
 
 			return new Button(R, defaultColor, hoverColor, textScale, str, callback);
 		}

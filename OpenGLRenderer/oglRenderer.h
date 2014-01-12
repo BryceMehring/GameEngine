@@ -77,7 +77,7 @@ public:
 	// if out is expected to be in user space, set out's topLeft position vector before calling this method, 
 	// else, the bottomRight vector of out will be the width and height of the string and the topLeft vector will be zeroed
 	// Note: if str is NULL, then GetStringRec() terminates without modifying out
-	virtual void GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const override;
+	virtual void GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const override;
 
 	// Sets the world space camera to use
 	virtual void SetCamera(class PerspectiveCamera*) override;

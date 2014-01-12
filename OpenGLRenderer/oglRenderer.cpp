@@ -123,7 +123,7 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float f
 
 void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment alignment)
 {
-	/*if (str != nullptr)
+	if (str != nullptr)
 	{
 		if (m_renderSpace == World)
 		{
@@ -133,7 +133,7 @@ void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale,
 		{
 			m_pScreenSpaceFonts->DrawString(str, font, pos, scale, color, alignment);
 		}
-	}*/
+	}
 }
 
 void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transformation, const glm::vec4& color, const glm::vec2& tiling, unsigned int iCellId, const std::string& tech)
@@ -200,11 +200,11 @@ int oglRenderer::GetNumDisplayModes(int monitor) const
 	return m_videoModes[monitor].second;
 }
 
-void oglRenderer::GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
+void oglRenderer::GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
 {
 	if (str != nullptr)
 	{
-		m_pScreenSpaceFonts->GetStringRec(str, scale, alignment, inout);
+		m_pScreenSpaceFonts->GetStringRect(str, scale, alignment, inout);
 	}
 }
 
@@ -244,7 +244,9 @@ void oglRenderer::SetShaderValue(const std::string& shader, const string& locati
 	Shader* pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
 	if(pShader != nullptr)
 	{
+		pShader->Bind();
 		pShader->SetValue(location,value);
+		pShader->UnBind();
 	}
 }
 
@@ -253,7 +255,9 @@ void oglRenderer::SetShaderValue(const std::string& shader, const string& locati
 	Shader* pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
 	if(pShader != nullptr)
 	{
+		pShader->Bind();
 		pShader->SetValue(location,value);
+		pShader->UnBind();
 	}
 }
 

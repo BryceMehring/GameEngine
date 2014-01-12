@@ -6,6 +6,7 @@
 #include "ResourceManager.h"
 #include "VertexBuffer.h"
 
+// Manages the rendering of lines
 class LineEngine
 {
 public:
@@ -14,9 +15,10 @@ public:
 
 	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T);
 
-	void Render();
-
 	void SetCamera(Camera* pCam);
+
+	// Renders all of the cached lines
+	void Render();
 
 private:
 

@@ -64,7 +64,7 @@ void LineEngine::Render()
 	Shader* pShader = static_cast<Shader*>(m_pRM->GetResource("lineShader", ResourceType::Shader));
 	assert(pShader != nullptr);
 
-	pShader->UseShader();
+	pShader->Bind();
 	pShader->SetMVP(m_pCamera->ViewProj());
 
 	m_pVertexBuffer->BindVAO();
@@ -74,6 +74,8 @@ void LineEngine::Render()
 		pShader->SetColor(m_lineColorSubset[i]);
 		glDrawElementsBaseVertex(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, 4 * i);
 	}
+
+	pShader->UnBind();
 
 	m_iCurrentLength = 0;
 	m_lineColorSubset.clear();

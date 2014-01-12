@@ -59,7 +59,7 @@ const unsigned char* Texture::GetImgData() const
 	return m_pImg; 
 }
 
-Shader::Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms) : IResource(i), m_MVP(MVP), m_color(color), m_uniforms(uniforms)
+Shader::Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms) : IResource(i), m_MVP(MVP), m_color(color), m_uniforms(uniforms), m_bUse(false)
 {
 }
 
@@ -78,38 +78,68 @@ void* Shader::QueryInterface(ResourceType type)
 	return nullptr;
 }
 
-void Shader::UseShader() const
+void Shader::Bind()
 {
-	glUseProgram(m_id);
+	if(!m_bUse)
+	{
+		glUseProgram(m_id);
+		m_bUse = true;
+	}
+}
+
+void Shader::UnBind()
+{
+	if(m_bUse)
+	{
+		glUseProgram(0);
+		m_bUse = false;
+	}
+}
+
+bool Shader::IsBound() const
+{
+	return m_bUse;
 }
 
 void Shader::SetMVP(const glm::mat4& mvp) const
 {
-	glUniformMatrix4fv(m_MVP,1,false,&mvp[0][0]);
+	if(m_bUse)
+	{
+		glUniformMatrix4fv(m_MVP,1,false,&mvp[0][0]);
+	}
 }
 
 void Shader::SetColor(const glm::vec4& color) const
 {
-	glUniform4fv(m_color, 1, &color[0]);
+	if(m_bUse)
+	{
+		glUniform4fv(m_color, 1, &color[0]);
+	}
 }
 
 void Shader::SetValue(const std::string& location, float v)
 {
-	auto iter = m_uniforms.find(location);
-
-	if(iter != m_uniforms.end())
+	if(m_bUse)
 	{
-		glUniform1f(iter->second, v);
+		auto iter = m_uniforms.find(location);
+
+		if(iter != m_uniforms.end())
+		{
+			glUniform1f(iter->second, v);
+		}
 	}
 }
 
 void Shader::SetValue(const std::string& location, const glm::vec2& v)
 {
-	auto iter = m_uniforms.find(location);
-
-	if(iter != m_uniforms.end())
+	if(m_bUse)
 	{
-		glUniform2fv(iter->second, 1, &v[0]);
+		auto iter = m_uniforms.find(location);
+
+		if(iter != m_uniforms.end())
+		{
+			glUniform2fv(iter->second, 1, &v[0]);
+		}
 	}
 }
 
@@ -130,8 +160,11 @@ void* TexturedShader::QueryInterface(ResourceType type)
 
 void TexturedShader::BindTexture(const IResource& texture) const
 {
-	glBindTexture(GL_TEXTURE_2D, texture.m_id);
-	glUniform1i(m_TextureSamplerID, 0);
+	if(IsBound())
+	{
+		glBindTexture(GL_TEXTURE_2D, texture.m_id);
+		glUniform1i(m_TextureSamplerID, 0);
+	}
 }
 
 Font::Font(GLuint i, unsigned char* pImg, int comp, int tw, int th) : Texture(i, pImg, comp, tw, th, 1, 1)
@@ -333,7 +366,7 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 
 	case 4:
 		format = GL_RGBA;
-		internalFormat = GL_RGBA; 
+		internalFormat = GL_RGBA;
 		break;
 	}
 }
@@ -447,9 +480,9 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 bool ResourceManager::LoadShader(const std::string& id, const std::string& vert, const std::string& frag)
 {
 	auto iter = m_resources.find(id);
-	if(iter != m_resources.end() && iter->second->QueryInterface(ResourceType::Shader) != nullptr)
+	if(iter != m_resources.end())
 	{
-		// shader already loaded
+		// ID is taken
 		return true;
 	}
 

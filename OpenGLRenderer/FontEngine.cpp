@@ -9,10 +9,10 @@ m_pRm(pRm), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam)
 	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPT));
 }
 
-void FontEngine::GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
+void FontEngine::GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
 {
 	const Font* font = static_cast<const Font*>(m_pRm->GetResource("font", ResourceType::Font));
-	GetStringRec(font, str, scale, alignment, out);
+	GetStringRect(font, str, scale, alignment, out);
 }
 
 void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment alignment)
@@ -20,7 +20,7 @@ void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& 
 	if(font == nullptr)
 		font = "font";
 
-	m_textSubsets[font].push_back(DrawTextInfo(str,pos,scale,color,alignment));
+	m_strings[font].push_back(DrawTextInfo(str,pos,scale,color,alignment));
 }
 
 void FontEngine::SetCamera(Camera* pCam)
@@ -28,7 +28,7 @@ void FontEngine::SetCamera(Camera* pCam)
 	m_pCamera = pCam;
 }
 
-void FontEngine::GetStringRec(const Font* fnt, const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
+void FontEngine::GetStringRect(const Font* fnt, const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
 {
 	unsigned int lineHeight = fnt->GetLineHeight();
 
@@ -107,20 +107,17 @@ void FontEngine::ProccessSpecialCharacter(char c, float scale, unsigned int line
 	}
 }
 
-void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
+void FontEngine::FillVertexBuffer()
 {
-	output.resize(m_textSubsets.size());
-
 	m_pVertexBuffer->BindVBO();
 
 	// Get the vertex buffer memory to write to
 	VertexPT* v = static_cast<VertexPT*>(glMapBufferRange(GL_ARRAY_BUFFER, 0, m_pVertexBuffer->GetSize(), GL_MAP_WRITE_BIT));
 
 	unsigned int iCurrentVert = 0;
-	unsigned int iSubsetCounter = 0;
 
 	// Loop over all texture subsets and write them to the vertex buffer
-	for(auto& textureIter : m_textSubsets)
+	for(auto& textureIter : m_strings)
 	{
 		// The length in renderable characters
 		unsigned int iSubsetLength = 0;
@@ -138,10 +135,10 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 			// If the text needs to be aligned to center or right
 			if(iter.alignment != FontAlignment::Left)
 			{
-				Math::FRECT drawRec(glm::vec2(posW.x, posW.y));
-				GetStringRec(fnt, str, iter.scale, iter.alignment, drawRec);
+				Math::FRECT drawRect(glm::vec2(posW.x, posW.y));
+				GetStringRect(fnt, str, iter.scale, iter.alignment, drawRect);
 
-				posW.x = drawRec.topLeft.x;
+				posW.x = drawRect.topLeft.x;
 			}
 
 			char prevChar = -1;
@@ -193,9 +190,9 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 				}
 				str++;
 			}
-		}
 
-		output[iSubsetCounter++] = iSubsetLength;
+			m_stringLength.push_back(iSubsetLength);
+		}
 	}
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -204,11 +201,10 @@ void FontEngine::FillVertexBuffer(std::vector<unsigned int>& output)
 void FontEngine::Render()
 {
 	// If there is nothing to draw, do nothing
-	if(m_textSubsets.empty())
+	if(m_strings.empty())
 		return;
 
-	std::vector<unsigned int> subsetLength;
-	FillVertexBuffer(subsetLength);
+	FillVertexBuffer();
 
 	m_pVertexBuffer->BindVAO();
 
@@ -216,11 +212,11 @@ void FontEngine::Render()
 	glActiveTexture(GL_TEXTURE0);
 
 	// Get the shader to use
-	const TexturedShader* pShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader",ResourceType::TexturedShader));
+	TexturedShader* pShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader", ResourceType::TexturedShader));
 	assert(pShader != nullptr);
 
 	// Use the shader
-	pShader->UseShader();
+	pShader->Bind();
 
 	// Set the transformation matrix
 	pShader->SetMVP(m_pCamera->ViewProj());
@@ -231,33 +227,36 @@ void FontEngine::Render()
 	unsigned int uiStartingIndex = 0;
 	unsigned int uiSubset = 0;
 
-	for(auto& iter : m_textSubsets)
+	// Render all strings
+	for(auto& iter : m_strings)
 	{
-		const IResource* pCurrentTexture = m_pRm->GetResource(iter.first,ResourceType::Font);
+		const IResource* pCurrentTexture = m_pRm->GetResource(iter.first, ResourceType::Font);
 		assert(pCurrentTexture != nullptr);
 
 		pShader->BindTexture(*pCurrentTexture);
 
-		// Loop over each line
+		// Render all strings with the same texture
 		unsigned int j = 0;
-		for(unsigned int i = 0; i < iter.second.size(); ++i)
+		for(unsigned int i = 0; i < iter.second.size(); ++i, ++uiSubset)
 		{
-			// Set the color
+			// Set the color of the text
 			pShader->SetColor(iter.second[i].color);
 
-			// Render all strings that have the same texture
-			for (; j < subsetLength[uiSubset]; ++j, ++uiStartingIndex)
+			// Render all characters that have the same texture
+			for (; j < m_stringLength[uiSubset]; ++j, ++uiStartingIndex)
 			{
 				glDrawElementsBaseVertex(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, 4 * uiStartingIndex);
 			}
-		}
 
-		++uiSubset;
+		}
 
 	}
 
+	pShader->UnBind();
+
 	glDisable(GL_BLEND);
 
-	m_textSubsets.clear();
+	m_strings.clear();
+	m_stringLength.clear();
 }
 

@@ -111,10 +111,10 @@ void SpriteEngine::Render()
 		for(auto& techIter : layerIter.second)
 		{
 			// Apply the shader tech
-			const TexturedShader* pShader = static_cast<const TexturedShader*>(m_pRM->GetResource(techIter.first, ResourceType::TexturedShader));
+			TexturedShader* pShader = static_cast<TexturedShader*>(m_pRM->GetResource(techIter.first, ResourceType::TexturedShader));
 			assert(pShader != nullptr);
 
-			pShader->UseShader();
+			pShader->Bind();
 			pShader->SetMVP(m_pCamera->ViewProj());
 
 			// Loop over all sprites with the same texture
@@ -135,6 +135,8 @@ void SpriteEngine::Render()
 					++uiStartingIndex;
 				}
 			}
+
+			pShader->UnBind();
 		}
 	}
 
