@@ -10,7 +10,8 @@
 // Defines how each string will be rendered
 struct DrawTextInfo
 {
-	DrawTextInfo(const std::string& t, const glm::vec3 p, float s, const glm::vec4& c, FontAlignment o) : text(t), pos(p), scale(s), color(c), alignment(o) {}
+	DrawTextInfo(const std::string& t, const glm::vec3 p, float s, const glm::vec4& c, FontAlignment o) : text(t), pos(p),
+	scale(s), color(c), alignment(o) {}
 
 	// Text that will be drawn
 	std::string text;
@@ -68,7 +69,7 @@ private:
 	// scale = scaling of the font
 	// lineHeight = height of the line
 	// oldPos = origin of the font rendering
-	// currentPos = position that needs offseting
+	// currentPos = position that needs offsetting
 	void ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos) const;
 
 	// Fills the vertex buffer with all of the characters
@@ -76,7 +77,10 @@ private:
 	void FillVertexBuffer();
 
 	// Gets the string rect from the specified font
-	void GetStringRect(const Font* fnt, const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const;
+	void GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& out) const;
+
+	// Normalize scaling to the height of the font
+	void NormalizeScaling(const Font* pFont, float& scale) const;
 };
 
 #endif // _FONTENGINE_

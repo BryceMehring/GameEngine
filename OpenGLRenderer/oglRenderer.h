@@ -40,8 +40,8 @@ public:
 	// DrawString() caches a string to be drawn by Present()
 	// Note: if either str or font is NULL, then DrawString() terminates
 	virtual void DrawString(const char* str, // the string that gets drawn
-							const glm::vec3& pos, // pos of the text in the current render space
-							float scale = 1.0f, // scaling the text, 1.0 = 1-1 mapping with the font
+							const glm::vec3& pos, // position of the text in the current render space
+							float scale = 50.0f, // height of the text, the width of the text gets scaled accordingly
 							const glm::vec4& color = glm::vec4(1.0f), // color of the text blended together with the texture
 							const char* font = nullptr, // the desired font, may be null if you wish to use the default font
 							FontAlignment alignment = FontAlignment::Left

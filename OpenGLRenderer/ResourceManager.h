@@ -160,12 +160,13 @@ protected:
 
 private:
 
-	unsigned short m_LineHeight;
-	unsigned short m_Base;
-	unsigned short m_Pages;
 	FontArray m_Chars;
 
 	std::unordered_map<unsigned int, std::unordered_map<unsigned int, int>> m_kerningPairs;
+
+	unsigned short m_LineHeight;
+	unsigned short m_Base;
+	unsigned short m_Pages;
 };
 
 std::istream& operator >>(const std::istream& stream, Font& out);

@@ -447,7 +447,7 @@ void oglRenderer::SaveDisplayList()
 
 void oglRenderer::BuildBuffers()
 {
-	VertexBuffer* pVertexBuffer = new VertexBuffer(sizeof(VertexPT),1024*8);
+	VertexBuffer* pVertexBuffer = new VertexBuffer(sizeof(VertexPT),1024*16);
 	VertexBuffer* pLineVertexBuffer = new VertexBuffer(sizeof(VertexP),1024*8,false);
 
 	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pVertexBuffer));

@@ -11,16 +11,33 @@ m_pRm(pRm), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam)
 
 void FontEngine::GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
 {
-	const Font* font = static_cast<const Font*>(m_pRm->GetResource("font", ResourceType::Font));
-	GetStringRect(font, str, scale, alignment, out);
+	if (str != nullptr)
+	{
+		Font* pFont = static_cast<Font*>(m_pRm->GetResource("font", ResourceType::Font));
+		assert(pFont != nullptr);
+
+		NormalizeScaling(pFont, scale);
+
+		GetStringRect(str, pFont, scale, alignment, out);
+	}
 }
 
 void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment alignment)
 {
-	if(font == nullptr)
-		font = "font";
+	if (str != nullptr)
+	{
+		if (font == nullptr)
+		{
+			font = "font";
+		}
+		
+		Font* pFont = static_cast<Font*>(m_pRm->GetResource(font, ResourceType::Font));
+		assert(pFont != nullptr);
 
-	m_strings[font].push_back(DrawTextInfo(str,pos,scale,color,alignment));
+		NormalizeScaling(pFont, scale);
+		
+		m_strings[font].push_back(DrawTextInfo(str, pos, scale, color, alignment));
+	}
 }
 
 void FontEngine::SetCamera(Camera* pCam)
@@ -28,7 +45,7 @@ void FontEngine::SetCamera(Camera* pCam)
 	m_pCamera = pCam;
 }
 
-void FontEngine::GetStringRect(const Font* fnt, const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
+void FontEngine::GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& inout) const
 {
 	unsigned int lineHeight = fnt->GetLineHeight();
 
@@ -136,7 +153,7 @@ void FontEngine::FillVertexBuffer()
 			if(iter.alignment != FontAlignment::Left)
 			{
 				Math::FRECT drawRect(glm::vec2(posW.x, posW.y));
-				GetStringRect(fnt, str, iter.scale, iter.alignment, drawRect);
+				GetStringRect(str, fnt, iter.scale, iter.alignment, drawRect);
 
 				posW.x = drawRect.topLeft.x;
 			}
@@ -258,5 +275,10 @@ void FontEngine::Render()
 
 	m_strings.clear();
 	m_stringLength.clear();
+}
+
+void FontEngine::NormalizeScaling(const Font* pFont, float& scale) const
+{
+	scale /= (pFont->GetLineHeight());
 }
 
