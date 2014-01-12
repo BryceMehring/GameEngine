@@ -14,14 +14,23 @@
 #pragma warning(disable:4503)
 #endif
 
+// Defines how a sprite should be rendered
 struct Sprite
 {
+	// Transformation applied to the sprite
 	glm::mat4 T;
+
+	// Color blended with the sprite
 	glm::vec4 color;
+
+	// The amount of tiling applied to the sprite
 	glm::vec2 tiling;
+
+	// Tile of the spite animation
 	unsigned int iCellId;
 };
 
+// Manages the rendering of sprites
 class SpriteEngine
 {
 public:
@@ -37,9 +46,10 @@ public:
 					unsigned int iCellId
 				   );
 
-	void Render();
-
 	void SetCamera(Camera* pCam);
+
+	// Renders all of the cached sprites
+	void Render();
 
 private:
 

@@ -5,19 +5,15 @@
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 
-struct VertexPCT
+struct VertexP
 {
 	glm::vec3 pos;
-	glm::vec4 color;
+};
+
+struct VertexPT
+{
+	glm::vec3 pos;
 	glm::vec2 tex;
 };
-
-struct VertexPC
-{
-	glm::vec3 pos;
-	glm::vec4 color;
-};
-
-
 
 #endif // __VERTEXSTRUCTURES__

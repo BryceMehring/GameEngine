@@ -77,7 +77,7 @@ public:
 	// if out is expected to be in user space, set out's topLeft position vector before calling this method, 
 	// else, the bottomRight vector of out will be the width and height of the string and the topLeft vector will be zeroed
 	// Note: if str is NULL, then GetStringRec() terminates without modifying out
-	virtual void GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const override;
+	virtual void GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const override;
 
 	// Sets the world space camera to use
 	virtual void SetCamera(class PerspectiveCamera*) override;
@@ -92,8 +92,8 @@ public:
 	virtual void SetRenderSpace(RenderSpace) override;
 
 	// todo: add comments here
-	virtual bool SetShaderValue(const std::string& shader, const std::string& location, float value) override;
-	virtual bool SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value) override;
+	virtual void SetShaderValue(const std::string& shader, const std::string& location, float value) override;
+	virtual void SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value) override;
 
 	// True enables VSync
 	// False disables VSync
@@ -145,7 +145,6 @@ private:
 	void ConfigureGLFW();
 	void ConfigureOpenGL();
 	void EnumerateDisplayAdaptors();
-	bool CheckShader(const std::string& shader, const std::string& location, GLuint& shaderID, GLuint& outLocation) const;
 	void ParseVideoSettingsFile();
 	void SaveDisplayList();
 	void BuildBuffers();

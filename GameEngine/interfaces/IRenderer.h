@@ -75,7 +75,7 @@ public:
 	// if out is expected to be in user space, set out's topLeft position vector before calling this method, 
 	// else, the bottomRight vector of out will be the width and height of the string and the topLeft vector will be zeroed
 	// Note: if str is NULL, then GetStringRec() terminates without modifying out
-	virtual void GetStringRec(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const = 0;
+	virtual void GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const = 0;
 
 	// Sets the world space camera to use
 	virtual void SetCamera(class PerspectiveCamera*) = 0;
@@ -90,8 +90,8 @@ public:
 	virtual void SetRenderSpace(RenderSpace) = 0; 
 
 	// todo: add comments here
-	virtual bool SetShaderValue(const std::string& shader, const std::string& location, float value ) = 0;
-	virtual bool SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value ) = 0;
+	virtual void SetShaderValue(const std::string& shader, const std::string& location, float value ) = 0;
+	virtual void SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value ) = 0;
 
 	// True enables VSync
 	// False disables VSync
