@@ -23,6 +23,13 @@ std::istream& operator >>(std::istream& stream, Tile& t)
 	return stream;
 }
 
+const int Grid::s_adjacentTiles[][2] =
+{
+	{ -1, -1 }, { 0, -1 }, { 1, -1 },
+	{ -1, 0 }, { 1, 0 }, { -1, 1 },
+	{ 0, 1 }, { 1, 1 }
+};
+
 Grid::Grid() : m_uiMineCount(0), m_uiMarkedCount(0), m_uiMarkedCorrectlyCount(0)
 {
 }
@@ -34,7 +41,7 @@ int Grid::Update(IInput& input)
 	bool bMine = false;
 	if(bMouse1 || bMouse2)
 	{
-		glm::ivec2 arrayPos;
+		glm::uvec2 arrayPos;
 		Tile* pTile = nullptr;
 		bool success = WorldSpaceToTile(input.GetCursorPos(),&pTile,&arrayPos);
 
@@ -171,29 +178,23 @@ void Grid::RenderTileCallback(IRenderer& renderer, const Tile& tile, const glm::
 	}
 }
 
-void Grid::Expand(const glm::ivec2& pos)
+void Grid::Expand(const glm::uvec2& pos)
 {
-	for(int y = -1; y <= 1; ++y)
+	for (auto iter : s_adjacentTiles)
 	{
-		for(int x = -1; x <= 1; ++x)
+		glm::uvec2 newPos(pos.x + iter[0],pos.y + iter[1]);
+
+		if(newPos.x < m_numTiles.x && newPos.y < m_numTiles.y)
 		{
-			if(x == 0 && y == 0)
-				continue;
+			unsigned int newIndex = m_numTiles.x*newPos.y + newPos.x;
 
-			glm::ivec2 newPos(pos.x + x,pos.y + y);
-
-			if(newPos.x < m_numTiles.x && newPos.x >= 0 && newPos.y < m_numTiles.y && newPos.y >= 0)
+			if(!m_tiles[newIndex].marked && !m_tiles[newIndex].mine && !m_tiles[newIndex].selsected)
 			{
-				int newIndex = m_numTiles.x*newPos.y + newPos.x;
+				m_tiles[newIndex].selsected = true;
 
-				if(!m_tiles[newIndex].marked && !m_tiles[newIndex].mine && !m_tiles[newIndex].selsected)
+				if(m_tiles[newIndex].minesNearby == 0)
 				{
-					m_tiles[newIndex].selsected = true;
-
-					if(m_tiles[newIndex].minesNearby == 0)
-					{
-						Expand(newPos);
-					}
+					Expand(newPos);
 				}
 			}
 		}
@@ -208,26 +209,20 @@ void Grid::BuildGrid()
 
 		if(m_tiles[i].mine)
 		{
-			int x = i % m_numTiles.x;
-			int y = i / m_numTiles.x;
-			
-			for (int j = -1; j <= 1; ++j)
+			unsigned int x = i % m_numTiles.x;
+			unsigned int y = i / m_numTiles.x;
+
+			for (auto iter : s_adjacentTiles)
 			{
-				for (int k = -1; k <= 1; ++k)
+				unsigned int newX = x + iter[0];
+				unsigned int newY = y + iter[1];
+
+				if (newX < m_numTiles.x && newY < m_numTiles.y)
 				{
-					if (k == 0 && j == 0)
-						continue;
-
-					int newX = x + j;
-					int newY = y + k;
-
-					if (newX < m_numTiles.x && newX >= 0 && newY < m_numTiles.y && newY >= 0)
+					int newIndex = m_numTiles.x * newY + newX;
+					if (!m_tiles[newIndex].mine)
 					{
-						int newIndex = m_numTiles.x * newY + newX;
-						if (!m_tiles[newIndex].mine)
-						{
-							m_tiles[newIndex].minesNearby++;
-						}
+						m_tiles[newIndex].minesNearby++;
 					}
 				}
 			}
@@ -252,7 +247,7 @@ void MineSweeper::Init(Game& game)
 	renderer.GetDisplayMode(&width,&height);
 
 	m_grid.SetGridSize(glm::vec2(width / 1.1f,height / 1.1f));
-	m_grid.SetNumTiles(glm::ivec2(30,20));
+	m_grid.SetNumTiles(glm::uvec2(30,20));
 	m_grid.SetCenter(glm::vec3(width / 2, height / 2,-2.0f));
 	m_grid.Reset();
 

@@ -63,8 +63,10 @@ private:
 	// The number of tiles that have been marked correctly
 	unsigned int m_uiMarkedCorrectlyCount;
 
+	static const int s_adjacentTiles[][2];
+
 	// Expands all zero tiles if the user clicks a zero tile
-	void Expand(const glm::ivec2& pos);
+	void Expand(const glm::uvec2& pos);
 
 	// Builds a randomized grid
 	void BuildGrid();

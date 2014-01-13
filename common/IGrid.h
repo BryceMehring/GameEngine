@@ -39,7 +39,7 @@ public:
 	void SetGridSize(const glm::vec2& size);
 
 	// Sets the number of tiles in the x and y axis
-	void SetNumTiles(const glm::ivec2& size);
+	void SetNumTiles(const glm::uvec2& size);
 	
 	// Sets the center of the grid
 	void SetCenter(const glm::vec3& center);
@@ -50,7 +50,7 @@ public:
 	const glm::vec2& GetGridSize() const;
 
 	// Returns the number of tiles in the x and y axis
-	const glm::ivec2& GetNumTiles() const;
+	const glm::uvec2& GetNumTiles() const;
 
 	// Returns the center of the grid
 	const glm::vec3& GetCenter() const;
@@ -64,11 +64,11 @@ protected:
 	// If the pos is required in array coordinates set pRoundedPosOut to point to an ivec2, else leave it null.
 	// returns true if valid input
 	// returns false if invalid input
-	bool WorldSpaceToTile(const glm::vec2& pos, T** outTile, glm::ivec2* pRoundedPosOut = nullptr);
+	bool WorldSpaceToTile(const glm::vec2& pos, T** outTile, glm::uvec2* pRoundedPosOut = nullptr);
 
 	std::vector<T> m_tiles; // the grid
 	glm::vec2 m_gridSize;
-	glm::ivec2 m_numTiles;
+	glm::uvec2 m_numTiles;
 	
 private:
 	glm::vec3 m_center;

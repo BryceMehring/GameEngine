@@ -17,9 +17,9 @@ void IGrid<T>::Render(class IRenderer& renderer) const
 	glm::vec2 tileSize = GetTileSize();
 
 	unsigned int index = 0;
-	for(int i = 0; i < m_numTiles.y; ++i)
+	for(unsigned int i = 0; i < m_numTiles.y; ++i)
 	{
-		for(int j = 0; j < m_numTiles.x; ++j)
+		for(unsigned int j = 0; j < m_numTiles.x; ++j)
 		{
 			glm::vec2 pos(tileSize.x * j - (m_gridSize.x / 2.0f) + (tileSize.x / 2.0f), tileSize.y * i - (m_gridSize.y / 2.0f) + (tileSize.y / 2.0f));
 			glm::mat4 transformation(glm::translate(glm::vec3(pos.x + m_center.x,pos.y + m_center.y,m_center.z)));
@@ -33,7 +33,7 @@ void IGrid<T>::Render(class IRenderer& renderer) const
 }
 
 template< class T >
-bool IGrid<T>::WorldSpaceToTile(const glm::vec2& pos, T** outTile, glm::ivec2* pRoundedPosOut)
+bool IGrid<T>::WorldSpaceToTile(const glm::vec2& pos, T** outTile, glm::uvec2* pRoundedPosOut)
 {
 	if(pos.x >= (m_center.x - m_gridSize.x / 2.0f) && pos.x <= (m_center.x + m_gridSize.x / 2.0f) && 
 	   pos.y <= (m_center.y + m_gridSize.y / 2.0f) && pos.y >= (m_center.y - m_gridSize.y / 2.0f))
@@ -46,11 +46,12 @@ bool IGrid<T>::WorldSpaceToTile(const glm::vec2& pos, T** outTile, glm::ivec2* p
 
 		transformedPos *= (1.0f / tileSize); // [0, m_uiWidth], [0, m_uiHeight]
 
-		glm::ivec2 roundedPos(floor(transformedPos.x - m_center.x / tileSize.x),floor(transformedPos.y - m_center.y / tileSize.y));
+		glm::uvec2 roundedPos(static_cast<unsigned int>(transformedPos.x - m_center.x / tileSize.x),
+							  static_cast<unsigned int>(transformedPos.y - m_center.y / tileSize.y));
 
-		int index = m_numTiles.x*roundedPos.y + roundedPos.x;
+		unsigned int index = m_numTiles.x*roundedPos.y + roundedPos.x;
 
-		if(index >= 0 && index < (int)m_tiles.size())
+		if(index < m_tiles.size())
 		{
 			if(pRoundedPosOut != nullptr)
 			{
@@ -122,7 +123,7 @@ void IGrid<T>::SetGridSize(const glm::vec2& size)
 }
 
 template< class T >
-void IGrid<T>::SetNumTiles(const glm::ivec2& size)
+void IGrid<T>::SetNumTiles(const glm::uvec2& size)
 {
 	m_numTiles = size;
 	m_tiles.resize(m_numTiles.x * m_numTiles.y);
@@ -147,7 +148,7 @@ const glm::vec2& IGrid<T>::GetGridSize() const
 }
 
 template< class T >
-const glm::ivec2& IGrid<T>::GetNumTiles() const
+const glm::uvec2& IGrid<T>::GetNumTiles() const
 {
 	return m_numTiles;
 }
