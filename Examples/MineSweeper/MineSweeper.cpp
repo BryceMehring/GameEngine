@@ -205,39 +205,34 @@ void Grid::BuildGrid()
 	for(unsigned int i = 0; i < m_tiles.size(); ++i)
 	{
 		m_tiles[i].mine = rand() % 8 == 0;
-		if(m_tiles[i].mine)
-		{
-			m_uiMineCount++;
-		}
-	}
 
-	for(unsigned int i = 0; i < m_tiles.size(); ++i)
-	{
 		if(m_tiles[i].mine)
 		{
 			int x = i % m_numTiles.x;
 			int y = i / m_numTiles.x;
 			
-			for(int j = -1; j <= 1; ++j)
+			for (int j = -1; j <= 1; ++j)
 			{
-				for(int k = -1; k <= 1; ++k)
+				for (int k = -1; k <= 1; ++k)
 				{
-					if(k == 0 && j == 0)
+					if (k == 0 && j == 0)
 						continue;
 
 					int newX = x + j;
 					int newY = y + k;
-				
-					if(newX < m_numTiles.x && newX >= 0 && newY < m_numTiles.y && newY >= 0)
+
+					if (newX < m_numTiles.x && newX >= 0 && newY < m_numTiles.y && newY >= 0)
 					{
 						int newIndex = m_numTiles.x * newY + newX;
-						if(!m_tiles[newIndex].mine)
+						if (!m_tiles[newIndex].mine)
 						{
 							m_tiles[newIndex].minesNearby++;
 						}
 					}
 				}
 			}
+
+			++m_uiMineCount;
 		}
 	}
 }
