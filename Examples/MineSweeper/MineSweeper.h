@@ -16,11 +16,6 @@ enum class GameStatus
 
 struct Tile
 {
-	Tile() : selsected(false), mine(false), marked(false), minesNearby(0) {}
-
-	friend std::ostream& operator <<(std::ostream&, const Tile&);
-	friend std::istream& operator >>(std::istream&, Tile&);
-
 	bool selsected;
 	bool mine;
 	bool marked;
@@ -30,35 +25,48 @@ struct Tile
 std::ostream& operator <<(std::ostream&, const Tile&);
 std::istream& operator >>(std::istream&, Tile&);
 
+// Defines a Grid to be used for MineSweeper
 class Grid : public IGrid<Tile>
 {
 public:
 
 	Grid();
 
+	// Checks for user input and apply's their action on the grid
 	virtual int Update(IInput&);
 
+	// Renders the grid
 	virtual void Render(IRenderer&) const;
 
+	// Loads the grid from stream
 	virtual bool Load(std::ifstream& stream);
 
+	// Saves the grid to stream
 	virtual bool Save(std::ofstream& stream) const;
 
+	// Randomizes the location of the mines and unselects all tiles
 	void Reset();
 
 protected:
 
+	// Callback method called by IGrid to render each tile of the grid
 	virtual void RenderTileCallback(IRenderer&,const Tile&, const glm::mat4&) const;
 
 private:
 
+	// The number of mines on the grid
 	unsigned int m_uiMineCount;
+
+	// The number of tiles that have been marked
 	unsigned int m_uiMarkedCount;
+
+	// The number of tiles that have been marked correctly
 	unsigned int m_uiMarkedCorrectlyCount;
 
 	// Expands all zero tiles if the user clicks a zero tile
 	void Expand(const glm::ivec2& pos);
 
+	// Builds a randomized grid
 	void BuildGrid();
 
 };
@@ -77,9 +85,6 @@ public:
 	// returns the version number of the plugin
 	virtual int GetVersion() const { return 0; }
 
-	virtual void Init(class asIScriptEngine*) {}
-	virtual void Destroy(class asIScriptEngine*) {}
-
 	// Called only once when the plugin is created
 	virtual void Init(class Game& game);
 
@@ -94,16 +99,20 @@ public:
 
 private:
 
-	void CreatePlayingMenu(Game&);
-	void CreateMainMenu(Game&);
-
-	void Reset();
-
 	Grid m_grid;
 	UI::GUI m_gui;
 	UI::GUI m_mainMenu;
 	GameStatus m_gameState;
 	double m_fTime;
+
+	// Builds menus
+	void CreatePlayingMenu(Game&);
+	void CreateMainMenu(Game&);
+
+	// Clamps the cursor to the screen
+	void ClampMouse(IInput&, IRenderer&) const;
+
+	void Reset();
 
 
 };

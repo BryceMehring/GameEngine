@@ -57,24 +57,27 @@ int Grid::Update(IInput& input)
 			}
 			else if(bMouse2 && !pTile->selsected)
 			{
-				pTile->marked = !pTile->marked;
-
-				if(pTile->marked)
+				if (m_uiMarkedCount < m_uiMineCount || pTile->marked)
 				{
-					m_uiMarkedCount++;
+					pTile->marked = !pTile->marked;
 
-					if(pTile->mine)
+					if (pTile->marked)
 					{
-						m_uiMarkedCorrectlyCount++;
+						m_uiMarkedCount++;
+
+						if (pTile->mine)
+						{
+							m_uiMarkedCorrectlyCount++;
+						}
 					}
-				}
-				else
-				{
-					m_uiMarkedCount--;
-
-					if(pTile->mine)
+					else
 					{
-						m_uiMarkedCorrectlyCount--;
+						m_uiMarkedCount--;
+
+						if (pTile->mine)
+						{
+							m_uiMarkedCorrectlyCount--;
+						}
 					}
 				}
 			}
@@ -82,12 +85,12 @@ int Grid::Update(IInput& input)
 	}
 
 	if(m_uiMarkedCorrectlyCount == m_uiMineCount)
-		return (int)GameStatus::Won;
+		return static_cast<int>(GameStatus::Won);
 
 	if(bMine)
-		return (int)GameStatus::Lost;
+		return static_cast<int>(GameStatus::Lost);
 
-	return (int)GameStatus::Playing;
+	return static_cast<int>(GameStatus::Playing);
 }
 
 void Grid::Render(IRenderer& renderer) const
@@ -97,7 +100,7 @@ void Grid::Render(IRenderer& renderer) const
 
 	int height;
 	renderer.GetDisplayMode(nullptr,&height);
-	renderer.DrawString(stream.str().c_str(),glm::vec3(0.0f,height - 50.0f,0),0.5f);
+	renderer.DrawString(stream.str().c_str(),glm::vec3(0.0f,height - 50.0f,0));
 
 	IGrid::Render(renderer);
 }
@@ -105,7 +108,7 @@ void Grid::Render(IRenderer& renderer) const
 bool Grid::Load(std::ifstream& stream)
 {
 	if(!stream.is_open())
-			return false;
+		return false;
 
 	stream >> m_uiMineCount >> m_uiMarkedCount >> m_uiMarkedCorrectlyCount;
 
@@ -115,7 +118,7 @@ bool Grid::Load(std::ifstream& stream)
 bool Grid::Save(std::ofstream& stream) const
 {
 	if(!stream.is_open())
-			return false;
+		return false;
 
 	stream << m_uiMineCount << " " << m_uiMarkedCount << " " << m_uiMarkedCorrectlyCount << std::endl;
 
@@ -201,7 +204,6 @@ void Grid::BuildGrid()
 {
 	for(unsigned int i = 0; i < m_tiles.size(); ++i)
 	{
-
 		m_tiles[i].mine = rand() % 8 == 0;
 		if(m_tiles[i].mine)
 		{
@@ -255,7 +257,7 @@ void MineSweeper::Init(Game& game)
 	renderer.GetDisplayMode(&width,&height);
 
 	m_grid.SetGridSize(glm::vec2(width / 1.1f,height / 1.1f));
-	m_grid.SetNumTiles(glm::ivec2(20,10));
+	m_grid.SetNumTiles(glm::ivec2(30,20));
 	m_grid.SetCenter(glm::vec3(width / 2, height / 2,-2.0f));
 	m_grid.Reset();
 
@@ -286,9 +288,11 @@ void MineSweeper::Update(Game& game)
 
 	m_fTime += game.GetDt();
 
+	ClampMouse(input, game.GetRenderer());
+
 	if(m_gameState == GameStatus::Playing)
 	{
-		m_gameState = (GameStatus)m_grid.Update(input);
+		m_gameState = static_cast<GameStatus>(m_grid.Update(input));
 		m_gui.Update(input,game.GetDt());
 	}
 	else
@@ -306,7 +310,7 @@ void MineSweeper::Draw(Game& game)
 
 	if(m_gameState == GameStatus::Playing)
 	{
-		stream << "Time: " << (int)m_fTime;
+		stream << "Time: " << static_cast<int>(m_fTime);
 		
 		m_gui.Render(renderer);
 	}
@@ -333,12 +337,14 @@ void MineSweeper::Draw(Game& game)
 		glm::vec3(width - 200, height - 5, 0.0f),
 		40.0f,glm::vec4(1.0f),nullptr,FontAlignment::Center);
 
+	// Draw cursor
 	glm::vec2 cursorPos = game.GetInput().GetCursorPos();
-	glm::mat4 T = glm::translate(glm::vec3(cursorPos.x + 0.5f,cursorPos.y + 0.5f,1.0f));
+	glm::mat4 T = glm::translate(glm::vec3(cursorPos.x + 20.0f,cursorPos.y - 20.0f,1.0f));
 	T = glm::scale(T,glm::vec3(40.0f,40.0f,1.0f));
 
 	renderer.DrawSprite("cursor",T);
 
+	// Draw Animated background
 	static float xPos = width / 2.0f;
 
 	xPos += 0.1f * game.GetDt();
@@ -378,4 +384,34 @@ void MineSweeper::CreateMainMenu(Game& game)
 	pMenu->AddElement(pButton);
 
 	m_mainMenu.SetMenu(pMenu);
+}
+
+void MineSweeper::ClampMouse(IInput& input, IRenderer& renderer) const
+{
+	int width, height;
+	renderer.GetDisplayMode(&width, &height);
+
+	glm::vec2 cursorPos = input.GetCursorPos();
+
+	if (cursorPos.x < 0 || cursorPos.x > width || cursorPos.y < 0 || cursorPos.y > height)
+	{
+		if (cursorPos.x < 0)
+		{
+			cursorPos.x = 0.0f;
+		}
+		else if (cursorPos.x > width)
+		{
+			cursorPos.x = static_cast<float>(width);
+		}
+		if (cursorPos.y < 0)
+		{
+			cursorPos.y = 0.0f;
+		}
+		else if (cursorPos.y > height)
+		{
+			cursorPos.y = static_cast<float>(height);
+		}
+
+		input.SetCursorPos(cursorPos);
+	}
 }

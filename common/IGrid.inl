@@ -1,7 +1,7 @@
 
 
 template< class T >
-IGrid<T>::IGrid() : m_gridSize(0.0f), m_numTiles(0.0f), m_center(0.0f)
+IGrid<T>::IGrid() : m_gridSize(0.0f), m_numTiles(0), m_center(0.0f)
 {
 }
 
@@ -137,7 +137,7 @@ void IGrid<T>::SetCenter(const glm::vec3& center)
 template< class T >
 glm::vec2 IGrid<T>::GetTileSize() const
 {
-	return glm::vec2(m_gridSize.x / m_numTiles.x, m_gridSize.y / m_numTiles.y);
+	return m_gridSize / glm::vec2(m_numTiles);
 }
 
 template< class T >

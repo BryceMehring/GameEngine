@@ -9,31 +9,50 @@
 #include <glm/gtx/transform.hpp>
 #include "ISerializable.h"
 
-// Grid abstract interface which implements a basic way to render them, which should be abstracted into another class 
+// Defines a 2D updateable and renderable grid
 template< class T >
 class IGrid : public ISerializable
 {
 public:
 
+	// Builds an empty grid
 	IGrid();
+
+	// Loads the grid from the specified file
 	IGrid(const std::string& file);
+
 	virtual ~IGrid() {}
 
+	// The logic updater method
 	virtual int Update(class IInput&) = 0;
 
 	// Render calls RenderTileCallback for each tile
 	virtual void Render(class IRenderer& renderer) const;
 
+	// Loads grid from stream
 	virtual bool Load(std::ifstream& stream);
+
+	// Saves grid to stream
 	virtual bool Save(std::ofstream& stream) const;
 
+	// Sets the the width and height of the renderable grid
 	void SetGridSize(const glm::vec2& size);
+
+	// Sets the number of tiles in the x and y axis
 	void SetNumTiles(const glm::ivec2& size);
+	
+	// Sets the center of the grid
 	void SetCenter(const glm::vec3& center);
 
 	glm::vec2 GetTileSize() const;
+
+	// Returns the grid size
 	const glm::vec2& GetGridSize() const;
+
+	// Returns the number of tiles in the x and y axis
 	const glm::ivec2& GetNumTiles() const;
+
+	// Returns the center of the grid
 	const glm::vec3& GetCenter() const;
 
 protected:
