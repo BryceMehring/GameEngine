@@ -13,7 +13,7 @@ namespace UI
 {
 
 // A UI controlled slider via the mouse. Whenever the user changes the value, 
-// the callback gets called with the new value
+// the callback gets called with the value
 class Slider : public IElement
 {
 public:
@@ -45,7 +45,8 @@ private:
 
 	virtual ~Slider() {}
 
-	// todo: reduce the number of member variables
+	std::string m_SpriteTexture;
+	DELEGATE m_callback;
 	glm::vec2 m_pos;
 	glm::vec2 m_start;
 	glm::vec2 m_end;
@@ -54,8 +55,6 @@ private:
 	float m_fMax;
 	bool m_bEnable;
 	bool m_bUpdateEnable;
-	DELEGATE m_callback;
-	std::string m_SpriteTexture;
 
 };
 
