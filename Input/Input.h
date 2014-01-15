@@ -21,6 +21,7 @@ public:
 	//false: returns true the entire period of the event
 
 	Input();
+	~Input();
 
 	// Callbacks
 	static void CharCallback(GLFWwindow*,unsigned int);
@@ -31,13 +32,14 @@ public:
 
 	// IPlugin
 
-	virtual DLLType GetPluginType() const;
-	virtual const char* GetName() const;
-	virtual int GetVersion() const;
+	DLLType GetPluginType() const override;
+	const char* GetName() const override;
+	int GetVersion() const override;
 
 	// IInput
 
-	virtual void Poll();
+	// Processes input events
+	void Poll() override;
 
 	// ----- Keyboard -----
 
@@ -46,80 +48,84 @@ public:
 	format:
 	bind NEW_KEY OLD_KEY
 	*/
-	virtual bool LoadKeyBindFile(const std::string& file);
+	bool LoadKeyBindFile(const std::string& file) override;
 
-	// returns true if Key is pressed
-	virtual bool KeyPress(int Key, bool once = true);
+	// Returns true if Key is pressed, false otherwise
+	bool KeyPress(int Key, bool once = true) const override;
 
-	// returns true if Key is released
-	virtual bool KeyRelease(int Key, bool once = true);
+	// Returns true if Key is released, false otherwise
+	bool KeyRelease(int Key, bool once = true) const override;
 
-	// returns true if there is a character pressed, which is outputted through the parameter out
+	// Returns true if there is a character pressed, which is outputted through the parameter out
 	// note: this method should only be used for text input
-	virtual bool CharKeyDown(char& out) const;
+	bool CharKeyDown(char& out) const override;
 
 	// ----- Cursor -----
 
-	// returns true if the mouse is clicked
-	virtual bool MouseClick(int Button, bool once = true) const;
+	// Returns true if the mouse button is clicked, false otherwise
+	bool MouseClick(int Button, bool once = true) const override;
 
-	// returns true if the mouse is released
-	virtual bool MouseRelease(int Button, bool once = true) const;
+	// Returns true if the mouse button is released, false otherwise
+	bool MouseRelease(int Button, bool once = true) const override;
 
-	//gets cursor position in world space
-	// +x axis --> right
-	// -x axis --> left
-	// +y axis --> up
-	// -y axis --> down
-	virtual const glm::vec2& GetCursorPos() const;
+	// Returns the cursor position in screen space
+	// Origin: Bottom left hand corner
+	// range: [(0, 0), (width, height)]
+	// Note: if the cursor is disabled via ShowCursor(), the cursors position will not be updated
+	const glm::ivec2& GetCursorPos() const override;
 
-	virtual void SetCursorPos(glm::vec2 pos);
+	// Returns true if the cursor is shown, false otherwise
+	bool IsCursorShown() const override;
+	
+	// Moves to the cursor to pos
+	void SetCursorPos(glm::ivec2 pos) override;
 
-	// horizontal acceleration
-	virtual int MouseX() const;
+	// Shows the cursor if bShow is true
+	// Disables the cursor if bShow is false
+	void ShowCursor(bool bShow) override;
 
-	// vertical acceleration
-	virtual int MouseY() const;
+	// Horizontal acceleration
+	int MouseX() const override;
 
-	// scroll acceleration
-	virtual double MouseZ() const;
+	// Vertical acceleration
+	int MouseY() const override;
 
-	// returns true if user clicks, out is the current selection box
-	virtual bool GetSelectedRect(Math::AABB& out);
+	// Scroll acceleration
+	double MouseZ() const override;
 
-	// Cursor Sensitivity, (0,FLT_MAX]
-	virtual void SetCursorSensitivity(float);
+	// Returns true if user clicks, out is the current selection box
+	bool GetSelectedRect(glm::ivec2& min, glm::ivec2& max) override;
 
 	// ----- Joysticks -----
 
 	// Returns true if a joystick is connected, false otherwise
-	virtual bool IsValidJoystickConnected() const;
+	bool IsValidJoystickConnected() const override;
 
 	// Returns the name of the connected joystick
 	// Note: If a joystick is not connected, an empty string is returned
-	virtual std::string GetJoystickName() const;
+	std::string GetJoystickName() const override;
 
 	// Sets the dead zone for the specified joystick axes
 	// Dead zones are an area around the center of the joystick in which the axes will be zeroed
-	virtual void SetJoystickAxesDeadZone(JoystickAxes i, float deadZone);
+	void SetJoystickAxesDeadZone(JoystickAxes i, float deadZone) override;
 
 	// Returns the axes and direction of the joystick axes being pushed via parameters
 	// The function returns true when any axes is pressed, else false is returned
 	// todo: replace the ints with something more meaningful
-	virtual bool GetMovingJoystickAxes(int& axes, int& dir) const;
+	bool GetMovingJoystickAxes(int& axes, int& dir) const override;
 
-	// Get the current value of the joystick axes
+	// Returns the current value of the joystick axis
 	// Note: If a joystick is not connected, a zeroed vec2 is returned
-	virtual glm::vec2 GetJoystickAxes(JoystickAxes i) const;
+	glm::vec2 GetJoystickAxes(JoystickAxes i) const override;
 
 	// Returns the number of buttons on the joystick
-	virtual int GetNumJoystickButtons() const;
+	int GetNumJoystickButtons() const override;
 
 	// Returns true if the button is pressed, else false
-	virtual bool JoystickButtonPress(int button, bool once = true) const;
+	bool JoystickButtonPress(int button, bool once = true) const override;
 
 	// Returns true if the button is pressed, else false
-	virtual bool JoystickButtonRelease(int button, bool once = true) const;
+	bool JoystickButtonRelease(int button, bool once = true) const override;
 
 private:
 
@@ -134,16 +140,16 @@ private:
 	unsigned int m_iCharKeyDown;
 
 	// Mouse
-	int m_iMouseX;
-	int m_iMouseY;
+	int m_iMouseAccelerationX;
+	int m_iMouseAccelerationY;
+	double m_fOldMousePosX;
+	double m_fOldMousePosY;
 	double m_fYScrollOffset;
 
 	std::array<int, 2> m_MouseClickOnce;
 
-	float m_fMouseSensistivity;
-
-	glm::vec2 m_tpos;
-	glm::vec2 m_selectedPos;
+	glm::ivec2 m_cursorPos;
+	glm::ivec2 m_selectedPos;
 
 	// Joysticks
 	std::array<float, 2> m_fJoyDeadZone;
@@ -158,9 +164,8 @@ private:
 	std::vector<unsigned char> m_joystickButtons;
 
 	// helper methods
+	bool CheckKey(int Key, bool once, int flag) const;
 	void Reset();
-	bool CheckKey(int Key, bool once, int flag);
-	void CenterMouse();
 	void UpdateMouse(double x, double y);
 	void UpdateJoystick();
 };

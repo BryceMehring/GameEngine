@@ -2,7 +2,7 @@
 #define _IINPUT_
 
 #include "IPlugin.h"
-#include "VecMath.h"
+#include <glm/vec2.hpp>
 #include <string>
 
 enum class JoystickAxes
@@ -22,7 +22,7 @@ public:
 	//true: only process the event once,
 	//false: returns true the entire period of the event
 
-	// processes input events
+	// Processes input events
 	virtual void Poll() = 0;
 
 	// ----- Keyboard -----
@@ -34,47 +34,51 @@ public:
 	*/
 	virtual bool LoadKeyBindFile(const std::string& file) = 0;
 
-	// returns true if Key is pressed
-	virtual bool KeyPress(int Key, bool once = true) = 0;
+	// Returns true if Key is pressed, false otherwise
+	virtual bool KeyPress(int Key, bool once = true) const = 0;
 
-	// returns true if Key is released
-	virtual bool KeyRelease(int Key, bool once = true) = 0;
+	// Returns true if Key is released, false otherwise
+	virtual bool KeyRelease(int Key, bool once = true) const = 0;
 
-	// returns true if there is a character pressed, which is outputted through the parameter out
+	// Returns true if there is a character pressed, which is outputted through the parameter out
 	// note: this method should only be used for text input
 	virtual bool CharKeyDown(char& out) const = 0;
 
 	// ----- Cursor -----
 
-	// returns true if the mouse is clicked
+	// Returns true if the mouse button is clicked, false otherwise
 	virtual bool MouseClick(int Button, bool once = true) const = 0;
 
-	// returns true if the mouse is released
+	// Returns true if the mouse button is released, false otherwise
 	virtual bool MouseRelease(int Button, bool once = true) const = 0;
 
-	//gets cursor position in world space
-	// +x axis --> right
-	// -x axis --> left
-	// +y axis --> up
-	// -y axis --> down
-	virtual const glm::vec2& GetCursorPos() const = 0;
+	// Returns the cursor position in screen space
+	// Origin: Bottom left hand corner
+	// range: [(0, 0), (width, height)]
+	// Note: if the cursor is disabled via ShowCursor(), the cursors position will not be updated
+	virtual const glm::ivec2& GetCursorPos() const = 0;
 
-	virtual void SetCursorPos(glm::vec2 pos) = 0;
+	// Returns true if the cursor is shown, false otherwise
+	virtual bool IsCursorShown() const = 0;
 
-	// horizontal acceleration
+	// Moves to the cursor to pos
+	virtual void SetCursorPos(glm::ivec2 pos) = 0;
+
+	// Shows the cursor if bShow is true
+	// Disables the cursor if bShow is false
+	virtual void ShowCursor(bool bShow) = 0;
+
+	// Horizontal acceleration
 	virtual int MouseX() const = 0;
 
-	// vertical acceleration
+	// Vertical acceleration
 	virtual int MouseY() const = 0;
 
-	// scroll change
+	// Scroll change
 	virtual double MouseZ() const = 0;
 
-	// returns true if user clicks, out is the current selection box
-	virtual bool GetSelectedRect(Math::AABB& out) = 0;
-
-	// Cursor Sensitivity, (0,FLT_MAX]
-	virtual void SetCursorSensitivity(float) = 0;
+	// Returns true if user clicks, out is the current selection box
+	virtual bool GetSelectedRect(glm::ivec2& min, glm::ivec2& max) = 0;
 
 	// ----- Joysticks -----
 
@@ -89,14 +93,12 @@ public:
 	// Dead zones are an area around the center of the joystick in which the axes will be zeroed
 	virtual void SetJoystickAxesDeadZone(JoystickAxes i, float deadZone) = 0;
 
-	//virtual void SetJoystickAxes(int axes, int dir) = 0;
-
 	// Returns the axes and direction of the joystick axes being pushed via parameters
 	// The function returns true when any axes is pressed, else false is returned
 	// todo: replace the ints with something more meaningful
 	virtual bool GetMovingJoystickAxes(int& axes, int& dir) const = 0;
 
-	// Get the current value of the joystick axes
+	// Returns the current value of the joystick axis
 	// Note: If a joystick is not connected, a zeroed vec2 is returned
 	virtual glm::vec2 GetJoystickAxes(JoystickAxes i) const = 0;
 

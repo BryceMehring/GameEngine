@@ -47,7 +47,7 @@ void Input::MouseButtonCallback(GLFWwindow*,int button, int action, int mods)
 {
 	if(s_pThis != nullptr)
 	{
-		s_pThis->m_selectedPos = s_pThis->m_tpos;
+		s_pThis->m_selectedPos = s_pThis->m_cursorPos;
 		s_pThis->m_MouseClickOnce[button] = action;
 	}
 }
@@ -60,8 +60,7 @@ void Input::MouseScrollCallback(GLFWwindow*, double, double yOffset)
 	}
 }
 
-Input::Input() : m_fMouseSensistivity(100.0f), m_tpos(0.0f, 0.0f), m_iNumJoystickAxes(0), 
-m_pJoystickAxes(nullptr)
+Input::Input() : m_iNumJoystickAxes(0), m_pJoystickAxes(nullptr)
 {
 	s_pThis = this;
 
@@ -72,15 +71,34 @@ m_pJoystickAxes(nullptr)
 
 	Reset();
 
-	glfwSetCharCallback(glfwGetCurrentContext(),CharCallback);
-	glfwSetKeyCallback(glfwGetCurrentContext(),KeyCallback);
-	glfwSetCursorPosCallback(glfwGetCurrentContext(),MouseCallback);
-	glfwSetMouseButtonCallback(glfwGetCurrentContext(),MouseButtonCallback);
-	glfwSetScrollCallback(glfwGetCurrentContext(),MouseScrollCallback);
+	// Configure Keyboard and Mouse callbacks
+	glfwSetCharCallback(glfwGetCurrentContext(), CharCallback);
+	glfwSetKeyCallback(glfwGetCurrentContext(), KeyCallback);
+	glfwSetCursorPosCallback(glfwGetCurrentContext(), MouseCallback);
+	glfwSetMouseButtonCallback(glfwGetCurrentContext(), MouseButtonCallback);
+	glfwSetScrollCallback(glfwGetCurrentContext(), MouseScrollCallback);
 
-	glfwSetInputMode(glfwGetCurrentContext(),GLFW_CURSOR,GLFW_CURSOR_HIDDEN);
+	glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-	CenterMouse();
+	// Move the mouse to the center of the screen
+	int width, height;
+	glfwGetWindowSize(glfwGetCurrentContext(), &width, &height);
+	glfwSetCursorPos(glfwGetCurrentContext(), width / 2, height / 2);
+
+	m_cursorPos.x = width / 2;
+	m_cursorPos.y = height / 2;
+
+	m_fOldMousePosX = width / 2.0;
+	m_fOldMousePosY = height / 2.0;
+}
+
+Input::~Input()
+{
+	glfwSetCharCallback(glfwGetCurrentContext(), nullptr);
+	glfwSetKeyCallback(glfwGetCurrentContext(), nullptr);
+	glfwSetCursorPosCallback(glfwGetCurrentContext(), nullptr);
+	glfwSetMouseButtonCallback(glfwGetCurrentContext(), nullptr);
+	glfwSetScrollCallback(glfwGetCurrentContext(), nullptr);
 }
 
 DLLType Input::GetPluginType() const
@@ -144,11 +162,11 @@ bool Input::LoadKeyBindFile(const string& file)
 	return true;
 }
 
-bool Input::KeyPress(int Key, bool once)
+bool Input::KeyPress(int Key, bool once) const
 {
 	return CheckKey(Key, once, GLFW_PRESS);
 }
-bool Input::KeyRelease(int Key, bool once)
+bool Input::KeyRelease(int Key, bool once) const
 {
 	return CheckKey(Key, once, GLFW_RELEASE);
 }
@@ -177,24 +195,36 @@ bool Input::MouseRelease(int iButton, bool once) const
 	return (once ? (m_MouseClickOnce[iButton] == GLFW_RELEASE) : glfwGetMouseButton(glfwGetCurrentContext(), iButton) == GLFW_RELEASE);
 }
 
-const glm::vec2& Input::GetCursorPos() const
+const glm::ivec2& Input::GetCursorPos() const
 {
-	return m_tpos;
+	return m_cursorPos;
 }
 
-void Input::SetCursorPos(glm::vec2 pos)
+void Input::SetCursorPos(glm::ivec2 pos)
 {
-	m_tpos = pos;
+	glfwSetCursorPos(glfwGetCurrentContext(), pos.x, pos.y);
+	m_fOldMousePosX = pos.x;
+	m_fOldMousePosY = pos.y;
+}
+
+bool Input::IsCursorShown() const
+{
+	return (glfwGetInputMode(glfwGetCurrentContext(), GLFW_CURSOR) == GLFW_CURSOR_NORMAL);
+}
+
+void Input::ShowCursor(bool bShow)
+{
+	glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, bShow ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
 int Input::MouseX() const
 {
-	return m_iMouseX;
+	return m_iMouseAccelerationX;
 }
 
 int Input::MouseY() const
 {
-	return m_iMouseY;
+	return m_iMouseAccelerationY;
 }
 
 double Input::MouseZ() const
@@ -202,20 +232,15 @@ double Input::MouseZ() const
 	return m_fYScrollOffset;
 }
 
-bool Input::GetSelectedRect(Math::AABB& out)
+bool Input::GetSelectedRect(glm::ivec2& min, glm::ivec2& max)
 {
 	if (!MouseClick(0, false))
 		return false;
 
-	out.min = glm::vec2(min(m_selectedPos.x, m_tpos.x), min(m_selectedPos.y, m_tpos.y));
-	out.max = glm::vec2(max(m_selectedPos.x, m_tpos.x), max(m_selectedPos.y, m_tpos.y));
+	min = glm::ivec2(std::min(m_selectedPos.x, m_cursorPos.x), std::min(m_selectedPos.y, m_cursorPos.y));
+	max = glm::ivec2(std::max(m_selectedPos.x, m_cursorPos.x), std::max(m_selectedPos.y, m_cursorPos.y));
 
 	return true;
-}
-
-void Input::SetCursorSensitivity(float s)
-{
-	m_fMouseSensistivity = s;
 }
 
 bool Input::IsValidJoystickConnected() const
@@ -357,11 +382,11 @@ void Input::Reset()
 
 	m_iKeyAction = m_iKeyDown = -1;
 	m_iCharKeyDown = -1;
-	m_iMouseX = m_iMouseY = 0;
+	m_iMouseAccelerationX = m_iMouseAccelerationY = 0;
 	m_fYScrollOffset = 0.0;
 }
 
-bool Input::CheckKey(int Key, bool once, int flag)
+bool Input::CheckKey(int Key, bool once, int flag) const
 {
 	if (once && (m_iKeyAction != flag))
 		return false;
@@ -400,29 +425,22 @@ bool Input::CheckKey(int Key, bool once, int flag)
 	return bSuccess;
 }
 
-void Input::CenterMouse()
-{
-	int width;
-	int height;
-
-	glfwGetWindowSize(glfwGetCurrentContext(),&width,&height);
-	glfwSetCursorPos(glfwGetCurrentContext(),width / 2, height / 2);
-}
-
 void Input::UpdateMouse(double x, double y)
 {
-	int width = 0;
-	int height = 0;
-	glfwGetWindowSize(glfwGetCurrentContext(),&width,&height);
-
 	// Get cursor acceleration in world space
-	m_iMouseX = (int)x - (width / 2);
-	m_iMouseY = -(int)y + (height / 2);
+	m_iMouseAccelerationX = static_cast<int>(x - m_fOldMousePosX);
+	m_iMouseAccelerationY = -static_cast<int>(y - m_fOldMousePosY);
+	m_fOldMousePosX = x;
+	m_fOldMousePosY = y;
 
-	// Offset cursor from the acceleration
-	m_tpos += m_fMouseSensistivity * glm::vec2(m_iMouseX,m_iMouseY);
+	if (IsCursorShown())
+	{
+		int height;
+		glfwGetWindowSize(glfwGetCurrentContext(), nullptr, &height);
 
-	CenterMouse();
+		m_cursorPos.x = static_cast<int>(x);
+		m_cursorPos.y = height - static_cast<int>(y);
+	}
 }
 
 void Input::UpdateJoystick()
