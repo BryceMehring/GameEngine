@@ -58,11 +58,11 @@ public:
 	// Note: if the cursor is disabled via ShowCursor(), the cursors position will not be updated
 	virtual const glm::ivec2& GetCursorPos() const = 0;
 
-	// Returns true if the cursor is shown, false otherwise
-	virtual bool IsCursorShown() const = 0;
-
 	// Moves to the cursor to pos
 	virtual void SetCursorPos(glm::ivec2 pos) = 0;
+
+	// Returns true if the cursor is shown, false otherwise
+	virtual bool IsCursorShown() const = 0;
 
 	// Shows the cursor if bShow is true
 	// Disables the cursor if bShow is false

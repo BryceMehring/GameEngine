@@ -78,8 +78,6 @@ Input::Input() : m_iNumJoystickAxes(0), m_pJoystickAxes(nullptr)
 	glfwSetMouseButtonCallback(glfwGetCurrentContext(), MouseButtonCallback);
 	glfwSetScrollCallback(glfwGetCurrentContext(), MouseScrollCallback);
 
-	glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
 	// Move the mouse to the center of the screen
 	int width, height;
 	glfwGetWindowSize(glfwGetCurrentContext(), &width, &height);

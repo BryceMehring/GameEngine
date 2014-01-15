@@ -74,11 +74,11 @@ public:
 	// Note: if the cursor is disabled via ShowCursor(), the cursors position will not be updated
 	const glm::ivec2& GetCursorPos() const override;
 
-	// Returns true if the cursor is shown, false otherwise
-	bool IsCursorShown() const override;
-	
 	// Moves to the cursor to pos
 	void SetCursorPos(glm::ivec2 pos) override;
+
+	// Returns true if the cursor is shown, false otherwise
+	bool IsCursorShown() const override;
 
 	// Shows the cursor if bShow is true
 	// Disables the cursor if bShow is false
@@ -164,8 +164,8 @@ private:
 	std::vector<unsigned char> m_joystickButtons;
 
 	// helper methods
-	bool CheckKey(int Key, bool once, int flag) const;
 	void Reset();
+	bool CheckKey(int Key, bool once, int flag) const;
 	void UpdateMouse(double x, double y);
 	void UpdateJoystick();
 };
