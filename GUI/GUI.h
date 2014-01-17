@@ -1,41 +1,53 @@
 #ifndef _GUI_
 #define _GUI_
 
-#include "Menu.h"
 #include "IInput.h"
 #include "IRenderer.h"
-
-#include <functional>
+#include "IElement.h"
 
 namespace UI
 {
 
-// GUI class that the game will interface with.
-// The gui is a small wrapper around the Menu
-class GUI
-{
-public:
+	// Defines a simple graph based GUI
+	class GUI
+	{
+	public:
 
-	explicit GUI(Menu* pMenu = nullptr);
-	~GUI();
+		// Returns the new node added to the graph
+		unsigned int CreateNode();
 
-	// Get/set the current menu in use
-	void SetMenu(Menu* pMenu);
-	Menu* GetMenu();
+		// Sets the current node for which updating and rendering take place
+		void SetNode(unsigned int id);
 
-	// Indexes index the current UI menu's elements via the tab key.
-	void SetIndex(unsigned int i);
-	unsigned int GetIndex() const;
+		// Returns the current node in the graph for which updating and rendering take place
+		unsigned int GetNode() const;
 
-	void Update(IInput& input, double dt);
-	void Render(IRenderer& renderer);
+		// Adds pElement to the node in the graph specified by id
+		void AddElement(unsigned int id, IElement* pElement);
 
-private:
+		// Links nodes id and id2 bidirectionally 
+		void LinkNodes(unsigned int id, unsigned int id2);
 
-	Menu* m_pMenu;
-	unsigned int m_uiCurrentIndex;
+		// Updates all of the elements in the graph
+		void Update(IInput& input, double dt);
 
-};
+		// Renders all of the elements in the graph
+		void Render(IRenderer& renderer);
+
+	private:
+
+		struct Node
+		{
+			// A list of all gui elements in the node
+			std::vector<IElement*> elements;
+		};
+
+		std::vector<std::vector<bool>> m_matrix;
+		std::vector<Node> m_nodes;
+
+		unsigned int m_uiCurrentNode = -1;
+
+	};
 
 }
 

@@ -15,11 +15,11 @@ namespace UI
 
 	void Button::Update(::IInput& input, double)
 	{
-		m_bMouseHover = m_sprite.IsPointWithin(input.GetCursorPos());
+		m_bMouseHover = m_sprite.IsPointWithin(glm::vec2(input.GetCursorPos()));
 
 		if (input.MouseClick(0))
 		{
-			const glm::vec2& pos = input.GetCursorPos();
+			glm::vec2 pos = glm::vec2(input.GetCursorPos());
 
 			if (m_sprite.IsPointWithin(pos))
 			{

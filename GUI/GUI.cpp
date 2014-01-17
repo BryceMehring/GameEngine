@@ -2,63 +2,67 @@
 
 namespace UI
 {
-
-GUI::GUI(Menu* pMenu) : m_pMenu(pMenu), m_uiCurrentIndex(0)
-{
-}
-
-GUI::~GUI()
-{
-	if(m_pMenu != nullptr)
+	unsigned int GUI::CreateNode()
 	{
-		m_pMenu->Release();
-	}
-}
+		m_matrix.emplace_back();
 
-void GUI::Update(::IInput& input, double dt)
-{
-	if(m_pMenu != nullptr)
-	{
-		m_pMenu->Update(this,input,dt);
-	}
-}
-
-void GUI::Render(::IRenderer& renderer)
-{
-	if(m_pMenu != nullptr)
-	{
-		m_pMenu->Render(renderer);
-	}
-}
-
-void GUI::SetMenu(Menu* pMenu)
-{
-	if(pMenu != nullptr)
-	{
-		if(m_pMenu != nullptr)
+		for (auto& iter : m_matrix)
 		{
-			m_pMenu->Release();
+			iter.resize(m_matrix.size());
 		}
 
-		m_pMenu = pMenu;
-		m_uiCurrentIndex = 0;
+		m_nodes.emplace_back();
+
+		return m_matrix.size() - 1;
 	}
-}
 
-void GUI::SetIndex(unsigned int i)
-{
-	m_uiCurrentIndex = i;
-}
+	void GUI::SetNode(unsigned int id)
+	{
+		if (id < m_matrix.size())
+		{
+			if ((m_uiCurrentNode == -1) || m_matrix[m_uiCurrentNode][id])
+			{
+				m_uiCurrentNode = id;
+			}
+		}
+	}
 
-unsigned int GUI::GetIndex() const
-{
-	return m_uiCurrentIndex;
-}
+	unsigned int GUI::GetNode() const
+	{
+		return m_uiCurrentNode;
+	}
 
-Menu* GUI::GetMenu()
-{
-	m_pMenu->AddRef();
-	return m_pMenu;
-}
+	void GUI::AddElement(unsigned int id, IElement* pElement)
+	{
+		if (id < m_matrix.size())
+		{
+			pElement->AddRef();
+			m_nodes[id].elements.push_back(pElement);
+		}
+	}
+
+	void GUI::LinkNodes(unsigned int id, unsigned int id2)
+	{
+		if (id < m_matrix.size() && id2 < m_matrix.size())
+		{
+			m_matrix[id][id2] = m_matrix[id2][id] = true;
+		}
+	}
+
+	void GUI::Update(IInput& input, double dt)
+	{
+		for (IElement* pIter : m_nodes[m_uiCurrentNode].elements)
+		{
+			pIter->Update(input, dt);
+		}	
+	}
+
+	void GUI::Render(IRenderer& renderer)
+	{
+		for (IElement* pIter : m_nodes[m_uiCurrentNode].elements)
+		{
+			pIter->Render(renderer);
+		}
+	}
 
 }

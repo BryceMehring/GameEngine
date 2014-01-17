@@ -34,10 +34,12 @@ void Slider::Trigger()
 
 void Slider::Update(IInput& input, double dt)
 {
+	glm::vec2 cursorPos = glm::vec2(input.GetCursorPos());
+
 	if(input.MouseClick(0))
 	{
 		Math::FRECT R((m_end.x - m_start.x),50.0f,(m_end + m_start) * 0.5f);
-		if(R.IsPointWithin(input.GetCursorPos()))
+		if (R.IsPointWithin(cursorPos))
 		{
 			m_bUpdateEnable = true;
 		}
@@ -50,9 +52,7 @@ void Slider::Update(IInput& input, double dt)
 	if(m_bUpdateEnable)
 	{
 		// Move the slider to the mouse pos
-
-		const glm::vec2& mousePos = input.GetCursorPos();
-		m_pos.x = glm::clamp(mousePos.x,m_start.x,m_end.x);
+		m_pos.x = glm::clamp(cursorPos.x, m_start.x, m_end.x);
 
 		Trigger();
 	}
@@ -62,11 +62,11 @@ void Slider::Render(IRenderer& renderer)
 {
 	glm::vec3 line[2] =
 	{
-		glm::vec3(m_start.x,m_start.y,0.0f),
-		glm::vec3(m_end.x,m_end.y,0.0f)
+		glm::vec3(m_start.x,m_start.y,-1.0f),
+		glm::vec3(m_end.x,m_end.y,-1.0f)
 	};
 
-	glm::mat4 T = glm::translate(glm::vec3(m_pos.x,m_pos.y,1.0f));
+	glm::mat4 T = glm::translate(glm::vec3(m_pos.x,m_pos.y,0.0f));
 	T = glm::scale(T,glm::vec3(60.0f,40.0f,1.0f));
 
 	std::stringstream stream;
