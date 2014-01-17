@@ -43,8 +43,6 @@ public:
 
 private:
 
-	virtual ~Slider() {}
-
 	std::string m_SpriteTexture;
 	DELEGATE m_callback;
 	glm::vec2 m_pos;

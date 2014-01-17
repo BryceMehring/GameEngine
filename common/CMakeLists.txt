@@ -2,7 +2,6 @@
 
 set(COMMON_HEADERS
     Camera.h
-    RefCounting.h
     VecMath.h
     Timer.h
     Log.h
@@ -10,7 +9,6 @@ set(COMMON_HEADERS
 
 set(COMMON_SOURCE
     Camera.cpp
-    RefCounting.cpp
     VecMath.cpp
     Timer.cpp
     Log.cpp)

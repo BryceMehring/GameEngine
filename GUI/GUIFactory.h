@@ -5,6 +5,8 @@
 #include "Button.h"
 #include "Game.h"
 
+#include <memory>
+
 namespace UI
 {
 	template< class T >
@@ -13,15 +15,15 @@ namespace UI
 	public:
 
 		template< class ...A >
-		static IElement* CreateElement(Game& theGame, const A&... args)
+		static std::shared_ptr<IElement> CreateElement(Game& theGame, const A&... args)
 		{
-			return new T(args...);
+			return std::make_shared<T>(args...);
 		}
 
 		template< class ...A >
-		static IElement* CreateElement(Game& theGame, A&&... args)
+		static std::shared_ptr<IElement> CreateElement(Game& theGame, A&&... args)
 		{
-			return new T(std::forward<A>(args)...);
+			return std::make_shared<T>(std::forward<A>(args)...);
 		}
 	};
 
@@ -30,7 +32,7 @@ namespace UI
 	{
 	public:
 
-		static IElement* CreateElement(Game& theGame,
+		static std::shared_ptr<IElement> CreateElement(Game& theGame,
 									   const glm::vec2& pos,
 									   const glm::vec3& defaultColor,
 									   const glm::vec3& hoverColor,
@@ -41,7 +43,7 @@ namespace UI
 			Math::FRECT R(pos);
 			theGame.GetRenderer().GetStringRect(str.c_str(), textScale, FontAlignment::Center, R);
 
-			return new Button(R, defaultColor, hoverColor, textScale, str, callback);
+			return std::make_shared<Button>(R, defaultColor, hoverColor, textScale, str, callback);
 		}
 	};
 

@@ -5,6 +5,8 @@
 #include "IRenderer.h"
 #include "IElement.h"
 
+#include <memory>
+
 namespace UI
 {
 
@@ -23,15 +25,15 @@ namespace UI
 		unsigned int GetNode() const;
 
 		// Adds pElement to the node in the graph specified by id
-		void AddElement(unsigned int id, IElement* pElement);
+		void AddElement(unsigned int id, const std::shared_ptr<IElement>& pElement);
 
 		// Links nodes id and id2 bidirectionally 
 		void LinkNodes(unsigned int id, unsigned int id2);
 
-		// Updates all of the elements in the graph
+		// Updates all of the elements in the current node of the graph
 		void Update(IInput& input, double dt);
 
-		// Renders all of the elements in the graph
+		// Renders all of the elements in the current node of the graph
 		void Render(IRenderer& renderer);
 
 	private:
@@ -39,7 +41,7 @@ namespace UI
 		struct Node
 		{
 			// A list of all gui elements in the node
-			std::vector<IElement*> elements;
+			std::vector<std::shared_ptr<IElement>> elements;
 		};
 
 		std::vector<std::vector<bool>> m_matrix;

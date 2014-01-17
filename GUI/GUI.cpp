@@ -32,11 +32,10 @@ namespace UI
 		return m_uiCurrentNode;
 	}
 
-	void GUI::AddElement(unsigned int id, IElement* pElement)
+	void GUI::AddElement(unsigned int id, const std::shared_ptr<IElement>& pElement)
 	{
 		if (id < m_matrix.size())
 		{
-			pElement->AddRef();
 			m_nodes[id].elements.push_back(pElement);
 		}
 	}
@@ -51,17 +50,23 @@ namespace UI
 
 	void GUI::Update(IInput& input, double dt)
 	{
-		for (IElement* pIter : m_nodes[m_uiCurrentNode].elements)
+		if (m_uiCurrentNode != -1)
 		{
-			pIter->Update(input, dt);
-		}	
+			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
+			{
+				pIter->Update(input, dt);
+			}
+		}
 	}
 
 	void GUI::Render(IRenderer& renderer)
 	{
-		for (IElement* pIter : m_nodes[m_uiCurrentNode].elements)
+		if (m_uiCurrentNode != -1)
 		{
-			pIter->Render(renderer);
+			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
+			{
+				pIter->Render(renderer);
+			}
 		}
 	}
 

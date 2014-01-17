@@ -20,6 +20,9 @@ namespace UI
 
 		typedef std::function<void(void)> DELEGATE;
 
+		Button(const Math::FRECT& s, const glm::vec3& defaultColor,
+			const glm::vec3& hoverColor, float scale, const std::string& str, const DELEGATE& callback);
+
 		void Update(IInput&, double) override;
 		void Render(IRenderer&) override;
 
@@ -32,11 +35,6 @@ namespace UI
 		void SetText(std::string str);
 
 	protected:
-
-		Button(const Math::FRECT& s, const glm::vec3& defaultColor,
-			const glm::vec3& hoverColor, float scale, const std::string& str, const DELEGATE& callback);
-
-		virtual ~Button() {}
 
 		Math::FRECT m_sprite;
 
