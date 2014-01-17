@@ -85,10 +85,10 @@ void Joystick::Draw(Game& game)
 	int axes, dir;
 	if (input.GetMovingJoystickAxes(axes, dir))
 	{
-		stream << axes << ' ' << dir;
+        stream << axes << ' ' << dir;
 	}
 
 	int width, height;
 	renderer.GetDisplayMode(&width, &height);
-	renderer.DrawString(stream.str().c_str(), glm::vec3(width / 4.0f, height, 0.0f), 0.5f, glm::vec4(1.0f), nullptr, FontAlignment::Left);
+    renderer.DrawString(stream.str().c_str(), glm::vec3(width / 2.0f, height, 0.0f), 60.0f, glm::vec4(1.0f), nullptr, FontAlignment::Center);
 }
