@@ -1,11 +1,10 @@
 #version 330
 
-in vec4 color;
 out vec4 outColor;
+
+uniform vec4 uniformColor;
 
 void main()
 {
-	// Output color = color specified in the vertex shader, 
-	// interpolated between all 3 surrounding vertices
-	outColor = color;
+	outColor = uniformColor;
 }
