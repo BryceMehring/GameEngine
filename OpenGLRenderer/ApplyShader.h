@@ -28,7 +28,7 @@ class ApplyTexturedShader : public ApplyShader
 {
 public:
 
-	using ApplyShader::ApplyShader;
+	ApplyTexturedShader(TexturedShader* pShader);
 
 	// Access to the shader object
 	TexturedShader* operator*() const;

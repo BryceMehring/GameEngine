@@ -22,6 +22,10 @@ Shader* ApplyShader::operator ->() const
 	return m_pShader;
 }
 
+ApplyTexturedShader::ApplyTexturedShader(TexturedShader* pShader) : ApplyShader(pShader)
+{
+}
+
 TexturedShader* ApplyTexturedShader::operator *() const
 {
 	return static_cast<TexturedShader*>(m_pShader);
