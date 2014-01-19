@@ -40,7 +40,7 @@ public:
 	void DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment alignment);
 	void SetCamera(Camera* pCam);
 
-	// Renders all of the cached fonts
+	// Renders all of the cached strings
 	void Render();
 
 private:
@@ -51,9 +51,6 @@ private:
 
 	// The key is the texture for the vector of DrawTextInfo
 	std::map<std::string, std::vector<DrawTextInfo>> m_strings;
-
-	// Length of all the strings to be rendered
-	std::vector<unsigned int> m_stringLength;
 
 	// Calculates the offset for text alignment
 	// width = width of the font
@@ -71,10 +68,6 @@ private:
 	// oldPos = origin of the font rendering
 	// currentPos = position that needs offsetting
 	void ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos) const;
-
-	// Fills the vertex buffer with all of the characters
-	// and sets m_stringLength with the number of renderable characters for each string
-	void FillVertexBuffer();
 
 	// Gets the string rect from the specified font
 	void GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& out) const;

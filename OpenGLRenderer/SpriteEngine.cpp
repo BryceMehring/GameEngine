@@ -1,4 +1,3 @@
-#define GLM_SWIZZLE
 #include "SpriteEngine.h"
 #include "VertexStructures.h"
 #include "ApplyShader.h"

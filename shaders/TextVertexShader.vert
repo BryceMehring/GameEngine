@@ -6,19 +6,28 @@ layout(location = 1) in vec2 vertexUV;
 
 // Output data ; will be interpolated for each fragment.
 out vec2 UV;
-out vec4 color;
+
+struct CharDescriptor
+{
+	vec2 pos;
+	vec2 size;
+};
 
 // Values that stay constant for the whole mesh.
 uniform mat4 MVP;
-uniform vec4 uniformColor;
+uniform mat4 transformation;
+uniform CharDescriptor charInfo;
+uniform vec2 fontSize;
 
 void main()
 {
 	// Output position of the vertex, in clip space : MVP * position
-	gl_Position =  MVP * vec4(vertexPosition_modelspace,1);
-	
-	// UV of the vertex. No special space for this one.
-	UV = vertexUV;
-	color = uniformColor;
+	gl_Position =  MVP * transformation * vec4(vertexPosition_modelspace,1);
+
+	vec2 uvOffset = charInfo.pos;
+	uvOffset += vertexUV * charInfo.size;
+	uvOffset /= fontSize;
+
+	UV = uvOffset;
 }
 

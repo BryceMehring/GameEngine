@@ -458,11 +458,10 @@ void oglRenderer::BuildBuffers()
 	};
 
 	VertexBuffer* pSpriteVertexBuffer = new VertexBuffer(verticies, sizeof(VertexPT), 4, GL_STATIC_DRAW,indexBuffer, 6);
-	VertexBuffer* pFontVertexBuffer = new VertexBuffer(0, sizeof(VertexPT), 1024*8, GL_STREAM_DRAW, indexBuffer, 6);
 	VertexBuffer* pLineVertexBuffer = new VertexBuffer(0, sizeof(VertexP), 1024*8, GL_DYNAMIC_DRAW, indexBuffer, 6, false);
 
-	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexBuffer));
-	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pFontVertexBuffer,&m_OrthoCamera));
+	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pSpriteVertexBuffer));
+	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
 
 	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer));
 	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,&m_OrthoCamera));
@@ -471,7 +470,6 @@ void oglRenderer::BuildBuffers()
 	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
 
 	m_vertexBuffers.push_back(pLineVertexBuffer);
-	m_vertexBuffers.push_back(pFontVertexBuffer);
 	m_vertexBuffers.push_back(pSpriteVertexBuffer);
 }
 
