@@ -11,6 +11,7 @@ out vec2 UV;
 uniform mat4 MVP;
 uniform mat4 transformation;
 uniform vec2 animationTiles;
+uniform vec2 tiling;
 uniform unsigned int tileIndex;
 
 void main()
@@ -19,8 +20,6 @@ void main()
 	gl_Position = MVP * transformation * vec4(vertexPosition_modelspace,1);
 
 	vec2 uvOffset = vec2(mod(tileIndex,animationTiles.x), floor(tileIndex / animationTiles.x));
-	uvOffset += vertexUV;
-	uvOffset /= animationTiles;
 
-	UV = uvOffset;
+	UV = (uvOffset + vertexUV) / animationTiles * tiling;
 }

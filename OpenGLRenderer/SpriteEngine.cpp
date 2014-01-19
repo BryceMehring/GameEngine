@@ -66,6 +66,7 @@ void SpriteEngine::Render()
 				{
 					currentShader->SetColor(spriteIter.color);
 					currentShader->SetValue("transformation",spriteIter.T);
+					currentShader->SetValue("tiling",spriteIter.tiling);
 					currentShader->SetValue("tileIndex",spriteIter.iCellId);
 
 					glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
