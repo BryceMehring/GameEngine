@@ -51,10 +51,10 @@ public:
 	bool LoadKeyBindFile(const std::string& file) override;
 
 	// Returns true if Key is pressed, false otherwise
-	bool KeyPress(int Key, bool once = true) const override;
+	bool KeyPress(int key, bool once = true) const override;
 
 	// Returns true if Key is released, false otherwise
-	bool KeyRelease(int Key, bool once = true) const override;
+	bool KeyRelease(int key, bool once = true) const override;
 
 	// Returns true if there is a character pressed, which is outputted through the parameter out
 	// note: this method should only be used for text input
@@ -62,11 +62,11 @@ public:
 
 	// ----- Cursor -----
 
-	// Returns true if the mouse button is clicked, false otherwise
-	bool MouseClick(int Button, bool once = true) const override;
+	// Returns true if the mouse button(0-7) is clicked, false otherwise
+	bool MouseClick(int button, bool once = true) const override;
 
-	// Returns true if the mouse button is released, false otherwise
-	bool MouseRelease(int Button, bool once = true) const override;
+	// Returns true if the mouse button(0-7) is released, false otherwise
+	bool MouseRelease(int button, bool once = true) const override;
 
 	// Returns the cursor position in screen space
 	// Origin: Bottom left hand corner
@@ -74,7 +74,7 @@ public:
 	// Note: if the cursor is disabled via ShowCursor(), the cursors position will not be updated
 	const glm::ivec2& GetCursorPos() const override;
 
-	// Moves to the cursor to pos
+	// Moves the cursor to pos
 	void SetCursorPos(glm::ivec2 pos) override;
 
 	// Returns true if the cursor is shown, false otherwise
@@ -164,7 +164,7 @@ private:
 
 	// helper methods
 	void Reset();
-	bool CheckKey(int Key, bool once, int flag) const;
+	bool CheckKey(int key, bool once, int flag) const;
 	void UpdateMouse(double x, double y);
 	void UpdateJoystick();
 };

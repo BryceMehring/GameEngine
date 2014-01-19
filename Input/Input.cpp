@@ -160,13 +160,13 @@ bool Input::LoadKeyBindFile(const string& file)
 	return true;
 }
 
-bool Input::KeyPress(int Key, bool once) const
+bool Input::KeyPress(int key, bool once) const
 {
-	return CheckKey(Key, once, GLFW_PRESS);
+	return CheckKey(key, once, GLFW_PRESS);
 }
-bool Input::KeyRelease(int Key, bool once) const
+bool Input::KeyRelease(int key, bool once) const
 {
-	return CheckKey(Key, once, GLFW_RELEASE);
+	return CheckKey(key, once, GLFW_RELEASE);
 }
 bool Input::CharKeyDown(char& out) const
 {
@@ -178,19 +178,19 @@ bool Input::CharKeyDown(char& out) const
 	return true;
 }
 
-bool Input::MouseClick(int iButton, bool once) const
+bool Input::MouseClick(int button, bool once) const
 {
-	if (iButton > GLFW_MOUSE_BUTTON_LAST || iButton < 0)
+	if (button > GLFW_MOUSE_BUTTON_LAST || button < 0)
 		return false;
 
-	return (once ? (m_MouseClickOnce[iButton] == GLFW_PRESS) : glfwGetMouseButton(glfwGetCurrentContext(), iButton) == GLFW_PRESS);
+	return (once ? (m_MouseClickOnce[button] == GLFW_PRESS) : glfwGetMouseButton(glfwGetCurrentContext(), button) == GLFW_PRESS);
 }
-bool Input::MouseRelease(int iButton, bool once) const
+bool Input::MouseRelease(int button, bool once) const
 {
-	if (iButton > GLFW_MOUSE_BUTTON_LAST || iButton < 0)
+	if (button > GLFW_MOUSE_BUTTON_LAST || button < 0)
 		return false;
 
-	return (once ? (m_MouseClickOnce[iButton] == GLFW_RELEASE) : glfwGetMouseButton(glfwGetCurrentContext(), iButton) == GLFW_RELEASE);
+	return (once ? (m_MouseClickOnce[button] == GLFW_RELEASE) : glfwGetMouseButton(glfwGetCurrentContext(), button) == GLFW_RELEASE);
 }
 
 const glm::ivec2& Input::GetCursorPos() const
@@ -384,18 +384,18 @@ void Input::Reset()
 	m_fYScrollOffset = 0.0;
 }
 
-bool Input::CheckKey(int Key, bool once, int flag) const
+bool Input::CheckKey(int key, bool once, int flag) const
 {
 	if (once && (m_iKeyAction != flag))
 		return false;
 
 	bool bSuccess = false;
-	auto iter = m_bindings.find(Key);
+	auto iter = m_bindings.find(key);
 	if (once)
 	{
 		if (iter == m_bindings.end())
 		{
-			bSuccess = (Key == m_iKeyDown);
+			bSuccess = (key == m_iKeyDown);
 		}
 		else
 		{
@@ -409,7 +409,7 @@ bool Input::CheckKey(int Key, bool once, int flag) const
 	{
 		if (iter == m_bindings.end())
 		{
-			bSuccess = (glfwGetKey(glfwGetCurrentContext(), Key) == flag);
+			bSuccess = (glfwGetKey(glfwGetCurrentContext(), key) == flag);
 		}
 		else
 		{

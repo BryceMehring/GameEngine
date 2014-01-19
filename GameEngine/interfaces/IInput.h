@@ -35,10 +35,10 @@ public:
 	virtual bool LoadKeyBindFile(const std::string& file) = 0;
 
 	// Returns true if Key is pressed, false otherwise
-	virtual bool KeyPress(int Key, bool once = true) const = 0;
+	virtual bool KeyPress(int key, bool once = true) const = 0;
 
 	// Returns true if Key is released, false otherwise
-	virtual bool KeyRelease(int Key, bool once = true) const = 0;
+	virtual bool KeyRelease(int key, bool once = true) const = 0;
 
 	// Returns true if there is a character pressed, which is outputted through the parameter out
 	// note: this method should only be used for text input
@@ -46,11 +46,11 @@ public:
 
 	// ----- Cursor -----
 
-	// Returns true if the mouse button is clicked, false otherwise
-	virtual bool MouseClick(int Button, bool once = true) const = 0;
+	// Returns true if the mouse button(0 - 7) is clicked, false otherwise
+	virtual bool MouseClick(int button, bool once = true) const = 0;
 
-	// Returns true if the mouse button is released, false otherwise
-	virtual bool MouseRelease(int Button, bool once = true) const = 0;
+	// Returns true if the mouse button(0 - 7) is released, false otherwise
+	virtual bool MouseRelease(int button, bool once = true) const = 0;
 
 	// Returns the cursor position in screen space
 	// Origin: Bottom left hand corner
@@ -58,7 +58,7 @@ public:
 	// Note: if the cursor is disabled via ShowCursor(), the cursors position will not be updated
 	virtual const glm::ivec2& GetCursorPos() const = 0;
 
-	// Moves to the cursor to pos
+	// Moves the cursor to pos
 	virtual void SetCursorPos(glm::ivec2 pos) = 0;
 
 	// Returns true if the cursor is shown, false otherwise
