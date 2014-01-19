@@ -117,6 +117,32 @@ void Shader::SetColor(const glm::vec4& color) const
 	}
 }
 
+void Shader::SetValue(const std::string& location, int v)
+{
+	if(m_bUse)
+	{
+		auto iter = m_uniforms.find(location);
+
+		if(iter != m_uniforms.end())
+		{
+			glUniform1i(iter->second, v);
+		}
+	}
+}
+
+void Shader::SetValue(const std::string& location, unsigned int v)
+{
+	if(m_bUse)
+	{
+		auto iter = m_uniforms.find(location);
+
+		if(iter != m_uniforms.end())
+		{
+			glUniform1ui(iter->second, v);
+		}
+	}
+}
+
 void Shader::SetValue(const std::string& location, float v)
 {
 	if(m_bUse)
@@ -139,6 +165,19 @@ void Shader::SetValue(const std::string& location, const glm::vec2& v)
 		if(iter != m_uniforms.end())
 		{
 			glUniform2fv(iter->second, 1, &v[0]);
+		}
+	}
+}
+
+void Shader::SetValue(const std::string& location, const glm::mat4& v)
+{
+	if(m_bUse)
+	{
+		auto iter = m_uniforms.find(location);
+
+		if(iter != m_uniforms.end())
+		{
+			glUniformMatrix4fv(iter->second,1,false,&v[0][0]);
 		}
 	}
 }
@@ -393,10 +432,10 @@ bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, i
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
 
 	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return true;
 }

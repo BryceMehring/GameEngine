@@ -1,5 +1,6 @@
 #define GLM_SWIZZLE
 #include "LineEngine.h"
+#include "ApplyShader.h"
 #include "VertexStructures.h"
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
@@ -50,7 +51,7 @@ void LineEngine::DrawLine(const glm::vec3* pArray, unsigned int uiLength, float 
 
 			pLineVertex += 4;
 			m_iCurrentLength += 4;
-		}		
+		}
 	}
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -61,21 +62,17 @@ void LineEngine::Render()
 	if(m_iCurrentLength == 0)
 		return;
 
-	Shader* pShader = static_cast<Shader*>(m_pRM->GetResource("lineShader", ResourceType::Shader));
-	assert(pShader != nullptr);
+	ApplyShader currentShader = static_cast<Shader*>(m_pRM->GetResource("lineShader", ResourceType::Shader));
 
-	pShader->Bind();
-	pShader->SetMVP(m_pCamera->ViewProj());
+	currentShader->SetMVP(m_pCamera->ViewProj());
 
 	m_pVertexBuffer->BindVAO();
 
 	for (unsigned int i = 0; i < m_lineColorSubset.size(); ++i)
 	{
-		pShader->SetColor(m_lineColorSubset[i]);
+		currentShader->SetColor(m_lineColorSubset[i]);
 		glDrawElementsBaseVertex(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, 4 * i);
 	}
-
-	pShader->UnBind();
 
 	m_iCurrentLength = 0;
 	m_lineColorSubset.clear();

@@ -1,4 +1,5 @@
 #include "FontEngine.h"
+#include "ApplyShader.h"
 #include "VertexStructures.h"
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
@@ -225,18 +226,11 @@ void FontEngine::Render()
 
 	m_pVertexBuffer->BindVAO();
 
-	// Enable one texture
-	glActiveTexture(GL_TEXTURE0);
-
 	// Get the shader to use
-	TexturedShader* pShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader", ResourceType::TexturedShader));
-	assert(pShader != nullptr);
-
-	// Use the shader
-	pShader->Bind();
+	ApplyTexturedShader currentShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader", ResourceType::TexturedShader));
 
 	// Set the transformation matrix
-	pShader->SetMVP(m_pCamera->ViewProj());
+	currentShader->SetMVP(m_pCamera->ViewProj());
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -250,14 +244,14 @@ void FontEngine::Render()
 		const IResource* pCurrentTexture = m_pRm->GetResource(iter.first, ResourceType::Font);
 		assert(pCurrentTexture != nullptr);
 
-		pShader->BindTexture(*pCurrentTexture);
+		currentShader->BindTexture(*pCurrentTexture);
 
 		// Render all strings with the same texture
 		unsigned int j = 0;
 		for(unsigned int i = 0; i < iter.second.size(); ++i, ++uiSubset)
 		{
 			// Set the color of the text
-			pShader->SetColor(iter.second[i].color);
+			currentShader->SetColor(iter.second[i].color);
 
 			// Render all characters that have the same texture
 			for (; j < m_stringLength[uiSubset]; ++j, ++uiStartingIndex)
@@ -268,8 +262,6 @@ void FontEngine::Render()
 		}
 
 	}
-
-	pShader->UnBind();
 
 	glDisable(GL_BLEND);
 

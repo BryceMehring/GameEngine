@@ -36,7 +36,6 @@ class SpriteEngine
 public:
 
 	SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam = nullptr);
-	~SpriteEngine();
 
 	void DrawSprite(const std::string& tech,
 					const std::string& texture,
@@ -56,14 +55,10 @@ private:
 	ResourceManager* m_pRM;
 	VertexBuffer* m_pVertexBuffer;
 
-	unsigned int m_iCurrentLength;
-
 	Camera* m_pCamera;
 
 	// z level -> map of techniques -> map of textures -> vector of sprites
 	std::map<int,std::map<std::string,std::map<std::string,std::vector<Sprite>>>> m_spriteLayers;
-
-	void FillVertexBuffer();
 };
 
 #endif

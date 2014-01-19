@@ -10,16 +10,17 @@ class VertexBuffer
 {
 public:
 
-	// Construct a VertexBuffer,
-	// vertexBufferSize: the size of the vertex structure in bytes
-	// bufferLength: the number of vertices to be part of the vertex buffer
-	// bPCT: should be true if the vertex structure uses a texture, else false
-	VertexBuffer(GLuint vertexBufferSize, GLuint bufferLength, bool bPCT = true);
-	~VertexBuffer();
 
-	// This class cannot be copied
-	VertexBuffer(const VertexBuffer&) = delete;
-	VertexBuffer& operator = (const VertexBuffer&) = delete;
+	// Construct a VertexBuffer,
+	// pVertexBuffer: pointer to the vertex buffer. May be null if the buffer is dynamic or streamed
+	// vertexStructureSize: the size of the vertex structure in bytes
+	// vertexBufferLength: the number of vertices to be part of the vertex buffer
+	// usage: Specifies the usage of the vertex buffer. Can be GL_STATIC_DRAW, GL_STREAM_DRAW, or GL_DYNAMIC_DRAW
+	// pIndexBuffer: pointer to the index buffer. This pointer cannot be null
+	// indexBufferLength: length of the index buffer
+	// bPT: should be true if the vertex structure uses a texture, else false
+	VertexBuffer(void* pVertexBuffer, GLuint vertexStructureSize, GLuint vertexBufferLength, GLenum usage, const unsigned char* pIndexBuffer, GLuint indexBufferLength, bool bPT = true);
+	~VertexBuffer();
 
 	// Binds the vertex buffer object
 	void BindVBO() const;
@@ -43,6 +44,10 @@ private:
 	GLuint m_arrayObject;
 	GLuint m_length;
 	GLuint m_size;
+
+	// This class cannot be copied
+	VertexBuffer(const VertexBuffer&) = delete;
+	VertexBuffer& operator = (const VertexBuffer&) = delete;
 	
 };
 

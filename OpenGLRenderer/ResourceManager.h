@@ -90,8 +90,11 @@ public:
 	bool IsBound() const;
 	void SetMVP(const glm::mat4& mvp) const;
 	void SetColor(const glm::vec4& color) const;
+	void SetValue(const std::string& location, int v);
+	void SetValue(const std::string& location, unsigned int v);
 	void SetValue(const std::string& location, float v);
 	void SetValue(const std::string& location, const glm::vec2& v);
+	void SetValue(const std::string& location, const glm::mat4& v);
 
 protected:
 
@@ -103,6 +106,8 @@ private:
 	GLuint m_color;
 	UnifromMap m_uniforms;
 	bool m_bUse;
+
+
 };
 
 // Defines a textured shader resource
