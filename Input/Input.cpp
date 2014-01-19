@@ -43,7 +43,7 @@ void Input::MouseCallback(GLFWwindow*, double x, double y)
 	}
 }
 
-void Input::MouseButtonCallback(GLFWwindow*,int button, int action, int mods)
+void Input::MouseButtonCallback(GLFWwindow*, int button, int action, int mods)
 {
 	if(s_pThis != nullptr)
 	{
@@ -180,14 +180,14 @@ bool Input::CharKeyDown(char& out) const
 
 bool Input::MouseClick(int iButton, bool once) const
 {
-	if (iButton > 1)
+	if (iButton > GLFW_MOUSE_BUTTON_LAST || iButton < 0)
 		return false;
 
 	return (once ? (m_MouseClickOnce[iButton] == GLFW_PRESS) : glfwGetMouseButton(glfwGetCurrentContext(), iButton) == GLFW_PRESS);
 }
 bool Input::MouseRelease(int iButton, bool once) const
 {
-	if (iButton > 1)
+	if (iButton > GLFW_MOUSE_BUTTON_LAST || iButton < 0)
 		return false;
 
 	return (once ? (m_MouseClickOnce[iButton] == GLFW_RELEASE) : glfwGetMouseButton(glfwGetCurrentContext(), iButton) == GLFW_RELEASE);

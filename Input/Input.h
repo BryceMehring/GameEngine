@@ -145,8 +145,7 @@ private:
 	double m_fOldMousePosX;
 	double m_fOldMousePosY;
 	double m_fYScrollOffset;
-
-	std::array<int, 2> m_MouseClickOnce;
+	std::array<int, GLFW_MOUSE_BUTTON_LAST + 1> m_MouseClickOnce;
 
 	glm::ivec2 m_cursorPos;
 	glm::ivec2 m_selectedPos;
