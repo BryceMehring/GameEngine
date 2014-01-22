@@ -119,8 +119,6 @@ void Input::Poll()
 	Reset();
 
 	UpdateJoystick();
-
-	glfwPollEvents();
 }
 
 bool Input::LoadKeyBindFile(const string& file)

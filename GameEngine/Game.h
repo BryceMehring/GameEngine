@@ -39,6 +39,10 @@ public:
 	// Change the current state
 	GAME_ENGINE_API void SetNextState(const std::string& state);
 
+	// Enables waiting for events if bEnable is true. This means that the game loop will be put to sleep until there is user input
+	// If bEnable is false, the game loop will not wait for user input, which is the default state
+	GAME_ENGINE_API void EnableEventWaiting(bool bEnable);
+
 	// Quit the game during the beginning of the next frame
 	GAME_ENGINE_API void Quit() const;
 
@@ -76,6 +80,8 @@ private:
 
 	bool m_bDrawFPS;
 
+	void (*m_pProccessEvents)(void);
+
 private:
 
 	// play the game set by SetNextState
@@ -85,6 +91,8 @@ private:
 
 	void Update();
 	void UpdateFPS();
+
+	void ProccessInput();
 
 	void Draw();
 	void DrawFPS();

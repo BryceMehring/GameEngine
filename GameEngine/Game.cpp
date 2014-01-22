@@ -13,9 +13,12 @@
 
 using namespace std;
 
-Game::Game() : m_fDT(0.0), m_fTimeElapsed(0.0), m_uiFrameCounter(0), m_uiFPS(0), m_pRenderer(nullptr), m_pInput(nullptr), m_bDrawFPS(true)
+Game::Game() : m_fDT(0.0), m_fTimeElapsed(0.0), m_uiFrameCounter(0), m_uiFPS(0),
+m_pRenderer(nullptr), m_pInput(nullptr), m_bDrawFPS(true)
 {
 	LoadPlugins();
+
+	EnableEventWaiting(false);
 
 	LoadResourceFile("base.r",*this);
 }
@@ -44,6 +47,18 @@ void Game::SetNextState(const std::string& state)
 void Game::Quit() const
 {
 	glfwSetWindowShouldClose(glfwGetCurrentContext(), GL_TRUE);
+}
+
+void Game::EnableEventWaiting(bool bEnable)
+{
+	if (bEnable)
+	{
+		m_pProccessEvents = glfwWaitEvents;
+	}
+	else
+	{
+		m_pProccessEvents = glfwPollEvents;
+	}
 }
 
 void Game::LoadPlugins()
@@ -96,8 +111,6 @@ int Game::Run()
 		m_fDT = t - fOldTime;
 		fOldTime = t;
 
-		m_pInput->Poll();
-
 		// Update the game
 		Update();
 
@@ -110,6 +123,8 @@ int Game::Run()
 
 void Game::Update()
 {
+	ProccessInput();
+
 	// If There has been a state change,
 	if(!m_NextState.empty())
 	{
@@ -160,6 +175,13 @@ void Game::UpdateFPS()
 	}
 }
 
+void Game::ProccessInput()
+{
+	m_pInput->Poll();
+
+	(*m_pProccessEvents)();
+}
+
 void Game::Draw()
 {
 	m_StateMachine.GetState().Draw(*this);
@@ -182,5 +204,5 @@ void Game::DrawFPS()
 
 	m_pRenderer->SetRenderSpace(RenderSpace::Screen);
 
-	m_pRenderer->DrawString(stream.str().c_str(),glm::vec3(0.0f,height,-10.0f),0.5f);
+	m_pRenderer->DrawString(stream.str().c_str(),glm::vec3(0.0f,height,-10.0f));
 }

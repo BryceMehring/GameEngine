@@ -58,6 +58,7 @@ endif()
 if(BUILD_EXAMPLES)
 	add_subdirectory(Examples/MineSweeper)
 	add_subdirectory(Examples/Joystick)
+	add_subdirectory(Examples/MinimumSpanningTree)
 endif()
 
 add_executable(GameLauncher GameLauncher/main.cpp)
