@@ -6,19 +6,24 @@ GameEngine
 
 Open CMakeLists.txt with the CMake GUI to generate projects.
 
-When creating an out of source game plugin, copy or use symbolic links to link the external plugin folder `plugin` into `GameEngine/bin`.
-
 #### Windows: 
 * Run `CreateWinSymLinks.bat` as an administrator to create the symbolic links.
 * Set GameLauncher as the startup project, and build the solution in at least Visual Studio 2013.
 * Copy `glfw3.dll` into `GameEngine/bin`
-* To run a game, the command line argument must be set to name of the Game Project that the Game Engine should load first.
 
-#### Linux: todo
+#### Linux:
+* Run `CreateLinuxSymLinks.sh` to create the symbolic links.
+* Build the solution via the cmake generated makefile
+
+#### All Platforms: 
+
+* To start a game, the command line argument must be set to name of the Game Project that the GameLauncher should load first.
+
+* When creating an out of source game plugin or running the examples, symbolic link the game plugin folder: `Examples/<GameName>/plugin/<GameName>` into: `GameEngine/bin/plugin/<GameName>`.
 
 ==========
 
-How the github folder should look:
+How the root folder should look so that cmake should automatically detect dependencies: 
 
     GameEngine/ - this is the root of the repo
     glfw/
