@@ -229,6 +229,8 @@ void MinimumSpanningTree::Init(Game& game)
 {
 	BuildCamera(game);
 	BuildGraph(game);
+
+	game.EnableEventWaiting(true);
 }
 
 void MinimumSpanningTree::Destroy(Game& game)
@@ -264,7 +266,7 @@ void MinimumSpanningTree::Draw(Game& game)
 	m_pGraph->Render(renderer);
 
 	renderer.SetRenderSpace(RenderSpace::Screen);
-	renderer.DrawString("spacebar: toggle MST\tpress enter to generate a new mst", glm::vec3(width / 2.0f, height, -1.0f),40.0f,glm::vec4(1.0f),nullptr,FontAlignment::Center);
+	renderer.DrawString("spacebar: toggle drawing MST\tenter: generate a new MST", glm::vec3(width / 2.0f, height, -1.0f),40.0f,glm::vec4(1.0f),nullptr,FontAlignment::Center);
 }
 
 void MinimumSpanningTree::BuildCamera(Game& game)
@@ -316,4 +318,5 @@ void MinimumSpanningTree::BuildGraph(Game& game)
 	m_pGraph->CreateEdge(pNode2, pNode5, glm::linearRand(0.0f, 100.0f));
 
 	m_pGraph->GenerateMST();
+	m_pGraph->EnableMST(m_bEnableMST);
 }
