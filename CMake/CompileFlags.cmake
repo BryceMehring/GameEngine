@@ -1,8 +1,9 @@
 if(MSVC)
 	# visual studio compile flags
 
-	set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /arch:SSE2 /RTC1 /W3 /GR-")
-	set(CMAKE_CXX_FLAGS_RELEASE "/W3 /MP /O2 /arch:SSE2 /GR- /MD")
+	set(CMAKE_CXX_FLAGS_DEBUG "/W3 /DDEBUG_BUILD /MDd /Zi /Od /RTC1 /GR- /MP")
+	set(CMAKE_CXX_FLAGS_RELEASE "/W3 /MD /O2 /GR- /MP")
+	
 else()
 
 	#MinGW and g++ compile flags
@@ -17,5 +18,9 @@ else()
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
 
 	endif(UNIX)
+	
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		add_definitions(-DDEBUG_BUILD)
+	endif()
 
 endif()
