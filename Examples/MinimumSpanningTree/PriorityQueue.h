@@ -4,8 +4,6 @@
 #include <vector>
 #include <unordered_map>
 
-#define NDEBUG
-
 namespace cds
 {
 	// A self updating priority queue
@@ -42,8 +40,6 @@ namespace cds
 				// Heapify
 				PushUp(i);
 			}
-
-			assert(std::is_heap(m_data.begin(), m_data.end(), s_compareFunctor) == true);
 		}
 
 		// Removes the highest priority element
@@ -61,8 +57,6 @@ namespace cds
 
 			// Heapify
 			PushDown(0);
-
-			assert(std::is_heap(m_data.begin(), m_data.end(), s_compareFunctor) == true);
 		}
 
 	private:

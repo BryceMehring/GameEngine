@@ -4,86 +4,85 @@
 
 namespace UI
 {
-Slider::Slider(const glm::vec2& start,
-			   const glm::vec2& end,
-			   float min, float max, const std::string& tex, const DELEGATE& callback) :
-			   m_pos(start), m_start(start), m_end(end), m_fPercentage(min), m_fMin(min),
-			   m_fMax(max), m_bEnable(false), m_bUpdateEnable(false), m_callback(callback), m_SpriteTexture(tex)
-{
-}
-
-void Slider::Select()
-{
-	m_bEnable = true;
-}
-
-void Slider::Deselect()
-{
-	m_bEnable = false;
-}
-
-void Slider::Trigger()
-{
-	// todo: this could be moved somewhere else
-	float sliderLength = abs(m_end.x - m_start.x);
-	float posLength = abs(m_start.x - m_pos.x);
-
-	m_fPercentage = (m_fMax - m_fMin) * posLength / sliderLength + m_fMin;
-	m_callback(m_fPercentage);
-}
-
-void Slider::Update(IInput& input, double dt)
-{
-	glm::vec2 cursorPos = glm::vec2(input.GetCursorPos());
-
-	if(input.MouseClick(0))
+	Slider::Slider(const glm::vec2& start, const glm::vec2& end,
+	float min, float max, const std::string& tex, const DELEGATE& callback) :
+	m_SpriteTexture(tex), m_callback(callback), m_pos(start), m_start(start), m_end(end),
+	m_fPercentage(min), m_fMin(min), m_fMax(max), m_bEnable(false), m_bUpdateEnable(false)
 	{
-		Math::FRECT R((m_end.x - m_start.x),50.0f,(m_end + m_start) * 0.5f);
-		if (R.IsPointWithin(cursorPos))
+	}
+
+	void Slider::Select()
+	{
+		m_bEnable = true;
+	}
+
+	void Slider::Deselect()
+	{
+		m_bEnable = false;
+	}
+
+	void Slider::Trigger()
+	{
+		// todo: this could be moved somewhere else
+		float sliderLength = abs(m_end.x - m_start.x);
+		float posLength = abs(m_start.x - m_pos.x);
+
+		m_fPercentage = (m_fMax - m_fMin) * posLength / sliderLength + m_fMin;
+		m_callback(m_fPercentage);
+	}
+
+	void Slider::Update(IInput& input, double dt)
+	{
+		glm::vec2 cursorPos = glm::vec2(input.GetCursorPos());
+
+		if(input.MouseClick(0))
 		{
-			m_bUpdateEnable = true;
+			Math::FRECT R((m_end.x - m_start.x),50.0f,(m_end + m_start) * 0.5f);
+			if (R.IsPointWithin(cursorPos))
+			{
+				m_bUpdateEnable = true;
+			}
+		}
+		else if(input.MouseRelease(0))
+		{
+			m_bUpdateEnable = false;
+		}
+
+		if(m_bUpdateEnable)
+		{
+			// Move the slider to the mouse pos
+			m_pos.x = glm::clamp(cursorPos.x, m_start.x, m_end.x);
+
+			Trigger();
 		}
 	}
-	else if(input.MouseRelease(0))
+
+	void Slider::Render(IRenderer& renderer)
 	{
-		m_bUpdateEnable = false;
+		glm::vec3 line[2] =
+		{
+			glm::vec3(m_start.x,m_start.y,-1.0f),
+			glm::vec3(m_end.x,m_end.y,-1.0f)
+		};
+
+		glm::mat4 T = glm::translate(glm::vec3(m_pos.x,m_pos.y,0.0f));
+		T = glm::scale(T,glm::vec3(60.0f,40.0f,1.0f));
+
+		std::stringstream stream;
+		stream.precision(2);
+		stream << std::fixed << m_fPercentage << std::endl;
+
+		renderer.SetRenderSpace(RenderSpace::Screen);
+
+		renderer.DrawSprite(m_SpriteTexture,T);
+		renderer.DrawLine(line,2);
+		renderer.DrawString(stream.str().c_str(),glm::vec3((m_end.x + m_start.x) / 2.0f - 10.0f,m_end.y - 10.0f,0.0f));
+
 	}
 
-	if(m_bUpdateEnable)
+	float Slider::GetValue() const
 	{
-		// Move the slider to the mouse pos
-		m_pos.x = glm::clamp(cursorPos.x, m_start.x, m_end.x);
-
-		Trigger();
+		return m_fPercentage;
 	}
-}
-
-void Slider::Render(IRenderer& renderer)
-{
-	glm::vec3 line[2] =
-	{
-		glm::vec3(m_start.x,m_start.y,-1.0f),
-		glm::vec3(m_end.x,m_end.y,-1.0f)
-	};
-
-	glm::mat4 T = glm::translate(glm::vec3(m_pos.x,m_pos.y,0.0f));
-	T = glm::scale(T,glm::vec3(60.0f,40.0f,1.0f));
-
-	std::stringstream stream;
-	stream.precision(2);
-	stream << std::fixed << m_fPercentage << std::endl;
-
-	renderer.SetRenderSpace(RenderSpace::Screen);
-
-	renderer.DrawSprite(m_SpriteTexture,T);
-	renderer.DrawLine(line,2);
-	renderer.DrawString(stream.str().c_str(),glm::vec3((m_end.x + m_start.x) / 2.0f - 10.0f,m_end.y - 10.0f,0.0f));
-
-}
-
-float Slider::GetValue() const
-{
-	return m_fPercentage;
-}
 
 }

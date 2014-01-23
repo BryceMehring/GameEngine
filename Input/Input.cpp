@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <glm/gtx/fast_square_root.hpp>
+#include <glm/geometric.hpp>
 #include <glm/gtc/constants.hpp>
 
 using namespace std;
@@ -316,7 +316,7 @@ glm::vec2 Input::GetJoystickAxes(JoystickAxes i) const
 			float deadZone = m_fJoyDeadZone[(int)i];
 
 			// Determine how far the controller is pushed
-			float magnitude = glm::fastLength(axes);
+			float magnitude = glm::length(axes);
 
 			// Check if the controller is outside a circular dead zone
 			if (magnitude > deadZone)

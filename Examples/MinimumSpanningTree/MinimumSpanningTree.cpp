@@ -7,8 +7,10 @@
 #include <set>
 #include <cmath>
 #include <queue>
+#include <cfloat>
 #include <glm/geometric.hpp>
 #include <glm/gtc/random.hpp>
+#include <glm/gtc/constants.hpp>
 #include <GLFW/glfw3.h>
 
 extern "C" PLUGINDECL IPlugin* CreatePlugin()
@@ -276,7 +278,7 @@ void MinimumSpanningTree::BuildCamera(Game& game)
 
 	// Build the world space camera
 	renderer.GetDisplayMode(&width, &height);
-	m_camera.SetLens(90.0f, (float)width, (float)height, 0.0f, 50.0f);
+	m_camera.SetLens(glm::pi<float>() / 2.0f, (float)width, (float)height, 0.0f, 50.0f);
 	m_camera.LookAt(glm::vec3(0.0f, 0.0f, 200.0f));
 	m_camera.Update();
 

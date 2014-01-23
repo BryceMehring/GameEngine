@@ -97,9 +97,7 @@ void PerspectiveCamera::SetLens(float fov, float w, float h, float nearZ, float 
 
 void PerspectiveCamera::UpdateAspectRatio(float w, float h)
 {
-	const float rad = glm::radians(m_fov);
-
-	float tanHalfFovy = tan(rad / float(2));
+	float tanHalfFovy = tan(m_fov / float(2));
 
 	m_Proj[0][0] = float(1) / ((w / h) * tanHalfFovy);
 }

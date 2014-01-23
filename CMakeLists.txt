@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 2.8)
-project (GameEngine CXX)
+cmake_minimum_required(VERSION 2.8)
+project(GameEngine CXX)
 
 option(BUILD_EXAMPLES "Build Examples" OFF)
 option(BUILD_QUADTREE "Build QuadTree" OFF)
@@ -8,8 +8,8 @@ option(BUILD_GUI "Build GUI" OFF)
 option(ENABLE_CPACK "Enable CPack" OFF)
 
 # The version number.
-set (ENGINE_VERSION_MAJOR 1)
-set (ENGINE_VERSION_MINOR 0)
+set(ENGINE_VERSION_MAJOR 1)
+set(ENGINE_VERSION_MINOR 0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules")
 include(${CMAKE_SOURCE_DIR}/CMake/VisualStudioVersionCheck.cmake)
@@ -19,17 +19,18 @@ include(${CMAKE_SOURCE_DIR}/CMake/RedirectOutputTo.cmake)
 
 RedirectOutputTo("bin")
 
-find_package (GLEW)
+find_package(GLEW)
 include_directories(${GLEW_INCLUDE_DIR})
 
-find_package (GLFW)
+find_package(GLFW)
 include_directories(${GLFW_INCLUDE_DIR})
 
-find_package (STB_IMAGE)
+find_package(STB_IMAGE)
 include_directories(${STB_IMAGE_INCLUDE_DIR})
 
-find_package (GLM)
+find_package(GLM)
 include_directories(${GLM_INCLUDE_DIR})
+add_definitions(-DGLM_FORCE_RADIANS)
 
 include_directories(${CMAKE_SOURCE_DIR}/common)
 include_directories(${CMAKE_SOURCE_DIR}/GameEngine/interfaces)

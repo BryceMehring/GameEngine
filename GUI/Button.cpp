@@ -2,10 +2,6 @@
 #include "IRenderer.h"
 #include "IInput.h"
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include <glm/gtx/transform.hpp>
-
 namespace UI
 {
 	Button::Button(const Math::FRECT& s, const glm::vec3& defaultColor,

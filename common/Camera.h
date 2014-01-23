@@ -70,7 +70,7 @@ class PerspectiveCamera : public Camera
 public:
 
 	// Creates a perspective matrix
-	// fov = field of view
+	// fov = field of view, in radians
 	// w = width of the space
 	// h = height of the space
 	// nearZ = near clip plane
