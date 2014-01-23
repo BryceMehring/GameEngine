@@ -296,7 +296,7 @@ void oglRenderer::GLFWOpenWindowHints()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-#ifdef _DEBUG
+#ifdef DEBUG_BUILD
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
 #endif
 
@@ -309,7 +309,7 @@ void oglRenderer::ConfigureGLFW()
 
 	bool bFullscreen = false;
 
-#ifndef _DEBUG
+#ifndef DEBUG_BUILD
 	bFullscreen = m_bFullscreen;
 #endif
 
@@ -341,7 +341,7 @@ void oglRenderer::ConfigureOpenGL()
 	// Check to make sure that the hardware is supported
 	assert(glewIsSupported("GL_VERSION_3_3"));
 
-#ifdef _DEBUG
+#ifdef DEBUG_BUILD
 	if (GLEW_ARB_debug_output)
 	{
 		glDebugMessageCallback(OpenGLErrorCallback,0);

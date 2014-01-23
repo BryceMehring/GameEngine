@@ -32,6 +32,10 @@ find_package(GLM)
 include_directories(${GLM_INCLUDE_DIR})
 add_definitions(-DGLM_FORCE_RADIANS)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	add_definitions(-DDEBUG_BUILD)
+endif()
+
 include_directories(${CMAKE_SOURCE_DIR}/common)
 include_directories(${CMAKE_SOURCE_DIR}/GameEngine/interfaces)
 include_directories(${CMAKE_SOURCE_DIR}/GameEngine)
