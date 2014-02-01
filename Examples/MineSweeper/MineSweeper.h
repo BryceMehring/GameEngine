@@ -103,16 +103,14 @@ private:
 
 	Grid m_grid;
 	UI::GUI m_gui;
-	UI::GUI m_mainMenu;
 	GameStatus m_gameState;
 	double m_fTime;
+	unsigned int m_uiPlayingMenu;
+	unsigned int m_uiMainMenu;
 
 	// Builds menus
 	void CreatePlayingMenu(Game&);
 	void CreateMainMenu(Game&);
-
-	// Clamps the cursor to the screen
-	void ClampMouse(IInput&, IRenderer&) const;
 
 	void Reset();
 

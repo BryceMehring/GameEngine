@@ -43,7 +43,7 @@ int Grid::Update(IInput& input)
 	{
 		glm::uvec2 arrayPos;
 		Tile* pTile = nullptr;
-		bool success = WorldSpaceToTile(input.GetCursorPos(),&pTile,&arrayPos);
+		bool success = WorldSpaceToTile(glm::vec2(input.GetCursorPos()),&pTile,&arrayPos);
 
 		if(success)
 		{
@@ -232,7 +232,7 @@ void Grid::BuildGrid()
 	}
 }
 
-MineSweeper::MineSweeper() : m_gameState(GameStatus::Playing), m_fTime(0.0)
+MineSweeper::MineSweeper() : m_gameState(GameStatus::Playing), m_fTime(0.0), m_uiPlayingMenu(0), m_uiMainMenu(0)
 {
 }
 
@@ -254,9 +254,7 @@ void MineSweeper::Init(Game& game)
 	renderer.SetRenderSpace(RenderSpace::Screen);
 
 	IInput& input = game.GetInput();
-
-	input.SetCursorSensitivity(1.0f);
-	input.SetCursorPos(glm::vec2(width / 2, height / 2));
+	input.SetCursorPos(glm::ivec2(width / 2, height / 2));
 }
 
 void MineSweeper::Destroy(Game& game)
@@ -269,6 +267,7 @@ void MineSweeper::Reset()
 {
 	m_gameState = GameStatus::Playing;
 	m_fTime = 0;
+	m_gui.SetNode(m_uiPlayingMenu);
 	m_grid.Reset();
 }
 
@@ -278,17 +277,17 @@ void MineSweeper::Update(Game& game)
 
 	m_fTime += game.GetDt();
 
-	ClampMouse(input, game.GetRenderer());
-
 	if(m_gameState == GameStatus::Playing)
 	{
 		m_gameState = static_cast<GameStatus>(m_grid.Update(input));
-		m_gui.Update(input,game.GetDt());
+
+		if(m_gameState != GameStatus::Playing)
+		{
+			m_gui.SetNode(m_uiMainMenu);
+		}
 	}
-	else
-	{
-		m_mainMenu.Update(input,game.GetDt());
-	}
+
+	m_gui.Update(input,game.GetDt());
 }
 
 void MineSweeper::Draw(Game& game)
@@ -301,8 +300,6 @@ void MineSweeper::Draw(Game& game)
 	if(m_gameState == GameStatus::Playing)
 	{
 		stream << "Time: " << static_cast<int>(m_fTime);
-		
-		m_gui.Render(renderer);
 	}
 	else
 	{
@@ -314,10 +311,9 @@ void MineSweeper::Draw(Game& game)
 		{
 			stream << "You won";
 		}
-
-		m_mainMenu.Render(renderer);
 	}
 
+	m_gui.Render(renderer);
 	m_grid.Render(renderer);
 
 	int width, height;
@@ -327,19 +323,12 @@ void MineSweeper::Draw(Game& game)
 		glm::vec3(width - 200, height - 5, 0.0f),
 		40.0f,glm::vec4(1.0f),nullptr,FontAlignment::Center);
 
-	// Draw cursor
-	glm::vec2 cursorPos = game.GetInput().GetCursorPos();
-	glm::mat4 T = glm::translate(glm::vec3(cursorPos.x + 20.0f,cursorPos.y - 20.0f,1.0f));
-	T = glm::scale(T,glm::vec3(40.0f,40.0f,1.0f));
-
-	renderer.DrawSprite("cursor",T);
-
 	// Draw Animated background
 	static float xPos = width / 2.0f;
 
 	xPos += 0.1f * game.GetDt();
 
-	T = glm::translate(glm::vec3(width / 2.0f, height / 2.0f, -50.0f));
+	glm::mat4 T = glm::translate(glm::vec3(width / 2.0f, height / 2.0f, -50.0f));
 	T = glm::scale(T, glm::vec3(m_grid.GetGridSize(),1.0f));
 
 	renderer.SetShaderValue("landTech", "offset", glm::vec2(cos(xPos), 0.0f));
@@ -351,14 +340,13 @@ void MineSweeper::CreatePlayingMenu(Game& game)
 	int width, height;
 	game.GetRenderer().GetDisplayMode(&width, &height);
 
-	UI::Menu* pMenu = new UI::Menu();
+	m_uiPlayingMenu = m_gui.CreateNode();
 
 	auto pButton = UI::GUIFactory<UI::Button>::CreateElement(game, glm::vec2(width / 2, height),
 		glm::vec3(1.0f), glm::vec3(1.0f, 0.0f, 0.0f), 40.0f, "Reset", std::bind(&MineSweeper::Reset, this));
 
-	pMenu->AddElement(pButton);
-
-	m_gui.SetMenu(pMenu);
+	m_gui.AddElement(m_uiPlayingMenu, pButton);
+	m_gui.SetNode(m_uiPlayingMenu);
 }
 
 void MineSweeper::CreateMainMenu(Game& game)
@@ -366,42 +354,11 @@ void MineSweeper::CreateMainMenu(Game& game)
 	int width, height;
 	game.GetRenderer().GetDisplayMode(&width, &height);
 
-	UI::Menu* pMenu = new UI::Menu();
+	m_uiMainMenu = m_gui.CreateNode();
 
 	auto pButton = UI::GUIFactory<UI::Button>::CreateElement(game, glm::vec2(width / 2, height),
 		glm::vec3(1.0f), glm::vec3(1.0f, 0.0f, 0.0f), 40.0f, "Play Again", std::bind(&MineSweeper::Reset, this));
 
-	pMenu->AddElement(pButton);
-
-	m_mainMenu.SetMenu(pMenu);
-}
-
-void MineSweeper::ClampMouse(IInput& input, IRenderer& renderer) const
-{
-	int width, height;
-	renderer.GetDisplayMode(&width, &height);
-
-	glm::vec2 cursorPos = input.GetCursorPos();
-
-	if (cursorPos.x < 0 || cursorPos.x > width || cursorPos.y < 0 || cursorPos.y > height)
-	{
-		if (cursorPos.x < 0)
-		{
-			cursorPos.x = 0.0f;
-		}
-		else if (cursorPos.x > width)
-		{
-			cursorPos.x = static_cast<float>(width);
-		}
-		if (cursorPos.y < 0)
-		{
-			cursorPos.y = 0.0f;
-		}
-		else if (cursorPos.y > height)
-		{
-			cursorPos.y = static_cast<float>(height);
-		}
-
-		input.SetCursorPos(cursorPos);
-	}
+	m_gui.AddElement(m_uiMainMenu, pButton);
+	m_gui.LinkNodes(m_uiMainMenu,m_uiPlayingMenu);
 }
