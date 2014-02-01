@@ -113,6 +113,7 @@ private:
 	void CreateMainMenu(Game&);
 
 	void Reset();
+	void SliderCallback(float v, bool bWidth);
 
 
 };

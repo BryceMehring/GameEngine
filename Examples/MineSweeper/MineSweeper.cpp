@@ -2,6 +2,7 @@
 #include "Timer.h"
 #include "Game.h"
 #include "GUIFactory.h"
+#include "Slider.h"
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <sstream>
@@ -238,20 +239,23 @@ MineSweeper::MineSweeper() : m_gameState(GameStatus::Playing), m_fTime(0.0), m_u
 
 void MineSweeper::Init(Game& game)
 {
+	// Build the menus
 	CreatePlayingMenu(game);
 	CreateMainMenu(game);
 
 	IRenderer& renderer = game.GetRenderer();
 
+	// Render everything in screen space
+	renderer.SetRenderSpace(RenderSpace::Screen);
+
 	int width, height;
 	renderer.GetDisplayMode(&width,&height);
 
+	// Set up the grid
 	m_grid.SetGridSize(glm::vec2(width / 1.1f,height / 1.1f));
 	m_grid.SetNumTiles(glm::uvec2(30,20));
 	m_grid.SetCenter(glm::vec3(width / 2, height / 2,-2.0f));
 	m_grid.Reset();
-
-	renderer.SetRenderSpace(RenderSpace::Screen);
 
 	IInput& input = game.GetInput();
 	input.SetCursorPos(glm::ivec2(width / 2, height / 2));
@@ -349,8 +353,18 @@ void MineSweeper::CreatePlayingMenu(Game& game)
 	m_gui.SetNode(m_uiPlayingMenu);
 }
 
+void MineSweeper::SliderCallback(float v, bool bWidth)
+{
+	glm::uvec2 numTiles = m_grid.GetNumTiles();
+	numTiles = bWidth ? glm::uvec2(v, numTiles.y) : glm::uvec2(numTiles.x, v);
+
+	m_grid.SetNumTiles(numTiles);
+}
+
 void MineSweeper::CreateMainMenu(Game& game)
 {
+	using namespace std::placeholders;
+
 	int width, height;
 	game.GetRenderer().GetDisplayMode(&width, &height);
 
@@ -359,6 +373,11 @@ void MineSweeper::CreateMainMenu(Game& game)
 	auto pButton = UI::GUIFactory<UI::Button>::CreateElement(game, glm::vec2(width / 2, height),
 		glm::vec3(1.0f), glm::vec3(1.0f, 0.0f, 0.0f), 40.0f, "Play Again", std::bind(&MineSweeper::Reset, this));
 
+	auto pWidthSlider = UI::GUIFactory<UI::Slider>::CreateElement(game,glm::vec2(width / 4, height / 2),glm::vec2(3 * width / 4, height / 2),10.0f,100.0f,std::string("button"),std::bind(&MineSweeper::SliderCallback,this,_1,true));
+	auto pHeightSlider = UI::GUIFactory<UI::Slider>::CreateElement(game,glm::vec2(width / 4, height / 2 + 50),glm::vec2(3 * width / 4, height / 2 + 50),10.0f,100.0f,std::string("button"),std::bind(&MineSweeper::SliderCallback,this,_1,false));
+
 	m_gui.AddElement(m_uiMainMenu, pButton);
+	m_gui.AddElement(m_uiMainMenu, pWidthSlider);
+	m_gui.AddElement(m_uiMainMenu, pHeightSlider);
 	m_gui.LinkNodes(m_uiMainMenu,m_uiPlayingMenu);
 }
