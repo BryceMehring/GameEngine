@@ -61,6 +61,46 @@ int Grid::Update(IInput& input)
 					{
 						Expand(arrayPos);
 					}
+					else
+					{
+						// Count the number of tiles that are marked
+						unsigned int markedCounter = 0;
+						for (auto iter : s_adjacentTiles)
+						{
+							glm::uvec2 newPos(arrayPos.x + iter[0],arrayPos.y + iter[1]);
+
+							if(newPos.x < m_numTiles.x && newPos.y < m_numTiles.y)
+							{
+								unsigned int newIndex = m_numTiles.x*newPos.y + newPos.x;
+								if(m_tiles[newIndex].marked)
+								{
+									markedCounter++;
+								}
+							}
+						}
+
+						if(markedCounter == pTile->minesNearby)
+						{
+							for (auto iter : s_adjacentTiles)
+							{
+								glm::uvec2 newPos(arrayPos.x + iter[0],arrayPos.y + iter[1]);
+
+								if(newPos.x < m_numTiles.x && newPos.y < m_numTiles.y)
+								{
+									unsigned int newIndex = m_numTiles.x*newPos.y + newPos.x;
+									if(!m_tiles[newIndex].marked)
+									{
+										m_tiles[newIndex].selsected = true;
+
+										if(m_tiles[newIndex].minesNearby == 0)
+										{
+											Expand(newPos);
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 			else if(bMouse2 && !pTile->selsected)
