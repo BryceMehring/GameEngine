@@ -5,13 +5,25 @@
 #include <cassert>
 #include <algorithm>
 
+Sprite::Sprite(const glm::mat4& T, const glm::vec4& color, const glm::vec2& tiling, unsigned int iCellId) : T(T), color(color), tiling(tiling), iCellId(iCellId)
+{
+}
+
+void Sprite::Render(ApplyTexturedShader &shader)
+{
+	shader->SetColor(color);
+	shader->SetValue("transformation",T);
+	shader->SetValue("tiling",tiling);
+	shader->SetValue("tileIndex",iCellId);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+}
+
 SpriteEngine::SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam) :
 m_pRM(pRm), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam)
 {
 	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPT));
 }
-
-
 
 void SpriteEngine::DrawSprite(const std::string& tech,
 							  const std::string& texture,
@@ -22,7 +34,8 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 							  )
 {
 	int iZorder = { (int)floor(transformation[3].z) };
-	m_spriteLayers[iZorder][tech][texture].push_back({ transformation, color, tiling, iCellId });
+	m_spriteLayers[iZorder][tech][texture].emplace_back(new Sprite{transformation, color, tiling, iCellId});
+	//m_spriteLayers[iZorder][tech][texture].push_back({ transformation, color, tiling, iCellId });
 }
 
 void SpriteEngine::SetCamera(Camera* pCam)
@@ -55,21 +68,18 @@ void SpriteEngine::Render()
 			// Loop over all sprites with the same texture
 			for(auto& texIter : techIter.second)
 			{
-				const Texture* pTexture = static_cast<Texture*>(m_pRM->GetResource(texIter.first, ResourceType::Texture));
-				assert(pTexture != nullptr);
+				const IResource* pResource = m_pRM->GetResource(texIter.first);
+				assert(pResource != nullptr);
 
-				currentShader->BindTexture(*pTexture);
-				currentShader->SetValue("animationTiles",glm::vec2(pTexture->GetCellsWidth(), pTexture->GetCellsHeight()));
+				spriteIter->Setup(currentShader, pResource);
+
+				//currentShader->BindTexture(*pTexture);
+				//currentShader->SetValue("animationTiles",glm::vec2(pTexture->GetCellsWidth(), pTexture->GetCellsHeight()));
 
 				// Render all sprites that use the same tech and texture
 				for (auto& spriteIter : texIter.second)
 				{
-					currentShader->SetColor(spriteIter.color);
-					currentShader->SetValue("transformation",spriteIter.T);
-					currentShader->SetValue("tiling",spriteIter.tiling);
-					currentShader->SetValue("tileIndex",spriteIter.iCellId);
-
-					glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+					spriteIter->Render(currentShader);
 				}
 			}
 		}

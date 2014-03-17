@@ -33,7 +33,7 @@ public:
 
 	// Returns the interface of type
 	// If a match cannot be made, nullptr is returned
-	virtual void* QueryInterface(ResourceType type) = 0;
+	virtual void* QueryInterface(ResourceType type) const = 0;
 
 protected:
 
@@ -50,7 +50,7 @@ public:
 
 	Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw = 1, int ch = 1);
 
-	virtual void* QueryInterface(ResourceType type) override;
+	virtual void* QueryInterface(ResourceType type) const override;
 
 	int GetWidth() const;
 	int GetHeight() const;
@@ -83,7 +83,7 @@ public:
 
 	Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms);
 
-	virtual void* QueryInterface(ResourceType type) override;
+	virtual void* QueryInterface(ResourceType type) const override;
 
 	void Bind();
 	void UnBind();
@@ -117,7 +117,7 @@ public:
 
 	TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID, UnifromMap&& uniforms);
 
-	virtual void* QueryInterface(ResourceType type) override;
+	virtual void* QueryInterface(ResourceType type) const override;
 
 	void BindTexture(const IResource& texture) const;
 
@@ -148,7 +148,7 @@ public:
 
 	Font(GLuint i, unsigned char* pImg, int comp, int tw, int th);
 
-	virtual void* QueryInterface(ResourceType type) override;
+	virtual void* QueryInterface(ResourceType type) const override;
 
 	unsigned int GetLineHeight() const;
 	unsigned int GetBase() const;
@@ -199,6 +199,9 @@ public:
 	// method only accessible in the OpenGL plugin to access OpenGL specific information about the resources
 	IResource* GetResource(const std::string& name, ResourceType type);
 	const IResource* GetResource(const std::string& name, ResourceType type) const;
+
+	IResource* GetResource(const std::string& name);
+	const IResource* GetResource(const std::string& name) const;
 
 private:
 

@@ -9,14 +9,31 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <memory>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4503)
 #endif
 
-// Defines how a sprite should be rendered
-struct Sprite
+class IRenderable
 {
+public:
+
+	virtual ~IRenderable() {}
+	virtual void Setup(class ApplyTexturedShader& shader, const IResource &resource) = 0;
+	virtual void Render(class ApplyTexturedShader& shader) = 0;
+};
+
+// Defines how a sprite should be rendered
+class Sprite : public IRenderable
+{
+public:
+
+	Sprite(const glm::mat4& T, const glm::vec4& color, const glm::vec2& tiling, unsigned int iCellId);
+
+	void Setup(class ApplyTexturedShader& shader, const IResource &resource) override {}
+	void Render(class ApplyTexturedShader& shader) override;
+
 	// Transformation applied to the sprite
 	glm::mat4 T;
 
@@ -58,7 +75,7 @@ private:
 	Camera* m_pCamera;
 
 	// z level -> map of techniques -> map of textures -> vector of sprites
-	std::map<int,std::map<std::string,std::map<std::string,std::vector<Sprite>>>> m_spriteLayers;
+	std::map<int,std::map<std::string,std::map<std::string, std::vector<std::unique_ptr<IRenderable>>>>> m_spriteLayers; // std::vector<std::unique_ptr<IRenderable>>
 };
 
 #endif

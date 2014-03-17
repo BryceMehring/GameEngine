@@ -19,7 +19,7 @@ m_iHeight(th), m_iCellsWidth(cw), m_iCellsHeight(ch), m_iComp(comp), m_pImg(pImg
 {
 }
 
-void* Texture::QueryInterface(ResourceType type)
+void* Texture::QueryInterface(ResourceType type) const
 {
 	if (type == ResourceType::Texture)
 	{
@@ -68,7 +68,7 @@ Shader::~Shader()
 	glDeleteProgram(m_id);
 }
 
-void* Shader::QueryInterface(ResourceType type)
+void* Shader::QueryInterface(ResourceType type) const
 {
 	if (type == ResourceType::Shader)
 	{
@@ -187,7 +187,7 @@ m_TextureSamplerID(texID)
 {
 }
 
-void* TexturedShader::QueryInterface(ResourceType type)
+void* TexturedShader::QueryInterface(ResourceType type) const
 {
 	if (type == ResourceType::TexturedShader)
 	{
@@ -210,7 +210,7 @@ Font::Font(GLuint i, unsigned char* pImg, int comp, int tw, int th) : Texture(i,
 {
 }
 
-void* Font::QueryInterface(ResourceType type)
+void* Font::QueryInterface(ResourceType type) const
 {
 	if (type == ResourceType::Font)
 	{
@@ -687,17 +687,19 @@ void ResourceManager::Clear()
 
 IResource* ResourceManager::GetResource(const std::string& name, ResourceType type)
 {
-	auto iter = m_resources.find(name);
+	IResource* pResource = GetResource(name);
 
-	if(iter == m_resources.end())
-	{
-		return nullptr;
-	}
-
-	return static_cast<IResource*>(iter->second->QueryInterface(type));
+	return static_cast<IResource*>(pResource->QueryInterface(type));
 }
 
 const IResource* ResourceManager::GetResource(const std::string& name, ResourceType type) const
+{
+	const IResource* pResource = GetResource(name);
+
+	return static_cast<const IResource*>(pResource->QueryInterface(type));
+}
+
+IResource* ResourceManager::GetResource(const std::string& name)
 {
 	auto iter = m_resources.find(name);
 
@@ -706,5 +708,17 @@ const IResource* ResourceManager::GetResource(const std::string& name, ResourceT
 		return nullptr;
 	}
 
-	return static_cast<const IResource*>(iter->second->QueryInterface(type));
+	return iter->second;
+}
+
+const IResource* ResourceManager::GetResource(const std::string& name) const
+{
+	auto iter = m_resources.find(name);
+
+	if(iter == m_resources.end())
+	{
+		return nullptr;
+	}
+
+	return iter->second;
 }
