@@ -5,13 +5,49 @@
 #include "IRenderer.h"
 #include "ResourceManager.h"
 #include "VertexBuffer.h"
+#include "IRenderable.h"
 #include <map>
 
 // Defines how each string will be rendered
-struct DrawTextInfo
+class DrawTextInfo : public IRenderable
 {
-	DrawTextInfo(const std::string& t, const glm::vec3 p, float s, const glm::vec4& c, FontAlignment o) : text(t), pos(p),
-	scale(s), color(c), alignment(o) {}
+public:
+	DrawTextInfo(const std::string& t,
+		const glm::vec3 p,
+		float s,
+		const glm::vec4& c,
+		FontAlignment o) : text(t), pos(p),
+		scale(s), color(c), alignment(o) {}
+
+	// Gets the string rect from the specified font
+	static void GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& out);
+	
+	virtual void Setup(ApplyTexturedShader& shader, const IResource &resource);
+	virtual void Render(ApplyTexturedShader& shader, const IResource& resource);
+
+private:
+
+	// Returns true if c is a space, newline, or tab character
+	static bool IsSpecialCharacter(char c);
+
+	// Moves the currentPos to take into consideration a non-renderable character
+	// c = the non-renderable character
+	// scale = scaling of the font
+	// lineHeight = height of the line
+	// oldPos = origin of the font rendering
+	// currentPos = position that needs offsetting
+	static void ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos);
+
+	// Calculates the offset for text alignment
+	// width = width of the font
+	// alignment = where the text should be placed
+	// out = offset to be aligned
+	static void AlignTextPos(float width, FontAlignment alignment, glm::vec2& out);
+
+	// Normalize scaling to the height of the font
+	static void NormalizeScaling(const Font* pFont, float& scale);
+
+private:
 
 	// Text that will be drawn
 	std::string text;
@@ -51,29 +87,6 @@ private:
 
 	// The key is the texture for the vector of DrawTextInfo
 	std::map<std::string, std::vector<DrawTextInfo>> m_strings;
-
-	// Calculates the offset for text alignment
-	// width = width of the font
-	// alignment = where the text should be placed
-	// out = offset to be aligned
-	void AlignTextPos(float width, FontAlignment alignment, glm::vec2& out) const;
-
-	// Returns true if c is a space, newline, or tab character
-	bool IsSpecialCharacter(char c) const;
-
-	// Moves the currentPos to take into consideration a non-renderable character
-	// c = the non-renderable character
-	// scale = scaling of the font
-	// lineHeight = height of the line
-	// oldPos = origin of the font rendering
-	// currentPos = position that needs offsetting
-	void ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos) const;
-
-	// Gets the string rect from the specified font
-	void GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& out) const;
-
-	// Normalize scaling to the height of the font
-	void NormalizeScaling(const Font* pFont, float& scale) const;
 };
 
 #endif // _FONTENGINE_

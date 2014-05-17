@@ -66,8 +66,7 @@ void APIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum 
 	}
 }
 
-oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr),
-m_pScreenSpaceFonts(nullptr), m_pWorldSpaceLines(nullptr), m_pScreenSpaceLines(nullptr),
+oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWorldSpaceLines(nullptr), m_pScreenSpaceLines(nullptr),
 m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
 m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(false)
 {
@@ -127,11 +126,11 @@ void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale,
 	{
 		if (m_renderSpace == World)
 		{
-			m_pWorldSpaceFonts->DrawString(str, font, pos, scale, color, alignment);
+			m_pWorldSpaceSprites->DrawString(str, font, pos, scale, color, alignment);
 		}
 		else
 		{
-			m_pScreenSpaceFonts->DrawString(str, font, pos, scale, color, alignment);
+			m_pScreenSpaceSprites->DrawString(str, font, pos, scale, color, alignment);
 		}
 	}
 }
@@ -202,16 +201,16 @@ int oglRenderer::GetNumDisplayModes(int monitor) const
 
 void oglRenderer::GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
 {
-	if (str != nullptr)
+	// todo: fix this
+	/*if (str != nullptr)
 	{
 		m_pScreenSpaceFonts->GetStringRect(str, scale, alignment, inout);
-	}
+	}*/
 }
 
 void oglRenderer::SetCamera(PerspectiveCamera* pCam)
 {
 	m_pWorldCamera = pCam;
-	m_pWorldSpaceFonts->SetCamera(pCam);
 	m_pWorldSpaceLines->SetCamera(pCam);
 	m_pWorldSpaceSprites->SetCamera(pCam);
 }
@@ -273,11 +272,9 @@ void oglRenderer::Present()
 
 	m_pWorldSpaceSprites->Render();
 	m_pWorldSpaceLines->Render();
-	m_pWorldSpaceFonts->Render();
 
 	m_pScreenSpaceSprites->Render();
 	m_pScreenSpaceLines->Render();
-	m_pScreenSpaceFonts->Render();
 
 	glfwSwapBuffers(m_pWindow);
 }
@@ -463,8 +460,8 @@ void oglRenderer::BuildBuffers()
 	VertexBuffer* pSpriteVertexBuffer = new VertexBuffer(verticies, sizeof(VertexPT), 4, GL_STATIC_DRAW,indexBuffer, 6);
 	VertexBuffer* pLineVertexBuffer = new VertexBuffer(0, sizeof(VertexP), 1024*8, GL_DYNAMIC_DRAW, indexBuffer, 6, false);
 
-	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pSpriteVertexBuffer));
-	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
+	//m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pSpriteVertexBuffer));
+	//m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
 
 	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer));
 	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,&m_OrthoCamera));

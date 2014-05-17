@@ -4,107 +4,90 @@
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
-FontEngine::FontEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam) :
-m_pRm(pRm), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam)
+void DrawTextInfo::Setup(ApplyTexturedShader& shader, const IResource &resource)
 {
-	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPT));
+	const Font* fnt = static_cast<const Font*>(resource.QueryInterface(ResourceType::Font));
+	assert("Invalid resource selected" && (fnt != nullptr));
+
+	shader->BindTexture(*fnt);
+	shader->SetValue("fontSize", glm::vec2(fnt->GetWidth(), fnt->GetHeight()));
+	shader->SetColor(color);
 }
 
-void FontEngine::GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
+void DrawTextInfo::Render(ApplyTexturedShader& shader, const IResource& resource)
 {
-	if (str != nullptr)
+	const Font* fnt = static_cast<const Font*>(resource.QueryInterface(ResourceType::Font));
+	assert("Invalid resource selected" && (fnt != nullptr));
+
+	Setup(shader, resource);
+
+	NormalizeScaling(fnt, scale);
+
+	// Text to be rendered
+	const char* str = text.c_str();
+
+	//int currentScale = 
+
+	// World pos of aligned text to be rendered
+	glm::vec3 posW(pos);
+
+	// If the text needs to be aligned to center or right
+	if (alignment != FontAlignment::Left)
 	{
-		Font* pFont = static_cast<Font*>(m_pRm->GetResource("font", ResourceType::Font));
-		assert(pFont != nullptr);
+		Math::FRECT drawRect(glm::vec2(posW.x, posW.y));
+		GetStringRect(str, fnt, scale, alignment, drawRect);
 
-		NormalizeScaling(pFont, scale);
-
-		GetStringRect(str, pFont, scale, alignment, out);
+		posW.x = drawRect.topLeft.x;
 	}
-}
 
-void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment alignment)
-{
-	if (str != nullptr)
-	{
-		if (font == nullptr)
-		{
-			font = "font";
-		}
-		
-		Font* pFont = static_cast<Font*>(m_pRm->GetResource(font, ResourceType::Font));
-		assert(pFont != nullptr);
+	char prevChar = -1;
 
-		NormalizeScaling(pFont, scale);
-		
-		m_strings[font].push_back(DrawTextInfo(str, pos, scale, color, alignment));
-	}
-}
-
-void FontEngine::SetCamera(Camera* pCam)
-{
-	m_pCamera = pCam;
-}
-
-void FontEngine::GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& inout) const
-{
-	unsigned int lineHeight = fnt->GetLineHeight();
-
-	inout.bottomRight = inout.topLeft;
-	inout.bottomRight.y -= scale * lineHeight;
-
-	glm::vec3 pos(inout.topLeft.x, inout.bottomRight.y, 0.0f);
-
-	while(*str)
+	while (*str)
 	{
 		if (fnt->IsValidCharacter(*str))
 		{
 			if (!IsSpecialCharacter(*str))
 			{
-				pos.x += scale * fnt->GetCharDescriptor(*str).XAdvance;
+				// Font info about the character to draw
+				const CharDescriptor& charInfo = fnt->GetCharDescriptor(*str);
+				int kerningOffset = fnt->GetKerningPairOffset(prevChar, *str);
+
+				// Calculate position
+				glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * scale, posW.y - charInfo.YOffset * scale, posW.z);
+				glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * scale, posTopLeft.y - charInfo.Height * scale, posW.z);
+
+				// Advance position after the current character
+				posW.x += charInfo.XAdvance * scale;
+
+				// Build transformation matrix to give to the shader
+				glm::mat4 T = glm::translate(glm::vec3((posTopLeft + posBottomRight) / 2.0f));
+				T = glm::scale(T, glm::vec3(glm::abs(posBottomRight - posTopLeft)));
+
+				// Give data to shader
+				shader->SetValue("transformation", T);
+				shader->SetValue("charInfo.pos", glm::vec2(charInfo.x, charInfo.y));
+				shader->SetValue("charInfo.size", glm::vec2(charInfo.Width, charInfo.Height));
+
+				// Render a single character of the string
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 			}
 			else
 			{
-				ProccessSpecialCharacter(*str, scale, lineHeight, glm::vec3(inout.topLeft, 0.0f), pos);
-
-				inout.bottomRight.y = glm::min(inout.bottomRight.y, pos.y);
+				ProccessSpecialCharacter(*str, scale, fnt->GetLineHeight(), pos, posW);
 			}
 
-			inout.bottomRight.x = glm::max(inout.bottomRight.x, pos.x);
+			prevChar = *str;
 		}
-		
 		str++;
 	}
-
-	if (alignment != FontAlignment::Left)
-	{
-		glm::vec2 offset;
-		AlignTextPos(inout.bottomRight.x - inout.topLeft.x, alignment, offset);
-
-		inout.topLeft += offset;
-		inout.bottomRight += offset;
-	}
-
 }
 
-void FontEngine::AlignTextPos(float width, FontAlignment alignment, glm::vec2& out) const
-{
-	float fHalfWidth = (width / 2.0f);
-
-	out.x -= fHalfWidth;
-
-	if (alignment == FontAlignment::Right)
-	{
-		out.x -= fHalfWidth;
-	}
-}
-
-bool FontEngine::IsSpecialCharacter(char c) const
+bool DrawTextInfo::IsSpecialCharacter(char c)
 {
 	return ((c == ' ') || (c == '\n') || (c == '\t'));
 }
 
-void FontEngine::ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos) const
+void DrawTextInfo::ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos)
 {
 	if (c == '\n')
 	{
@@ -123,6 +106,106 @@ void FontEngine::ProccessSpecialCharacter(char c, float scale, unsigned int line
 
 		currentPos.x += advance * spaceCount;
 	}
+}
+
+void DrawTextInfo::GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& inout)
+{
+	unsigned int lineHeight = fnt->GetLineHeight();
+
+	inout.bottomRight = inout.topLeft;
+	inout.bottomRight.y -= scale * lineHeight;
+
+	glm::vec3 pos(inout.topLeft.x, inout.bottomRight.y, 0.0f);
+
+	while (*str)
+	{
+		if (fnt->IsValidCharacter(*str))
+		{
+			if (!IsSpecialCharacter(*str))
+			{
+				pos.x += scale * fnt->GetCharDescriptor(*str).XAdvance;
+			}
+			else
+			{
+				ProccessSpecialCharacter(*str, scale, lineHeight, glm::vec3(inout.topLeft, 0.0f), pos);
+
+				inout.bottomRight.y = glm::min(inout.bottomRight.y, pos.y);
+			}
+
+			inout.bottomRight.x = glm::max(inout.bottomRight.x, pos.x);
+		}
+
+		str++;
+	}
+
+	if (alignment != FontAlignment::Left)
+	{
+		glm::vec2 offset;
+		AlignTextPos(inout.bottomRight.x - inout.topLeft.x, alignment, offset);
+
+		inout.topLeft += offset;
+		inout.bottomRight += offset;
+	}
+
+}
+
+void DrawTextInfo::AlignTextPos(float width, FontAlignment alignment, glm::vec2& out)
+{
+	float fHalfWidth = (width / 2.0f);
+
+	out.x -= fHalfWidth;
+
+	if (alignment == FontAlignment::Right)
+	{
+		out.x -= fHalfWidth;
+	}
+}
+
+void DrawTextInfo::NormalizeScaling(const Font* pFont, float& scale)
+{
+	scale /= (pFont->GetLineHeight());
+}
+
+FontEngine::FontEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam) :
+m_pRm(pRm), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam)
+{
+	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPT));
+}
+
+void FontEngine::GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
+{
+	if (str != nullptr)
+	{
+		Font* pFont = static_cast<Font*>(m_pRm->GetResource("font", ResourceType::Font));
+		assert(pFont != nullptr);
+
+		//NormalizeScaling(pFont, scale);
+
+		DrawTextInfo::GetStringRect(str, pFont, scale, alignment, out);
+	}
+}
+
+void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment alignment)
+{
+	if (str != nullptr)
+	{
+		if (font == nullptr)
+		{
+			font = "font";
+		}
+		
+		Font* pFont = static_cast<Font*>(m_pRm->GetResource(font, ResourceType::Font));
+		assert(pFont != nullptr);
+
+		//NormalizeScaling(pFont, scale);
+		
+		m_strings[font].push_back(DrawTextInfo(str, pos, scale, color, alignment));
+	}
+}
+
+void FontEngine::SetCamera(Camera* pCam)
+{
+	m_pCamera = pCam;
 }
 
 void FontEngine::Render()
@@ -155,63 +238,6 @@ void FontEngine::Render()
 		// Render all strings with the current font
 		for(auto& iter : fontIter.second)
 		{
-			// Text to be rendered
-			const char* str = iter.text.c_str();
-
-			// World pos of aligned text to be rendered
-			glm::vec3 posW(iter.pos);
-
-			// If the text needs to be aligned to center or right
-			if(iter.alignment != FontAlignment::Left)
-			{
-				Math::FRECT drawRect(glm::vec2(posW.x, posW.y));
-				GetStringRect(str, fnt, iter.scale, iter.alignment, drawRect);
-
-				posW.x = drawRect.topLeft.x;
-			}
-
-			char prevChar = -1;
-
-			currentShader->SetColor(iter.color);
-
-			while(*str)
-			{
-				if (fnt->IsValidCharacter(*str))
-				{
-					if (!IsSpecialCharacter(*str))
-					{
-						// Font info about the character to draw
-						const CharDescriptor& charInfo = fnt->GetCharDescriptor(*str);
-						int kerningOffset = fnt->GetKerningPairOffset(prevChar, *str);
-
-						// Calculate position
-						glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * iter.scale, posW.y - charInfo.YOffset * iter.scale, posW.z);
-						glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * iter.scale, posTopLeft.y - charInfo.Height * iter.scale, posW.z);
-
-						// Advance position after the current character
-						posW.x += charInfo.XAdvance * iter.scale;
-
-						// Build transformation matrix to give to the shader
-						glm::mat4 T = glm::translate(glm::vec3((posTopLeft + posBottomRight) / 2.0f));
-						T = glm::scale(T,glm::vec3(glm::abs(posBottomRight - posTopLeft)));
-
-						// Give data to shader
-						currentShader->SetValue("transformation",T);
-						currentShader->SetValue("charInfo.pos",glm::vec2(charInfo.x, charInfo.y));
-						currentShader->SetValue("charInfo.size",glm::vec2(charInfo.Width, charInfo.Height));
-
-						// Render a single character of the string
-						glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
-					}
-					else
-					{
-						ProccessSpecialCharacter(*str, iter.scale, fnt->GetLineHeight(), iter.pos, posW);
-					}
-
-					prevChar = *str;
-				}
-				str++;
-			}
 		}
 	}
 
@@ -219,9 +245,3 @@ void FontEngine::Render()
 
 	m_strings.clear();
 }
-
-void FontEngine::NormalizeScaling(const Font* pFont, float& scale) const
-{
-	scale /= (pFont->GetLineHeight());
-}
-

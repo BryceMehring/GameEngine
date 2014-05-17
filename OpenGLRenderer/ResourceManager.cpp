@@ -242,7 +242,7 @@ const CharDescriptor& Font::GetCharDescriptor(char c) const
 
 bool Font::IsValidCharacter(char c) const
 { 
-	return c < (int)m_Chars.size() && c >= 0;
+	return (c < (int)m_Chars.size()) && (c >= 0);
 }
 
 int Font::GetKerningPairOffset(unsigned int first, unsigned int second) const

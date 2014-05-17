@@ -3,7 +3,6 @@
 
 #include "IRenderer.h"
 #include "PluginManager.h"
-#include "FontEngine.h"
 #include "LineEngine.h"
 #include "SpriteEngine.h"
 #include "ResourceManager.h"
@@ -112,9 +111,6 @@ private:
 	GLFWwindow* m_pWindow;
 
 	ResourceManager m_rm;
-
-	std::unique_ptr<FontEngine> m_pWorldSpaceFonts;
-	std::unique_ptr<FontEngine> m_pScreenSpaceFonts;
 
 	std::unique_ptr<LineEngine> m_pWorldSpaceLines;
 	std::unique_ptr<LineEngine> m_pScreenSpaceLines;

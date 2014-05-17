@@ -5,6 +5,7 @@
 #include "ResourceManager.h"
 #include "Camera.h"
 #include "VertexBuffer.h"
+#include "IRenderable.h"
 
 #include <map>
 #include <string>
@@ -15,15 +16,6 @@
 #pragma warning(disable:4503)
 #endif
 
-class IRenderable
-{
-public:
-
-	virtual ~IRenderable() {}
-	virtual void Setup(class ApplyTexturedShader& shader, const IResource &resource) = 0;
-	virtual void Render(class ApplyTexturedShader& shader) = 0;
-};
-
 // Defines how a sprite should be rendered
 class Sprite : public IRenderable
 {
@@ -32,7 +24,7 @@ public:
 	Sprite(const glm::mat4& T, const glm::vec4& color, const glm::vec2& tiling, unsigned int iCellId);
 
 	void Setup(class ApplyTexturedShader& shader, const IResource &resource) override {}
-	void Render(class ApplyTexturedShader& shader) override;
+	void Render(class ApplyTexturedShader& shader, const IResource &resource) override;
 
 	// Transformation applied to the sprite
 	glm::mat4 T;
@@ -61,6 +53,13 @@ public:
 					const glm::vec2& tiling,
 					unsigned int iCellId
 				   );
+
+	void DrawString(const char* str,
+					const char* font,
+					const glm::vec3& pos,
+					float scale,
+					const glm::vec4& color,
+					FontAlignment alignment);
 
 	void SetCamera(Camera* pCam);
 

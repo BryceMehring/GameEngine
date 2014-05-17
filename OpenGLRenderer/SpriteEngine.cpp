@@ -1,4 +1,5 @@
 #include "SpriteEngine.h"
+#include "FontEngine.h"
 #include "VertexStructures.h"
 #include "ApplyShader.h"
 
@@ -9,8 +10,14 @@ Sprite::Sprite(const glm::mat4& T, const glm::vec4& color, const glm::vec2& tili
 {
 }
 
-void Sprite::Render(ApplyTexturedShader &shader)
+void Sprite::Render(ApplyTexturedShader& shader, const IResource& resource)
 {
+	const Texture* pTexture = static_cast<const Texture*>(resource.QueryInterface(ResourceType::Texture));
+	assert("Invalid resource selected" && (pTexture != nullptr));
+
+	shader->BindTexture(*pTexture);
+	shader->SetValue("animationTiles", glm::vec2(pTexture->GetCellsWidth(), pTexture->GetCellsHeight()));
+
 	shader->SetColor(color);
 	shader->SetValue("transformation",T);
 	shader->SetValue("tiling",tiling);
@@ -38,6 +45,23 @@ void SpriteEngine::DrawSprite(const std::string& tech,
 	//m_spriteLayers[iZorder][tech][texture].push_back({ transformation, color, tiling, iCellId });
 }
 
+void SpriteEngine::DrawString(const char* str,
+							  const char* font,
+							  const glm::vec3& pos,
+							  float scale,
+							  const glm::vec4& color,
+							  FontAlignment alignment
+							  )
+{
+	if (font == nullptr)
+	{
+		font = "font";
+	}
+
+	int iZorder = pos.z;
+	m_spriteLayers[iZorder]["textShader"][font].emplace_back(new DrawTextInfo{ str, pos, scale, color, alignment });
+}
+
 void SpriteEngine::SetCamera(Camera* pCam)
 {
 	m_pCamera = pCam;
@@ -63,6 +87,7 @@ void SpriteEngine::Render()
 			// Apply the shader tech
 			ApplyTexturedShader currentShader = static_cast<TexturedShader*>(m_pRM->GetResource(techIter.first, ResourceType::TexturedShader));
 
+			//currentShader->set
 			currentShader->SetMVP(m_pCamera->ViewProj());
 
 			// Loop over all sprites with the same texture
@@ -71,15 +96,18 @@ void SpriteEngine::Render()
 				const IResource* pResource = m_pRM->GetResource(texIter.first);
 				assert(pResource != nullptr);
 
-				spriteIter->Setup(currentShader, pResource);
+				//spriteIter->Setup(currentShader, pResource);
 
 				//currentShader->BindTexture(*pTexture);
 				//currentShader->SetValue("animationTiles",glm::vec2(pTexture->GetCellsWidth(), pTexture->GetCellsHeight()));
 
+				//spriteIter->Setup(currentShader, *pResource);
+
 				// Render all sprites that use the same tech and texture
 				for (auto& spriteIter : texIter.second)
 				{
-					spriteIter->Render(currentShader);
+					//spriteIter->Setup(currentShader, )
+					spriteIter->Render(currentShader, *pResource);
 				}
 			}
 		}
