@@ -23,9 +23,6 @@ public:
 	// returns the version number of the plugin
 	virtual int GetVersion() const { return 0; }
 
-	virtual void Init(class asIScriptEngine*) {}
-	virtual void Destroy(class asIScriptEngine*) {}
-
 	// IGameState
 
 	// Called only once when the plugin is created
