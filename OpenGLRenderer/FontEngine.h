@@ -9,10 +9,10 @@
 #include <map>
 
 // Defines how each string will be rendered
-class DrawTextInfo : public IRenderable
+class FontRenderable : public IRenderable
 {
 public:
-	DrawTextInfo(const std::string& t,
+	FontRenderable(const std::string& t,
 		const glm::vec3 p,
 		float s,
 		const glm::vec4& c,
@@ -63,30 +63,6 @@ private:
 
 	// How the text should be placed
 	FontAlignment alignment;
-};
-
-// This class manages the rendering of fonts
-class FontEngine
-{
-public:
-
-	FontEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam = nullptr);
-
-	void GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const;
-	void DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment alignment);
-	void SetCamera(Camera* pCam);
-
-	// Renders all of the cached strings
-	void Render();
-
-private:
-
-	ResourceManager* m_pRm;
-	VertexBuffer* m_pVertexBuffer;
-	Camera* m_pCamera;
-
-	// The key is the texture for the vector of DrawTextInfo
-	std::map<std::string, std::vector<DrawTextInfo>> m_strings;
 };
 
 #endif // _FONTENGINE_

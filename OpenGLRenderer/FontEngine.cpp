@@ -4,7 +4,7 @@
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
-void DrawTextInfo::Setup(ApplyTexturedShader& shader, const IResource &resource)
+void FontRenderable::Setup(ApplyTexturedShader& shader, const IResource &resource)
 {
 	const Font* fnt = static_cast<const Font*>(resource.QueryInterface(ResourceType::Font));
 	assert("Invalid resource selected" && (fnt != nullptr));
@@ -14,7 +14,7 @@ void DrawTextInfo::Setup(ApplyTexturedShader& shader, const IResource &resource)
 	shader->SetColor(color);
 }
 
-void DrawTextInfo::Render(ApplyTexturedShader& shader, const IResource& resource)
+void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resource)
 {
 	const Font* fnt = static_cast<const Font*>(resource.QueryInterface(ResourceType::Font));
 	assert("Invalid resource selected" && (fnt != nullptr));
@@ -82,12 +82,12 @@ void DrawTextInfo::Render(ApplyTexturedShader& shader, const IResource& resource
 	}
 }
 
-bool DrawTextInfo::IsSpecialCharacter(char c)
+bool FontRenderable::IsSpecialCharacter(char c)
 {
 	return ((c == ' ') || (c == '\n') || (c == '\t'));
 }
 
-void DrawTextInfo::ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos)
+void FontRenderable::ProccessSpecialCharacter(char c, float scale, unsigned int lineHeight, const glm::vec3& oldPos, glm::vec3& currentPos)
 {
 	if (c == '\n')
 	{
@@ -108,7 +108,7 @@ void DrawTextInfo::ProccessSpecialCharacter(char c, float scale, unsigned int li
 	}
 }
 
-void DrawTextInfo::GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& inout)
+void FontRenderable::GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& inout)
 {
 	unsigned int lineHeight = fnt->GetLineHeight();
 
@@ -149,7 +149,7 @@ void DrawTextInfo::GetStringRect(const char* str, const Font* fnt, float scale, 
 
 }
 
-void DrawTextInfo::AlignTextPos(float width, FontAlignment alignment, glm::vec2& out)
+void FontRenderable::AlignTextPos(float width, FontAlignment alignment, glm::vec2& out)
 {
 	float fHalfWidth = (width / 2.0f);
 
@@ -161,87 +161,7 @@ void DrawTextInfo::AlignTextPos(float width, FontAlignment alignment, glm::vec2&
 	}
 }
 
-void DrawTextInfo::NormalizeScaling(const Font* pFont, float& scale)
+void FontRenderable::NormalizeScaling(const Font* pFont, float& scale)
 {
 	scale /= (pFont->GetLineHeight());
-}
-
-FontEngine::FontEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam) :
-m_pRm(pRm), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam)
-{
-	assert(pVertexBuffer->GetVertexSize() == sizeof(VertexPT));
-}
-
-void FontEngine::GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& out) const
-{
-	if (str != nullptr)
-	{
-		Font* pFont = static_cast<Font*>(m_pRm->GetResource("font", ResourceType::Font));
-		assert(pFont != nullptr);
-
-		//NormalizeScaling(pFont, scale);
-
-		DrawTextInfo::GetStringRect(str, pFont, scale, alignment, out);
-	}
-}
-
-void FontEngine::DrawString(const char* str, const char* font, const glm::vec3& pos, float scale, const glm::vec4& color, FontAlignment alignment)
-{
-	if (str != nullptr)
-	{
-		if (font == nullptr)
-		{
-			font = "font";
-		}
-		
-		Font* pFont = static_cast<Font*>(m_pRm->GetResource(font, ResourceType::Font));
-		assert(pFont != nullptr);
-
-		//NormalizeScaling(pFont, scale);
-		
-		m_strings[font].push_back(DrawTextInfo(str, pos, scale, color, alignment));
-	}
-}
-
-void FontEngine::SetCamera(Camera* pCam)
-{
-	m_pCamera = pCam;
-}
-
-void FontEngine::Render()
-{
-	// If there is nothing to draw, do nothing
-	if(m_strings.empty())
-		return;
-
-	m_pVertexBuffer->BindVAO();
-
-	// Get the shader to use
-	ApplyTexturedShader currentShader = static_cast<TexturedShader*>(m_pRm->GetResource("textShader", ResourceType::TexturedShader));
-
-	// Set the transformation matrix
-	currentShader->SetMVP(m_pCamera->ViewProj());
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	// Render all strings
-	for(auto& fontIter : m_strings)
-	{
-		// Get the current font
-		const Font* fnt = static_cast<Font*>(m_pRm->GetResource(fontIter.first, ResourceType::Font));
-		assert(fnt != nullptr);
-
-		currentShader->BindTexture(*fnt);
-		currentShader->SetValue("fontSize",glm::vec2(fnt->GetWidth(),fnt->GetHeight()));
-
-		// Render all strings with the current font
-		for(auto& iter : fontIter.second)
-		{
-		}
-	}
-
-	glDisable(GL_BLEND);
-
-	m_strings.clear();
 }
