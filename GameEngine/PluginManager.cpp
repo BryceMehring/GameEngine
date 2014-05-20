@@ -106,7 +106,6 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 
 	if(dll->mod == nullptr)
 	{
-		Log::Instance().Write("Cannot open: " + dllFile);
 #ifdef _WIN32
 		Log::Instance().Write(GetLastErrorAsString());
 #else
