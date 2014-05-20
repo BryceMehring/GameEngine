@@ -688,6 +688,10 @@ void ResourceManager::Clear()
 IResource* ResourceManager::GetResource(const std::string& name, ResourceType type)
 {
 	IResource* pResource = GetResource(name);
+	if(pResource == nullptr)
+	{
+		return pResource;
+	}
 
 	return static_cast<IResource*>(pResource->QueryInterface(type));
 }
@@ -695,6 +699,10 @@ IResource* ResourceManager::GetResource(const std::string& name, ResourceType ty
 const IResource* ResourceManager::GetResource(const std::string& name, ResourceType type) const
 {
 	const IResource* pResource = GetResource(name);
+	if(pResource == nullptr)
+	{
+		return pResource;
+	}
 
 	return static_cast<const IResource*>(pResource->QueryInterface(type));
 }
