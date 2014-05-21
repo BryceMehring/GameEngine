@@ -9,7 +9,7 @@ file(GLOB_RECURSE OPENGL_RENDERER_SHADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/../shaders/*.frag)
     
 add_library(renderer MODULE ${OPENGL_RENDERER_SOURCE} ${OPENGL_RENDERER_SHADERS})
-target_link_libraries(renderer common ${GLFW_SHARED_LIBRARY} ${GLEW_LIBRARY})
+target_link_libraries(renderer common ${GLFW_SHARED_LIBRARY} ${GLEW_STATIC_LIBRARY})
 
 if(WIN32)
     target_link_libraries(renderer opengl32)
