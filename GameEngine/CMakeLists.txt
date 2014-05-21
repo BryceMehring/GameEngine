@@ -4,7 +4,7 @@ file(GLOB_RECURSE GAME_ENGINE_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 # build the game engine
 add_library(GameEngine SHARED ${GAME_ENGINE_HEADERS} ${GAME_ENGINE_SOURCE})
-target_link_libraries(GameEngine common ${GLFW_LIBRARY})
+target_link_libraries(GameEngine common ${GLFW_SHARED_LIBRARY})
 
 add_definitions(-DGAME_ENGINE_EXPORT)
 
