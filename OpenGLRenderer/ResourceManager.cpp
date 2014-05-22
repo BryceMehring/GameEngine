@@ -456,7 +456,7 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	bool success;
 	if ((success = CreateOpenGLTexture(file, width, height, comp, &pImg, textureID)))
 	{
-		m_resources.emplace(id, new Texture(textureID, pImg, width, height, comp));
+		m_resources.emplace(id, new Texture(textureID, pImg, comp, width, height));
 	}
 	return success;
 }
@@ -482,7 +482,7 @@ bool ResourceManager::LoadAnimation(const std::string& id, const std::string& fi
 		{
 			int spriteWidth, spriteHeight;
 			in >> spriteWidth >> spriteHeight;
-			m_resources.emplace(id, new Texture(textureID, pImg, width, height, comp, spriteWidth, spriteHeight));
+			m_resources.emplace(id, new Texture(textureID, pImg, comp, width, height, spriteWidth, spriteHeight));
 		}
 	}
 	return success;
