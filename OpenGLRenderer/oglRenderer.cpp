@@ -148,6 +148,52 @@ void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transf
 	}
 }
 
+int oglRenderer::CreateCursor(const std::string& texture, int xhot, int yhot)
+{
+	Texture* pTexture = static_cast<Texture*>(m_rm.GetResource(texture, ResourceType::Texture));
+	if(pTexture != nullptr)
+	{
+		GLFWimage img;
+		img.width = pTexture->GetWidth();
+		img.height = pTexture->GetHeight();
+		img.pixels = pTexture->GetImgData();
+
+		GLFWcursor* pCursor = glfwCreateCursor(&img, xhot, yhot);
+		if(pCursor != nullptr)
+		{
+			int index = m_cursors.size() + 1;
+			m_cursors.emplace(index, pCursor);
+			return index;
+		}
+	}
+
+	return 0;
+}
+void oglRenderer::DestroyCursor(int cursor)
+{
+	auto iter = m_cursors.find(cursor);
+	if(iter != m_cursors.end())
+	{
+		glfwDestroyCursor(iter->second);
+		m_cursors.erase(iter);
+	}
+}
+void oglRenderer::SetCursor(int cursor)
+{
+	GLFWcursor* pCursor = nullptr;
+
+	if(cursor != 0)
+	{
+		auto iter = m_cursors.find(cursor);
+		if(iter != m_cursors.end())
+		{
+			pCursor = iter->second;
+		}
+	}
+
+	glfwSetCursor(m_pWindow, pCursor);
+}
+
 IResourceManager& oglRenderer::GetResourceManager()
 {
 	return m_rm;

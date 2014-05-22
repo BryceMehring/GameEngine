@@ -56,6 +56,12 @@ public:
 							const std::string& tech = "sprite"
 							) override;
 
+	// Manage cursor creation
+	// Todo: move this code into the input plugin
+	virtual int CreateCursor(const std::string& texture, int xhot, int yhot) override;
+	virtual void DestroyCursor(int cursor) override;
+	virtual void SetCursor(int cursor) override;
+
 	// Returns the resource manager
 	virtual IResourceManager& GetResourceManager() override;
 
@@ -136,6 +142,7 @@ private:
 	bool m_bFullscreen;
 
 	std::vector<VertexBuffer*> m_vertexBuffers;
+	std::map<int, GLFWcursor*> m_cursors;
 
 	static oglRenderer* s_pThis;
 	static const std::string s_videoModeFile;
