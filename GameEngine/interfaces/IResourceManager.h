@@ -35,9 +35,16 @@ public:
 		PIC (Softimage PIC)
 	**/
 
+	/** Loads a cursor
+	 * id: uniqueID to be used
+	 * file: imgage
+	 * return: true if the texture is or was loaded, false on error
+	 **/
+	virtual bool LoadCursor(const std::string& id, const std::string& file) = 0;
+
 	/** Loads a texture
 	 * id: uniqueID to be used
-	 * file: img
+	 * file: imgage
 	 * return: true if the texture is or was loaded, false on error
 	 **/
 	virtual bool LoadTexture(const std::string& id, const std::string& file) = 0;

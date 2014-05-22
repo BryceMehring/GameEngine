@@ -150,7 +150,7 @@ void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transf
 
 int oglRenderer::CreateCursor(const std::string& texture, int xhot, int yhot)
 {
-	Texture* pTexture = static_cast<Texture*>(m_rm.GetResource(texture, ResourceType::Texture));
+	Cursor* pTexture = static_cast<Cursor*>(m_rm.GetResource(texture, ResourceType::Cursor));
 	if(pTexture != nullptr)
 	{
 		GLFWimage img;

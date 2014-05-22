@@ -13,6 +13,7 @@
 // Valid resource types
 enum class ResourceType
 {
+	Cursor,
 	Texture,
 	Animation,
 	Font,
@@ -26,10 +27,6 @@ class IResource
 public:
 
 	friend class ResourceManager;
-	friend class TexturedShader;
-	friend class Texture;
-
-	IResource(GLuint id);
 
 	// Returns the interface of type
 	// If a match cannot be made, nullptr is returned
@@ -37,14 +34,48 @@ public:
 
 protected:
 
-	virtual ~IResource();
+	virtual ~IResource() {}
+};
+
+class Cursor : public IResource
+{
+public:
+
+	Cursor(int width, int height, unsigned char* img);
+
+	virtual void* QueryInterface(ResourceType type) override;
+
+	int GetWidth() const;
+	int GetHeight() const;
+	const unsigned char* GetImgData() const;
+
+protected:
+
+	virtual ~Cursor();
+
+private:
+
+	int m_iWidth;
+	int m_iHeight;
+	unsigned char* m_pImg;
+};
+
+class OpenGLResource : public IResource
+{
+public:
+
+	friend class TexturedShader;
+	friend class Texture;
+
+	OpenGLResource(GLuint id);
+
+protected:
 
 	const GLuint m_id;
-
 };
 
 // Defines a texture resource
-class Texture : public IResource
+class Texture : public OpenGLResource
 {
 public:
 
@@ -75,7 +106,7 @@ private:
 };
 
 // Defines a shader resource
-class Shader : public IResource
+class Shader : public OpenGLResource
 {
 public:
 
@@ -119,7 +150,7 @@ public:
 
 	virtual void* QueryInterface(ResourceType type) override;
 
-	void BindTexture(const IResource& texture) const;
+	void BindTexture(const OpenGLResource& texture) const;
 
 protected:
 
@@ -184,6 +215,8 @@ public:
 	ResourceManager();
 	virtual ~ResourceManager();
 
+	bool LoadCursor(const std::string& id, const std::string& file) override;
+
 	bool LoadTexture(const std::string& id, const std::string& file) override;
 
 	bool LoadAnimation(const std::string& id, const std::string& file) override;
@@ -206,6 +239,7 @@ private:
 
 	ResourceMap m_resources;
 
+	bool CreateTexture(const std::string& file, int& width, int& height, int& comp, unsigned char** pImgData);
 	bool CreateOpenGLTexture(const std::string& file, int& width, int& height, int& comp, unsigned char** pImgData, GLuint& out);
 
 	// converts # of components into the corresponding OpenGL format.

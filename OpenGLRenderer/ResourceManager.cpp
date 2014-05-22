@@ -10,13 +10,53 @@
 #endif
 #include <stb_image.c>
 
-IResource::IResource(GLuint id) : m_id(id)
-{ 
+Cursor::Cursor(int width, int height, unsigned char *img) : m_iWidth(width), m_iHeight(height), m_pImg(img)
+{
 }
 
-Texture::Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw, int ch) : IResource(i), m_iWidth(tw),
+Cursor::~Cursor()
+{
+	stbi_image_free(m_pImg);
+}
+
+void* Cursor::QueryInterface(ResourceType type)
+{
+	if (type == ResourceType::Cursor)
+	{
+		return (void*)this;
+	}
+
+	return nullptr;
+}
+
+int Cursor::GetWidth() const
+{
+	return m_iWidth;
+}
+
+int Cursor::GetHeight() const
+{
+	return m_iHeight;
+}
+
+const unsigned char* Cursor::GetImgData() const
+{
+	return m_pImg;
+}
+
+OpenGLResource::OpenGLResource(GLuint id) : m_id(id)
+{
+}
+
+Texture::Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw, int ch) : OpenGLResource(i), m_iWidth(tw),
 m_iHeight(th), m_iCellsWidth(cw), m_iCellsHeight(ch), m_iComp(comp), m_pImg(pImg)
 {
+}
+
+Texture::~Texture()
+{
+	glDeleteTextures(1,&m_id);
+	stbi_image_free(m_pImg);
 }
 
 void* Texture::QueryInterface(ResourceType type)
@@ -59,7 +99,7 @@ const unsigned char* Texture::GetImgData() const
 	return m_pImg; 
 }
 
-Shader::Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms) : IResource(i), m_MVP(MVP), m_color(color), m_uniforms(uniforms), m_bUse(false)
+Shader::Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms) : OpenGLResource(i), m_MVP(MVP), m_color(color), m_uniforms(uniforms), m_bUse(false)
 {
 }
 
@@ -197,7 +237,7 @@ void* TexturedShader::QueryInterface(ResourceType type)
 	return Shader::QueryInterface(type);
 }
 
-void TexturedShader::BindTexture(const IResource& texture) const
+void TexturedShader::BindTexture(const OpenGLResource& texture) const
 {
 	if(IsBound())
 	{
@@ -366,10 +406,6 @@ std::istream& operator >>(std::istream& stream, Font& CharsetDesc)
 	return stream;
 }
 
-IResource::~IResource()
-{
-}
-
 ResourceManager::ResourceManager()
 {
 }
@@ -377,12 +413,6 @@ ResourceManager::ResourceManager()
 ResourceManager::~ResourceManager()
 {
 	Clear();
-}
-
-Texture::~Texture()
-{
-	glDeleteTextures(1,&m_id);
-	stbi_image_free(m_pImg);
 }
 
 void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat)
@@ -410,7 +440,7 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 	}
 }
 
-bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, int& height, int& comp, unsigned char** pImgData, GLuint& textureId)
+bool ResourceManager::CreateTexture(const std::string& file, int& width, int& height, int& comp, unsigned char** pImgData)
 {
 	if(pImgData == nullptr)
 		return false;
@@ -420,6 +450,13 @@ bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, i
 	// check if the image can be loaded
 	if(*pImgData == nullptr)
 		return false;
+
+	return true;
+}
+
+bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, int& height, int& comp, unsigned char** pImgData, GLuint& textureId)
+{
+	CreateTexture(file, width, height, comp, pImgData);
 
 	glGenTextures(1,&textureId);
 	glBindTexture(GL_TEXTURE_2D, textureId);
@@ -438,6 +475,26 @@ bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, i
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return true;
+}
+
+bool ResourceManager::LoadCursor(const std::string& id, const std::string& file)
+{
+	auto iter = m_resources.find(id);
+	if(iter != m_resources.end())
+	{
+		// ID is taken
+		return false;
+	}
+
+	unsigned char* pImg;
+	int width, height;
+	int comp;
+	bool success;
+	if ((success = CreateTexture(file, width, height, comp, &pImg)))
+	{
+		m_resources.emplace(id, new Cursor(width, height, pImg));
+	}
+	return success;
 }
 
 bool ResourceManager::LoadTexture(const std::string& id, const std::string& file)
