@@ -54,6 +54,11 @@ public:
 							const std::string& tech = "sprite"
 							) = 0;
 
+	// Manage cursor creation
+	virtual int CreateCursor(const std::string& texture, int xhot, int yhot) = 0;
+	virtual void DestroyCursor(int cursor) = 0;
+	virtual void SetCursor(int cursor) = 0;
+
 	// Returns the resource manager
 	virtual IResourceManager& GetResourceManager() = 0;
 
