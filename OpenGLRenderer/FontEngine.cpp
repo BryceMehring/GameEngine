@@ -19,14 +19,10 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 	const Font* fnt = static_cast<const Font*>(resource.QueryInterface(ResourceType::Font));
 	assert("Invalid resource selected" && (fnt != nullptr));
 
-	Setup(shader, resource);
-
 	NormalizeScaling(fnt, scale);
 
 	// Text to be rendered
 	const char* str = text.c_str();
-
-	//int currentScale = 
 
 	// World pos of aligned text to be rendered
 	glm::vec3 posW(pos);
@@ -42,6 +38,7 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 
 	char prevChar = -1;
 
+	// Loop over the entire string
 	while (*str)
 	{
 		if (fnt->IsValidCharacter(*str))
@@ -52,7 +49,7 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 				const CharDescriptor& charInfo = fnt->GetCharDescriptor(*str);
 				int kerningOffset = fnt->GetKerningPairOffset(prevChar, *str);
 
-				// Calculate position
+				// Calculate position of text
 				glm::vec3 posTopLeft(posW.x + (charInfo.XOffset + kerningOffset) * scale, posW.y - charInfo.YOffset * scale, posW.z);
 				glm::vec3 posBottomRight(posTopLeft.x + charInfo.Width * scale, posTopLeft.y - charInfo.Height * scale, posW.z);
 

@@ -37,7 +37,7 @@ void AbstractRenderer::DrawString(const char* str,
 		font = "font";
 	}
 
-	int iZorder = pos.z;
+	int iZorder = {(int)floor(pos.z)};
 	m_spriteLayers[iZorder]["textShader"][font].emplace_back(new FontRenderable{ str, pos, scale, color, alignment });
 }
 
@@ -66,7 +66,6 @@ void AbstractRenderer::Render()
 			// Apply the shader tech
 			ApplyTexturedShader currentShader = static_cast<TexturedShader*>(m_pRM->GetResource(techIter.first, ResourceType::TexturedShader));
 
-			//currentShader->set
 			currentShader->SetMVP(m_pCamera->ViewProj());
 
 			// Loop over all sprites with the same texture
@@ -75,17 +74,15 @@ void AbstractRenderer::Render()
 				const IResource* pResource = m_pRM->GetResource(texIter.first);
 				assert(pResource != nullptr);
 
-				//spriteIter->Setup(currentShader, pResource);
+				// Setup the renderer to render
+				if(!texIter.second.empty())
+				{
+					texIter.second.front()->Setup(currentShader, *pResource);
+				}
 
-				//currentShader->BindTexture(*pTexture);
-				//currentShader->SetValue("animationTiles",glm::vec2(pTexture->GetCellsWidth(), pTexture->GetCellsHeight()));
-
-				//spriteIter->Setup(currentShader, *pResource);
-
-				// Render all sprites that use the same tech and texture
+				// Render
 				for (auto& spriteIter : texIter.second)
 				{
-					//spriteIter->Setup(currentShader, )
 					spriteIter->Render(currentShader, *pResource);
 				}
 			}
