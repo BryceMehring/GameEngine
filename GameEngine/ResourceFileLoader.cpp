@@ -23,54 +23,54 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 		std::string type;
 		stream >> type;
 
-		std::string id;
-		stream >> id;
-
-		std::string fileName;
-		stream >> fileName;
-
-		if(!fileName.empty())
+		// Check if this line is commented out by a single #
+		if(!type.empty() && (type.front() != '#'))
 		{
-			fileName = folder + '/' + fileName;
-			Log::Instance().Write("Loading: " + fileName);
+			std::string id;
+			stream >> id;
 
-			bool bSuccess = true;
-			if(type == "cursor")
-			{
-				bSuccess = gfxResourceManager.LoadCursor(id,fileName);
-			}
-			else if(type == "texture")
-			{
-				bSuccess = gfxResourceManager.LoadTexture(id,fileName);
-			}
-			else if(type == "animation")
-			{
-				bSuccess = gfxResourceManager.LoadAnimation(id,fileName);
-			}
-			else if(type == "font")
-			{
-				bSuccess = gfxResourceManager.LoadFont(id,fileName);
-			}
-			else if(type == "shader")
-			{
-				std::string frag;
-				stream >> frag;
+			std::string fileName;
+			stream >> fileName;
 
-				frag = folder + '/' + frag;
-
-				bSuccess = gfxResourceManager.LoadShader(id,fileName,frag);
-			}
-			else if (type == "sound")
+			if(!fileName.empty())
 			{
+				fileName = folder + '/' + fileName;
+				Log::Instance().Write("Loading: " + fileName);
 
-			}
-			else
-			{
-				Log::Instance().Write("invalid resource type");
-				bSuccess = false;
-			}
+				bool bSuccess = true;
+				if(type == "texture")
+				{
+					bSuccess = gfxResourceManager.LoadTexture(id,fileName);
+				}
+				else if(type == "animation")
+				{
+					bSuccess = gfxResourceManager.LoadAnimation(id,fileName);
+				}
+				else if(type == "font")
+				{
+					bSuccess = gfxResourceManager.LoadFont(id,fileName);
+				}
+				else if(type == "shader")
+				{
+					std::string frag;
+					stream >> frag;
 
-			assert(bSuccess);
+					frag = folder + '/' + frag;
+
+					bSuccess = gfxResourceManager.LoadShader(id,fileName,frag);
+				}
+				else if (type == "sound")
+				{
+
+				}
+				else
+				{
+					Log::Instance().Write("invalid resource type");
+					bSuccess = false;
+				}
+
+				assert(bSuccess);
+			}
 		}
 	}
 }
