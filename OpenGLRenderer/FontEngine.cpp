@@ -24,17 +24,19 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 	// Text to be rendered
 	const char* str = text.c_str();
 
-	// World pos of aligned text to be rendered
-	glm::vec3 posW(pos);
+	glm::vec3 oldPos = pos;
 
 	// If the text needs to be aligned to center or right
 	if (alignment != FontAlignment::Left)
 	{
-		Math::FRECT drawRect(glm::vec2(posW.x, posW.y));
+		Math::FRECT drawRect(glm::vec2(oldPos.x, oldPos.y));
 		GetStringRect(str, fnt, scale, alignment, drawRect);
 
-		posW.x = drawRect.topLeft.x;
+		oldPos.x = drawRect.topLeft.x;
 	}
+
+	// World pos of aligned text to be rendered
+	glm::vec3 posW = oldPos;
 
 	char prevChar = -1;
 
@@ -70,7 +72,7 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 			}
 			else
 			{
-				ProccessSpecialCharacter(*str, scale, fnt->GetLineHeight(), pos, posW);
+				ProccessSpecialCharacter(*str, scale, fnt->GetLineHeight(), oldPos, posW);
 			}
 
 			prevChar = *str;
