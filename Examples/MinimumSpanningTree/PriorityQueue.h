@@ -162,7 +162,7 @@ namespace cds
 	};
 
 	template< class T, class Container, class Compare >
-	const Compare PriorityQueue<T, Container, Compare>::s_compareFunctor;
+	const Compare PriorityQueue<T, Container, Compare>::s_compareFunctor = Compare();
 }
 
 #endif // _PRIORITYQUEUE_
