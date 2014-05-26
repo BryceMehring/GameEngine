@@ -3,7 +3,7 @@
 #ifndef _GAMESTATEMACHINE_
 #define _GAMESTATEMACHINE_
 
-#include "interfaces/IGameState.h"
+#include "IGameState.h"
 
 // Manages setting and removing the current state
 class GameStateMachine

@@ -38,7 +38,11 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 				Log::Instance().Write("Loading: " + fileName);
 
 				bool bSuccess = true;
-				if(type == "texture")
+				if(type == "cursor")
+				{
+					bSuccess = gfxResourceManager.LoadCursor(id, fileName);
+				}
+				else if(type == "texture")
 				{
 					bSuccess = gfxResourceManager.LoadTexture(id,fileName);
 				}

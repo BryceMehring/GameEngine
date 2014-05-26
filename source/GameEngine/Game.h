@@ -6,8 +6,8 @@
 #include "PluginManager.h"
 #include "GameStateMachine.h"
 #include "GLFWInit.h"
-#include "interfaces/IInput.h"
-#include "interfaces/IRenderer.h"
+#include "IInput.h"
+#include "IRenderer.h"
 #include <string>
 
 #ifdef _WIN32
