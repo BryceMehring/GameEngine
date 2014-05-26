@@ -1,4 +1,5 @@
 ﻿#include "oglRenderer.h"
+#include "FontRenderer.h"
 #include "ApplyShader.h"
 #include "VertexStructures.h"
 #include "../common/Log.h"
@@ -200,10 +201,11 @@ int oglRenderer::GetNumDisplayModes(int monitor) const
 void oglRenderer::GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
 {
 	// todo: fix this
-	/*if (str != nullptr)
+	const Font* pFont = static_cast<const Font*>(m_rm.GetResource("font", ResourceType::Font));
+	if(pFont != nullptr)
 	{
-		m_pScreenSpaceFonts->GetStringRect(str, scale, alignment, inout);
-	}*/
+		FontRenderable::GetStringRect(str, pFont, scale, alignment, inout);
+	}
 }
 
 void oglRenderer::SetCamera(PerspectiveCamera* pCam)
