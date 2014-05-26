@@ -30,7 +30,7 @@ public:
 
 	// Returns the interface of type
 	// If a match cannot be made, nullptr is returned
-	virtual void* QueryInterface(ResourceType type) = 0;
+	virtual void* QueryInterface(ResourceType type) const = 0;
 
 protected:
 
@@ -43,7 +43,7 @@ public:
 
 	Cursor(int width, int height, unsigned char* img);
 
-	virtual void* QueryInterface(ResourceType type) override;
+	virtual void* QueryInterface(ResourceType type) const override;
 
 	int GetWidth() const;
 	int GetHeight() const;
@@ -81,7 +81,7 @@ public:
 
 	Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw = 1, int ch = 1);
 
-	virtual void* QueryInterface(ResourceType type) override;
+	virtual void* QueryInterface(ResourceType type) const override;
 
 	int GetWidth() const;
 	int GetHeight() const;
@@ -114,13 +114,24 @@ public:
 
 	Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms);
 
-	virtual void* QueryInterface(ResourceType type) override;
+	virtual void* QueryInterface(ResourceType type) const override;
 
+	// Sets this shader as the active shader
 	void Bind();
+
+	// Removes this shader as the active shader
 	void UnBind();
+
+	// Returns true if this shader is active
 	bool IsBound() const;
+
+	// Sets the MVP matrix in the shader
 	void SetMVP(const glm::mat4& mvp) const;
+
+	// Sets the color in the shader
 	void SetColor(const glm::vec4& color) const;
+
+	// Set generic values in the shader
 	void SetValue(const std::string& location, int v);
 	void SetValue(const std::string& location, unsigned int v);
 	void SetValue(const std::string& location, float v);
@@ -148,8 +159,7 @@ public:
 
 	TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID, UnifromMap&& uniforms);
 
-	virtual void* QueryInterface(ResourceType type) override;
-
+	virtual void* QueryInterface(ResourceType type) const override;
 	void BindTexture(const OpenGLResource& texture) const;
 
 protected:
@@ -179,13 +189,24 @@ public:
 
 	Font(GLuint i, unsigned char* pImg, int comp, int tw, int th);
 
-	virtual void* QueryInterface(ResourceType type) override;
+	virtual void* QueryInterface(ResourceType type) const override;
 
+	// Returns the distance in pixels between each line of text.
 	unsigned int GetLineHeight() const;
+
+	// Returns the number of pixels from the absolute top of the line to the base of the characters.
 	unsigned int GetBase() const;
+
+	// Returns the number of texture pages included in the font.
 	unsigned int GetPages() const;
+
+	// Returns the CharDescriptor of the specified character
 	const CharDescriptor& GetCharDescriptor(char c) const;
+
+	// Returns true if c is a valid character in the font
 	bool IsValidCharacter(char c) const;
+
+	// Returns the kerning pair offset
 	int GetKerningPairOffset(unsigned int first, unsigned int second) const;
 
 	friend std::istream& operator >>(std::istream& stream, Font& CharsetDesc);
@@ -229,9 +250,13 @@ public:
 
 	void Clear() override;
 
-	// method only accessible in the OpenGL plugin to access OpenGL specific information about the resources
+	// Method only accessible in the OpenGL plugin to access OpenGL specific information about the resources
+	// If the resource is not found, nullptr is returned
 	IResource* GetResource(const std::string& name, ResourceType type);
 	const IResource* GetResource(const std::string& name, ResourceType type) const;
+
+	IResource* GetResource(const std::string& name);
+	const IResource* GetResource(const std::string& name) const;
 
 private:
 

@@ -2,40 +2,25 @@
 #define _SPRITEMANAGER_
 
 #include "IRenderer.h"
+#include "IRenderable.h"
 #include "ResourceManager.h"
 #include "Camera.h"
 #include "VertexBuffer.h"
-
 #include <map>
 #include <string>
 #include <vector>
+#include <memory>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4503)
 #endif
 
-// Defines how a sprite should be rendered
-struct Sprite
-{
-	// Transformation applied to the sprite
-	glm::mat4 T;
-
-	// Color blended with the sprite
-	glm::vec4 color;
-
-	// The amount of tiling applied to the sprite
-	glm::vec2 tiling;
-
-	// Tile of the spite animation
-	unsigned int iCellId;
-};
-
 // Manages the rendering of sprites
-class SpriteEngine
+class AbstractRenderer
 {
 public:
 
-	SpriteEngine(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam = nullptr);
+	AbstractRenderer(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam = nullptr);
 
 	void DrawSprite(const std::string& tech,
 					const std::string& texture,
@@ -44,6 +29,13 @@ public:
 					const glm::vec2& tiling,
 					unsigned int iCellId
 				   );
+
+	void DrawString(const char* str,
+					const char* font,
+					const glm::vec3& pos,
+					float scale,
+					const glm::vec4& color,
+					FontAlignment alignment);
 
 	void SetCamera(Camera* pCam);
 
@@ -58,7 +50,7 @@ private:
 	Camera* m_pCamera;
 
 	// z level -> map of techniques -> map of textures -> vector of sprites
-	std::map<int,std::map<std::string,std::map<std::string,std::vector<Sprite>>>> m_spriteLayers;
+	std::map<int,std::map<std::string,std::map<std::string, std::vector<std::unique_ptr<IRenderable>>>>> m_spriteLayers; // std::vector<std::unique_ptr<IRenderable>>
 };
 
 #endif

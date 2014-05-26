@@ -19,7 +19,7 @@ Cursor::~Cursor()
 	stbi_image_free(m_pImg);
 }
 
-void* Cursor::QueryInterface(ResourceType type)
+void* Cursor::QueryInterface(ResourceType type) const
 {
 	if (type == ResourceType::Cursor)
 	{
@@ -59,7 +59,7 @@ Texture::~Texture()
 	stbi_image_free(m_pImg);
 }
 
-void* Texture::QueryInterface(ResourceType type)
+void* Texture::QueryInterface(ResourceType type) const
 {
 	if (type == ResourceType::Texture)
 	{
@@ -108,7 +108,7 @@ Shader::~Shader()
 	glDeleteProgram(m_id);
 }
 
-void* Shader::QueryInterface(ResourceType type)
+void* Shader::QueryInterface(ResourceType type) const
 {
 	if (type == ResourceType::Shader)
 	{
@@ -227,7 +227,7 @@ m_TextureSamplerID(texID)
 {
 }
 
-void* TexturedShader::QueryInterface(ResourceType type)
+void* TexturedShader::QueryInterface(ResourceType type) const
 {
 	if (type == ResourceType::TexturedShader)
 	{
@@ -250,7 +250,7 @@ Font::Font(GLuint i, unsigned char* pImg, int comp, int tw, int th) : Texture(i,
 {
 }
 
-void* Font::QueryInterface(ResourceType type)
+void* Font::QueryInterface(ResourceType type) const
 {
 	if (type == ResourceType::Font)
 	{
@@ -282,7 +282,7 @@ const CharDescriptor& Font::GetCharDescriptor(char c) const
 
 bool Font::IsValidCharacter(char c) const
 { 
-	return c < (int)m_Chars.size() && c >= 0;
+	return (c < (int)m_Chars.size()) && (c >= 0);
 }
 
 int Font::GetKerningPairOffset(unsigned int first, unsigned int second) const
@@ -744,17 +744,27 @@ void ResourceManager::Clear()
 
 IResource* ResourceManager::GetResource(const std::string& name, ResourceType type)
 {
-	auto iter = m_resources.find(name);
-
-	if(iter == m_resources.end())
+	IResource* pResource = GetResource(name);
+	if(pResource == nullptr)
 	{
-		return nullptr;
+		return pResource;
 	}
 
-	return static_cast<IResource*>(iter->second->QueryInterface(type));
+	return static_cast<IResource*>(pResource->QueryInterface(type));
 }
 
 const IResource* ResourceManager::GetResource(const std::string& name, ResourceType type) const
+{
+	const IResource* pResource = GetResource(name);
+	if(pResource == nullptr)
+	{
+		return pResource;
+	}
+
+	return static_cast<const IResource*>(pResource->QueryInterface(type));
+}
+
+IResource* ResourceManager::GetResource(const std::string& name)
 {
 	auto iter = m_resources.find(name);
 
@@ -763,5 +773,17 @@ const IResource* ResourceManager::GetResource(const std::string& name, ResourceT
 		return nullptr;
 	}
 
-	return static_cast<const IResource*>(iter->second->QueryInterface(type));
+	return iter->second;
+}
+
+const IResource* ResourceManager::GetResource(const std::string& name) const
+{
+	auto iter = m_resources.find(name);
+
+	if(iter == m_resources.end())
+	{
+		return nullptr;
+	}
+
+	return iter->second;
 }

@@ -21,7 +21,7 @@ namespace UI
 		}
 
 		template< class ...A >
-		static std::shared_ptr<IElement> CreateElement(Game& theGame, A&&... args)
+		static std::shared_ptr<IElement> CreateElement(Game&, A&&... args)
 		{
 			return std::make_shared<T>(std::forward<A>(args)...);
 		}

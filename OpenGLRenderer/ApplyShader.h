@@ -11,6 +11,10 @@ public:
 
 	// Binds pShader
 	ApplyShader(Shader* pShader);
+	ApplyShader(ApplyShader&& shader);
+
+	ApplyShader(const ApplyShader&) = delete;
+	ApplyShader& operator =(const ApplyShader&) = delete;
 
 	// Unbinds the shader
 	~ApplyShader();

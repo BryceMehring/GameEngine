@@ -3,9 +3,8 @@
 
 #include "IRenderer.h"
 #include "PluginManager.h"
-#include "FontEngine.h"
+#include "AbstractRenderer.h"
 #include "LineEngine.h"
-#include "SpriteEngine.h"
 #include "ResourceManager.h"
 #include "VertexBuffer.h"
 
@@ -119,14 +118,11 @@ private:
 
 	ResourceManager m_rm;
 
-	std::unique_ptr<FontEngine> m_pWorldSpaceFonts;
-	std::unique_ptr<FontEngine> m_pScreenSpaceFonts;
-
 	std::unique_ptr<LineEngine> m_pWorldSpaceLines;
 	std::unique_ptr<LineEngine> m_pScreenSpaceLines;
 
-	std::unique_ptr<SpriteEngine> m_pWorldSpaceSprites;
-	std::unique_ptr<SpriteEngine> m_pScreenSpaceSprites;
+	std::unique_ptr<AbstractRenderer> m_pWorldSpaceSprites;
+	std::unique_ptr<AbstractRenderer> m_pScreenSpaceSprites;
 
 	GLFWmonitor** m_pMonitors;
 	int m_iMonitorCount;

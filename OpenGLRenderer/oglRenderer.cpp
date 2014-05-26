@@ -1,4 +1,6 @@
 ﻿#include "oglRenderer.h"
+#include "FontRenderer.h"
+#include "ApplyShader.h"
 #include "VertexStructures.h"
 #include "../common/Log.h"
 
@@ -66,8 +68,7 @@ void APIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum 
 	}
 }
 
-oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWorldSpaceFonts(nullptr),
-m_pScreenSpaceFonts(nullptr), m_pWorldSpaceLines(nullptr), m_pScreenSpaceLines(nullptr),
+oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWorldSpaceLines(nullptr), m_pScreenSpaceLines(nullptr),
 m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
 m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(false)
 {
@@ -123,16 +124,13 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float f
 
 void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment alignment)
 {
-	if (str != nullptr)
+	if (m_renderSpace == World)
 	{
-		if (m_renderSpace == World)
-		{
-			m_pWorldSpaceFonts->DrawString(str, font, pos, scale, color, alignment);
-		}
-		else
-		{
-			m_pScreenSpaceFonts->DrawString(str, font, pos, scale, color, alignment);
-		}
+		m_pWorldSpaceSprites->DrawString(str, font, pos, scale, color, alignment);
+	}
+	else
+	{
+		m_pScreenSpaceSprites->DrawString(str, font, pos, scale, color, alignment);
 	}
 }
 
@@ -201,12 +199,12 @@ IResourceManager& oglRenderer::GetResourceManager()
 
 bool oglRenderer::GetDisplayMode(int monitor, int i, int* width, int* height) const
 {
-	if (monitor >= m_iMonitorCount)
+	if ((monitor >= m_iMonitorCount) || (monitor < 0))
 		return false;
 
 	std::pair<const GLFWvidmode*,int> modes = m_videoModes[monitor];
 
-	if (i >= modes.second)
+	if ((i >= modes.second) || (i < 0))
 		return false;
 
 	int index = modes.second - i - 1;
@@ -248,16 +246,17 @@ int oglRenderer::GetNumDisplayModes(int monitor) const
 
 void oglRenderer::GetStringRect(const char* str, float scale, FontAlignment alignment, Math::FRECT& inout) const
 {
-	if (str != nullptr)
+	// todo: fix this
+	const Font* pFont = static_cast<const Font*>(m_rm.GetResource("font", ResourceType::Font));
+	if(pFont != nullptr)
 	{
-		m_pScreenSpaceFonts->GetStringRect(str, scale, alignment, inout);
+		FontRenderable::GetStringRect(str, pFont, scale, alignment, inout);
 	}
 }
 
 void oglRenderer::SetCamera(PerspectiveCamera* pCam)
 {
 	m_pWorldCamera = pCam;
-	m_pWorldSpaceFonts->SetCamera(pCam);
 	m_pWorldSpaceLines->SetCamera(pCam);
 	m_pWorldSpaceSprites->SetCamera(pCam);
 }
@@ -287,24 +286,14 @@ void oglRenderer::SetRenderSpace(RenderSpace space)
 
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value)
 {
-	Shader* pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
-	if(pShader != nullptr)
-	{
-		pShader->Bind();
-		pShader->SetValue(location,value);
-		pShader->UnBind();
-	}
+	ApplyShader pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
+	pShader->SetValue(location, value);
 }
 
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value)
 {
-	Shader* pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
-	if(pShader != nullptr)
-	{
-		pShader->Bind();
-		pShader->SetValue(location,value);
-		pShader->UnBind();
-	}
+	ApplyShader pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
+	pShader->SetValue(location, value);
 }
 
 void oglRenderer::EnableVSync(bool enable)
@@ -319,11 +308,9 @@ void oglRenderer::Present()
 
 	m_pWorldSpaceSprites->Render();
 	m_pWorldSpaceLines->Render();
-	m_pWorldSpaceFonts->Render();
 
 	m_pScreenSpaceSprites->Render();
 	m_pScreenSpaceLines->Render();
-	m_pScreenSpaceFonts->Render();
 
 	glfwSwapBuffers(m_pWindow);
 }
@@ -341,6 +328,9 @@ void oglRenderer::GLFWOpenWindowHints()
 #ifdef _WIN32
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
+
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef DEBUG_BUILD
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
@@ -506,14 +496,11 @@ void oglRenderer::BuildBuffers()
 	VertexBuffer* pSpriteVertexBuffer = new VertexBuffer(verticies, sizeof(VertexPT), 4, GL_STATIC_DRAW,indexBuffer, 6);
 	VertexBuffer* pLineVertexBuffer = new VertexBuffer(0, sizeof(VertexP), 1024*8, GL_DYNAMIC_DRAW, indexBuffer, 6, false);
 
-	m_pWorldSpaceFonts.reset(new FontEngine(&m_rm,pSpriteVertexBuffer));
-	m_pScreenSpaceFonts.reset(new FontEngine(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
-
 	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer));
 	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,&m_OrthoCamera));
 
-	m_pWorldSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexBuffer));
-	m_pScreenSpaceSprites.reset(new SpriteEngine(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
+	m_pWorldSpaceSprites.reset(new AbstractRenderer(&m_rm,pSpriteVertexBuffer));
+	m_pScreenSpaceSprites.reset(new AbstractRenderer(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
 
 	m_vertexBuffers.push_back(pLineVertexBuffer);
 	m_vertexBuffers.push_back(pSpriteVertexBuffer);
