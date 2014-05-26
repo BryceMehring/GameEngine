@@ -1,4 +1,5 @@
 ﻿#include "oglRenderer.h"
+#include "ApplyShader.h"
 #include "VertexStructures.h"
 #include "../common/Log.h"
 
@@ -122,16 +123,13 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float f
 
 void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment alignment)
 {
-	if (str != nullptr)
+	if (m_renderSpace == World)
 	{
-		if (m_renderSpace == World)
-		{
-			m_pWorldSpaceSprites->DrawString(str, font, pos, scale, color, alignment);
-		}
-		else
-		{
-			m_pScreenSpaceSprites->DrawString(str, font, pos, scale, color, alignment);
-		}
+		m_pWorldSpaceSprites->DrawString(str, font, pos, scale, color, alignment);
+	}
+	else
+	{
+		m_pScreenSpaceSprites->DrawString(str, font, pos, scale, color, alignment);
 	}
 }
 
@@ -154,12 +152,12 @@ IResourceManager& oglRenderer::GetResourceManager()
 
 bool oglRenderer::GetDisplayMode(int monitor, int i, int* width, int* height) const
 {
-	if (monitor >= m_iMonitorCount)
+	if ((monitor >= m_iMonitorCount) || (monitor < 0))
 		return false;
 
 	std::pair<const GLFWvidmode*,int> modes = m_videoModes[monitor];
 
-	if (i >= modes.second)
+	if ((i >= modes.second) || (i < 0))
 		return false;
 
 	int index = modes.second - i - 1;
@@ -240,24 +238,14 @@ void oglRenderer::SetRenderSpace(RenderSpace space)
 
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value)
 {
-	Shader* pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
-	if(pShader != nullptr)
-	{
-		pShader->Bind();
-		pShader->SetValue(location,value);
-		pShader->UnBind();
-	}
+	ApplyShader pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
+	pShader->SetValue(location, value);
 }
 
 void oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value)
 {
-	Shader* pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
-	if(pShader != nullptr)
-	{
-		pShader->Bind();
-		pShader->SetValue(location,value);
-		pShader->UnBind();
-	}
+	ApplyShader pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
+	pShader->SetValue(location, value);
 }
 
 void oglRenderer::EnableVSync(bool enable)

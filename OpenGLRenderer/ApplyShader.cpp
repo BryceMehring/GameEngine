@@ -7,9 +7,17 @@ ApplyShader::ApplyShader(Shader *pShader) : m_pShader(pShader)
 	m_pShader->Bind();
 }
 
+ApplyShader::ApplyShader(ApplyShader&& shader) : m_pShader(shader.m_pShader)
+{
+	shader.m_pShader = nullptr;
+}
+
 ApplyShader::~ApplyShader()
 {
-	m_pShader->UnBind();
+	if(m_pShader != nullptr)
+	{
+		m_pShader->UnBind();
+	}
 }
 
 Shader* ApplyShader::operator *() const

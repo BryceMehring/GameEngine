@@ -1,6 +1,6 @@
 #include "AbstractRenderer.h"
 #include "SpriteRenderer.h"
-#include "FontEngine.h"
+#include "FontRenderer.h"
 #include "VertexStructures.h"
 #include "ApplyShader.h"
 
@@ -32,13 +32,16 @@ void AbstractRenderer::DrawString(const char* str,
 							  FontAlignment alignment
 							  )
 {
-	if (font == nullptr)
+	if(str != nullptr)
 	{
-		font = "font";
-	}
+		if (font == nullptr)
+		{
+			font = "font";
+		}
 
-	int iZorder = {(int)floor(pos.z)};
-	m_spriteLayers[iZorder]["textShader"][font].emplace_back(new FontRenderable{ str, pos, scale, color, alignment });
+		int iZorder = {(int)floor(pos.z)};
+		m_spriteLayers[iZorder]["textShader"][font].emplace_back(new FontRenderable{ str, pos, scale, color, alignment });
+	}
 }
 
 void AbstractRenderer::SetCamera(Camera* pCam)

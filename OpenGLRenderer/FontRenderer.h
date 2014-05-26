@@ -1,5 +1,5 @@
-#ifndef _FONTENGINE_
-#define _FONTENGINE_
+#ifndef _FONTRENDERER_
+#define _FONTRENDERER_
 
 #include "Camera.h"
 #include "IRenderer.h"
@@ -65,4 +65,4 @@ private:
 	FontAlignment alignment;
 };
 
-#endif // _FONTENGINE_
+#endif // _FONTRENDERER_
