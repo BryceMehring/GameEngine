@@ -30,6 +30,10 @@ namespace UI
 		// Links nodes id and id2 bidirectionally 
 		void LinkNodes(unsigned int id, unsigned int id2);
 
+		// Returns true if the graph has links to all of the nodes in the graph,
+		// meaning that one can reach every node in the graph
+		bool IsConnected() const;
+
 		// Updates all of the elements in the current node of the graph
 		void Update(IInput& input, double dt);
 
