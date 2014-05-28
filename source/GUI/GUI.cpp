@@ -22,7 +22,7 @@ namespace UI
 	{
 		if (id < m_matrix.size())
 		{
-			if ((m_uiCurrentNode == -1) || m_matrix[m_uiCurrentNode][id])
+			if ((m_uiCurrentNode == std::numeric_limits<unsigned int>::max()) || m_matrix[m_uiCurrentNode][id])
 			{
 				m_uiCurrentNode = id;
 			}
@@ -52,16 +52,16 @@ namespace UI
 
 	bool GUI::IsConnected() const
 	{
-		if (m_uiCurrentNode == -1)
+		if (m_uiCurrentNode == std::numeric_limits<unsigned int>::max())
 			return false;
 
 		// Use depth first search to find the connected components of the GUI graph.
 		
-		std::stack<int> nodes;
-		std::set<int> closedList;
+		std::stack<unsigned int> nodes;
+		std::set<unsigned int> closedList;
 		nodes.push(m_uiCurrentNode);
 
-		int connectedComponents = 0;
+		unsigned int connectedComponents = 0;
 		while (!nodes.empty())
 		{
 			int index = nodes.top();
@@ -72,7 +72,7 @@ namespace UI
 			{
 				++connectedComponents;
 
-				for (int i = 0; i < m_matrix[index].size(); ++i)
+				for (unsigned int i = 0; i < m_matrix[index].size(); ++i)
 				{
 					if (m_matrix[index][i])
 					{
@@ -88,7 +88,7 @@ namespace UI
 
 	void GUI::Update(IInput& input, double dt)
 	{
-		if (m_uiCurrentNode != -1)
+		if (m_uiCurrentNode != std::numeric_limits<unsigned int>::max())
 		{
 			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
 			{
@@ -99,7 +99,7 @@ namespace UI
 
 	void GUI::Render(IRenderer& renderer)
 	{
-		if (m_uiCurrentNode != -1)
+		if (m_uiCurrentNode != std::numeric_limits<unsigned int>::max())
 		{
 			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
 			{

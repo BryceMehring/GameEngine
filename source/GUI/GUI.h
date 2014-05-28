@@ -51,7 +51,7 @@ namespace UI
 		std::vector<std::vector<bool>> m_matrix;
 		std::vector<Node> m_nodes;
 
-		unsigned int m_uiCurrentNode = -1;
+		unsigned int m_uiCurrentNode = std::numeric_limits<unsigned int>::max();
 
 	};
 
