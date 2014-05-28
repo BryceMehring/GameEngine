@@ -4,7 +4,7 @@
 
 namespace UI
 {
-	unsigned int GUI::CreateNode()
+	GUI::HANDLE GUI::CreateNode()
 	{
 		m_matrix.emplace_back();
 
@@ -18,7 +18,7 @@ namespace UI
 		return m_matrix.size() - 1;
 	}
 
-	void GUI::SetNode(unsigned int id)
+	void GUI::SetNode(HANDLE id)
 	{
 		if (id < m_matrix.size())
 		{
@@ -29,12 +29,12 @@ namespace UI
 		}
 	}
 
-	unsigned int GUI::GetNode() const
+	GUI::HANDLE GUI::GetNode() const
 	{
 		return m_uiCurrentNode;
 	}
 
-	void GUI::AddElement(unsigned int id, const std::shared_ptr<IElement>& pElement)
+	void GUI::AddElement(HANDLE id, const std::shared_ptr<IElement>& pElement)
 	{
 		if (id < m_matrix.size())
 		{
@@ -42,7 +42,7 @@ namespace UI
 		}
 	}
 
-	void GUI::LinkNodes(unsigned int id, unsigned int id2)
+	void GUI::LinkNodes(HANDLE id, HANDLE id2)
 	{
 		if (id < m_matrix.size() && id2 < m_matrix.size())
 		{
@@ -57,18 +57,17 @@ namespace UI
 
 		// Use depth first search to find the connected components of the GUI graph.
 		
-		std::stack<unsigned int> nodes;
-		std::set<unsigned int> closedList;
+		std::stack<HANDLE> nodes;
+		std::set<HANDLE> closedList;
 		nodes.push(m_uiCurrentNode);
 
 		unsigned int connectedComponents = 0;
 		while (!nodes.empty())
 		{
-			int index = nodes.top();
+			HANDLE index = nodes.top();
 			nodes.pop();
 
-			auto pair = closedList.insert(index);
-			if (pair.second == true)
+			if (closedList.insert(index).second)
 			{
 				++connectedComponents;
 
@@ -88,7 +87,7 @@ namespace UI
 
 	void GUI::Update(IInput& input, double dt)
 	{
-		if (m_uiCurrentNode != std::numeric_limits<unsigned int>::max())
+		if (m_uiCurrentNode != std::numeric_limits<HANDLE>::max())
 		{
 			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
 			{
@@ -99,7 +98,7 @@ namespace UI
 
 	void GUI::Render(IRenderer& renderer)
 	{
-		if (m_uiCurrentNode != std::numeric_limits<unsigned int>::max())
+		if (m_uiCurrentNode != std::numeric_limits<HANDLE>::max())
 		{
 			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
 			{

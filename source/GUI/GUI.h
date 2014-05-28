@@ -15,20 +15,22 @@ namespace UI
 	{
 	public:
 
+		using HANDLE = unsigned int;
+
 		// Returns the new node added to the graph
-		unsigned int CreateNode();
+		HANDLE CreateNode();
 
 		// Sets the current node for which updating and rendering take place
-		void SetNode(unsigned int id);
+		void SetNode(HANDLE id);
 
 		// Returns the current node in the graph for which updating and rendering take place
-		unsigned int GetNode() const;
+		HANDLE GetNode() const;
 
 		// Adds pElement to the node in the graph specified by id
-		void AddElement(unsigned int id, const std::shared_ptr<IElement>& pElement);
+		void AddElement(HANDLE id, const std::shared_ptr<IElement>& pElement);
 
 		// Links nodes id and id2 bidirectionally 
-		void LinkNodes(unsigned int id, unsigned int id2);
+		void LinkNodes(HANDLE id, HANDLE id2);
 
 		// Returns true if the graph has links to all of the nodes in the graph,
 		// meaning that one can reach every node in the graph
@@ -51,7 +53,7 @@ namespace UI
 		std::vector<std::vector<bool>> m_matrix;
 		std::vector<Node> m_nodes;
 
-		unsigned int m_uiCurrentNode = std::numeric_limits<unsigned int>::max();
+		HANDLE m_uiCurrentNode = std::numeric_limits<HANDLE>::max();
 
 	};
 
