@@ -109,6 +109,8 @@ void FontRenderable::ProccessSpecialCharacter(char c, float scale, unsigned int 
 
 void FontRenderable::GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& inout)
 {
+	FontRenderable::NormalizeScaling(fnt, scale);
+
 	unsigned int lineHeight = fnt->GetLineHeight();
 
 	inout.bottomRight = inout.topLeft;
