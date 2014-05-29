@@ -19,8 +19,6 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 	const Font* fnt = static_cast<const Font*>(resource.QueryInterface(ResourceType::Font));
 	assert("Invalid resource selected" && (fnt != nullptr));
 
-	NormalizeScaling(fnt, scale);
-
 	// Text to be rendered
 	const char* str = text.c_str();
 
@@ -39,6 +37,8 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 	glm::vec3 posW = oldPos;
 
 	char prevChar = -1;
+
+	NormalizeScaling(fnt, scale);
 
 	// Loop over the entire string
 	while (*str)
@@ -109,9 +109,9 @@ void FontRenderable::ProccessSpecialCharacter(char c, float scale, unsigned int 
 
 void FontRenderable::GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& inout)
 {
-	FontRenderable::NormalizeScaling(fnt, scale);
-
 	unsigned int lineHeight = fnt->GetLineHeight();
+
+	NormalizeScaling(fnt, scale);
 
 	inout.bottomRight = inout.topLeft;
 	inout.bottomRight.y -= scale * lineHeight;
