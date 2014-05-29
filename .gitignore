@@ -54,6 +54,7 @@ install_manifest.txt
 *.exp
 *.ilk
 *.psess
+*.etl
 
 # Packages #
 ############
