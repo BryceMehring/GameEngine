@@ -154,7 +154,7 @@ int oglRenderer::CreateCursor(const std::string& texture, int xhot, int yhot)
 		GLFWimage img;
 		img.width = pTexture->GetWidth();
 		img.height = pTexture->GetHeight();
-		img.pixels = pTexture->GetImgData();
+		img.pixels = const_cast<unsigned char*>(pTexture->GetImgData());
 
 		GLFWcursor* pCursor = glfwCreateCursor(&img, xhot, yhot);
 		if(pCursor != nullptr)
