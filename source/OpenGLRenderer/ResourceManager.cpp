@@ -99,7 +99,7 @@ const unsigned char* Texture::GetImgData() const
 	return m_pImg; 
 }
 
-Shader::Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms) : OpenGLResource(i), m_MVP(MVP), m_color(color), m_uniforms(uniforms), m_bUse(false)
+Shader::Shader(GLuint i, GLuint MVP, GLuint color) : OpenGLResource(i), m_MVP(MVP), m_color(color), m_bUse(false)
 {
 }
 
@@ -157,73 +157,47 @@ void Shader::SetColor(const glm::vec4& color) const
 	}
 }
 
-void Shader::SetValue(const std::string& location, int v)
+void Shader::SetValue(int location, int v)
 {
 	if(m_bUse)
 	{
-		auto iter = m_uniforms.find(location);
-
-		if(iter != m_uniforms.end())
-		{
-			glUniform1i(iter->second, v);
-		}
+		glUniform1i(location, v);
 	}
 }
 
-void Shader::SetValue(const std::string& location, unsigned int v)
+void Shader::SetValue(int location, unsigned int v)
 {
 	if(m_bUse)
 	{
-		auto iter = m_uniforms.find(location);
-
-		if(iter != m_uniforms.end())
-		{
-			glUniform1ui(iter->second, v);
-		}
+		glUniform1ui(location, v);
 	}
 }
 
-void Shader::SetValue(const std::string& location, float v)
+void Shader::SetValue(int location, float v)
 {
 	if(m_bUse)
 	{
-		auto iter = m_uniforms.find(location);
-
-		if(iter != m_uniforms.end())
-		{
-			glUniform1f(iter->second, v);
-		}
+		glUniform1f(location, v);
 	}
 }
 
-void Shader::SetValue(const std::string& location, const glm::vec2& v)
+void Shader::SetValue(int location, const glm::vec2& v)
 {
 	if(m_bUse)
 	{
-		auto iter = m_uniforms.find(location);
-
-		if(iter != m_uniforms.end())
-		{
-			glUniform2fv(iter->second, 1, &v[0]);
-		}
+		glUniform2fv(location, 1, &v[0]);
 	}
 }
 
-void Shader::SetValue(const std::string& location, const glm::mat4& v)
+void Shader::SetValue(int location, const glm::mat4& v)
 {
 	if(m_bUse)
 	{
-		auto iter = m_uniforms.find(location);
-
-		if(iter != m_uniforms.end())
-		{
-			glUniformMatrix4fv(iter->second,1,false,&v[0][0]);
-		}
+		glUniformMatrix4fv(location, 1, false, &v[0][0]);
 	}
 }
 
-TexturedShader::TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID, UnifromMap&& uniforms) : Shader(i, MVP, color, std::move(uniforms)),
-m_TextureSamplerID(texID)
+TexturedShader::TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID) : Shader(i, MVP, color), m_TextureSamplerID(texID)
 {
 }
 
@@ -664,7 +638,9 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 
 bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint programID)
 {
-	Shader::UnifromMap uniforms;
+	int mvpIndex = -1;
+	int uniformColorIndex = -1;
+	int textureSamplerIndex = -1;
 
 	// Get a list of all the uniform variables in the shader
 	GLint uniformCount = 0;
@@ -681,32 +657,39 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 
 		GLuint location = glGetUniformLocation( programID, name );
 
-		uniforms.emplace(name, location);
+		if (std::strcmp(name, "MVP") == 0)
+		{
+			mvpIndex = location;
+		}
+		else if (std::strcmp(name, "uniformColor") == 0)
+		{
+			uniformColorIndex = location;
+		}
+		else if (std::strcmp(name, "textureSampler") == 0)
+		{
+			textureSamplerIndex = location;
+		}
 	}
 
-	auto mvpIter = uniforms.find("MVP");
-	auto colorIter = uniforms.find("uniformColor");
-	auto textureIter = uniforms.find("textureSampler");
-
-	bool success = false;
+	bool bSuccess = false;
 
 	// Each shader must at least have a MVP matrix and a color vector
-	if((success = ((mvpIter != uniforms.end()) && (colorIter != uniforms.end()))))
+	if (bSuccess = ((mvpIndex != -1) && (uniformColorIndex != -1)))
 	{
 		Shader* pShader = nullptr;
-		if(textureIter != uniforms.end())
+		if (textureSamplerIndex != -1)
 		{
-			pShader = new TexturedShader(programID, mvpIter->second, colorIter->second, textureIter->second, std::move(uniforms));
+			pShader = new TexturedShader(programID, mvpIndex, uniformColorIndex, textureSamplerIndex);
 		}
 		else
 		{
-			pShader = new Shader(programID, mvpIter->second, colorIter->second, std::move(uniforms));
+			pShader = new Shader(programID, mvpIndex, uniformColorIndex);
 		}
 
 		m_resources.emplace(id, pShader);
 	}
 
-	return success;
+	return bSuccess;
 }
 
 bool ResourceManager::GetTextureInfo(const std::string& name, TextureInfo& out) const

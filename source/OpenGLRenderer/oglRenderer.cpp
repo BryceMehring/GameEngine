@@ -284,13 +284,13 @@ void oglRenderer::SetRenderSpace(RenderSpace space)
 	m_renderSpace = space;
 }
 
-void oglRenderer::SetShaderValue(const std::string& shader, const string& location, float value)
+void oglRenderer::SetShaderValue(const std::string& shader, int location, float value)
 {
 	ApplyShader pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
 	pShader->SetValue(location, value);
 }
 
-void oglRenderer::SetShaderValue(const std::string& shader, const string& location, const glm::vec2& value)
+void oglRenderer::SetShaderValue(const std::string& shader, int location, const glm::vec2& value)
 {
 	ApplyShader pShader = static_cast<Shader*>(m_rm.GetResource(shader, ResourceType::Shader));
 	pShader->SetValue(location, value);

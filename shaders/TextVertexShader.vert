@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 vertexPosition_modelspace;
@@ -14,15 +14,15 @@ struct CharDescriptor
 };
 
 // Values that stay constant for the whole mesh.
-uniform mat4 MVP;
-uniform mat4 transformation;
-uniform CharDescriptor charInfo;
-uniform vec2 fontSize;
+layout(location = 0) uniform mat4 MVP;
+layout(location = 1) uniform mat4 transformation;
+layout(location = 2) uniform CharDescriptor charInfo;
+layout(location = 4) uniform vec2 fontSize;
 
 void main()
 {
 	// Output position of the vertex, in clip space : MVP * position
-	gl_Position =  MVP * transformation * vec4(vertexPosition_modelspace,1);
+	gl_Position = MVP * transformation * vec4(vertexPosition_modelspace,1);
 
 	vec2 uvOffset = charInfo.pos;
 	uvOffset += vertexUV * charInfo.size;

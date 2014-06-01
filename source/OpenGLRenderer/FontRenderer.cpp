@@ -4,14 +4,20 @@
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
+enum
+{
+	TRANSFORMATION_LOCATION = 1,
+	CHAR_INFO_LOCATION,
+	FONT_SIZE_LOCATION = 4,
+};
+
 void FontRenderable::Setup(ApplyTexturedShader& shader, const IResource &resource)
 {
 	const Font* fnt = static_cast<const Font*>(resource.QueryInterface(ResourceType::Font));
 	assert("Invalid resource selected" && (fnt != nullptr));
 
 	shader->BindTexture(*fnt);
-	shader->SetValue("fontSize", glm::vec2(fnt->GetWidth(), fnt->GetHeight()));
-	shader->SetColor(color);
+	shader->SetValue(FONT_SIZE_LOCATION, glm::vec2(fnt->GetWidth(), fnt->GetHeight()));
 }
 
 void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resource)
@@ -40,6 +46,8 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 
 	NormalizeScaling(fnt, scale);
 
+	shader->SetColor(color);
+
 	// Loop over the entire string
 	while (*str)
 	{
@@ -63,9 +71,9 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 				T = glm::scale(T, glm::vec3(glm::abs(posBottomRight - posTopLeft)));
 
 				// Give data to shader
-				shader->SetValue("transformation", T);
-				shader->SetValue("charInfo.pos", glm::vec2(charInfo.x, charInfo.y));
-				shader->SetValue("charInfo.size", glm::vec2(charInfo.Width, charInfo.Height));
+				shader->SetValue(TRANSFORMATION_LOCATION, T);
+				shader->SetValue(CHAR_INFO_LOCATION    , glm::vec2(charInfo.x, charInfo.y));
+				shader->SetValue(CHAR_INFO_LOCATION + 1, glm::vec2(charInfo.Width, charInfo.Height));
 
 				// Render a single character of the string
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);

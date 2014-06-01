@@ -110,9 +110,7 @@ class Shader : public OpenGLResource
 {
 public:
 
-	typedef std::map<std::string,GLuint> UnifromMap;
-
-	Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms);
+	Shader(GLuint i, GLuint MVP, GLuint color);
 
 	virtual void* QueryInterface(ResourceType type) const override;
 
@@ -132,11 +130,11 @@ public:
 	void SetColor(const glm::vec4& color) const;
 
 	// Set generic values in the shader
-	void SetValue(const std::string& location, int v);
-	void SetValue(const std::string& location, unsigned int v);
-	void SetValue(const std::string& location, float v);
-	void SetValue(const std::string& location, const glm::vec2& v);
-	void SetValue(const std::string& location, const glm::mat4& v);
+	void SetValue(int location, int v);
+	void SetValue(int location, unsigned int v);
+	void SetValue(int location, float v);
+	void SetValue(int location, const glm::vec2& v);
+	void SetValue(int location, const glm::mat4& v);
 
 protected:
 
@@ -146,10 +144,7 @@ private:
 
 	GLuint m_MVP;
 	GLuint m_color;
-	UnifromMap m_uniforms;
 	bool m_bUse;
-
-
 };
 
 // Defines a textured shader resource
@@ -157,7 +152,7 @@ class TexturedShader : public Shader
 {
 public:
 
-	TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID, UnifromMap&& uniforms);
+	TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID);
 
 	virtual void* QueryInterface(ResourceType type) const override;
 	void BindTexture(const OpenGLResource& texture) const;
