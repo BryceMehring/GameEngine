@@ -9,6 +9,7 @@ Open CMakeLists.txt with the CMake GUI to generate projects.
 #### Windows: 
 * Run `CreateWinSymLinks.bat` as an administrator to create the symbolic links.
 * Set GameLauncher as the startup project, and build the solution in at least Visual Studio 2013.
+* If debugging within Visual Studio, the working directory must be set to `./bin`
 * Copy `glfw3.dll` into `GameEngine/bin`
 
 #### Linux:
