@@ -222,6 +222,7 @@ void TexturedShader::BindTexture(const OpenGLResource& texture) const
 
 Font::Font(GLuint i, unsigned char* pImg, int comp, int tw, int th) : Texture(i, pImg, comp, tw, th, 1, 1)
 {
+	std::memset(m_kerningPairs.data(), 0, sizeof(m_kerningPairs));
 }
 
 void* Font::QueryInterface(ResourceType type) const
@@ -261,19 +262,8 @@ bool Font::IsValidCharacter(char c) const
 
 int Font::GetKerningPairOffset(unsigned int first, unsigned int second) const
 {
-	int offset = 0;
-
-	auto firstIter = m_kerningPairs.find(first);
-	if (firstIter != m_kerningPairs.end())
-	{
-		auto secondIter = firstIter->second.find(second);
-		if (secondIter != firstIter->second.end())
-		{
-			offset = secondIter->second;
-		}
-	}
-
-	return offset;
+	assert((first < m_kerningPairs.size()) && (second < m_kerningPairs.size()));
+	return m_kerningPairs[first][second];
 }
 
 std::istream& operator >>(std::istream& stream, Font& CharsetDesc)

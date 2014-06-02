@@ -180,7 +180,8 @@ class Font : public Texture
 {
 public:
 
-	typedef std::array<CharDescriptor,256> FontArray;
+	typedef std::array<CharDescriptor,256> FontArrayType;
+	typedef std::array<std::array<short, 128>, 128> KerningArrayType;
 
 	Font(GLuint i, unsigned char* pImg, int comp, int tw, int th);
 
@@ -212,9 +213,8 @@ protected:
 
 private:
 
-	FontArray m_Chars;
-
-	std::unordered_map<unsigned int, std::unordered_map<unsigned int, int>> m_kerningPairs;
+	FontArrayType m_Chars;
+	KerningArrayType m_kerningPairs;
 
 	unsigned short m_LineHeight;
 	unsigned short m_Base;

@@ -42,7 +42,7 @@ void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resour
 	// World pos of aligned text to be rendered
 	glm::vec3 posW = oldPos;
 
-	char prevChar = -1;
+	char prevChar = 0;
 
 	NormalizeScaling(fnt, scale);
 
