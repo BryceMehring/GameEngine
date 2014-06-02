@@ -29,6 +29,7 @@ namespace UI
 		glm::vec4 color = glm::vec4((m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor, 1.0f);
 
 		renderer.DrawString(m_text.c_str(), glm::vec3(m_sprite.topLeft, 0.0f), m_scale, color);
+		renderer.DrawSprite("button", m_sprite.Transformation());
 	}
 
 	void Button::Select()
