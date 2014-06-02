@@ -1,6 +1,6 @@
 
 
-set(MEMORY_MANAGER_HEADERS BNew.h Heap.h MemoryPool.h)
+set(MEMORY_MANAGER_HEADERS BNew.h Heap.h MemoryPool.h PoolAlocator.h)
 
 set(MEMORY_MANAGER_SOURCE BNew.cpp Heap.cpp MemoryPool.cpp)
     
