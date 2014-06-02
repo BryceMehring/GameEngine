@@ -37,6 +37,8 @@ bool CCircle::Intersects(const ICollisionPolygon& other) const
 			bSuccess = Math::Intersects(m_circle,rectangle.GetRect());
 			break;
 		}
+		default:
+			assert("Unknown polygon type selected" && false);
 	}
 
 	return bSuccess;

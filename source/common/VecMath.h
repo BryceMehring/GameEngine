@@ -7,6 +7,7 @@
 #include <vector>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/gtx/transform.hpp>
 #include "CommonExport.h"
 
 namespace Math
@@ -28,6 +29,7 @@ public:
 // Basic rectangle using floats
 struct FRECT : public IPolygon
 {
+
 	COMMON_API FRECT() {}
 
 	COMMON_API FRECT(const glm::vec2& topLeft) : topLeft(topLeft) {}
@@ -39,6 +41,14 @@ struct FRECT : public IPolygon
 		bottomRight(center.x + width / 2.0f,center.y - height / 2.0f) {}
 
 	COMMON_API glm::vec2 Middle() const { return (topLeft + bottomRight) * 0.5f; }
+
+	COMMON_API glm::mat4 Transformation() const
+	{
+		glm::mat4 T = glm::translate(glm::vec3(Middle(), 0.0f));
+		T = glm::scale(T, glm::vec3(Width(), Height(), 1.0f));
+
+		return T;
+	}
 
 	COMMON_API virtual bool IsPointWithin(const glm::vec2& pos) const
 	{
