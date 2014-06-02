@@ -38,7 +38,7 @@ include_directories(${CMAKE_SOURCE_DIR}/source/GameEngine)
 
 if(BUILD_MEMORY_MANAGER)
 	include_directories(${CMAKE_SOURCE_DIR}/source/MemoryManager)
-	add_subdirectory(MemoryManager)
+	add_subdirectory(source/MemoryManager)
 endif()
 
 if(BUILD_GUI OR BUILD_EXAMPLES)
