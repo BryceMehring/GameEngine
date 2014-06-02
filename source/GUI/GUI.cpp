@@ -42,11 +42,16 @@ namespace UI
 		}
 	}
 
-	void GUI::LinkNodes(HANDLE id, HANDLE id2)
+	void GUI::LinkNodes(HANDLE id, HANDLE id2, bool bBidirectional)
 	{
 		if (id < m_matrix.size() && id2 < m_matrix.size())
 		{
-			m_matrix[id][id2] = m_matrix[id2][id] = true;
+			m_matrix[id][id2] = true;
+
+			if (bBidirectional)
+			{
+				m_matrix[id2][id] = true;
+			}
 		}
 	}
 

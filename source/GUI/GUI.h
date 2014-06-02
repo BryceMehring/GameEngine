@@ -29,8 +29,8 @@ namespace UI
 		// Adds pElement to the node in the graph specified by id
 		void AddElement(HANDLE id, const std::shared_ptr<IElement>& pElement);
 
-		// Links nodes id and id2 bidirectionally 
-		void LinkNodes(HANDLE id, HANDLE id2);
+		// Links nodes id and id2 
+		void LinkNodes(HANDLE id, HANDLE id2, bool bBidirectional = true);
 
 		// Returns true if the graph has links to all of the nodes in the graph,
 		// meaning that one can reach every node in the graph
