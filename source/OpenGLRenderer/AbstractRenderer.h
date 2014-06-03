@@ -38,6 +38,12 @@ public:
 					const glm::vec4& color,
 					FontAlignment alignment);
 
+	void DrawLine(const glm::vec3* pArray, // array of 3d vertices to draw
+				  unsigned int length, // number of vertices
+				  float fWidth, // the width of the line
+				  const glm::vec4& color, // color of the line
+				  const glm::mat4& t); // transformation to apply to the line
+
 	void SetCamera(Camera* pCam);
 
 	// Renders all of the cached sprites

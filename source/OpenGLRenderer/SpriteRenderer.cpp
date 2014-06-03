@@ -14,16 +14,22 @@ SpriteRenderable::SpriteRenderable(const glm::mat4& T, const glm::vec4& color, c
 {
 }
 
-void SpriteRenderable::Setup(class ApplyTexturedShader& shader, const IResource &resource)
+void SpriteRenderable::Setup(ApplyShader& shader, const IResource* resource)
 {
-	const Texture* pTexture = static_cast<const Texture*>(resource.QueryInterface(ResourceType::Texture));
+	assert(resource != nullptr);
+
+	const Texture* pTexture = static_cast<const Texture*>(resource->QueryInterface(ResourceType::Texture));
 	assert("Invalid resource selected" && (pTexture != nullptr));
 
-	shader->BindTexture(*pTexture);
+	if (shader.GetType() == ApplyShader::ShaderType::Textured)
+	{
+		static_cast<ApplyTexturedShader&>(shader)->BindTexture(*pTexture);
+	}
+
 	shader->SetValue(ANIMATION_TILES_LOCATION, glm::vec2(pTexture->GetCellsWidth(), pTexture->GetCellsHeight()));
 }
 
-void SpriteRenderable::Render(ApplyTexturedShader& shader, const IResource&)
+void SpriteRenderable::Render(ApplyShader& shader, const IResource*)
 {
 	shader->SetColor(color);
 	shader->SetValue(TRANSFORMATION_LOCATION, T);

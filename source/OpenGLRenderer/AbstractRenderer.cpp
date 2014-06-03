@@ -1,6 +1,7 @@
 #include "AbstractRenderer.h"
 #include "SpriteRenderer.h"
 #include "FontRenderer.h"
+#include "LineEngine.h"
 #include "VertexStructures.h"
 #include "ApplyShader.h"
 
@@ -20,6 +21,8 @@ void AbstractRenderer::DrawSprite(const std::string& tech,
 							  unsigned int iCellId
 							  )
 {
+	assert(m_pCamera != nullptr);
+
 	int iZorder = { (int)floor(transformation[3].z) };
 	m_spriteLayers[iZorder][tech][texture].emplace_back(new SpriteRenderable{transformation, color, tiling, iCellId});
 }
@@ -32,6 +35,8 @@ void AbstractRenderer::DrawString(const char* str,
 							  FontAlignment alignment
 							  )
 {
+	assert(m_pCamera != nullptr);
+
 	if(str != nullptr)
 	{
 		if (font == nullptr)
@@ -41,6 +46,21 @@ void AbstractRenderer::DrawString(const char* str,
 
 		int iZorder = {(int)floor(pos.z)};
 		m_spriteLayers[iZorder]["textShader"][font].emplace_back(new FontRenderable{ str, pos, scale, color, alignment });
+	}
+}
+
+void AbstractRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float fWidth, const glm::vec4& color, const glm::mat4& T)
+{
+	assert(m_pCamera != nullptr);
+
+	if (pArray != nullptr)
+	{
+		if (length > 0)
+		{
+			// todo: need to fix this, it looks sketchy 
+			int iZorder = { (int)pArray[0].z };
+			m_spriteLayers[iZorder]["lineShader"]["none"].emplace_back(new LineRenderer{ pArray, length, fWidth, color, T });
+		}
 	}
 }
 
@@ -67,7 +87,8 @@ void AbstractRenderer::Render()
 		for(auto& techIter : layerIter.second)
 		{
 			// Apply the shader tech
-			ApplyTexturedShader currentShader = static_cast<TexturedShader*>(m_pRM->GetResource(techIter.first, ResourceType::TexturedShader));
+			//Shader* pShader = m_pRM->GetResource(techIter.first);
+			ApplyShader currentShader = static_cast<Shader*>(m_pRM->GetResource(techIter.first, ResourceType::Shader));
 
 			currentShader->SetMVP(m_pCamera->ViewProj());
 
@@ -75,19 +96,18 @@ void AbstractRenderer::Render()
 			for(auto& texIter : techIter.second)
 			{
 				const IResource* pResource = m_pRM->GetResource(texIter.first);
-				assert(pResource != nullptr);
-
+				
 				// Setup the renderer to render
-				if(!texIter.second.empty())
+				if (!texIter.second.empty())
 				{
-					texIter.second.front()->Setup(currentShader, *pResource);
+					texIter.second.front()->Setup(currentShader, pResource);
 				}
 
 				// Render
 				for (auto& spriteIter : texIter.second)
 				{
-					spriteIter->Render(currentShader, *pResource);
-				}
+					spriteIter->Render(currentShader, pResource);
+				}	
 			}
 		}
 	}

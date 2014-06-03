@@ -9,6 +9,12 @@ class ApplyShader
 {
 public:
 
+	enum class ShaderType
+	{
+		Normal,
+		Textured
+	};
+
 	// Binds pShader
 	ApplyShader(Shader* pShader);
 	ApplyShader(ApplyShader&& shader);
@@ -22,6 +28,8 @@ public:
 	// Access to the shader object
 	Shader* operator*() const;
 	Shader* operator->() const;
+
+	ShaderType GetType() const;
 
 protected:
 

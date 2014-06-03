@@ -118,9 +118,6 @@ private:
 
 	ResourceManager m_rm;
 
-	std::unique_ptr<LineEngine> m_pWorldSpaceLines;
-	std::unique_ptr<LineEngine> m_pScreenSpaceLines;
-
 	std::unique_ptr<AbstractRenderer> m_pWorldSpaceSprites;
 	std::unique_ptr<AbstractRenderer> m_pScreenSpaceSprites;
 

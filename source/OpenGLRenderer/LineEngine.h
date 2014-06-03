@@ -2,33 +2,27 @@
 #define _LINEENGINE_
 
 #include "IRenderer.h"
+#include "IRenderable.h"
 #include "Camera.h"
 #include "ResourceManager.h"
 #include "VertexBuffer.h"
 
 // Manages the rendering of lines
-class LineEngine
+class LineRenderer : public IRenderable
 {
 public:
 
-	LineEngine(ResourceManager* pRm, VertexBuffer* pVertexStructure, Camera* pCam = nullptr);
+	LineRenderer(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T);
 
-	void DrawLine(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T);
-
-	void SetCamera(Camera* pCam);
-
-	// Renders all of the cached lines
-	void Render();
+	virtual void Setup(ApplyShader& shader, const IResource* resource);
+	virtual void Render(ApplyShader& shader, const IResource* resource);
 
 private:
 
-	ResourceManager* m_pRM;
-	VertexBuffer* m_pVertexBuffer;
-	Camera* m_pCamera;
-
-	std::vector<glm::vec4> m_lineColorSubset;
-
-	unsigned int m_iCurrentLength;
+	std::vector<glm::vec3> m_line;
+	float m_width;
+	glm::vec4 m_color;
+	glm::mat4 m_transformation;
 };
 
 #endif // _LINEENGINE_

@@ -12,8 +12,8 @@ public:
 
 	SpriteRenderable(const glm::mat4& T, const glm::vec4& color, const glm::vec2& tiling, unsigned int iCellId);
 
-	void Setup(class ApplyTexturedShader& shader, const IResource &resource) override;
-	void Render(class ApplyTexturedShader& shader, const IResource &resource) override;
+	void Setup(class ApplyShader& shader, const IResource* resource) override;
+	void Render(class ApplyShader& shader, const IResource* resource) override;
 
 private:
 

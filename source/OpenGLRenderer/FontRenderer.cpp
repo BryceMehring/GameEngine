@@ -11,18 +11,26 @@ enum
 	FONT_SIZE_LOCATION = 4,
 };
 
-void FontRenderable::Setup(ApplyTexturedShader& shader, const IResource &resource)
+void FontRenderable::Setup(ApplyShader& shader, const IResource* resource)
 {
-	const Font* fnt = static_cast<const Font*>(resource.QueryInterface(ResourceType::Font));
+	assert(resource != nullptr);
+
+	const Font* fnt = static_cast<const Font*>(resource->QueryInterface(ResourceType::Font));
 	assert("Invalid resource selected" && (fnt != nullptr));
 
-	shader->BindTexture(*fnt);
+	if (shader.GetType() == ApplyShader::ShaderType::Textured)
+	{
+		static_cast<ApplyTexturedShader&>(shader)->BindTexture(*fnt);
+	}
+
 	shader->SetValue(FONT_SIZE_LOCATION, glm::vec2(fnt->GetWidth(), fnt->GetHeight()));
 }
 
-void FontRenderable::Render(ApplyTexturedShader& shader, const IResource& resource)
+void FontRenderable::Render(ApplyShader& shader, const IResource* resource)
 {
-	const Font* fnt = static_cast<const Font*>(resource.QueryInterface(ResourceType::Font));
+	assert(resource != nullptr);
+
+	const Font* fnt = static_cast<const Font*>(resource->QueryInterface(ResourceType::Font));
 	assert("Invalid resource selected" && (fnt != nullptr));
 
 	// Text to be rendered

@@ -203,12 +203,14 @@ TexturedShader::TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID)
 
 void* TexturedShader::QueryInterface(ResourceType type) const
 {
-	if (type == ResourceType::TexturedShader)
+	void* pInterface = Shader::QueryInterface(type);
+
+	if ((pInterface == nullptr) && (type == ResourceType::TexturedShader))
 	{
 		return (void*)this;
 	}
 
-	return Shader::QueryInterface(type);
+	return pInterface;
 }
 
 void TexturedShader::BindTexture(const OpenGLResource& texture) const

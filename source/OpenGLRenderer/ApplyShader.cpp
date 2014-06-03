@@ -30,6 +30,16 @@ Shader* ApplyShader::operator ->() const
 	return m_pShader;
 }
 
+ApplyShader::ShaderType ApplyShader::GetType() const
+{
+	if (m_pShader->QueryInterface(ResourceType::TexturedShader) != nullptr)
+	{
+		return ShaderType::Textured;
+	}
+
+	return ShaderType::Normal;
+}
+
 ApplyTexturedShader::ApplyTexturedShader(TexturedShader* pShader) : ApplyShader(pShader)
 {
 }

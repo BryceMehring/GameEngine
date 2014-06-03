@@ -22,8 +22,8 @@ public:
 	// Gets the string rect from the specified font
 	static void GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& out);
 	
-	virtual void Setup(ApplyTexturedShader& shader, const IResource &resource);
-	virtual void Render(ApplyTexturedShader& shader, const IResource& resource);
+	virtual void Setup(ApplyShader& shader, const IResource* resource);
+	virtual void Render(ApplyShader& shader, const IResource* resource);
 
 private:
 

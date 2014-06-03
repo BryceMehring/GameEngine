@@ -68,9 +68,8 @@ void APIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum 
 	}
 }
 
-oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWorldSpaceLines(nullptr), m_pScreenSpaceLines(nullptr),
-m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr), m_pMonitors(nullptr), m_iMonitorCount(0),
-m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(false)
+oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr),
+m_pMonitors(nullptr), m_iMonitorCount(0), m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(false)
 {
 	s_pThis = this;
 
@@ -109,16 +108,13 @@ int oglRenderer::GetVersion() const
 
 void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float fWidth, const glm::vec4& color, const glm::mat4& T)
 {
-	if (pArray != nullptr)
+	if (m_renderSpace == World)
 	{
-		if (m_renderSpace == World)
-		{
-			m_pWorldSpaceLines->DrawLine(pArray, length, fWidth, color, T);
-		}
-		else
-		{
-			m_pScreenSpaceLines->DrawLine(pArray, length, fWidth, color, T);
-		}
+		m_pWorldSpaceSprites->DrawLine(pArray, length, fWidth, color, T);
+	}
+	else
+	{
+		m_pScreenSpaceSprites->DrawLine(pArray, length, fWidth, color, T);
 	}
 }
 
@@ -257,7 +253,6 @@ void oglRenderer::GetStringRect(const char* str, float scale, FontAlignment alig
 void oglRenderer::SetCamera(PerspectiveCamera* pCam)
 {
 	m_pWorldCamera = pCam;
-	m_pWorldSpaceLines->SetCamera(pCam);
 	m_pWorldSpaceSprites->SetCamera(pCam);
 }
 
@@ -307,10 +302,7 @@ void oglRenderer::Present()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	m_pWorldSpaceSprites->Render();
-	m_pWorldSpaceLines->Render();
-
 	m_pScreenSpaceSprites->Render();
-	m_pScreenSpaceLines->Render();
 
 	glfwSwapBuffers(m_pWindow);
 }
@@ -494,15 +486,10 @@ void oglRenderer::BuildBuffers()
 	};
 
 	VertexBuffer* pSpriteVertexBuffer = new VertexBuffer(verticies, sizeof(VertexPT), 4, GL_STATIC_DRAW,indexBuffer, 6);
-	VertexBuffer* pLineVertexBuffer = new VertexBuffer(0, sizeof(VertexP), 1024*8, GL_DYNAMIC_DRAW, indexBuffer, 6, false);
 
-	m_pWorldSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer));
-	m_pScreenSpaceLines.reset(new LineEngine(&m_rm,pLineVertexBuffer,&m_OrthoCamera));
+	m_pWorldSpaceSprites.reset(new AbstractRenderer(&m_rm, pSpriteVertexBuffer));
+	m_pScreenSpaceSprites.reset(new AbstractRenderer(&m_rm, pSpriteVertexBuffer,&m_OrthoCamera));
 
-	m_pWorldSpaceSprites.reset(new AbstractRenderer(&m_rm,pSpriteVertexBuffer));
-	m_pScreenSpaceSprites.reset(new AbstractRenderer(&m_rm,pSpriteVertexBuffer,&m_OrthoCamera));
-
-	m_vertexBuffers.push_back(pLineVertexBuffer);
 	m_vertexBuffers.push_back(pSpriteVertexBuffer);
 }
 
