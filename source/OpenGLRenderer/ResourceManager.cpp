@@ -666,7 +666,7 @@ bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint program
 	bool bSuccess = false;
 
 	// Each shader must at least have a MVP matrix and a color vector
-	if (bSuccess = ((mvpIndex != -1) && (uniformColorIndex != -1)))
+	if ((bSuccess = ((mvpIndex != -1) && (uniformColorIndex != -1))))
 	{
 		Shader* pShader = nullptr;
 		if (textureSamplerIndex != -1)
