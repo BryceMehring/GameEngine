@@ -21,8 +21,6 @@ void AbstractRenderer::DrawSprite(const std::string& tech,
 							  unsigned int iCellId
 							  )
 {
-	assert(m_pCamera != nullptr);
-
 	int iZorder = { (int)floor(transformation[3].z) };
 	m_spriteLayers[iZorder][tech][texture].emplace_back(new SpriteRenderable{transformation, color, tiling, iCellId});
 }
@@ -35,8 +33,6 @@ void AbstractRenderer::DrawString(const char* str,
 							  FontAlignment alignment
 							  )
 {
-	assert(m_pCamera != nullptr);
-
 	if(str != nullptr)
 	{
 		if (font == nullptr)
@@ -51,15 +47,12 @@ void AbstractRenderer::DrawString(const char* str,
 
 void AbstractRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float fWidth, const glm::vec4& color, const glm::mat4& T)
 {
-	assert(m_pCamera != nullptr);
-
 	if (pArray != nullptr)
 	{
 		if (length > 0)
 		{
-			// todo: need to fix this, it looks sketchy 
 			int iZorder = { (int)pArray[0].z };
-			m_spriteLayers[iZorder]["lineShader"]["none"].emplace_back(new LineRenderer{ pArray, length, fWidth, color, T });
+			m_spriteLayers[iZorder]["lineShader"][""].emplace_back(new LineRenderer{ pArray, length, fWidth, color, T });
 		}
 	}
 }
@@ -71,6 +64,8 @@ void AbstractRenderer::SetCamera(Camera* pCam)
 
 void AbstractRenderer::Render()
 {
+	assert(m_pCamera != nullptr);
+
 	// if there is nothing to draw, do nothing
 	if(m_spriteLayers.empty())
 		return;
@@ -107,7 +102,7 @@ void AbstractRenderer::Render()
 				for (auto& spriteIter : texIter.second)
 				{
 					spriteIter->Render(currentShader, pResource);
-				}	
+				}
 			}
 		}
 	}
