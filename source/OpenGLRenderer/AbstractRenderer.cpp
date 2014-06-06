@@ -64,11 +64,11 @@ void AbstractRenderer::SetCamera(Camera* pCam)
 
 void AbstractRenderer::Render()
 {
-	assert(m_pCamera != nullptr);
-
 	// if there is nothing to draw, do nothing
 	if(m_spriteLayers.empty())
 		return;
+
+	assert(m_pCamera != nullptr);
 
 	m_pVertexBuffer->BindVAO();
 
