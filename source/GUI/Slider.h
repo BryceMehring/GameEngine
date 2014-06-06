@@ -25,11 +25,13 @@ public:
 	// end: ending point of the Slider
 	// min: min value of the Slider
 	// max: max value of the Slider
+	// precision: the maximum number of digits displayed as the current value of the slider
 	// tex: texture of the ball on the Slider line that displays the current value
 	// callback: the function that gets called whenever there is a change in value of the Slider
 	Slider(const glm::vec2& start,
 		   const glm::vec2& end,
-		   float min, float max, const std::string& tex, const DELEGATE& callback);
+		   float min, float max, 
+		   int precision, const std::string& tex, const DELEGATE& callback);
 
 	void Select() override;
 	void Deselect() override;
@@ -51,6 +53,7 @@ private:
 	float m_fPercentage;
 	float m_fMin;
 	float m_fMax;
+	int m_iPrecision;
 	bool m_bEnable;
 	bool m_bUpdateEnable;
 

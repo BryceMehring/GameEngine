@@ -5,9 +5,9 @@
 namespace UI
 {
 	Slider::Slider(const glm::vec2& start, const glm::vec2& end,
-	float min, float max, const std::string& tex, const DELEGATE& callback) :
+	float min, float max, int precision, const std::string& tex, const DELEGATE& callback) :
 	m_SpriteTexture(tex), m_callback(callback), m_pos(start), m_start(start), m_end(end),
-	m_fPercentage(min), m_fMin(min), m_fMax(max), m_bEnable(false), m_bUpdateEnable(false)
+	m_fPercentage(min), m_fMin(min), m_fMax(max), m_iPrecision(precision), m_bEnable(false), m_bUpdateEnable(false)
 	{
 	}
 
@@ -69,7 +69,7 @@ namespace UI
 		T = glm::scale(T,glm::vec3(60.0f,40.0f,1.0f));
 
 		std::stringstream stream;
-		stream.precision(2);
+		stream.precision(m_iPrecision);
 		stream << std::fixed << m_fPercentage << std::endl;
 
 		renderer.SetRenderSpace(RenderSpace::Screen);
