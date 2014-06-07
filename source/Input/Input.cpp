@@ -72,6 +72,7 @@ Input::Input() : m_iNumJoystickAxes(0), m_pJoystickAxes(nullptr)
 	Reset();
 
 	// Configure Keyboard and Mouse callbacks
+
 	glfwSetCharCallback(glfwGetCurrentContext(), CharCallback);
 	glfwSetKeyCallback(glfwGetCurrentContext(), KeyCallback);
 	glfwSetCursorPosCallback(glfwGetCurrentContext(), MouseCallback);
@@ -135,7 +136,7 @@ bool Input::LoadKeyBindFile(const string& file)
 		string command;
 		stream >> command;
 
-		if(command.size() > 0 && command[0] != ';')
+		if(!command.empty() && command[0] != '#')
 		{
 			if(command == "bind")
 			{
@@ -145,9 +146,9 @@ bool Input::LoadKeyBindFile(const string& file)
 				stream >> from;
 				stream >> to;
 
-				if(from.size() > 0 && to.size() > 0)
+				if(!from.empty() && !to.empty())
 				{
-					m_bindings[to[0]].push_back(from[0]);
+					RemapKey(from[0], to[0]);
 				}
 			}
 		}
@@ -174,6 +175,11 @@ bool Input::CharKeyDown(char& out) const
 	out = m_iCharKeyDown;
 
 	return true;
+}
+
+void Input::RemapKey(int key, int newKey)
+{
+	m_keyboardMapping[newKey] = key;
 }
 
 bool Input::MouseClick(int button, bool once) const
@@ -384,40 +390,23 @@ void Input::Reset()
 
 bool Input::CheckKey(int key, bool once, int flag) const
 {
-	if (once && (m_iKeyAction != flag))
-		return false;
-
 	bool bSuccess = false;
-	auto iter = m_bindings.find(key);
+
+	auto iter = m_keyboardMapping.find(key);
+	if (iter != m_keyboardMapping.end())
+	{
+		key = iter->second;
+	}
+	
 	if (once)
 	{
-		if (iter == m_bindings.end())
-		{
-			bSuccess = (key == m_iKeyDown);
-		}
-		else
-		{
-			unsigned int i = 0;
-			while (i < iter->second.size() && (iter->second[i] != m_iKeyDown)) { ++i; }
-
-			bSuccess = (i < iter->second.size());
-		}
+		bSuccess = (key == m_iKeyDown) && (m_iKeyAction == flag);
 	}
 	else
 	{
-		if (iter == m_bindings.end())
-		{
-			bSuccess = (glfwGetKey(glfwGetCurrentContext(), key) == flag);
-		}
-		else
-		{
-			unsigned int i = 0;
-			while (i < iter->second.size() && (glfwGetKey(glfwGetCurrentContext(), iter->second[i]) != flag)) { ++i; }
-
-			bSuccess = (i < iter->second.size());
-		}
+		bSuccess = (glfwGetKey(glfwGetCurrentContext(), key) == flag);
 	}
-
+	
 	return bSuccess;
 }
 

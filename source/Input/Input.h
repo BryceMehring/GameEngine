@@ -8,9 +8,10 @@
 // All that's needed is too implement the functions provided in the abstract interface
 #include "IInput.h"
 #include "PluginManager.h"
-#include <unordered_map>
 #include <array>
+#include <unordered_map>
 #include <GLFW/glfw3.h>
+
 
 class Input : public IInput
 {
@@ -59,6 +60,8 @@ public:
 	// Returns true if there is a character pressed, which is outputted through the parameter out
 	// note: this method should only be used for text input
 	bool CharKeyDown(char& out) const override;
+
+	void RemapKey(int key, int newKey) override;
 
 	// ----- Cursor -----
 
@@ -131,13 +134,13 @@ private:
 
 	static Input* s_pThis;
 
-	std::unordered_map<int,std::vector<int> > m_bindings;
-
 	// Keyboard
 	int m_iKeyDown;
 	int m_iKeyAction;
 
 	unsigned int m_iCharKeyDown;
+
+	std::unordered_map<int, int> m_keyboardMapping;
 
 	// Mouse
 	int m_iMouseAccelerationX;
