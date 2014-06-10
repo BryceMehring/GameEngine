@@ -86,7 +86,7 @@ void QuadTree::Render(IRenderer& renderer)
 		{
 			const Math::FRECT& R = iter->GetRect();
 
-			::glm::vec3 pos[5] =
+			glm::vec3 pos[5] =
 			{
 				glm::vec3(R.topLeft.x, R.topLeft.y, -20.0f),
 				glm::vec3(R.bottomRight.x, R.topLeft.y, -20.0f),
@@ -213,7 +213,7 @@ void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector
 
 					for(auto iter = objList.begin(); iter != objList.end(); ++iter)
 					{
-						if(pObj == nullptr || (pObj != nullptr && (&pObj->GetCollisionPolygon()) != (&(*iter)->GetCollisionPolygon())))
+						if(pObj == nullptr || (&pObj->GetCollisionPolygon()) != (&(*iter)->GetCollisionPolygon()))
 						{
 							if((*iter)->GetCollisionPolygon().Intersects(poly))
 							{
