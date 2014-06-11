@@ -135,12 +135,12 @@ void Game::Update()
 		m_NextState.clear();
 	}
 
-	if (m_pInput->KeyPress(GLFW_KEY_ESCAPE))
+	if (m_pInput->KeyPress(KEY_ESCAPE))
 	{
 		Quit();
 	}
 
-	if(m_pInput->KeyPress(GLFW_KEY_F5))
+	if (m_pInput->KeyPress(KEY_F5))
 	{
 		bool bVsync;
 		m_pRenderer->GetDisplayMode(nullptr, nullptr, &bVsync);
@@ -148,7 +148,7 @@ void Game::Update()
 		m_pRenderer->EnableVSync(!bVsync);
 	}
 
-	if(m_pInput->KeyPress(GLFW_KEY_F6))
+	if (m_pInput->KeyPress(KEY_F6))
 	{
 		m_bDrawFPS = !m_bDrawFPS;
 	}
