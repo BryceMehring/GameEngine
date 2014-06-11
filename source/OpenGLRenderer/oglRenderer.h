@@ -55,6 +55,14 @@ public:
 							const std::string& tech = "sprite"
 							) override;
 
+	// Draws a single sprite with a white texture
+	virtual void DrawSprite(const glm::mat4& transformation, // transformation applied to the sprite
+							const glm::vec4& color = glm::vec4(1.0f), // color that gets blended together with the sprite
+							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
+							unsigned int iCellId = 0, // cellId if multiple frames are stored together in the same sprite image
+							const std::string& tech = "sprite"
+							) override;
+
 	// Manage cursor creation
 	// Todo: move this code into the input plugin
 	virtual int CreateCursor(const std::string& texture, int xhot, int yhot) override;
@@ -108,6 +116,7 @@ public:
 	virtual void Present() override;
 
 	static void MonitorCallback(GLFWmonitor*, int);
+	static void IconifyCallback(GLFWwindow*, int);
 
 private:
 
@@ -133,6 +142,7 @@ private:
 
 	bool m_bVSync;
 	bool m_bFullscreen;
+	bool m_bPaused = false;
 
 	std::vector<VertexBuffer*> m_vertexBuffers;
 	std::map<int, GLFWcursor*> m_cursors;

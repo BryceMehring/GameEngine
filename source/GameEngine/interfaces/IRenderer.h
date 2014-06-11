@@ -54,6 +54,14 @@ public:
 							const std::string& tech = "sprite"
 							) = 0;
 
+	// Draws a single sprite with a white texture
+	virtual void DrawSprite(const glm::mat4& transformation, // transformation applied to the sprite
+							const glm::vec4& color = glm::vec4(1.0f), // color that gets blended together with the sprite
+							const glm::vec2& tiling = glm::vec2(1.0f), // the amount of tiling, 1.0 means the texture will be stretched across the whole polygon
+							unsigned int iCellId = 0, // cellId if multiple frames are stored together in the same sprite image
+							const std::string& tech = "sprite"
+							) = 0;
+
 	// Manage cursor creation
 	virtual int CreateCursor(const std::string& texture, int xhot, int yhot) = 0;
 	virtual void DestroyCursor(int cursor) = 0;

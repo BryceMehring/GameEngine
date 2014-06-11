@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <thread>
 
 using namespace std;
 
@@ -65,6 +66,14 @@ void APIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum 
 	if(severity ==  GL_DEBUG_SEVERITY_HIGH)
 	{
 		abort();
+	}
+}
+
+void oglRenderer::IconifyCallback(GLFWwindow* window, int flag)
+{
+	if (s_pThis != nullptr)
+	{
+		s_pThis->m_bPaused = (flag == GL_TRUE);
 	}
 }
 
@@ -139,6 +148,18 @@ void oglRenderer::DrawSprite(const std::string& texture, const glm::mat4& transf
 	else
 	{
 		m_pScreenSpaceSprites->DrawSprite(tech,texture,transformation,color,tiling,iCellId);
+	}
+}
+
+void oglRenderer::DrawSprite(const glm::mat4& transformation, const glm::vec4& color, const glm::vec2& tiling, unsigned int iCellId, const std::string& tech)
+{
+	if (m_renderSpace == World)
+	{
+		m_pWorldSpaceSprites->DrawSprite(tech, "blank", transformation, color, tiling, iCellId);
+	}
+	else
+	{
+		m_pScreenSpaceSprites->DrawSprite(tech, "blank", transformation, color, tiling, iCellId);
 	}
 }
 
@@ -304,6 +325,11 @@ void oglRenderer::Present()
 	m_pWorldSpaceSprites->Render();
 	m_pScreenSpaceSprites->Render();
 
+	if (m_bPaused)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+
 	glfwSwapBuffers(m_pWindow);
 }
 
@@ -350,6 +376,7 @@ void oglRenderer::ConfigureGLFW()
 
 	glfwMakeContextCurrent(m_pWindow);
 	glfwSetMonitorCallback(MonitorCallback);
+	glfwSetWindowIconifyCallback(m_pWindow, IconifyCallback);
 
 	// Get the OpenGL version that we have created
 	int major = glfwGetWindowAttrib(m_pWindow,GLFW_CONTEXT_VERSION_MAJOR);
@@ -374,6 +401,8 @@ void oglRenderer::ConfigureOpenGL()
 	{
 		glDebugMessageCallback(OpenGLErrorCallback,0);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+		Log::Instance().Write("OpenGL logging supported");
 	}
 #endif
 
