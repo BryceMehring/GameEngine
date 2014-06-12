@@ -86,7 +86,6 @@ void Camera::BuildFrustumPlanes()
 		float length = glm::length(glm::vec3(m_planes[i].x,m_planes[i].y,m_planes[i].z));
 		m_planes[i] /= length;
 	}
-
 }
 
 void PerspectiveCamera::SetLens(float fov, float w, float h, float nearZ, float farZ)
@@ -100,4 +99,9 @@ void PerspectiveCamera::UpdateAspectRatio(float w, float h)
 	float tanHalfFovy = tan(m_fov / float(2));
 
 	m_Proj[0][0] = float(1) / ((w / h) * tanHalfFovy);
+}
+
+glm::vec3 PerspectiveCamera::UnProject(const glm::vec3& pos, const glm::vec4& viewport) const
+{
+	return glm::unProject(pos, m_View, m_Proj, viewport);
 }

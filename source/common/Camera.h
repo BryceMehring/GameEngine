@@ -53,10 +53,10 @@ protected:
 	// Projection matrix
 	glm::mat4 m_Proj = glm::mat4(1.0f);
 
-private:
-
 	// Projection * View
 	glm::mat4 m_ViewProj = glm::mat4(1.0f);
+
+private:
 
 	glm::vec4 m_planes[6];
 
@@ -79,6 +79,8 @@ public:
 
 	// Updates the Aspect ratio of the view of the camera
 	COMMON_API void UpdateAspectRatio(float w, float h);
+
+	COMMON_API glm::vec3 UnProject(const glm::vec3& pos, const glm::vec4& viewport) const;
 
 private:
 
