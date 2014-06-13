@@ -214,6 +214,14 @@ IResourceManager& oglRenderer::GetResourceManager()
 	return m_rm;
 }
 
+float oglRenderer::ReadPixels(const glm::ivec2 &pos) const
+{
+	float depth = 0.0f;
+	glReadPixels(pos.x, pos.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+
+	return depth;
+}
+
 bool oglRenderer::GetDisplayMode(int monitor, int i, int* width, int* height) const
 {
 	if ((monitor >= m_iMonitorCount) || (monitor < 0))

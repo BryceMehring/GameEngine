@@ -70,6 +70,10 @@ public:
 	// Returns the resource manager
 	virtual IResourceManager& GetResourceManager() = 0;
 
+	// todo: add the ability to specify which component is being read
+	// Returns depth value in the buffer at a single point in screen space
+	virtual float ReadPixels(const glm::ivec2& pos) const = 0;
+
 	// Get the display mode on the specified monitor, return true on success, false on error
 	// either width or height may be null if their values are not needed
 	virtual bool GetDisplayMode(int monitor, int mode, int* width, int* height) const = 0; 
