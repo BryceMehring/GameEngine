@@ -101,7 +101,13 @@ void PerspectiveCamera::UpdateAspectRatio(float w, float h)
 	m_Proj[0][0] = float(1) / ((w / h) * tanHalfFovy);
 }
 
-glm::vec3 PerspectiveCamera::UnProject(const glm::vec3& pos, const glm::vec4& viewport) const
+glm::vec3 PerspectiveCamera::UnProjectSS(const glm::vec3& pos, const glm::vec4& viewport) const
 {
+	return glm::unProject(pos, m_View, m_Proj, viewport);
+}
+
+glm::vec3 PerspectiveCamera::UnProjectWS(glm::vec3 pos, const glm::vec4& viewport) const
+{
+	pos.z = glm::project(pos, m_View, m_Proj, viewport).z;
 	return glm::unProject(pos, m_View, m_Proj, viewport);
 }

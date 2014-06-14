@@ -83,7 +83,12 @@ public:
 	// Projects a 2D point into a 3D space
 	// pos = the position of the 2D point in screen space with the z value being in the range of [0,1] coming from glReadPixels(...)
 	// viewport = {vec2(lower left corner), width, height}
-	COMMON_API glm::vec3 UnProject(const glm::vec3& pos, const glm::vec4& viewport) const;
+	COMMON_API glm::vec3 UnProjectSS(const glm::vec3& pos, const glm::vec4& viewport) const;
+
+	// Projects a 2D point into a 3D space
+	// pos = the position of the 2D point in screen space with the z value being in world space
+	// viewport = {vec2(lower left corner), width, height}
+	COMMON_API glm::vec3 UnProjectWS(glm::vec3 pos, const glm::vec4& viewport) const;
 
 private:
 
