@@ -36,6 +36,12 @@ public:
 						  const glm::vec4& color = glm::vec4(1.0f), // color of the line
 						  const glm::mat4& t = glm::mat4(1.0f)) override; // transformation to apply to the line
 
+	virtual void DrawCircle(const glm::vec3& center,
+							float radius,
+							float thickness,
+							unsigned int segments,
+							const glm::vec4& color) override;
+
 	// DrawString() caches a string to be drawn by Present()
 	// Note: if either str or font is NULL, then DrawString() terminates
 	virtual void DrawString(const char* str, // the string that gets drawn

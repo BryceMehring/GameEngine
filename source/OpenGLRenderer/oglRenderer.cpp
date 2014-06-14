@@ -127,6 +127,20 @@ void oglRenderer::DrawLine(const glm::vec3* pArray, unsigned int length, float f
 	}
 }
 
+void oglRenderer::DrawCircle(const glm::vec3 &center, float radius, float thickness, unsigned int segments, const glm::vec4 &color)
+{
+	float delta = 361.0f / (segments - 1);
+	std::vector<glm::vec3> line(segments);
+	for(unsigned int i = 0; i < segments; ++i)
+	{
+		float angle = glm::radians(delta * i);
+
+		line[i] = radius * glm::vec3(cos(angle), sin(angle), 0.0f) + center;
+	}
+
+	DrawLine(line.data(), segments, thickness, color);
+}
+
 void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment alignment)
 {
 	if (m_renderSpace == World)
