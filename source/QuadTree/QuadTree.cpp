@@ -4,7 +4,7 @@
 #include "NodeIterator.h"
 #include <algorithm>
 #include <stack>
-#include <set>
+#include <unordered_set>
 #include <queue>
 #include <fstream>
 
@@ -190,7 +190,7 @@ void QuadTree::SubDivide()
 
 void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj)
 {
-	std::set<ISpatialObject*> onceFilter;
+	std::unordered_set<ISpatialObject*> onceFilter;
 	stack<QuadTree*> theStack;
 
 	theStack.push(this);
