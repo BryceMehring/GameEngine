@@ -4,8 +4,6 @@
 #include "NodeIterator.h"
 #include <algorithm>
 #include <stack>
-#include <unordered_set>
-#include <queue>
 #include <fstream>
 
 using namespace std;
@@ -49,12 +47,7 @@ void QuadTree::Erase(ISpatialObject& obj)
 	}
 	else
 	{
-		auto iter = std::find(m_Objects.begin(), m_Objects.end(), &obj);
-
-		if (iter != m_Objects.end())
-		{
-			m_Objects.erase(iter);
-		}
+		m_Objects.erase(&obj);
 	}
 }
 
@@ -102,17 +95,13 @@ void QuadTree::Render(IRenderer& renderer)
 
 bool QuadTree::RInsert(ISpatialObject& obj)
 {
-	bool bSuccess = false;
-
 	if (IsDivided())
 	{
 		const Math::ICollisionPolygon& collisionPoly = obj.GetCollisionPolygon();
 
 		// iterate over the near nodes
-		for (unsigned int i = 0; i < 4; ++i)
+		for(QuadTree& subNode : m_Nodes)
 		{
-			QuadTree& subNode = m_Nodes[i];
-
 			if (subNode.m_Rect.Intersects(collisionPoly))
 			{
 				const Math::FRECT& subR = subNode.m_Rect.GetRect();
@@ -126,17 +115,16 @@ bool QuadTree::RInsert(ISpatialObject& obj)
 					}
 				}
 
-				bSuccess |= subNode.RInsert(obj);
+				subNode.RInsert(obj);
 			}
 		}
 	}
 	else
 	{
-		m_Objects.push_back(&obj);
-		bSuccess = true;
+		m_Objects.insert(&obj);
 	}
 
-	return bSuccess;
+	return true;
 }
 
 bool QuadTree::IsDivided() const
@@ -185,7 +173,6 @@ void QuadTree::SubDivide()
 	}
 
 	m_Objects.clear();
-	m_Objects.shrink_to_fit();
 }
 
 void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out, const ISpatialObject* pObj)

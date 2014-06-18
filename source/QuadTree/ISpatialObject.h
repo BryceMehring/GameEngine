@@ -3,7 +3,7 @@
 
 #include <glm/vec3.hpp>
 
-class ISpatialObject : public IRender
+class ISpatialObject
 {
 public:
 

@@ -4,13 +4,12 @@
 #ifndef _QUADTREE_
 #define _QUADTREE_
 
-#include <set>
-#include <vector>
-#include <list>
-#include <assert.h>
 #include "VecMath.h"
 #include "IRender.h"
 #include "ISpatialObject.h"
+#include <unordered_set>
+#include <vector>
+#include <assert.h>
 
 // The Quadtree manages objects in 2D space
 
@@ -64,7 +63,7 @@ private:
 
 private:
 
-	typedef std::vector<ISpatialObject*> LIST_DTYPE;
+	typedef std::unordered_set<ISpatialObject*> LIST_DTYPE;
 
 	friend class NodeIterator;
 
