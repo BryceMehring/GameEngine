@@ -30,7 +30,7 @@ How the root folder should look so that cmake should automatically detect depend
     glfw/
     glew/
     glm/
-    stb_image/stb_image.c
+    stb_image/stb_image.h
 
 Dependencies
 ==========
