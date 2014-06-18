@@ -422,7 +422,8 @@ bool ResourceManager::CreateTexture(const std::string& file, int& width, int& he
 
 bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, int& height, int& comp, unsigned char** pImgData, GLuint& textureId)
 {
-	CreateTexture(file, width, height, comp, pImgData);
+	if(!CreateTexture(file, width, height, comp, pImgData))
+		return false;
 
 	glGenTextures(1,&textureId);
 	glBindTexture(GL_TEXTURE_2D, textureId);
