@@ -8,6 +8,7 @@
 #ifdef _MSC_VER
 #pragma warning(disable: 4996)
 #endif
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 Cursor::Cursor(int width, int height, unsigned char *img) : m_iWidth(width), m_iHeight(height), m_pImg(img)
