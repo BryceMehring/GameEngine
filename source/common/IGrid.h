@@ -7,11 +7,10 @@
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtx/transform.hpp>
-#include "ISerializable.h"
 
 // Defines a 2D updateable and renderable grid
 template< class T >
-class IGrid : public ISerializable
+class IGrid
 {
 public:
 

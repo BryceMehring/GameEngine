@@ -291,6 +291,9 @@ void MineSweeper::Init(Game& game)
 	int width, height;
 	renderer.GetDisplayMode(&width,&height);
 
+	int cursor = renderer.CreateCursor("cursor", 8, 7);
+	renderer.SetCursor(cursor);
+
 	// Set up the grid
 	m_grid.SetGridSize(glm::vec2(width / 1.1f,height / 1.1f));
 	m_grid.SetNumTiles(glm::uvec2(30,20));
@@ -368,7 +371,7 @@ void MineSweeper::Draw(Game& game)
 		40.0f,glm::vec4(1.0f),nullptr,FontAlignment::Center);
 
 	// Draw Animated background
-	static float xPos = width / 2.0f;
+	/*static float xPos = width / 2.0f;
 
 	xPos += 0.1f * game.GetDt();
 
@@ -376,7 +379,7 @@ void MineSweeper::Draw(Game& game)
 	T = glm::scale(T, glm::vec3(m_grid.GetGridSize(),1.0f));
 
 	renderer.SetShaderValue("landTech", "offset", glm::vec2(cos(xPos), 0.0f));
-	renderer.DrawSprite("land", T, glm::vec4(1.0f), glm::vec2(2.0f),0,"landTech");
+	renderer.DrawSprite("land", T, glm::vec4(1.0f), glm::vec2(2.0f),0,"landTech");*/
 }
 
 void MineSweeper::CreatePlayingMenu(Game& game)
@@ -413,8 +416,8 @@ void MineSweeper::CreateMainMenu(Game& game)
 	auto pButton = UI::GUIFactory<UI::Button>::CreateElement(game, glm::vec2(width / 2, height),
 		glm::vec3(1.0f), glm::vec3(1.0f, 0.0f, 0.0f), 40.0f, "Play Again", std::bind(&MineSweeper::Reset, this));
 
-	auto pWidthSlider = UI::GUIFactory<UI::Slider>::CreateElement(game,glm::vec2(width / 4, height / 2),glm::vec2(3 * width / 4, height / 2),10.0f,100.0f,std::string("button"),std::bind(&MineSweeper::SliderCallback,this,_1,true));
-	auto pHeightSlider = UI::GUIFactory<UI::Slider>::CreateElement(game,glm::vec2(width / 4, height / 2 + 50),glm::vec2(3 * width / 4, height / 2 + 50),10.0f,100.0f,std::string("button"),std::bind(&MineSweeper::SliderCallback,this,_1,false));
+	auto pWidthSlider = UI::GUIFactory<UI::Slider>::CreateElement(game,glm::vec2(width / 4, height / 2),glm::vec2(3 * width / 4, height / 2),10.0f,100.0f,1,std::string("button"),std::bind(&MineSweeper::SliderCallback,this,_1,true));
+	auto pHeightSlider = UI::GUIFactory<UI::Slider>::CreateElement(game,glm::vec2(width / 4, height / 2 + 50),glm::vec2(3 * width / 4, height / 2 + 50),10.0f,100.0f,1,std::string("button"),std::bind(&MineSweeper::SliderCallback,this,_1,false));
 
 	m_gui.AddElement(m_uiMainMenu, pButton);
 	m_gui.AddElement(m_uiMainMenu, pWidthSlider);
