@@ -77,6 +77,17 @@ if(ENABLE_CPACK)
 	install(DIRECTORY bin/plugin DESTINATION ./ FILES_MATCHING REGEX "(.*((\\.plug)|(\\.r)))|(textures/)")
 	install(DIRECTORY textures/ DESTINATION textures/ FILES_MATCHING REGEX ".*(\\.png)")
 	install(DIRECTORY shaders/ DESTINATION shaders/)
+
+        if(BUILD_EXAMPLES)
+            #todo: wrap this up in a for loop
+            install(DIRECTORY Examples/Joystick/plugin/Joystick DESTINATION ./plugin)
+
+            if(MINGW)
+                find_package(MINGW_DEPENDS)
+                install(DIRECTORY ${MINGW_DEPENDS_DIR} DESTINATION ./)
+            endif()
+
+        endif(BUILD_EXAMPLES)
 endif(ENABLE_CPACK)
 
 
