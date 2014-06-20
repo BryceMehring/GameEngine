@@ -18,5 +18,5 @@ add_library(common SHARED ${COMMON_HEADERS} ${COMMON_SOURCE})
 add_definitions(-DCOMMON_EXPORT)
 
 if(ENABLE_CPACK)
-	install(TARGETS common LIBRARY DESTINATION ./)
+    install(TARGETS common DESTINATION ./)
 endif(ENABLE_CPACK)
