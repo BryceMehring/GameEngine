@@ -73,7 +73,6 @@ if(ENABLE_CPACK)
 
 	install(TARGETS GameLauncher RUNTIME DESTINATION ./)
 	install(FILES ${GLFW_LIBRARY} DESTINATION ./)
-	install(FILES ${GLEW_LIBRARY} DESTINATION ./)
 	install(FILES base.r DESTINATION ./)
 	install(DIRECTORY bin/plugin DESTINATION ./ FILES_MATCHING REGEX "(.*((\\.plug)|(\\.r)))|(textures/)")
 	install(DIRECTORY textures/ DESTINATION textures/ FILES_MATCHING REGEX ".*(\\.png)")
