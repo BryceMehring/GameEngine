@@ -84,7 +84,7 @@ if(ENABLE_CPACK)
 
             if(MINGW)
                 find_package(MINGW_DEPENDS)
-                install(FILES ${MINGW_DEPENDS_DIR}/ DESTINATION ./)
+                install(DIRECTORY ${MINGW_DEPENDS_DIR}/ DESTINATION ./)
             endif()
 
         endif(BUILD_EXAMPLES)
