@@ -84,7 +84,7 @@ if(ENABLE_CPACK)
 
             if(MINGW)
                 find_package(MINGW_DEPENDS)
-                file(GLOB MINGW_DEPEND_LIST ${MINGW_DEPENDS_DIR});
+                file(GLOB MINGW_DEPEND_LIST ${MINGW_DEPENDS_DIR})
                 install(FILES ${MINGW_DEPEND_LIST} DESTINATION ./)
             endif()
 
