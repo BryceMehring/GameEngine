@@ -82,10 +82,10 @@ if(ENABLE_CPACK)
 
         if(BUILD_EXAMPLES)
             #todo: wrap this up in a for loop
-            #install(DIRECTORY ./Examples/Joystick/plugin DESTINATION ./plugin)
+            install(DIRECTORY ./Examples/Joystick/plugin DESTINATION ./plugin)
 
-            find_path(EXTERNAL_PROJECT CMakeLists.txt)
-            install(DIRECTORY ${EXTERNAL_PROJECT}/plugin/ DESTINATION ./plugin)
+            #find_path(EXTERNAL_PROJECT CMakeLists.txt)
+            #install(DIRECTORY ${EXTERNAL_PROJECT}/plugin/ DESTINATION ./plugin)
 
             if(MINGW)
                 find_package(MINGW_DEPENDS)
