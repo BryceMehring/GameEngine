@@ -12,7 +12,7 @@ layout(location = 6) uniform vec4 uniformColor;
 void main()
 {
 	// Output color = color of the texture at the specified UV
-	outColor = texture2D( textureSampler, UV ) * uniformColor;
+	outColor = texture( textureSampler, UV ) * uniformColor;
 	
 	if(outColor.a <= 0.0)
 		discard;
