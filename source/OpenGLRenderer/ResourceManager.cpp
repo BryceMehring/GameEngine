@@ -399,11 +399,12 @@ void ResourceManager::GetOpenGLFormat(int comp, GLenum& format, GLint& internalF
 		format = GL_RGB;
 		internalFormat = GL_RGB;
 		break;
-
 	case 4:
 		format = GL_RGBA;
 		internalFormat = GL_RGBA;
 		break;
+	default:
+		assert("Unknown texture format" && false);
 	}
 }
 
@@ -429,8 +430,8 @@ bool ResourceManager::CreateOpenGLTexture(const std::string& file, int& width, i
 	glGenTextures(1,&textureId);
 	glBindTexture(GL_TEXTURE_2D, textureId);
 
-	GLenum format;
-	GLint internalFormat;
+	GLenum format = 0;
+	GLint internalFormat = 0;
 	GetOpenGLFormat(comp,format,internalFormat);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, (void*)(*pImgData));
