@@ -69,30 +69,26 @@ if(ENABLE_CPACK)
 	set(CPACK_GENERATOR "ZIP")
 	set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "./")
 	include(InstallRequiredSystemLibraries)
-        include(CPack)
+	include(CPack)
 
-        get_filename_component(resolvedFile ${GLFW_SHARED_LIBRARY} REALPATH)
-        install(FILES ${resolvedFile} DESTINATION ./)
+		get_filename_component(resolvedFile ${GLFW_SHARED_LIBRARY} REALPATH)
+		install(FILES ${resolvedFile} DESTINATION ./)
 
-	install(TARGETS GameLauncher RUNTIME DESTINATION ./)
-	install(FILES base.r DESTINATION ./)
-	install(DIRECTORY bin/plugin DESTINATION ./ FILES_MATCHING REGEX "(.*((\\.plug)|(\\.r)))|(textures/)")
-	install(DIRECTORY textures/ DESTINATION textures/ FILES_MATCHING REGEX ".*(\\.png)")
-	install(DIRECTORY shaders/ DESTINATION shaders/)
+		install(TARGETS GameLauncher RUNTIME DESTINATION ./)
+		install(FILES base.r DESTINATION ./)
+		install(DIRECTORY textures/ DESTINATION textures/ FILES_MATCHING REGEX ".*(\\.png)")
+		install(DIRECTORY shaders/ DESTINATION shaders/)
 
-        if(BUILD_EXAMPLES)
-            #todo: wrap this up in a for loop
-            install(DIRECTORY ./Examples/Joystick/plugin DESTINATION ./plugin)
+		if(BUILD_EXAMPLES)
+			#todo: wrap this up in a for loop
+			install(DIRECTORY ./Examples/Joystick/plugin/Joystick DESTINATION ./plugin/)
 
-            #find_path(EXTERNAL_PROJECT CMakeLists.txt)
-            #install(DIRECTORY ${EXTERNAL_PROJECT}/plugin/ DESTINATION ./plugin)
+			#find_path(EXTERNAL_PROJECT CMakeLists.txt)
+			#install(DIRECTORY ${EXTERNAL_PROJECT}/plugin/ DESTINATION ./plugin)
+			if(MINGW)
+				find_package(MINGW_DEPENDS)
+				install(DIRECTORY ${MINGW_DEPENDS_DIR}/ DESTINATION ./)
+			endif()
 
-            if(MINGW)
-                find_package(MINGW_DEPENDS)
-                install(DIRECTORY ${MINGW_DEPENDS_DIR}/ DESTINATION ./)
-            endif()
-
-        endif(BUILD_EXAMPLES)
+		endif(BUILD_EXAMPLES)
 endif(ENABLE_CPACK)
-
-
