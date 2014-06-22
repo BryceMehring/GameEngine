@@ -53,7 +53,11 @@ void PluginLoader::Update(Game& game)
 	IInput& input = game.GetInput();
 	m_gui.Update(input, game.GetDt());
 
-	if (!m_buttonPressed.empty())
+	if (input.KeyPress(KEY_ESCAPE))
+	{
+		game.Quit();
+	}
+	else if (!m_buttonPressed.empty())
 	{
 		game.SetNextState(m_buttonPressed);
 	}

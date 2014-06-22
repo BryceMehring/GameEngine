@@ -451,8 +451,8 @@ bool ResourceManager::LoadCursor(const std::string& id, const std::string& file)
 	auto iter = m_resources.find(id);
 	if(iter != m_resources.end())
 	{
-		// ID is taken
-		return false;
+		// ID is taken, resource must be a cursor
+		return (iter->second->QueryInterface(ResourceType::Cursor) != nullptr);
 	}
 
 	unsigned char* pImg;
@@ -471,8 +471,8 @@ bool ResourceManager::LoadTexture(const std::string& id, const std::string& file
 	auto iter = m_resources.find(id);
 	if(iter != m_resources.end())
 	{
-		// ID is taken
-		return false;
+		// ID is taken, resource must be a texture
+		return (iter->second->QueryInterface(ResourceType::Texture) != nullptr);
 	}
 
 	GLuint textureID;
@@ -492,8 +492,8 @@ bool ResourceManager::LoadAnimation(const std::string& id, const std::string& fi
 	auto iter = m_resources.find(id);
 	if(iter != m_resources.end())
 	{
-		// ID is taken
-		return false;
+		// ID is taken, resource must be a texture
+		return (iter->second->QueryInterface(ResourceType::Texture) != nullptr);
 	}
 
 	GLuint textureID;
@@ -519,8 +519,8 @@ bool ResourceManager::LoadFont(const std::string& id, const std::string& file)
 	auto iter = m_resources.find(id);
 	if(iter != m_resources.end())
 	{
-		// ID is taken
-		return false;
+		// ID is taken, resource must be a font
+		return (iter->second->QueryInterface(ResourceType::Texture) != nullptr);
 	}
 
 	GLuint textureID;
@@ -547,8 +547,8 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	auto iter = m_resources.find(id);
 	if(iter != m_resources.end())
 	{
-		// ID is taken
-		return true;
+		// ID is taken, resource must be a shader
+		return (iter->second->QueryInterface(ResourceType::Shader) != nullptr);
 	}
 
 	// Create the shaders

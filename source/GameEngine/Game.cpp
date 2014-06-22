@@ -137,7 +137,14 @@ void Game::Update()
 
 	if (m_pInput->KeyPress(KEY_ESCAPE))
 	{
-		Quit();
+		if (m_StateMachine.HasState())
+		{
+			std::string pluginName = m_StateMachine.GetState().GetName();
+			if (pluginName != "PluginLoader")
+			{
+				SetNextState("PluginLoader");
+			}
+		}
 	}
 
 	if (m_pInput->KeyPress(KEY_F5))
