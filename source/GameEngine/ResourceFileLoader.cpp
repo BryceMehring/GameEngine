@@ -13,7 +13,10 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 
 	// If the resource file does not exist, quit silently
 	if (!stream.is_open())
+	{
+		Log::Instance().Write("No resource file found");
 		return;
+	}
 
 	std::string line;
 	while(std::getline(stream,line))
