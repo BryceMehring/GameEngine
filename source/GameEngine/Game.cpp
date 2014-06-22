@@ -104,7 +104,7 @@ int Game::Run()
 	Timer theTimer;
 	theTimer.Start();
 
-	// Loop while the use has not quit
+	// Loop while the user has not quit
 	while(!glfwWindowShouldClose(glfwGetCurrentContext()))
 	{
 		double t = theTimer.GetTime();
