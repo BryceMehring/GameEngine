@@ -18,7 +18,7 @@ namespace UI
 	{
 	public:
 
-		typedef std::function<void(void)> DELEGATE;
+		typedef std::function<void(Button&)> DELEGATE;
 
 		Button(const Math::FRECT& s, const glm::vec3& defaultColor,
 			const glm::vec3& hoverColor, float scale, const std::string& str, const DELEGATE& callback);
@@ -33,6 +33,7 @@ namespace UI
 		void SetCallback(const DELEGATE& callback);
 
 		void SetText(std::string str);
+		const std::string& GetText() const;
 
 	protected:
 

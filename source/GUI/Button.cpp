@@ -44,7 +44,7 @@ namespace UI
 
 	void Button::Trigger()
 	{
-		m_callback();
+		m_callback(*this);
 	}
 
 	void Button::SetCallback(const DELEGATE& callback)
@@ -55,6 +55,11 @@ namespace UI
 	void Button::SetText(std::string str)
 	{
 		m_text = str;
+	}
+
+	const std::string& Button::GetText() const
+	{
+		return m_text;
 	}
 
 }
