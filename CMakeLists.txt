@@ -62,6 +62,8 @@ if(BUILD_EXAMPLES)
 	add_subdirectory(Examples/MinimumSpanningTree)
 endif()
 
+add_subdirectory(source/PluginLoader)
+
 add_executable(GameLauncher source/GameLauncher/main.cpp)
 target_link_libraries(GameLauncher GameEngine)
 
