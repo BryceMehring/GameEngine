@@ -7,6 +7,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <thread>
 
 #include <GLFW/glfw3.h>
 #include <glm/vec3.hpp>
@@ -111,11 +112,19 @@ int Game::Run()
 		m_fDT = t - fOldTime;
 		fOldTime = t;
 
-		// Update the game
-		Update();
+		if (!m_pRenderer->IsIconified())
+		{
+			// Update the game
+			Update();
 
-		// Render the game
-		Draw();
+			// Render the game
+			Draw();
+		}
+		else
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			ProccessInput();
+		}
 	}
 
 	return 0;

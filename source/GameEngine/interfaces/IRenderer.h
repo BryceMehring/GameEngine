@@ -122,6 +122,9 @@ public:
 	// False disables VSync
 	virtual void EnableVSync(bool) = 0;
 
+	// Returns true if the window is iconified
+	virtual bool IsIconified() const = 0;
+
 	// Render everything that has been cached so far to the back buffer and then swap the back buffer with the front buffer
 	virtual void Present() = 0;
 

@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
-#include <thread>
 
 using namespace std;
 
@@ -73,7 +72,7 @@ void oglRenderer::IconifyCallback(GLFWwindow* window, int flag)
 {
 	if (s_pThis != nullptr)
 	{
-		s_pThis->m_bPaused = (flag == GL_TRUE);
+		s_pThis->m_bIconify = flag;
 	}
 }
 
@@ -340,17 +339,17 @@ void oglRenderer::EnableVSync(bool enable)
 	m_bVSync = enable;
 }
 
+bool oglRenderer::IsIconified() const
+{
+	return m_bIconify;
+}
+
 void oglRenderer::Present()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	m_pWorldSpaceSprites->Render();
 	m_pScreenSpaceSprites->Render();
-
-	if (m_bPaused)
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
 
 	glfwSwapBuffers(m_pWindow);
 }

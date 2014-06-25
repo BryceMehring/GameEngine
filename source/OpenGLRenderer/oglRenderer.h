@@ -122,6 +122,9 @@ public:
 	// False disables VSync
 	virtual void EnableVSync(bool) override;
 
+	// Returns true if the window is iconified
+	virtual bool IsIconified() const override;
+
 	// Render everything that has been cached so far to the back buffer and then swap the back buffer with the front buffer
 	virtual void Present() override;
 
@@ -152,7 +155,7 @@ private:
 
 	bool m_bVSync;
 	bool m_bFullscreen;
-	bool m_bPaused = false;
+	bool m_bIconify = false;
 
 	std::vector<VertexBuffer*> m_vertexBuffers;
 	std::map<int, GLFWcursor*> m_cursors;
