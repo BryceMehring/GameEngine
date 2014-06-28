@@ -1,4 +1,5 @@
-#version 430
+#version 330
+#extension GL_ARB_explicit_uniform_location: enable
 
 // Interpolated values from the vertex shaders
 in vec2 UV;

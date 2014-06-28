@@ -1,4 +1,5 @@
-#version 430
+#version 330
+#extension GL_ARB_explicit_uniform_location: enable
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 vertexPosition_modelspace;
