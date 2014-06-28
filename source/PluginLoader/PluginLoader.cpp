@@ -30,8 +30,8 @@ void PluginLoader::Init(Game& game)
 
 		auto pButton = UI::GUIFactory<UI::Button>::CreateElement(game,
 			startingPos,
-			glm::vec3(1.0f),
-			glm::vec3(1.0f, 0.0f, 0.0f), 50.0f,
+			glm::vec4(0.05f, 0.0f, 0.0f, 1.0f),
+			glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 50.0f,
 			currentDir,
 			std::bind(&PluginLoader::ButtonCallback, this, _1));
 

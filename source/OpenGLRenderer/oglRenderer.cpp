@@ -140,7 +140,7 @@ void oglRenderer::DrawCircle(const glm::vec3 &center, float radius, float thickn
 	DrawLine(line.data(), segments, thickness, color);
 }
 
-void oglRenderer::DrawString(const char* str, const glm::vec3& pos, float scale, const glm::vec4& color, const char* font, FontAlignment alignment)
+void oglRenderer::DrawString(const char* str, const glm::vec3& pos, const glm::vec4& color, float scale, const char* font, FontAlignment alignment)
 {
 	if (m_renderSpace == World)
 	{

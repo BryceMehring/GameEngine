@@ -179,7 +179,7 @@ void Graph::Render(IRenderer& renderer) const
 		stream << std::fixed << cost;
 
 		glm::vec3 middle = (line[0] + line[1]) / 2.0f;
-		renderer.DrawString(stream.str().data(), middle, 30.0f, glm::vec4(1.0f), 0, FontAlignment::Center);
+		renderer.DrawString(stream.str().data(), middle, glm::vec4(1.0f), 30.0f, 0, FontAlignment::Center);
 
 		renderer.DrawLine(line, 2, 3.0f, glm::vec4(0.5f*cos(cost / 10.0f) + 0.5f, 0.5f*sin(cost / 10.0f) + 0.5f, 0.8f, 1.0f));
 	};
@@ -268,7 +268,7 @@ void MinimumSpanningTree::Draw(Game& game)
 	m_pGraph->Render(renderer);
 
 	renderer.SetRenderSpace(RenderSpace::Screen);
-	renderer.DrawString("spacebar: toggle drawing MST\tenter: generate a new MST", glm::vec3(width / 2.0f, height, -1.0f),40.0f,glm::vec4(1.0f),nullptr,FontAlignment::Center);
+	renderer.DrawString("spacebar: toggle drawing MST\tenter: generate a new MST", glm::vec3(width / 2.0f, height, -1.0f), glm::vec4(1.0f), 40.0f,nullptr,FontAlignment::Center);
 }
 
 void MinimumSpanningTree::BuildCamera(Game& game)

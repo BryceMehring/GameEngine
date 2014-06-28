@@ -20,8 +20,8 @@ namespace UI
 
 		typedef std::function<void(Button&)> DELEGATE;
 
-		Button(const Math::FRECT& s, const glm::vec3& defaultColor,
-			const glm::vec3& hoverColor, float scale, const std::string& str, const DELEGATE& callback);
+		Button(const Math::FRECT& s, const glm::vec4& defaultColor,
+			const glm::vec4& hoverColor, float scale, const std::string& str, const DELEGATE& callback);
 
 		void Update(IInput&, double) override;
 		void Render(IRenderer&) override;
@@ -41,8 +41,8 @@ namespace UI
 
 	private:
 
-		glm::vec3 m_defaultColor;
-		glm::vec3 m_hoverColor;
+		glm::vec4 m_defaultColor;
+		glm::vec4 m_hoverColor;
 		float m_scale;
 
 		std::string m_text;

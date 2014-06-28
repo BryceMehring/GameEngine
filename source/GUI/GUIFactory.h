@@ -34,8 +34,8 @@ namespace UI
 
 		static std::shared_ptr<IElement> CreateElement(Game& theGame,
 									   const glm::vec2& pos,
-									   const glm::vec3& defaultColor,
-									   const glm::vec3& hoverColor,
+									   const glm::vec4& defaultColor,
+									   const glm::vec4& hoverColor,
 									   float textScale,
 									   const std::string& str,
 									   const Button::DELEGATE& callback)

@@ -4,8 +4,8 @@
 
 namespace UI
 {
-	Button::Button(const Math::FRECT& s, const glm::vec3& defaultColor,
-		const glm::vec3& hoverColor, float scale, const std::string& str, const DELEGATE& callback) :
+	Button::Button(const Math::FRECT& s, const glm::vec4& defaultColor,
+		const glm::vec4& hoverColor, float scale, const std::string& str, const DELEGATE& callback) :
 		m_sprite(s), m_defaultColor(defaultColor), m_hoverColor(hoverColor), m_scale(scale),
 		m_text(str), m_callback(callback), m_bMouseHover(false), m_bSelected(false) {}
 
@@ -26,10 +26,10 @@ namespace UI
 
 	void Button::Render(IRenderer& renderer)
 	{
-		glm::vec4 color = glm::vec4((m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor, 1.0f);
+		glm::vec4 color = (m_bMouseHover || m_bSelected) ? m_hoverColor : m_defaultColor;
 
-		renderer.DrawString(m_text.c_str(), glm::vec3(m_sprite.topLeft, 0.0f), m_scale, color);
-		renderer.DrawSprite("button", m_sprite.Transformation());
+		renderer.DrawString(m_text.c_str(), glm::vec3(m_sprite.topLeft, 0.0f), color, m_sprite.Height());
+		renderer.DrawSprite("button", m_sprite.Transformation(), glm::vec4(1.0f - glm::vec3(m_defaultColor), m_defaultColor.a));
 	}
 
 	void Button::Select()
