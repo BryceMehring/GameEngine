@@ -31,7 +31,7 @@ public:
 	Slider(const glm::vec2& start,
 		   const glm::vec2& end,
 		   float min, float max, 
-		   int precision, const std::string& tex, const DELEGATE& callback);
+		   int precision, const std::string& tex, const std::string& text, const DELEGATE& callback);
 
 	void Select() override;
 	void Deselect() override;
@@ -46,6 +46,7 @@ public:
 private:
 
 	std::string m_SpriteTexture;
+	std::string m_text;
 	DELEGATE m_callback;
 	glm::vec2 m_pos;
 	glm::vec2 m_start;
