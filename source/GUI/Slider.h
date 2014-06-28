@@ -40,8 +40,11 @@ public:
 	void Update(class IInput&, double dt) override;
 	void Render(class IRenderer&) override;
 
-	// returns the current value of the slider
+	// Returns the current value of the slider
 	float GetValue() const;
+
+	// Sets the value of the slider, and then triggers the callback
+	void SetValue(float v);
 
 private:
 

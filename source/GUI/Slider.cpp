@@ -86,4 +86,14 @@ namespace UI
 		return m_fPercentage;
 	}
 
+	void Slider::SetValue(float v)
+	{
+		float sliderLength = abs(m_end.x - m_start.x);
+		float p = (v - m_fMin) / (m_fMax - m_fMin);
+
+		m_pos.x = p * sliderLength + m_start.x;
+
+		Trigger();
+	}
+
 }
