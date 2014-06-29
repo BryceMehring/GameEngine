@@ -171,19 +171,6 @@ void Shader::SetValue(const std::string& location, int v)
 	}
 }
 
-void Shader::SetValue(const std::string& location, unsigned int v)
-{
-	if(m_bUse)
-	{
-		auto iter = m_uniforms.find(location);
-
-		if(iter != m_uniforms.end())
-		{
-			glUniform1ui(iter->second, v);
-		}
-	}
-}
-
 void Shader::SetValue(const std::string& location, float v)
 {
 	if(m_bUse)

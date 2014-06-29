@@ -133,7 +133,6 @@ public:
 
 	// Set generic values in the shader
 	void SetValue(const std::string& location, int v);
-	void SetValue(const std::string& location, unsigned int v);
 	void SetValue(const std::string& location, float v);
 	void SetValue(const std::string& location, const glm::vec2& v);
 	void SetValue(const std::string& location, const glm::mat4& v);

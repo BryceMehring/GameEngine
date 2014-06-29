@@ -26,7 +26,7 @@ void SpriteRenderable::Render(ApplyShader& shader, const IResource*)
 	shader->SetColor(color);
 	shader->SetValue("transformation",T);
 	shader->SetValue("tiling",tiling);
-	shader->SetValue("tileIndex",iCellId);
+	shader->SetValue("tileIndex",(int)iCellId);
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 }
