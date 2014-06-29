@@ -4,10 +4,6 @@
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
 
-enum
-{
-	TRANSFORMATION_LOCATION = 1
-};
 
 LineRenderer::LineRenderer(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T)
 : m_line(pArray, pArray + uiLength), m_width(fWidth), m_color(color), m_transformation(T)
@@ -35,7 +31,7 @@ void LineRenderer::Render(ApplyShader& shader, const IResource* resource)
 			transformation = glm::rotate(transformation, angle, glm::vec3(0.0f, 0.0f, 1.0f));
 			transformation = glm::scale(transformation, glm::vec3(length, m_width, 1.0f));
 
-			shader->SetValue(TRANSFORMATION_LOCATION, transformation);
+			shader->SetValue("transformation", transformation);
 
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 		}

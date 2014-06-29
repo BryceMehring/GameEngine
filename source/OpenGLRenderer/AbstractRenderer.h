@@ -6,7 +6,6 @@
 #include "ResourceManager.h"
 #include "Camera.h"
 #include "VertexBuffer.h"
-//#include "PoolAlocator.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -55,11 +54,6 @@ private:
 	VertexBuffer* m_pVertexBuffer;
 
 	Camera* m_pCamera;
-
-	/*template< class K, class T >
-	using PooledMap = std::map<K, T, std::less<K>, PooledAllocator<std::pair<K, T>>>;
-
-	PooledMap<int, PooledMap<std::string, PooledMap<std::string, std::vector<std::unique_ptr<IRenderable>>>>> m_spriteLayers;*/
 
 	// z level -> map of techniques -> map of textures -> vector of sprites
 	std::map<int,std::map<std::string,std::map<std::string, std::vector<std::unique_ptr<IRenderable>>>>> m_spriteLayers; // std::vector<std::unique_ptr<IRenderable>>

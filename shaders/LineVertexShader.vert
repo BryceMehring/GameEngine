@@ -1,13 +1,11 @@
 #version 330
-#extension GL_ARB_explicit_uniform_location: enable
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 vertexPosition_modelspace;
 
 // Values that stay constant for the whole mesh.
-layout(location = 0) uniform mat4 MVP;
-
-layout(location = 1) uniform mat4 transformation;
+uniform mat4 MVP;
+uniform mat4 transformation;
 
 void main()
 {	

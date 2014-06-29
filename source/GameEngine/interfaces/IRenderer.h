@@ -115,8 +115,8 @@ public:
 	virtual void SetRenderSpace(RenderSpace) = 0; 
 
 	// todo: add comments here
-	virtual void SetShaderValue(const std::string& shader, int location, float value ) = 0;
-	virtual void SetShaderValue(const std::string& shader, int location, const glm::vec2& value ) = 0;
+	virtual void SetShaderValue(const std::string& shader, const std::string& location, float value ) = 0;
+	virtual void SetShaderValue(const std::string& shader, const std::string& location, const glm::vec2& value ) = 0;
 
 	// True enables VSync
 	// False disables VSync
