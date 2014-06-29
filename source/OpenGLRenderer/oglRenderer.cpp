@@ -410,15 +410,26 @@ void oglRenderer::ConfigureOpenGL()
 	// Check to make sure that the hardware is supported
 	assert(glewIsSupported("GL_VERSION_3_3"));
 
-#ifdef DEBUG_BUILD
-	if (GLEW_ARB_debug_output)
+	// Check for ARB_debug_output
+	std::ostringstream stream;
+	stream << "ARB_debug_output";
+
+	if(GLEW_ARB_debug_output)
 	{
+		stream << " supported";
+#ifdef DEBUG_BUILD
+		converter << " and enabled";
 		glDebugMessageCallback(OpenGLErrorCallback,0);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-
-		Log::Instance().Write("OpenGL logging supported");
-	}
+#else
+		stream << " and disabled";
 #endif
+	}
+	else
+	{
+		stream << " not supported";
+	}
+	Log::Instance().Write(stream.str());
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
