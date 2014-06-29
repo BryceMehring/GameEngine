@@ -17,7 +17,6 @@ void FontRenderable::Setup(ApplyShader& shader, const IResource* resource)
 	}
 
 	shader->SetValue("fontSize", glm::vec2(fnt->GetWidth(), fnt->GetHeight()));
-	shader->SetColor(color);
 }
 
 void FontRenderable::Render(ApplyShader& shader, const IResource* resource)
@@ -47,6 +46,8 @@ void FontRenderable::Render(ApplyShader& shader, const IResource* resource)
 	char prevChar = 0;
 
 	NormalizeScaling(fnt, scale);
+
+	shader->SetColor(color);
 
 	// Loop over the entire string
 	while (*str)
