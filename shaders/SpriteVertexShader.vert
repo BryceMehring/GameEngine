@@ -12,7 +12,7 @@ uniform mat4 MVP;
 uniform mat4 transformation;
 uniform vec2 animationTiles;
 uniform vec2 tiling;
-uniform unsigned int tileIndex;
+uniform uint tileIndex;
 
 void main()
 {
