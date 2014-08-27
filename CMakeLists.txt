@@ -74,7 +74,12 @@ if(ENABLE_CPACK)
 	include(CPack)
 
 		get_filename_component(resolvedFile ${GLFW_SHARED_LIBRARY} REALPATH)
-		install(FILES ${resolvedFile} DESTINATION ./)
+		
+		if(UNIX)
+			install(FILES ${resolvedFile} DESTINATION ./ RENAME libglfw.so.3)
+		else()
+			install(FILES ${resolvedFile} DESTINATION ./)
+		endif()
 
 		install(TARGETS GameLauncher RUNTIME DESTINATION ./)
 		install(FILES base.r DESTINATION ./)
