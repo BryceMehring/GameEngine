@@ -82,7 +82,7 @@ if(ENABLE_CPACK)
 		endif()
 
 		install(TARGETS GameLauncher RUNTIME DESTINATION ./)
-		install(FILES base.r DESTINATION ./)
+		install(FILES base.r run.sh DESTINATION ./)
 		install(DIRECTORY textures/ DESTINATION textures/ FILES_MATCHING REGEX ".*(\\.png)")
 		install(DIRECTORY shaders/ DESTINATION shaders/)
 
