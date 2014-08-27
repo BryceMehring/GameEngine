@@ -77,12 +77,13 @@ if(ENABLE_CPACK)
 		
 		if(UNIX)
 			install(FILES ${resolvedFile} DESTINATION ./ RENAME libglfw.so.3)
+			install(FILES run.sh DESTINATION ./)
 		else()
 			install(FILES ${resolvedFile} DESTINATION ./)
 		endif()
 
 		install(TARGETS GameLauncher RUNTIME DESTINATION ./)
-		install(FILES base.r run.sh DESTINATION ./)
+		install(FILES base.r DESTINATION ./)
 		install(DIRECTORY textures/ DESTINATION textures/ FILES_MATCHING REGEX ".*(\\.png)")
 		install(DIRECTORY shaders/ DESTINATION shaders/)
 
