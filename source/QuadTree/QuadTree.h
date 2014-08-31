@@ -5,15 +5,15 @@
 #define _QUADTREE_
 
 #include "VecMath.h"
-#include "IRender.h"
 #include "ISpatialObject.h"
+#include "IRenderer.h"
 #include <unordered_set>
 #include <vector>
 #include <assert.h>
 
 // The Quadtree manages objects in 2D space
 
-class QuadTree : public IRender
+class QuadTree
 {
 public:
 
@@ -37,7 +37,7 @@ public:
 	const Math::FRECT& GetRect() const;
 
 	// Draws the quadtree rectangles as lines
-	void Render(IRenderer& renderer) override;
+	void Render(IRenderer& renderer, float width);
 
 private:
 
