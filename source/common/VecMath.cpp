@@ -50,10 +50,12 @@ void CCircle::GetNormal(const glm::vec2& pos, glm::vec2& out) const
 	out = glm::normalize(out);
 }
 
-void CCircle::GetAABB(AABB& aabb) const
+AABB CCircle::GetAABB() const
 {
-	aabb.min = glm::vec2(m_circle.center.x - m_circle.r,m_circle.center.y - m_circle.r);
-	aabb.max = glm::vec2(m_circle.center.x + m_circle.r,m_circle.center.y + m_circle.r);
+	return {
+		glm::vec2(m_circle.center.x - m_circle.r,m_circle.center.y - m_circle.r),
+		glm::vec2(m_circle.center.x + m_circle.r,m_circle.center.y + m_circle.r)
+	};
 }
 
 // ----- CCircle -----
@@ -117,10 +119,12 @@ void CRectangle::GetNormal(const glm::vec2& pos, glm::vec2& out) const
 	}
 }
 
-void CRectangle::GetAABB(AABB& aabb) const
+AABB CRectangle::GetAABB() const
 {
-	aabb.min = glm::vec2(m_rect.topLeft.x,m_rect.bottomRight.y);
-	aabb.max = glm::vec2(m_rect.bottomRight.x,m_rect.topLeft.y);
+	return {
+		glm::vec2(m_rect.topLeft.x,m_rect.bottomRight.y),
+		glm::vec2(m_rect.bottomRight.x,m_rect.topLeft.y)
+	};
 }
 
 void CreateCollionPolygon(const std::vector<glm::vec3>& poly, FRECT& out)

@@ -128,7 +128,7 @@ public:
 	// returns true if pOther interests this, else false
 	virtual bool Intersects(const ICollisionPolygon& other) const = 0;
 	virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const = 0;
-	virtual void GetAABB(AABB&) const = 0;
+	virtual AABB GetAABB() const = 0;
 
 	// returns the type of the collision object
 	virtual Type GetType() const = 0;
@@ -149,7 +149,7 @@ public:
 	COMMON_API virtual Type GetType() const { return ICollisionPolygon::Type::Circle; }
 	COMMON_API virtual bool Intersects(const ICollisionPolygon& other) const;
 	COMMON_API virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
-	COMMON_API virtual void GetAABB(AABB&) const;
+	COMMON_API virtual AABB GetAABB() const;
 	
 	// circle access
 	COMMON_API const Circle& GetCircle() const { return m_circle; }
@@ -174,7 +174,7 @@ public:
 	COMMON_API virtual Type GetType() const { return ICollisionPolygon::Type::Rectangle; }
 	COMMON_API virtual bool Intersects(const ICollisionPolygon& other) const;
 	COMMON_API virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
-	COMMON_API virtual void GetAABB(AABB&) const;
+	COMMON_API virtual AABB GetAABB() const;
 
 	// rect access
 	COMMON_API const FRECT& GetRect() const { return m_rect; }
