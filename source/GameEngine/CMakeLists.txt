@@ -9,7 +9,10 @@ target_link_libraries(GameEngine common ${GLFW_SHARED_LIBRARY})
 add_definitions(-DGAME_ENGINE_EXPORT)
 
 if(ENABLE_CPACK)
-	Install(TARGETS GameEngine DESTINATION ./)
+	install(TARGETS GameEngine
+		RUNTIME DESTINATION ./ COMPONENT Runtime
+		LIBRARY DESTINATION ./ COMPONENT Runtime
+		)
 endif(ENABLE_CPACK)
 
 

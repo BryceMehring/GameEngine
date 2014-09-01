@@ -18,5 +18,8 @@ add_library(common SHARED ${COMMON_HEADERS} ${COMMON_SOURCE})
 add_definitions(-DCOMMON_EXPORT)
 
 if(ENABLE_CPACK)
-    install(TARGETS common DESTINATION ./)
+install(TARGETS common
+	RUNTIME DESTINATION ./ COMPONENT Runtime
+	LIBRARY DESTINATION ./ COMPONENT Runtime
+	)
 endif(ENABLE_CPACK)
