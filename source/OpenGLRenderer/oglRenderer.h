@@ -107,6 +107,7 @@ public:
 
 	// Sets the color of the screen after it gets cleared
 	virtual void SetClearColor(const glm::vec3& color) override;
+	virtual void EnableColorClearing(bool bEnable) override;
 
 	// Sets the display mode
 	virtual void SetDisplayMode(int mode) override;
@@ -156,6 +157,7 @@ private:
 	bool m_bVSync;
 	bool m_bFullscreen;
 	bool m_bIconify = false;
+	GLuint m_iClearBits;
 
 	std::vector<VertexBuffer*> m_vertexBuffers;
 	std::map<int, GLFWcursor*> m_cursors;

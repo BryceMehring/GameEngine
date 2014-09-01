@@ -106,7 +106,8 @@ public:
 	virtual void SetCamera(class PerspectiveCamera*) = 0;
 
 	// Sets the color of the screen after it gets cleared
-	virtual void SetClearColor(const glm::vec3& color) = 0; 
+	virtual void SetClearColor(const glm::vec3& color) = 0;
+	virtual void EnableColorClearing(bool bEnable) = 0;
 
 	// Sets the display mode
 	virtual void SetDisplayMode(int mode) = 0;

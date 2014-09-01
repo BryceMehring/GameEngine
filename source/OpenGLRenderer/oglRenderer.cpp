@@ -80,6 +80,7 @@ oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWor
 m_pMonitors(nullptr), m_iMonitorCount(0), m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(false)
 {
 	s_pThis = this;
+	m_iClearBits = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
 
 	EnumerateDisplayAdaptors();
 	ParseVideoSettingsFile();
@@ -303,6 +304,15 @@ void oglRenderer::SetClearColor(const glm::vec3& color)
 	glClearColor(color.x,color.y,color.z,0.0f);
 }
 
+void oglRenderer::EnableColorClearing(bool bEnable)
+{
+	m_iClearBits = GL_DEPTH_BUFFER_BIT;
+	if (bEnable == true)
+	{
+		m_iClearBits |= GL_COLOR_BUFFER_BIT;
+	}
+}
+
 void oglRenderer::SetDisplayMode(int i)
 {
 	std::pair<const GLFWvidmode*, int> videoMode = m_videoModes[m_iCurrentMonitor];
@@ -346,7 +356,7 @@ bool oglRenderer::IsIconified() const
 
 void oglRenderer::Present()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(m_iClearBits);
 
 	m_pWorldSpaceSprites->Render();
 	m_pScreenSpaceSprites->Render();
