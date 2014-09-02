@@ -77,7 +77,7 @@ void oglRenderer::IconifyCallback(GLFWwindow* window, int flag)
 }
 
 oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr),
-m_pMonitors(nullptr), m_iMonitorCount(0), m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(false)
+m_pMonitors(nullptr), m_iMonitorCount(0), m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(true)
 {
 	s_pThis = this;
 	m_iClearBits = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
