@@ -369,28 +369,30 @@ void oglRenderer::MonitorCallback(GLFWmonitor* monitor, int state)
 	s_pThis->EnumerateDisplayAdaptors();
 }
 
-void oglRenderer::GLFWOpenWindowHints()
-{
-	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef DEBUG_BUILD
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
-#endif
-
-	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
-}
-
 void oglRenderer::ConfigureGLFW()
 {
-	GLFWOpenWindowHints();
+	// todo: need to clean this up
 
 	bool bFullscreen = false;
 
 #ifndef DEBUG_BUILD
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
 	bFullscreen = m_bFullscreen;
 #endif
 
+	if(bFullscreen)
+	{
+		const GLFWvidmode& targetMode = m_videoModes[m_iCurrentMonitor].first[m_iCurrentDisplayMode];
+
+		glfwWindowHint(GLFW_RED_BITS, targetMode.redBits);
+		glfwWindowHint(GLFW_GREEN_BITS, targetMode.greenBits);
+		glfwWindowHint(GLFW_BLUE_BITS, targetMode.blueBits);
+		glfwWindowHint(GLFW_REFRESH_RATE, targetMode.refreshRate);
+	}
+
+	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
+
+	// todo: this code is duplicated
 	int width, height;
 	GetDisplayMode(&width, &height);
 

@@ -166,7 +166,6 @@ private:
 	static const std::string s_videoModeFile;
 
 	// Helper functions
-	void GLFWOpenWindowHints();
 	void ConfigureGLFW();
 	void ConfigureOpenGL();
 	void EnumerateDisplayAdaptors();
