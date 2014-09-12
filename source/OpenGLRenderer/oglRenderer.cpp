@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
-#include <cstring>
 
 using namespace std;
 
@@ -480,7 +479,12 @@ void oglRenderer::EnumerateDisplayAdaptors()
 
 			for(int j = 0; j < size; ++j)
 			{
-				if(memcmp(pCurrentVideoMode, pVidMode + j, sizeof(GLFWvidmode)) == 0)
+				if(pCurrentVideoMode->width == pVidMode[j].width &&
+				   pCurrentVideoMode->height == pVidMode[j].height &&
+				   pCurrentVideoMode->redBits == pVidMode[j].redBits &&
+				   pCurrentVideoMode->greenBits == pVidMode[j].greenBits &&
+				   pCurrentVideoMode->blueBits == pVidMode[j].blueBits &&
+				   pCurrentVideoMode->refreshRate == pVidMode[j].refreshRate)
 				{
 					m_iCurrentDisplayMode = size - j - 1;
 					break;
