@@ -23,7 +23,8 @@ void PluginLoader::Init(Game& game)
 
 	int width, height;
 	game.GetRenderer().GetDisplayMode(&width, &height);
-	glm::vec2 startingPos(width / 2.0f, height);
+
+	glm::vec2 startingPos(width / 2.0f, height / 2.0f + (dirList.size() * 100) / 2.0f);
 	for (const std::string& currentDir : dirList)
 	{
 		using namespace std::placeholders;
@@ -66,6 +67,13 @@ void PluginLoader::Update(Game& game)
 void PluginLoader::Draw(Game& game)
 {
 	IRenderer& renderer = game.GetRenderer();
+
+	int width, height;
+	renderer.GetDisplayMode(&width, &height);
+	renderer.DrawString("Choose a plugin to start",
+						glm::vec3(width / 2.0f, 10.0f * height / 11.0f, 0),
+						glm::vec4(1.0f), 50.0f, nullptr, FontAlignment::Center);
+
 	m_gui.Render(renderer);
 }
 
