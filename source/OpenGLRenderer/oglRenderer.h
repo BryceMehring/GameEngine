@@ -157,6 +157,7 @@ private:
 	bool m_bVSync;
 	bool m_bFullscreen;
 	bool m_bIconify = false;
+	bool m_bFirstRun = true;
 	GLuint m_iClearBits;
 
 	std::vector<VertexBuffer*> m_vertexBuffers;

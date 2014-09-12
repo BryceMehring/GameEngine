@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <cstring>
 
 using namespace std;
 
@@ -77,13 +78,13 @@ void oglRenderer::IconifyCallback(GLFWwindow* window, int flag)
 }
 
 oglRenderer::oglRenderer() : m_pWorldCamera(nullptr), m_pWindow(nullptr), m_pWorldSpaceSprites(nullptr), m_pScreenSpaceSprites(nullptr),
-m_pMonitors(nullptr), m_iMonitorCount(0), m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(false)
+m_pMonitors(nullptr), m_iMonitorCount(0), m_iCurrentMonitor(0), m_iCurrentDisplayMode(0), m_renderSpace(RenderSpace::Screen), m_bFullscreen(true)
 {
 	s_pThis = this;
 	m_iClearBits = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
 
-	EnumerateDisplayAdaptors();
 	ParseVideoSettingsFile();
+	EnumerateDisplayAdaptors();
 	ConfigureGLFW();
 	ConfigureOpenGL();
 	BuildBuffers();
@@ -376,8 +377,10 @@ void oglRenderer::ConfigureGLFW()
 	bool bFullscreen = false;
 
 #ifndef DEBUG_BUILD
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
 	bFullscreen = m_bFullscreen;
+#else
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
+	Log::Instance().Write("Debug OpenGL Context");
 #endif
 
 	if(bFullscreen)
@@ -455,6 +458,8 @@ void oglRenderer::ConfigureOpenGL()
 
 void oglRenderer::EnumerateDisplayAdaptors()
 {
+	GLFWmonitor* pPrimaryMonitor = glfwGetPrimaryMonitor();
+
 	m_pMonitors = glfwGetMonitors(&m_iMonitorCount);
 
 	m_videoModes.reserve(m_iMonitorCount);
@@ -465,6 +470,23 @@ void oglRenderer::EnumerateDisplayAdaptors()
 		const GLFWvidmode* pVidMode = glfwGetVideoModes(m_pMonitors[i], &size);
 
 		m_videoModes.emplace_back(pVidMode, size);
+
+		// Check for the default monitor and the current desktop resolution
+		if(m_bFirstRun && m_pMonitors[i] == pPrimaryMonitor)
+		{
+			const GLFWvidmode* pCurrentVideoMode = glfwGetVideoMode(pPrimaryMonitor);
+
+			m_iCurrentMonitor = i;
+
+			for(int j = 0; j < size; ++j)
+			{
+				if(memcmp(pCurrentVideoMode, pVidMode + j, sizeof(GLFWvidmode)) == 0)
+				{
+					m_iCurrentDisplayMode = size - j - 1;
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -474,36 +496,36 @@ void oglRenderer::ParseVideoSettingsFile()
 	int iMonitorCounter = 0;
 	int iDisplayCounter = 0;
 
-	if(stream.is_open())
+	if(!stream.is_open())
+		return;
+
+	std::string line;
+	while(std::getline(stream,line))
 	{
-		std::string line;
-		while(std::getline(stream,line))
+		std::istringstream inStream(line);
+
+		string subLine;
+		inStream >> subLine;
+
+		if(subLine == "Monitor")
 		{
-			std::istringstream inStream(line);
+			iMonitorCounter++;
+			iDisplayCounter = 0;
+		}
+		else if (!line.empty() && ((line.back() == 'W') || (line.back() == 'F')))
+		{
+			m_iCurrentMonitor = iMonitorCounter - 1;
+			m_iCurrentDisplayMode = iDisplayCounter - 1;
 
-			string subLine;
-			inStream >> subLine;
+			m_bFullscreen = (line.back() == 'F');
 
-			if(subLine == "Monitor")
-			{
-				iMonitorCounter++;
-				iDisplayCounter = 0;
-			}
-			else if (!line.empty() && ((line.back() == 'W') || (line.back() == 'F')))
-			{
-				m_iCurrentMonitor = iMonitorCounter - 1;
-				m_iCurrentDisplayMode = iDisplayCounter - 1;
-
-				m_bFullscreen = (line.back() == 'F');
-
-				break;
-			}
-
-			iDisplayCounter++;
+			break;
 		}
 
-		stream.close();
+		iDisplayCounter++;
 	}
+
+	m_bFirstRun = false;
 }
 
 void oglRenderer::SaveDisplayList()
