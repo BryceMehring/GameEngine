@@ -17,7 +17,7 @@ class QuadTree
 {
 public:
 
-	QuadTree(const Math::FRECT& R, unsigned int nodeCapacity);
+	QuadTree(const Math::FRECT& R, unsigned int nodeCapacity, unsigned int depthLimit);
 
 	// Inserts obj into the quadtree
 	// returns true if obj was inserted into the quadtree, else false
@@ -30,6 +30,9 @@ public:
 	void QueryNearObjects(const ISpatialObject* pObj, std::vector<ISpatialObject*>& out);
 	void QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector<ISpatialObject*>& out);
 
+	// SubDivide every node until the level specified
+	void SubDivide(int levels);
+
 	// Returns true if obj lies within the quadtree
 	bool IsWithin(ISpatialObject& obj) const;
 
@@ -41,7 +44,7 @@ public:
 
 private:
 
-	QuadTree(const Math::FRECT& rect, unsigned int nodeCapacity, unsigned int height, QuadTree* pPrevious);
+	QuadTree(const Math::FRECT& rect, unsigned int nodeCapacity, unsigned int depthLimit, unsigned int height, QuadTree* pPrevious);
 
 	// Inserts obj into the quadtree
 	// returns true if obj was inserted into the quadtree, else false
@@ -75,6 +78,7 @@ private:
 
 	unsigned int m_iCapacity;
 	const unsigned int m_iHeight;
+	const unsigned int m_iDepthLimit;
 };
 
 #endif // _QUADTREE_

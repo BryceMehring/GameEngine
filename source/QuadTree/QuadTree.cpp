@@ -8,13 +8,14 @@
 
 using namespace std;
 
-QuadTree::QuadTree(const Math::FRECT& R, unsigned int nodeCapacity) : m_Rect(R), m_Previous(nullptr), m_iCapacity(nodeCapacity), m_iHeight(0)
+QuadTree::QuadTree(const Math::FRECT& R, unsigned int nodeCapacity, unsigned int depthLimit) :
+	m_Rect(R), m_Previous(nullptr), m_iCapacity(nodeCapacity), m_iHeight(0), m_iDepthLimit(depthLimit)
 {
 	SubDivide();
 }
 
-QuadTree::QuadTree(const Math::FRECT& rect, unsigned int nodeCapacity, unsigned int height, QuadTree* pPrevious) : 
-	m_Rect(rect), m_Previous(pPrevious), m_iCapacity(nodeCapacity), m_iHeight(height)
+QuadTree::QuadTree(const Math::FRECT& rect, unsigned int nodeCapacity, unsigned int depthLimit, unsigned int height, QuadTree* pPrevious) :
+	m_Rect(rect), m_Previous(pPrevious), m_iCapacity(nodeCapacity), m_iHeight(height), m_iDepthLimit(depthLimit)
 {
 }
 
@@ -61,6 +62,22 @@ void QuadTree::QueryNearObjects(const Math::ICollisionPolygon& poly, std::vector
 	QueryNearObjects(poly, out, nullptr);
 }
 
+void QuadTree::SubDivide(int levels)
+{
+	if(levels > 0)
+	{
+		if(IsDivided() == false)
+		{
+			SubDivide();
+		}
+
+		for(auto& node : m_Nodes)
+		{
+			node.SubDivide(levels - 1);
+		}
+	}
+}
+
 bool QuadTree::IsWithin(ISpatialObject& obj) const
 {
 	return m_Rect.Intersects(obj.GetCollisionPolygon());
@@ -104,10 +121,8 @@ bool QuadTree::RInsert(ISpatialObject& obj)
 		{
 			if (subNode.m_Rect.Intersects(collisionPoly))
 			{
-				const Math::FRECT& subR = subNode.m_Rect.GetRect();
-
 				// if the current node is full
-				if (subNode.IsFull() && subR.Height() > 50.0f)
+				if (subNode.IsFull() && subNode.m_iHeight < m_iDepthLimit)
 				{
 					if (!subNode.IsDivided())
 					{
@@ -164,7 +179,7 @@ void QuadTree::SubDivide()
 	// Loop over all sub-quadrants, and create them
 	for(unsigned int i = 0; i < 4; ++i)
 	{
-		m_Nodes.push_back(QuadTree(subRects[i],m_iCapacity,m_iHeight + 1,this));
+		m_Nodes.push_back(QuadTree(subRects[i], m_iCapacity, m_iDepthLimit, m_iHeight + 1, this));
 
 		for(auto& iter : m_Objects)
 		{
