@@ -195,11 +195,8 @@ public:
 	// Disables the cursor if bShow is false
 	virtual void ShowCursor(bool bShow) = 0;
 
-	// Horizontal acceleration
-	virtual int MouseX() const = 0;
-
-	// Vertical acceleration
-	virtual int MouseY() const = 0;
+	// Returns Cursor Acceleration
+	virtual glm::ivec2 CursorAcceleration() const = 0;
 
 	// Scroll change
 	virtual double MouseZ() const = 0;
