@@ -5,13 +5,15 @@ set(COMMON_HEADERS
     VecMath.h
     Timer.h
     Log.h
-    CommonExport.h)
+	CommonExport.h
+	Random.h)
 
 set(COMMON_SOURCE
     Camera.cpp
     VecMath.cpp
     Timer.cpp
-    Log.cpp)
+	Log.cpp
+	Random.cpp)
 
 # build the common shared lib
 add_library(common SHARED ${COMMON_HEADERS} ${COMMON_SOURCE})

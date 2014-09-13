@@ -29,6 +29,8 @@ private:
 	Timer m_timer;
 
 	Log();
+	Log(const Log&) = delete;
+	Log& operator=(const Log&) = delete;
 	~Log();
 };
 

@@ -14,9 +14,6 @@ int main(int size, char** cmd)
 		pState = cmd[1];
 	}
 
-	// seed the random number generator
-	srand ((unsigned int)time(0));
-
 	Game myGame;
 	myGame.SetNextState(pState);
 	return myGame.Run();
