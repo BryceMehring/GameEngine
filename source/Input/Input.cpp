@@ -219,14 +219,9 @@ void Input::ShowCursor(bool bShow)
 	glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, bShow ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
-int Input::MouseX() const
+glm::ivec2 Input::CursorAcceleration() const
 {
-	return m_iMouseAccelerationX;
-}
-
-int Input::MouseY() const
-{
-	return m_iMouseAccelerationY;
+	return glm::ivec2(m_iMouseAccelerationX, m_iMouseAccelerationY);
 }
 
 double Input::MouseZ() const

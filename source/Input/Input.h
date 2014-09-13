@@ -87,11 +87,8 @@ public:
 	// Disables the cursor if bShow is false
 	void ShowCursor(bool bShow) override;
 
-	// Horizontal acceleration
-	int MouseX() const override;
-
-	// Vertical acceleration
-	int MouseY() const override;
+	// Returns Cursor Acceleration
+	glm::ivec2 CursorAcceleration() const override;
 
 	// Scroll acceleration
 	double MouseZ() const override;
