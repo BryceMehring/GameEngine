@@ -4,7 +4,6 @@ project(GameEngine CXX)
 option(BUILD_EXAMPLES "Build Examples" OFF)
 option(BUILD_QUADTREE "Build QuadTree" OFF)
 option(BUILD_MEMORY_MANAGER "Build Memory Manager" OFF)
-option(BUILD_GUI "Build GUI" OFF)
 option(ENABLE_CPACK "Enable CPack" OFF)
 
 # The version number.
@@ -41,10 +40,8 @@ if(BUILD_MEMORY_MANAGER)
 	add_subdirectory(source/MemoryManager)
 endif()
 
-if(BUILD_GUI OR BUILD_EXAMPLES)
-	include_directories(${CMAKE_SOURCE_DIR}/source/GUI)
-	add_subdirectory(source/GUI)
-endif()
+include_directories(${CMAKE_SOURCE_DIR}/source/GUI)
+add_subdirectory(source/GUI)
 
 add_subdirectory(source/GameEngine)
 add_subdirectory(source/common)
@@ -73,30 +70,30 @@ if(ENABLE_CPACK)
 	include(InstallRequiredSystemLibraries)
 	include(CPack)
 
-		get_filename_component(resolvedFile ${GLFW_SHARED_LIBRARY} REALPATH)
+	get_filename_component(resolvedFile ${GLFW_SHARED_LIBRARY} REALPATH)
 		
-		if(UNIX)
-			install(FILES ${resolvedFile} DESTINATION ./ RENAME libglfw.so.3)
-			install(FILES run.sh DESTINATION ./)
-		else()
-			install(FILES ${resolvedFile} DESTINATION ./)
+	if(UNIX)
+		install(FILES ${resolvedFile} DESTINATION ./ RENAME libglfw.so.3)
+		install(FILES run.sh DESTINATION ./)
+	else()
+		install(FILES ${resolvedFile} DESTINATION ./)
+	endif()
+
+	install(TARGETS GameLauncher RUNTIME DESTINATION ./)
+	install(FILES base.r DESTINATION ./)
+	install(DIRECTORY textures/ DESTINATION textures/ FILES_MATCHING REGEX ".*(\\.png)")
+	install(DIRECTORY shaders/ DESTINATION shaders/)
+
+	if(BUILD_EXAMPLES)
+		#todo: wrap this up in a for loop
+		install(DIRECTORY ./Examples/Joystick/plugin/Joystick DESTINATION ./plugin/)
+
+		#find_path(EXTERNAL_PROJECT CMakeLists.txt)
+		#install(DIRECTORY ${EXTERNAL_PROJECT}/plugin/ DESTINATION ./plugin)
+		if(MINGW)
+			find_package(MINGW_DEPENDS)
+			install(DIRECTORY ${MINGW_DEPENDS_DIR}/ DESTINATION ./)
 		endif()
 
-		install(TARGETS GameLauncher RUNTIME DESTINATION ./)
-		install(FILES base.r DESTINATION ./)
-		install(DIRECTORY textures/ DESTINATION textures/ FILES_MATCHING REGEX ".*(\\.png)")
-		install(DIRECTORY shaders/ DESTINATION shaders/)
-
-		if(BUILD_EXAMPLES)
-			#todo: wrap this up in a for loop
-			install(DIRECTORY ./Examples/Joystick/plugin/Joystick DESTINATION ./plugin/)
-
-			#find_path(EXTERNAL_PROJECT CMakeLists.txt)
-			#install(DIRECTORY ${EXTERNAL_PROJECT}/plugin/ DESTINATION ./plugin)
-			if(MINGW)
-				find_package(MINGW_DEPENDS)
-				install(DIRECTORY ${MINGW_DEPENDS_DIR}/ DESTINATION ./)
-			endif()
-
-		endif(BUILD_EXAMPLES)
+	endif(BUILD_EXAMPLES)
 endif(ENABLE_CPACK)

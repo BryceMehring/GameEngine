@@ -399,7 +399,6 @@ void oglRenderer::ConfigureGLFW()
 	GetDisplayMode(&width, &height);
 
 	m_pWindow = glfwCreateWindow(width, height, "", bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, nullptr);
-
 	assert(m_pWindow != nullptr);
 
 	glfwMakeContextCurrent(m_pWindow);
@@ -418,7 +417,6 @@ void oglRenderer::ConfigureGLFW()
 void oglRenderer::ConfigureOpenGL()
 {
 	// Initialize GLEW
-	glewExperimental = true; // Needed in core profile
 	assert(glewInit() == GLEW_OK);
 
 	// Check to make sure that the hardware is supported
@@ -522,14 +520,13 @@ void oglRenderer::ParseVideoSettingsFile()
 			m_iCurrentDisplayMode = iDisplayCounter - 1;
 
 			m_bFullscreen = (line.back() == 'F');
+			m_bFirstRun = false;
 
 			break;
 		}
 
 		iDisplayCounter++;
 	}
-
-	m_bFirstRun = false;
 }
 
 void oglRenderer::SaveDisplayList()
