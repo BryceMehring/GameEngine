@@ -4,16 +4,15 @@
 #ifndef _DINPUT_
 #define _DINPUT_
 
-// This is the GLFW Input Plug-in class
-// All that's needed is too implement the functions provided in the abstract interface
+
 #include "IInput.h"
 #include "PluginManager.h"
 #include <array>
 #include <unordered_map>
 #include <GLFW/glfw3.h>
 
-
-class Input : public IInput
+// GLFW Input plug-in
+class Input final : public IInput
 {
 public:
 
@@ -30,6 +29,7 @@ public:
 	static void MouseCallback(GLFWwindow*,double,double);
 	static void MouseButtonCallback(GLFWwindow*,int,int,int);
 	static void MouseScrollCallback(GLFWwindow*,double,double);
+	static void CursorEnterCallback(GLFWwindow*,int);
 
 	// IPlugin
 
@@ -82,6 +82,9 @@ public:
 
 	// Returns true if the cursor is shown, false otherwise
 	bool IsCursorShown() const override;
+
+	// Returns true if the cursor is within the main window
+	bool IsCursorEntered() const override;
 
 	// Shows the cursor if bShow is true
 	// Disables the cursor if bShow is false
@@ -145,6 +148,7 @@ private:
 	double m_fOldMousePosX;
 	double m_fOldMousePosY;
 	double m_fYScrollOffset;
+	bool m_bEntered;
 	std::array<int, GLFW_MOUSE_BUTTON_LAST + 1> m_MouseClickOnce;
 
 	glm::ivec2 m_cursorPos;

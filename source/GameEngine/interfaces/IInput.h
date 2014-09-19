@@ -191,6 +191,9 @@ public:
 	// Returns true if the cursor is shown, false otherwise
 	virtual bool IsCursorShown() const = 0;
 
+	// Returns true if the cursor is within the main window
+	virtual bool IsCursorEntered() const = 0;
+
 	// Shows the cursor if bShow is true
 	// Disables the cursor if bShow is false
 	virtual void ShowCursor(bool bShow) = 0;

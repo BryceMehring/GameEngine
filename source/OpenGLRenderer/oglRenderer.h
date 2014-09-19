@@ -14,7 +14,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-class oglRenderer : public IRenderer
+class oglRenderer final : public IRenderer
 {
 public:
 

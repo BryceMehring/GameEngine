@@ -60,7 +60,12 @@ void Input::MouseScrollCallback(GLFWwindow*, double, double yOffset)
 	}
 }
 
-Input::Input() : m_iNumJoystickAxes(0), m_pJoystickAxes(nullptr)
+void Input::CursorEnterCallback(GLFWwindow*, int entered)
+{
+	s_pThis->m_bEntered = entered == GL_TRUE;
+}
+
+Input::Input() : m_bEntered(true), m_iNumJoystickAxes(0), m_pJoystickAxes(nullptr)
 {
 	s_pThis = this;
 
@@ -78,6 +83,7 @@ Input::Input() : m_iNumJoystickAxes(0), m_pJoystickAxes(nullptr)
 	glfwSetCursorPosCallback(glfwGetCurrentContext(), MouseCallback);
 	glfwSetMouseButtonCallback(glfwGetCurrentContext(), MouseButtonCallback);
 	glfwSetScrollCallback(glfwGetCurrentContext(), MouseScrollCallback);
+	glfwSetCursorEnterCallback(glfwGetCurrentContext(), CursorEnterCallback);
 
 	// Move the mouse to the center of the screen
 	int width, height;
@@ -212,6 +218,11 @@ void Input::SetCursorPos(glm::ivec2 pos)
 bool Input::IsCursorShown() const
 {
 	return (glfwGetInputMode(glfwGetCurrentContext(), GLFW_CURSOR) == GLFW_CURSOR_NORMAL);
+}
+
+bool Input::IsCursorEntered() const
+{
+	return m_bEntered;
 }
 
 void Input::ShowCursor(bool bShow)
