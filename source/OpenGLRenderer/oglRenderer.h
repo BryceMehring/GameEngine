@@ -82,6 +82,10 @@ public:
 	// Returns depth value in the buffer at a single point in screen space
 	virtual float ReadPixels(const glm::ivec2& pos) const override;
 
+	// Returns the current display mode
+	const GLFWvidmode* GetDisplayMode() const;
+	const GLFWvidmode* GetDisplayMode(int monitor, int mode) const;
+
 	// Get the display mode on the specified monitor, return true on success, false on error
 	// either width or height may be null if their values are not needed
 	virtual bool GetDisplayMode(int monitor, int mode, int* width, int* height) const override;

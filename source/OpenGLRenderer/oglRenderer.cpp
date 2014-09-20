@@ -236,26 +236,39 @@ float oglRenderer::ReadPixels(const glm::ivec2 &pos) const
 	return depth;
 }
 
-bool oglRenderer::GetDisplayMode(int monitor, int i, int* width, int* height) const
+const GLFWvidmode* oglRenderer::GetDisplayMode() const
+{
+	return GetDisplayMode(m_iCurrentMonitor, m_iCurrentDisplayMode);
+}
+
+const GLFWvidmode* oglRenderer::GetDisplayMode(int monitor, int mode) const
 {
 	if ((monitor >= m_iMonitorCount) || (monitor < 0))
-		return false;
+		return nullptr;
 
 	std::pair<const GLFWvidmode*,int> modes = m_videoModes[monitor];
 
-	if ((i >= modes.second) || (i < 0))
-		return false;
+	if ((mode >= modes.second) || (mode < 0))
+		return nullptr;
 
-	int index = modes.second - i - 1;
+	return modes.first + (modes.second - mode - 1);
+}
+
+bool oglRenderer::GetDisplayMode(int monitor, int i, int* width, int* height) const
+{
+	const GLFWvidmode* pMode = GetDisplayMode(monitor, i);
+
+	if(pMode == nullptr)
+		return false;
 
 	if (width != nullptr)
 	{
-		*width = modes.first[index].width;
+		*width = pMode->width;
 	}
 
 	if (height != nullptr)
 	{
-		*height = modes.first[index].height;
+		*height = pMode->height;
 	}
 
 	return true;
@@ -382,23 +395,20 @@ void oglRenderer::ConfigureGLFW()
 	Log::Instance().Write("Debug OpenGL Context");
 #endif
 
+	const GLFWvidmode* pVideoMode = GetDisplayMode();
+	assert(pVideoMode != nullptr);
+
 	if(bFullscreen)
 	{
-		const GLFWvidmode& targetMode = m_videoModes[m_iCurrentMonitor].first[m_iCurrentDisplayMode];
-
-		glfwWindowHint(GLFW_RED_BITS, targetMode.redBits);
-		glfwWindowHint(GLFW_GREEN_BITS, targetMode.greenBits);
-		glfwWindowHint(GLFW_BLUE_BITS, targetMode.blueBits);
-		glfwWindowHint(GLFW_REFRESH_RATE, targetMode.refreshRate);
+		glfwWindowHint(GLFW_RED_BITS, pVideoMode->redBits);
+		glfwWindowHint(GLFW_GREEN_BITS, pVideoMode->greenBits);
+		glfwWindowHint(GLFW_BLUE_BITS, pVideoMode->blueBits);
+		glfwWindowHint(GLFW_REFRESH_RATE, pVideoMode->refreshRate);
 	}
 
 	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
 
-	// todo: this code is duplicated
-	int width, height;
-	GetDisplayMode(&width, &height);
-
-	m_pWindow = glfwCreateWindow(width, height, "", bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, nullptr);
+	m_pWindow = glfwCreateWindow(pVideoMode->width, pVideoMode->height, "", bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, nullptr);
 	assert(m_pWindow != nullptr);
 
 	glfwMakeContextCurrent(m_pWindow);
@@ -458,8 +468,12 @@ void oglRenderer::EnumerateDisplayAdaptors()
 	GLFWmonitor* pPrimaryMonitor = glfwGetPrimaryMonitor();
 
 	m_pMonitors = glfwGetMonitors(&m_iMonitorCount);
-
 	m_videoModes.reserve(m_iMonitorCount);
+
+	if(m_iCurrentMonitor > m_iMonitorCount)
+	{
+		m_bFirstRun = true;
+	}
 
 	for (int i = 0; i < m_iMonitorCount; ++i)
 	{
@@ -467,6 +481,11 @@ void oglRenderer::EnumerateDisplayAdaptors()
 		const GLFWvidmode* pVidMode = glfwGetVideoModes(m_pMonitors[i], &size);
 
 		m_videoModes.emplace_back(pVidMode, size);
+
+		if(m_iCurrentMonitor == i && m_iCurrentDisplayMode > size)
+		{
+			m_bFirstRun = true;
+		}
 
 		// Check for the default monitor and the current desktop resolution
 		if(m_bFirstRun && m_pMonitors[i] == pPrimaryMonitor)
