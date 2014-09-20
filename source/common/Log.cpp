@@ -24,7 +24,7 @@ Log::Log()
 	m_timer.Start();
 
 	m_file.open("GameLog.txt");
-	//m_file.
+
 	unsigned int counter = 2;
 	while(!m_file.is_open())
 	{

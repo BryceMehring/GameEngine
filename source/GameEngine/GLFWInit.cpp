@@ -3,6 +3,8 @@
 #include <cassert>
 #include "Log.h"
 
+//todo: figure out how to use c++ exceptions with glfw
+
 static void ErrorCallback(int, const char* error)
 {
 	Log::Instance().Write(error);

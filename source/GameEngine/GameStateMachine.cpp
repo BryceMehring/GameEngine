@@ -12,7 +12,6 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 	RemoveState(game);
 
 	IPlugin* pPlugin = game.GetPM().LoadDLL(state,"./plugin/" + state);
-	assert(pPlugin != nullptr);
 	assert(pPlugin->GetPluginType() == DLLType::Game);
 
 	LoadResourceFile(string(pPlugin->GetName()) + ".r",game,"./plugin/" + string(pPlugin->GetName()));

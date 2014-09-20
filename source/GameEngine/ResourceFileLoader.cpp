@@ -76,7 +76,10 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 					bSuccess = false;
 				}
 
-				assert(bSuccess);
+				if(bSuccess == false)
+				{
+					throw std::string("Error loading resource");
+				}
 			}
 		}
 	}

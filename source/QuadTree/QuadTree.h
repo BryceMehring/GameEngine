@@ -9,7 +9,6 @@
 #include "IRenderer.h"
 #include <unordered_set>
 #include <vector>
-#include <assert.h>
 
 // The Quadtree manages objects in 2D space
 

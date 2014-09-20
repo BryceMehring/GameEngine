@@ -4,7 +4,6 @@
 #include "Log.h"
 
 #include <algorithm>
-#include <cassert>
 #include <sstream>
 #include <iostream>
 
@@ -106,13 +105,13 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 
 	if(dll->mod == nullptr)
 	{
+		std::string error;
 #ifdef _WIN32
-		Log::Instance().Write(GetLastErrorAsString());
+		error = GetLastErrorAsString();
 #else
-		Log::Instance().Write(dlerror());
+		error = dlerror();
 #endif
-
-		return nullptr;
+		throw error;
 	}
 
 	CREATEPLUGIN pFunct = nullptr;
@@ -125,9 +124,7 @@ IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
 
 	if(pFunct == nullptr)
 	{
-		Log::Instance().Write("Corrupted Shared Library: " + file);
-
-		return nullptr;
+		throw ("Corrupted Shared Library: "  + file);
 	}
 
 	// Create the plugin

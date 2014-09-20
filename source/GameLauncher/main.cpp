@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Log.h"
 
 #include <iostream>
 #include <ctime>
@@ -14,7 +15,24 @@ int main(int size, char** cmd)
 		pState = cmd[1];
 	}
 
-	Game myGame;
-	myGame.SetNextState(pState);
-	return myGame.Run();
+	try
+	{
+		Game myGame;
+		myGame.SetNextState(pState);
+		return myGame.Run();
+	}
+	catch(exception& error)
+	{
+		Log::Instance().Write(error.what());
+	}
+	catch(string msg)
+	{
+		Log::Instance().Write(msg);
+	}
+	catch(...)
+	{
+		Log::Instance().Write("Unknown error, quitting.");
+	}
+
+	return 1;
 }

@@ -64,6 +64,7 @@ void APIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum 
 
 	if(severity ==  GL_DEBUG_SEVERITY_HIGH)
 	{
+		// todo: maybe we could throw here
 		abort();
 	}
 }
@@ -409,7 +410,10 @@ void oglRenderer::ConfigureGLFW()
 	glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
 
 	m_pWindow = glfwCreateWindow(pVideoMode->width, pVideoMode->height, "", bFullscreen ? m_pMonitors[m_iCurrentMonitor] : nullptr, nullptr);
-	assert(m_pWindow != nullptr);
+	if(m_pWindow == nullptr)
+	{
+		throw std::string("Failed to create window");
+	}
 
 	glfwMakeContextCurrent(m_pWindow);
 	glfwSetMonitorCallback(MonitorCallback);
@@ -427,29 +431,35 @@ void oglRenderer::ConfigureGLFW()
 void oglRenderer::ConfigureOpenGL()
 {
 	// Initialize GLEW
-	assert(glewInit() == GLEW_OK);
+	if(glewInit() != GLEW_OK)
+	{
+		throw std::string("Cannot initialize GLEW");
+	}
 
 	// Check to make sure that the hardware is supported
-	assert(glewIsSupported("GL_VERSION_3_3"));
+	if(glewIsSupported("GL_VERSION_3_3") == false)
+	{
+		throw std::string("OpenGL 3.3 is not supported");
+	}
 
 	// Check for ARB_debug_output
 	std::ostringstream stream;
-	stream << "ARB_debug_output";
+	stream << "ARB_debug_output ";
 
 	if(GLEW_ARB_debug_output)
 	{
-		stream << " supported";
+		stream << "supported ";
 #ifdef DEBUG_BUILD
-		stream << " and enabled";
+		stream << "and enabled";
 		glDebugMessageCallback(OpenGLErrorCallback,0);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 #else
-		stream << " and disabled";
+		stream << "and disabled";
 #endif
 	}
 	else
 	{
-		stream << " not supported";
+		stream << "not supported";
 	}
 	Log::Instance().Write(stream.str());
 
