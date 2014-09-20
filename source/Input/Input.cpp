@@ -77,18 +77,18 @@ Input::Input() : m_bEntered(true), m_iNumJoystickAxes(0), m_pJoystickAxes(nullpt
 	Reset();
 
 	// Configure Keyboard and Mouse callbacks
-
-	glfwSetCharCallback(glfwGetCurrentContext(), CharCallback);
-	glfwSetKeyCallback(glfwGetCurrentContext(), KeyCallback);
-	glfwSetCursorPosCallback(glfwGetCurrentContext(), MouseCallback);
-	glfwSetMouseButtonCallback(glfwGetCurrentContext(), MouseButtonCallback);
-	glfwSetScrollCallback(glfwGetCurrentContext(), MouseScrollCallback);
-	glfwSetCursorEnterCallback(glfwGetCurrentContext(), CursorEnterCallback);
+	GLFWwindow* currentContext = glfwGetCurrentContext();
+	glfwSetCharCallback(currentContext, CharCallback);
+	glfwSetKeyCallback(currentContext, KeyCallback);
+	glfwSetCursorPosCallback(currentContext, MouseCallback);
+	glfwSetMouseButtonCallback(currentContext, MouseButtonCallback);
+	glfwSetScrollCallback(currentContext, MouseScrollCallback);
+	glfwSetCursorEnterCallback(currentContext, CursorEnterCallback);
 
 	// Move the mouse to the center of the screen
 	int width, height;
-	glfwGetWindowSize(glfwGetCurrentContext(), &width, &height);
-	glfwSetCursorPos(glfwGetCurrentContext(), width / 2, height / 2);
+	glfwGetWindowSize(currentContext, &width, &height);
+	glfwSetCursorPos(currentContext, width / 2, height / 2);
 
 	m_cursorPos.x = width / 2;
 	m_cursorPos.y = height / 2;
@@ -99,11 +99,13 @@ Input::Input() : m_bEntered(true), m_iNumJoystickAxes(0), m_pJoystickAxes(nullpt
 
 Input::~Input()
 {
-	glfwSetCharCallback(glfwGetCurrentContext(), nullptr);
-	glfwSetKeyCallback(glfwGetCurrentContext(), nullptr);
-	glfwSetCursorPosCallback(glfwGetCurrentContext(), nullptr);
-	glfwSetMouseButtonCallback(glfwGetCurrentContext(), nullptr);
-	glfwSetScrollCallback(glfwGetCurrentContext(), nullptr);
+	GLFWwindow* currentContext = glfwGetCurrentContext();
+	glfwSetCharCallback(currentContext, nullptr);
+	glfwSetKeyCallback(currentContext, nullptr);
+	glfwSetCursorPosCallback(currentContext, nullptr);
+	glfwSetMouseButtonCallback(currentContext, nullptr);
+	glfwSetScrollCallback(currentContext, nullptr);
+	glfwSetCursorEnterCallback(currentContext, nullptr);
 }
 
 DLLType Input::GetPluginType() const
