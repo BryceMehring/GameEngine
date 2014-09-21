@@ -476,11 +476,12 @@ void oglRenderer::ConfigureOpenGL()
 void oglRenderer::EnumerateDisplayAdaptors()
 {
 	GLFWmonitor* pPrimaryMonitor = glfwGetPrimaryMonitor();
+	int iPrimaryMontior = 0;
 
 	m_pMonitors = glfwGetMonitors(&m_iMonitorCount);
 	m_videoModes.reserve(m_iMonitorCount);
 
-	if(m_iCurrentMonitor > m_iMonitorCount)
+	if(m_iCurrentMonitor >= m_iMonitorCount)
 	{
 		m_bFirstRun = true;
 	}
@@ -489,35 +490,43 @@ void oglRenderer::EnumerateDisplayAdaptors()
 	{
 		int size = 0;
 		const GLFWvidmode* pVidMode = glfwGetVideoModes(m_pMonitors[i], &size);
-
 		m_videoModes.emplace_back(pVidMode, size);
 
-		if(m_iCurrentMonitor == i && m_iCurrentDisplayMode > size)
+		// Check if this is the current monitor previously saved, and if the entry is invalid
+		if(m_iCurrentMonitor == i && m_iCurrentDisplayMode >= size)
 		{
 			m_bFirstRun = true;
 		}
 
-		// Check for the default monitor and the current desktop resolution
-		if(m_bFirstRun && m_pMonitors[i] == pPrimaryMonitor)
+		// Check if the current monitor is the default monitor
+		if(m_pMonitors[i] == pPrimaryMonitor)
 		{
-			const GLFWvidmode* pCurrentVideoMode = glfwGetVideoMode(pPrimaryMonitor);
+			iPrimaryMontior = i;
+		}
+	}
 
-			m_iCurrentMonitor = i;
+	// If this is the first run, or the VideoModes.txt file became corrupted, then use the default desktop resolution on the default desktop
+	if(m_bFirstRun)
+	{
+		const GLFWvidmode* pCurrentVideoMode = glfwGetVideoMode(pPrimaryMonitor);
+		const GLFWvidmode* pVidModes = m_videoModes[iPrimaryMontior].first;
+		int size = m_videoModes[iPrimaryMontior].second;
 
-			for(int j = 0; j < size; ++j)
+		for(int i = size - 1; i >= 0; --i)
+		{
+			if(pCurrentVideoMode->width == pVidModes[i].width &&
+			   pCurrentVideoMode->height == pVidModes[i].height &&
+			   pCurrentVideoMode->redBits == pVidModes[i].redBits &&
+			   pCurrentVideoMode->greenBits == pVidModes[i].greenBits &&
+			   pCurrentVideoMode->blueBits == pVidModes[i].blueBits &&
+			   pCurrentVideoMode->refreshRate == pVidModes[i].refreshRate)
 			{
-				if(pCurrentVideoMode->width == pVidMode[j].width &&
-				   pCurrentVideoMode->height == pVidMode[j].height &&
-				   pCurrentVideoMode->redBits == pVidMode[j].redBits &&
-				   pCurrentVideoMode->greenBits == pVidMode[j].greenBits &&
-				   pCurrentVideoMode->blueBits == pVidMode[j].blueBits &&
-				   pCurrentVideoMode->refreshRate == pVidMode[j].refreshRate)
-				{
-					m_iCurrentDisplayMode = size - j - 1;
-					break;
-				}
+				m_iCurrentDisplayMode = size - i - 1;
+				break;
 			}
 		}
+
+		m_iCurrentMonitor = iPrimaryMontior;
 	}
 }
 
