@@ -9,6 +9,7 @@
 #include "PluginManager.h"
 #include <array>
 #include <unordered_map>
+#include <vector>
 #include <GLFW/glfw3.h>
 
 // GLFW Input plug-in

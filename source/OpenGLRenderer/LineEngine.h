@@ -14,8 +14,8 @@ public:
 
 	LineRenderer(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T);
 
-	virtual void Setup(ApplyShader& shader, const IResource* resource);
-	virtual void Render(ApplyShader& shader, const IResource* resource);
+	void Setup(ApplyShader& shader, const IResource* resource) override;
+	void Render(ApplyShader& shader, const IResource* resource) override;
 
 private:
 

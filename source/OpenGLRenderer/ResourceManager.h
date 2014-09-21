@@ -43,7 +43,7 @@ public:
 
 	Cursor(int width, int height, unsigned char* img);
 
-	virtual void* QueryInterface(ResourceType type) const override;
+	void* QueryInterface(ResourceType type) const override;
 
 	int GetWidth() const;
 	int GetHeight() const;
@@ -81,7 +81,7 @@ public:
 
 	Texture(GLuint i, unsigned char* pImg, int comp, int tw, int th, int cw = 1, int ch = 1);
 
-	virtual void* QueryInterface(ResourceType type) const override;
+	void* QueryInterface(ResourceType type) const override;
 
 	int GetWidth() const;
 	int GetHeight() const;
@@ -114,7 +114,7 @@ public:
 
 	Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms);
 
-	virtual void* QueryInterface(ResourceType type) const override;
+	void* QueryInterface(ResourceType type) const override;
 
 	// Sets this shader as the active shader
 	void Bind();
@@ -158,7 +158,7 @@ public:
 
 	TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID, UnifromMap&& uniforms);
 
-	virtual void* QueryInterface(ResourceType type) const override;
+	void* QueryInterface(ResourceType type) const override;
 	void BindTexture(const OpenGLResource& texture) const;
 
 protected:
@@ -189,7 +189,7 @@ public:
 
 	Font(GLuint i, unsigned char* pImg, int comp, int tw, int th);
 
-	virtual void* QueryInterface(ResourceType type) const override;
+	void* QueryInterface(ResourceType type) const override;
 
 	// Returns the distance in pixels between each line of text.
 	unsigned int GetLineHeight() const;

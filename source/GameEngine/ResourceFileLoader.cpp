@@ -38,7 +38,6 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 			if(!fileName.empty())
 			{
 				fileName = folder + '/' + fileName;
-				Log::Instance().Write("Loading: " + fileName);
 
 				bool bSuccess = true;
 				if(type == "cursor")
@@ -70,15 +69,10 @@ void LoadResourceFile(const std::string& file, Game& game, const std::string& fo
 				{
 
 				}
-				else
-				{
-					Log::Instance().Write("invalid resource type");
-					bSuccess = false;
-				}
 
 				if(bSuccess == false)
 				{
-					throw std::string("Error loading resource");
+					throw std::string("Error loading resource: " + fileName);
 				}
 			}
 		}

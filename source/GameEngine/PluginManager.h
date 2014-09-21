@@ -16,8 +16,6 @@
 
 #include "IPlugin.h"
 #include <map>
-#include <vector>
-#include <string>
 #include <memory>
 
 /*
@@ -33,10 +31,10 @@ public:
 	const IPlugin* GetPlugin(DLLType type) const;
 	IPlugin* GetPlugin(DLLType type);
 	
-	/* Loads a plugin dll. Plugin dlls have the extension: ".plug"
-	   returns a valid plugin if loaded
-	   returns nullptr in the case of error
-	   Note: Each plugin must export: "IPlugin* CreatePlugin()" used to create the plugin
+	/* Loads a plugin dll. Plugin dll's have the extension, ".plug".
+	   Returns a valid plugin if loaded.
+	   In the case of error, a string is thrown with the error message.
+	   Note: Each plugin must export: "IPlugin* CreatePlugin()" used to create the plugin.
 	 */
 	IPlugin* LoadDLL(std::string file, std::string folder = "./");
 

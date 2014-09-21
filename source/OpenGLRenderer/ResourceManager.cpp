@@ -593,7 +593,6 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	int InfoLogLength;
 
 	// Compile Vertex Shader
-	Log::Instance().Write(std::string("Compiling shader: ") + std::string(vert.c_str()));
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	glCompileShader(VertexShaderID);
@@ -608,7 +607,6 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 		Log::Instance().Write((char*)&VertexShaderErrorMessage[0]);
 
 	// Compile Fragment Shader
-	Log::Instance().Write(std::string("Compiling shader: ") + std::string(frag.c_str()));
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
 	glCompileShader(FragmentShaderID);
@@ -623,7 +621,6 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 		Log::Instance().Write(&FragmentShaderErrorMessage[0]);
 
 	// Link the program
-	Log::Instance().Write("Linking Program");
 	GLuint ProgramID = glCreateProgram();
 	glAttachShader(ProgramID, VertexShaderID);
 	glAttachShader(ProgramID, FragmentShaderID);

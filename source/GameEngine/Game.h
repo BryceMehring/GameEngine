@@ -8,7 +8,6 @@
 #include "GLFWInit.h"
 #include "IInput.h"
 #include "IRenderer.h"
-#include <string>
 
 #ifdef _WIN32
 #ifdef GAME_ENGINE_EXPORT

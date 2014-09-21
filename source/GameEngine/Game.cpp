@@ -15,7 +15,7 @@
 using namespace std;
 
 Game::Game() : m_fDT(0.0), m_fTimeElapsed(0.0), m_uiFrameCounter(0), m_uiFPS(0),
-m_pRenderer(nullptr), m_pInput(nullptr), m_bDrawFPS(true)
+m_pRenderer(nullptr), m_pInput(nullptr), m_bDrawFPS(false)
 {
 	LoadPlugins();
 

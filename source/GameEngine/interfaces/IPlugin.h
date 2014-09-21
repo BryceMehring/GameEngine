@@ -6,7 +6,6 @@ enum class DLLType
 	Rendering,
 	Input,
 	Game
-	// more dll types here
 };
 
 // Plugin Interface
