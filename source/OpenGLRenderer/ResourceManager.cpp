@@ -238,7 +238,7 @@ void TexturedShader::BindTexture(const OpenGLResource& texture) const
 
 Font::Font(GLuint i, unsigned char* pImg, int comp, int tw, int th) : Texture(i, pImg, comp, tw, th, 1, 1)
 {
-	std::memset(m_kerningPairs.data(), 0, sizeof(m_kerningPairs));
+	m_kerningPairs.fill(0);
 }
 
 void* Font::QueryInterface(ResourceType type) const
@@ -278,8 +278,9 @@ bool Font::IsValidCharacter(char c) const
 
 int Font::GetKerningPairOffset(unsigned int first, unsigned int second) const
 {
-	assert((first < m_kerningPairs.size()) && (second < m_kerningPairs.size()));
-	return m_kerningPairs[first][second];
+	unsigned int index = first * 128 + second;
+	assert(index < m_kerningPairs.size());
+	return m_kerningPairs[index];
 }
 
 std::istream& operator >>(std::istream& stream, Font& CharsetDesc)
@@ -334,23 +335,28 @@ std::istream& operator >>(std::istream& stream, Font& CharsetDesc)
 				//assign the correct value
 				Converter << Value;
 				if( Key == "id" )
+				{
 					Converter >> CharID;
-				else if( Key == "x" )
-					Converter >> CharsetDesc.m_Chars[CharID].x;
-				else if( Key == "y" )
-					Converter >> CharsetDesc.m_Chars[CharID].y;
-				else if( Key == "width" )
-					Converter >> CharsetDesc.m_Chars[CharID].Width;
-				else if( Key == "height" )
-					Converter >> CharsetDesc.m_Chars[CharID].Height;
-				else if( Key == "xoffset" )
-					Converter >> CharsetDesc.m_Chars[CharID].XOffset;
-				else if( Key == "yoffset" )
-					Converter >> CharsetDesc.m_Chars[CharID].YOffset;
-				else if( Key == "xadvance" )
-					Converter >> CharsetDesc.m_Chars[CharID].XAdvance;
-				else if( Key == "page" )
-					Converter >> CharsetDesc.m_Chars[CharID].Page;
+				}
+				else if (CharID < CharsetDesc.m_Chars.size())
+				{
+					if (Key == "x")
+						Converter >> CharsetDesc.m_Chars[CharID].x;
+					else if (Key == "y")
+						Converter >> CharsetDesc.m_Chars[CharID].y;
+					else if (Key == "width")
+						Converter >> CharsetDesc.m_Chars[CharID].Width;
+					else if (Key == "height")
+						Converter >> CharsetDesc.m_Chars[CharID].Height;
+					else if (Key == "xoffset")
+						Converter >> CharsetDesc.m_Chars[CharID].XOffset;
+					else if (Key == "yoffset")
+						Converter >> CharsetDesc.m_Chars[CharID].YOffset;
+					else if (Key == "xadvance")
+						Converter >> CharsetDesc.m_Chars[CharID].XAdvance;
+					else if (Key == "page")
+						Converter >> CharsetDesc.m_Chars[CharID].Page;
+				}				
 			}
 		}
 		else if(Read.find("kerning") != std::string::npos)
@@ -375,7 +381,9 @@ std::istream& operator >>(std::istream& stream, Font& CharsetDesc)
 				}
 				else if(Key == "amount")
 				{
-					Converter >> CharsetDesc.m_kerningPairs[first][second];
+					unsigned int index = first * 128 + second;
+					assert(index < CharsetDesc.m_kerningPairs.size());
+					Converter >> CharsetDesc.m_kerningPairs[index];
 					
 					break;
 				}
@@ -565,80 +573,67 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	}
 
 	// Create the shaders
-	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
-	// Read the Vertex Shader code from the file
-	std::string VertexShaderCode;
-	std::ifstream VertexShaderStream(vert.c_str(), std::ios::in);
-	if(VertexShaderStream.is_open())
-	{
-		std::string Line = "";
-		while(getline(VertexShaderStream, Line))
-			VertexShaderCode += "\n" + Line;
-		VertexShaderStream.close();
-	}
-
-	// Read the Fragment Shader code from the file
-	std::string FragmentShaderCode;
-	std::ifstream FragmentShaderStream(frag.c_str(), std::ios::in);
-	if(FragmentShaderStream.is_open()){
-		std::string Line = "";
-		while(getline(FragmentShaderStream, Line))
-			FragmentShaderCode += "\n" + Line;
-		FragmentShaderStream.close();
-	}
-
-	GLint Result = GL_FALSE;
-	int InfoLogLength;
-
-	// Compile Vertex Shader
-	char const * VertexSourcePointer = VertexShaderCode.c_str();
-	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
-	glCompileShader(VertexShaderID);
-
-	// Check Vertex Shader
-	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
-	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	std::vector<char> VertexShaderErrorMessage(InfoLogLength);
-	glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-
-	if(VertexShaderErrorMessage.size() > 1)
-		Log::Instance().Write((char*)&VertexShaderErrorMessage[0]);
-
-	// Compile Fragment Shader
-	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
-	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
-	glCompileShader(FragmentShaderID);
-
-	// Check Fragment Shader
-	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
-	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	std::vector<char> FragmentShaderErrorMessage(InfoLogLength);
-	glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-
-	if(FragmentShaderErrorMessage.size() > 1)
-		Log::Instance().Write(&FragmentShaderErrorMessage[0]);
+	GLuint VertexShaderID = CreateGLShader(vert, GL_VERTEX_SHADER);
+	GLuint FragmentShaderID = CreateGLShader(frag, GL_FRAGMENT_SHADER);
 
 	// Link the program
-	GLuint ProgramID = glCreateProgram();
-	glAttachShader(ProgramID, VertexShaderID);
-	glAttachShader(ProgramID, FragmentShaderID);
-	glLinkProgram(ProgramID);
+	GLuint programID = glCreateProgram();
+	glAttachShader(programID, VertexShaderID);
+	glAttachShader(programID, FragmentShaderID);
+	glLinkProgram(programID);
+
+	GLint result = GL_FALSE;
+	int infoLogLength;
 
 	// Check the program
-	glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
-	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	std::vector<char> ProgramErrorMessage( std::max(InfoLogLength, int(1)) );
-	glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+	glGetProgramiv(programID, GL_LINK_STATUS, &result);
+	glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
+	std::vector<char> programErrorMessage(std::max(infoLogLength, int(1)));
+	glGetProgramInfoLog(programID, infoLogLength, NULL, &programErrorMessage[0]);
 
-	if(ProgramErrorMessage.size() > 1)
-		Log::Instance().Write(&ProgramErrorMessage[0]);
+	if (programErrorMessage.size() > 1)
+		Log::Instance().Write(&programErrorMessage[0]);
 
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
 
-	return ((Result == GL_TRUE) && CreateShaderInstance(id,ProgramID));
+	return ((result == GL_TRUE) && CreateShaderInstance(id, programID));
+}
+
+GLuint ResourceManager::CreateGLShader(const std::string& file, GLenum type)
+{
+	// Read the Vertex Shader code from the file
+	std::string shaderCode;
+	std::ifstream shaderStream(file.c_str(), std::ios::in);
+	if (shaderStream.is_open())
+	{
+		std::string Line = "";
+		while (getline(shaderStream, Line))
+		{
+			shaderCode += "\n" + Line;
+		}
+	}
+
+	GLint result = GL_FALSE;
+	int infoLogLength;
+
+	GLuint shaderID = glCreateShader(type);
+
+	// Compile Vertex Shader
+	char const * sourcePointer = shaderCode.c_str();
+	glShaderSource(shaderID, 1, &sourcePointer, NULL);
+	glCompileShader(shaderID);
+
+	// Check Vertex Shader
+	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
+	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+	std::vector<char> shaderErrorMessage(infoLogLength);
+	glGetShaderInfoLog(shaderID, infoLogLength, NULL, &shaderErrorMessage[0]);
+
+	if (shaderErrorMessage.size() > 1)
+		Log::Instance().Write(shaderErrorMessage.data());
+
+	return shaderID;
 }
 
 bool ResourceManager::CreateShaderInstance(const std::string& id, GLuint programID)

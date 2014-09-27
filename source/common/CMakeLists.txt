@@ -6,14 +6,14 @@ set(COMMON_HEADERS
     Timer.h
     Log.h
 	CommonExport.h
-	Random.h)
+	RandomGenerator.h)
 
 set(COMMON_SOURCE
     Camera.cpp
     VecMath.cpp
     Timer.cpp
 	Log.cpp
-	Random.cpp)
+	RandomGenerator.cpp)
 
 # build the common shared lib
 add_library(common SHARED ${COMMON_HEADERS} ${COMMON_SOURCE})

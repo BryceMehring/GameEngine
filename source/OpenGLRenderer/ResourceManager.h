@@ -8,7 +8,6 @@
 #include <glm/vec4.hpp>
 #include <map>
 #include <array>
-#include <unordered_map>
 
 // Valid resource types
 enum class ResourceType
@@ -185,7 +184,7 @@ class Font : public Texture
 public:
 
 	typedef std::array<CharDescriptor,256> FontArrayType;
-	typedef std::array<std::array<short, 128>, 128> KerningArrayType;
+	typedef std::array<short, 128*128> KerningArrayType;
 
 	Font(GLuint i, unsigned char* pImg, int comp, int tw, int th);
 
@@ -268,6 +267,9 @@ private:
 
 	// converts # of components into the corresponding OpenGL format.
 	void GetOpenGLFormat(int comp, GLenum& format, GLint& internalFormat);
+
+	// Creates and returns an OpenGL shader of the specified type loaded from the file.
+	GLuint CreateGLShader(const std::string& file, GLenum type);
 
 	// Create shader objects from program id
 	bool CreateShaderInstance(const std::string& id, GLuint programID);
