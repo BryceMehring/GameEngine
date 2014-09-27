@@ -1,4 +1,4 @@
-#include "Random.h"
+#include "RandomGenerator.h"
 #include <chrono>
 
 Random& Random::Instance()

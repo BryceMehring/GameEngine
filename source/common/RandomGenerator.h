@@ -1,10 +1,10 @@
-#ifndef _RANDOM_
-#define _RANDOM_
+#ifndef _RANDOMGENERATOR_
+#define _RANDOMGENERATOR_
 
-#include <random>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include "CommonExport.h"
+#include <random>
 
 // Defines methods to generate random numbers
 class Random
@@ -32,7 +32,6 @@ public:
 	COMMON_API glm::vec3 GenerateVector(const glm::vec3& min, const glm::vec3& max);
 
 private:
-
 	std::mt19937 m_generator;
 
 	Random();
@@ -40,4 +39,4 @@ private:
 	Random& operator=(const Random&) = delete;
 };
 
-#endif // _RANDOM_
+#endif // _RANDOMGENERATOR_
