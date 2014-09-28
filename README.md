@@ -1,6 +1,8 @@
 GameEngine
 ==========
 
+![Build Status](http://ci.brycemehring.me/buildStatus/icon?job=GameEngine%20-%20Windows)
+
 
 #### To create projects:
 
