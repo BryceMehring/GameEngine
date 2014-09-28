@@ -44,6 +44,9 @@ Dependencies
 * [cmake](http://www.cmake.org/)
 * OpenGL 3.3 hardware support
 
+#### If building in Visual Studio:
+* [dirent](http://www.softagalleria.net/dirent.php)
+
 #### Linux: 
 
     sudo apt-get install g++ git cmake cmake-qt-gui libgl1-mesa-dev libglu1-mesa-dev xorg-dev libglm-dev libglew-dev
