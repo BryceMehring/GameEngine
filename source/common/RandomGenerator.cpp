@@ -22,7 +22,7 @@ Random::Random()
 	}
 	else
 	{
-		m_generator.seed(std::seed_seq{ std::chrono::system_clock::now().time_since_epoch().count() });
+		m_generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
 	}
 }
 
