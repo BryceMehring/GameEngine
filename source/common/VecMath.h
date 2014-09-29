@@ -108,10 +108,10 @@ COMMON_API bool Intersects(const FRECT& c1, const FRECT& c2);
 
 COMMON_API bool Sat(const std::vector<glm::vec3>& poly1, const std::vector<glm::vec3>& poly2);
 
-// ray casting algorithm
+// Ray casting algorithm
 COMMON_API bool IsPointInPolygon(const glm::vec2* pArray, unsigned int length, const glm::vec2& P);
 
-// collision interface
+// Collision interface
 
 class ICollisionPolygon
 {
@@ -127,7 +127,6 @@ public:
 
 	// returns true if pOther interests this, else false
 	virtual bool Intersects(const ICollisionPolygon& other) const = 0;
-	virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const = 0;
 	virtual AABB GetAABB() const = 0;
 
 	// returns the type of the collision object
@@ -135,8 +134,7 @@ public:
 
 };
 
-// collision circle
-
+// Collision circle
 class CCircle : public ICollisionPolygon
 {
 public:
@@ -148,7 +146,6 @@ public:
 
 	COMMON_API virtual Type GetType() const { return ICollisionPolygon::Type::Circle; }
 	COMMON_API virtual bool Intersects(const ICollisionPolygon& other) const;
-	COMMON_API virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
 	COMMON_API virtual AABB GetAABB() const;
 	
 	// circle access
@@ -161,8 +158,7 @@ private:
 
 };
 
-// todo: create another CRectangle class that is renderable
-// collision rectangle
+// Collision rectangle
 class CRectangle : public ICollisionPolygon
 {
 public:
@@ -173,7 +169,6 @@ public:
 
 	COMMON_API virtual Type GetType() const { return ICollisionPolygon::Type::Rectangle; }
 	COMMON_API virtual bool Intersects(const ICollisionPolygon& other) const;
-	COMMON_API virtual void GetNormal(const glm::vec2& pos, glm::vec2& out) const;
 	COMMON_API virtual AABB GetAABB() const;
 
 	// rect access

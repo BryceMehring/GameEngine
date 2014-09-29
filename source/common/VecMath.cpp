@@ -44,12 +44,6 @@ bool CCircle::Intersects(const ICollisionPolygon& other) const
 	return bSuccess;
 }
 
-void CCircle::GetNormal(const glm::vec2& pos, glm::vec2& out) const
-{
-	out = pos - m_circle.center;
-	out = glm::normalize(out);
-}
-
 AABB CCircle::GetAABB() const
 {
 	return {
@@ -90,33 +84,6 @@ bool CRectangle::Intersects(const ICollisionPolygon& other) const
 	}
 
 	return bSuccess;
-}
-
-void CRectangle::GetNormal(const glm::vec2& pos, glm::vec2& out) const
-{
-	//D3DXVECTOR2 tempPos = pos;
-	//tempPos.x = m_rect.topLeft.x;
-	//if(pos.x < this->m_rect.bottomRight.x)
-	// todo: rename this class as a paddleCollisionRect and also
-	// todo: keep this current class for basic rectangle collision
-	{
-		glm::vec2 middle = m_rect.Middle();
-		// todo: use the && operator to fix this logic
-		if(pos.x <= m_rect.bottomRight.x)
-		{
-			middle.x += 30;
-		}
-		else if(pos.x >= m_rect.topLeft.x)
-		{
-			middle.x -= 30;
-		}
-		else
-		{
-			middle.y = 0;
-		}
-		out = middle - pos;
-		out = glm::normalize(out);
-	}
 }
 
 AABB CRectangle::GetAABB() const

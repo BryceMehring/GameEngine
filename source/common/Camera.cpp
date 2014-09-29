@@ -17,7 +17,6 @@ const glm::mat4& Camera::ViewProj() const
 
 bool Camera::IsVisible(const glm::vec3& min, const glm::vec3& max) const
 {
-	glm::vec3 P;
 	glm::vec3 Q;
 
 	for(unsigned int i = 0; i < 6; ++i)
@@ -26,19 +25,16 @@ bool Camera::IsVisible(const glm::vec3& min, const glm::vec3& max) const
 		{
 			if(m_planes[i][j] >= 0.0f)
 			{
-				P[j] = min[j];
 				Q[j] = max[j];
 			}
 			else
 			{
-				P[j] = max[j];
 				Q[j] = min[j];
 			}
 		}
 
 		if(glm::dot(m_planes[i],glm::vec4(Q.x,Q.y,Q.z,1.0f)) < 0.0f)
 			return false;
-
 	}
 
 	return true;
@@ -109,5 +105,5 @@ glm::vec3 PerspectiveCamera::UnProjectSS(const glm::vec3& pos, const glm::vec4& 
 glm::vec3 PerspectiveCamera::UnProjectWS(glm::vec3 pos, const glm::vec4& viewport) const
 {
 	pos.z = glm::project(pos, m_View, m_Proj, viewport).z;
-	return glm::unProject(pos, m_View, m_Proj, viewport);
+	return UnProjectSS(pos, viewport);
 }
