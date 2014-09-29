@@ -13,10 +13,17 @@ Random& Random::Instance()
 Random::Random()
 {
 	std::random_device r;
-	std::array<int, std::mt19937::state_size> seed_data;
-	std::generate(seed_data.begin(), seed_data.end(), std::ref(r));
-	std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
-	m_generator.seed(seq);
+	if (r.entropy() > 0.0)
+	{
+		std::array<int, std::mt19937::state_size> seed_data;
+		std::generate(seed_data.begin(), seed_data.end(), std::ref(r));
+		std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
+		m_generator.seed(seq);
+	}
+	else
+	{
+		m_generator.seed(std::seed_seq{ std::chrono::system_clock::now().time_since_epoch().count() });
+	}
 }
 
 int Random::Generate(int max)
