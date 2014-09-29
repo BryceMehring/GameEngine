@@ -1,5 +1,6 @@
 #include "RandomGenerator.h"
 #include <chrono>
+#include <array>
 
 Random& Random::Instance()
 {
@@ -7,8 +8,13 @@ Random& Random::Instance()
 	return instance;
 }
 
-Random::Random() : m_generator(std::chrono::system_clock::now().time_since_epoch().count())
+Random::Random()
 {
+	std::random_device r;
+	std::array<int, std::mt19937::state_size> seed_data;
+	std::generate(seed_data.begin(), seed_data.end(), std::ref(r));
+	std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
+	m_generator.seed(seq);
 }
 
 int Random::Generate(int max)
