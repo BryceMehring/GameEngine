@@ -34,5 +34,5 @@ int main(int size, char** cmd)
 		Log::Instance().Write("Unknown error, quitting.");
 	}
 
-	return 1;
+	return 0;
 }
