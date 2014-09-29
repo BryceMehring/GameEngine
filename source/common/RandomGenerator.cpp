@@ -1,6 +1,8 @@
 #include "RandomGenerator.h"
 #include <chrono>
 #include <array>
+#include <algorithm>
+#include <functional>
 
 Random& Random::Instance()
 {
