@@ -85,18 +85,17 @@ IPlugin* PluginManager::GetPlugin(DLLType type)
 	return nullptr;
 }
 
-IPlugin* PluginManager::LoadDLL(std::string file, std::string folder)
+IPlugin* PluginManager::LoadPlugin(std::string file)
 {
-	Log::Instance().Write("Loading " + file);
-
 	std::shared_ptr<PluginInfo> dll = std::make_shared<PluginInfo>();
 
-	std::string dllFile = folder + '/' + file + ".plug";
+	Log::Instance().Write("Loading " + StripFile(file));
+	file += ".plug";
 
 #if defined(_WIN32)
-	dll->mod = LoadLibrary(dllFile.c_str());
+	dll->mod = LoadLibrary(file.c_str());
 #else
-	dll->mod = dlopen(dllFile.c_str(),RTLD_NOW);
+	dll->mod = dlopen(file.c_str(),RTLD_NOW);
 #endif
 
 	if(dll->mod == nullptr)
@@ -154,5 +153,24 @@ void PluginManager::FreePlugin(DLLType type)
 void PluginManager::FreeAllPlugins()
 {
 	m_plugins.clear();
+}
+
+std::string PluginManager::StripFile(std::string file) const
+{
+	std::string strippedFileName;
+	auto pos = file.rfind('/');
+	if(pos != std::string::npos)
+	{
+		if((pos + 1) < file.size())
+		{
+			strippedFileName = file.substr(pos + 1);
+		}
+	}
+	else
+	{
+		strippedFileName = file;
+	}
+
+	return strippedFileName;
 }
 

@@ -66,12 +66,12 @@ void Game::LoadPlugins()
 {
 	m_plugins.FreeAllPlugins();
 
-	IPlugin* pPlugin = m_plugins.LoadDLL("renderer");
+	IPlugin* pPlugin = m_plugins.LoadPlugin("renderer");
 	assert(pPlugin->GetPluginType() == DLLType::Rendering); // check to make sure the renderer is actually the renderer
 
 	m_pRenderer = static_cast<IRenderer*>(pPlugin);
 
-	pPlugin = m_plugins.LoadDLL("input");
+	pPlugin = m_plugins.LoadPlugin("input");
 	assert(pPlugin->GetPluginType() == DLLType::Input); // check to make sure the input is actually the input plugin
 
 	m_pInput = static_cast<IInput*>(pPlugin);

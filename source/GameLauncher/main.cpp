@@ -1,10 +1,7 @@
 #include "Game.h"
 #include "Log.h"
 
-#include <iostream>
-#include <ctime>
-
-using namespace std;
+#include <string>
 
 int main(int size, char** cmd)
 {
@@ -21,11 +18,11 @@ int main(int size, char** cmd)
 		myGame.SetNextState(pState);
 		return myGame.Run();
 	}
-	catch(exception& error)
+	catch(std::exception& error)
 	{
 		Log::Instance().Write(error.what());
 	}
-	catch(string msg)
+	catch(std::string msg)
 	{
 		Log::Instance().Write(msg);
 	}
