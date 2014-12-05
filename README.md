@@ -34,9 +34,9 @@ How the root folder should look so that cmake should automatically detect depend
 Dependencies
 ==========
 
-* [GLFW](http://www.glfw.org/)
+* [GLFW](https://github.com/glfw/glfw)
 * [GLEW](http://glew.sourceforge.net/)
-* [GLM](http://glm.g-truc.net/)
+* [GLM](https://github.com/g-truc/glm)
 * [stb_image](https://github.com/nothings/stb)
 * [cmake](http://www.cmake.org/)
 * OpenGL 3.3 hardware support
