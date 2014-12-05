@@ -10,13 +10,15 @@ option(ENABLE_CPACK "Enable CPack" OFF)
 set(ENGINE_VERSION_MAJOR 1)
 set(ENGINE_VERSION_MINOR 0)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules")
+
 include(${CMAKE_SOURCE_DIR}/CMake/VisualStudioVersionCheck.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/CompileFlags.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/ConfigurePluginExtension.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/RedirectOutputTo.cmake)
 
 RedirectOutputTo("bin")
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules")
 
 find_package(GLEW)
 include_directories(${GLEW_INCLUDE_DIR})
@@ -29,7 +31,6 @@ include_directories(${STB_IMAGE_INCLUDE_DIR})
 
 find_package(GLM)
 include_directories(${GLM_INCLUDE_DIR})
-add_definitions(-DGLM_FORCE_RADIANS)
 
 include_directories(${CMAKE_SOURCE_DIR}/source/common)
 include_directories(${CMAKE_SOURCE_DIR}/source/GameEngine/interfaces)
