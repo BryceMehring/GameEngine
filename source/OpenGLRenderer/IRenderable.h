@@ -6,7 +6,7 @@ class IRenderable
 public:
 
 	virtual ~IRenderable() {}
-	virtual void Render(class ApplyShader& shader, const class IResource* resource) = 0;
+	virtual void Render(const class Mesh& mesh, class ApplyShader& shader, const class IResource* resource) = 0;
 };
 
 #endif // _IRENDERABLE_

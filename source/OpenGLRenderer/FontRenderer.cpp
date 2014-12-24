@@ -4,7 +4,7 @@
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
-void FontRenderable::Render(ApplyShader& shader, const IResource* resource)
+void FontRenderable::Render(const Mesh& mesh, ApplyShader& shader, const IResource* resource)
 {
 	assert(resource != nullptr);
 
@@ -62,7 +62,7 @@ void FontRenderable::Render(ApplyShader& shader, const IResource* resource)
 				shader->SetValue("charInfo.size", glm::vec2(charInfo.Width, charInfo.Height));
 
 				// Render a single character of the string
-				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+				mesh.Draw();
 			}
 			else
 			{

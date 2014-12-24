@@ -12,7 +12,7 @@ public:
 
 	SpriteRenderable(const glm::mat4& T, const glm::vec4& color, const glm::vec2& tiling, unsigned int iCellId);
 
-	void Render(class ApplyShader& shader, const IResource* resource) override;
+	void Render(const class Mesh& mesh, class ApplyShader& shader, const IResource* resource) override;
 
 private:
 

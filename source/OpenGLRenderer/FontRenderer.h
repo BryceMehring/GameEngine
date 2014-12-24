@@ -6,6 +6,7 @@
 #include "ResourceManager.h"
 #include "VertexBuffer.h"
 #include "IRenderable.h"
+#include "Mesh.h"
 #include <map>
 
 // Defines how each string will be rendered
@@ -22,7 +23,7 @@ public:
 	// Gets the string rect from the specified font
 	static void GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& out);
 	
-	void Render(ApplyShader& shader, const IResource* resource) override;
+	void Render(const Mesh& mesh, ApplyShader& shader, const IResource* resource) override;
 
 private:
 

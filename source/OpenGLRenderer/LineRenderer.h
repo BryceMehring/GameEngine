@@ -14,7 +14,7 @@ public:
 
 	LineRenderer(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T);
 
-	void Render(ApplyShader& shader, const IResource* resource) override;
+	void Render(const class Mesh& mesh, ApplyShader& shader, const IResource* resource) override;
 
 private:
 

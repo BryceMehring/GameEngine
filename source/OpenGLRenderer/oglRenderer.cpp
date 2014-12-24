@@ -38,18 +38,13 @@ m_pMonitors(nullptr), m_iMonitorCount(0), m_iCurrentMonitor(0), m_iCurrentDispla
 	EnumerateDisplayAdaptors();
 	ConfigureGLFW();
 	ConfigureOpenGL();
-	BuildBuffers();
+	BuildRenderers();
 	BuildCamera();
 	EnableVSync(true);
 }
 
 oglRenderer::~oglRenderer()
 {
-	for(auto iter : m_vertexBuffers)
-	{
-		delete iter;
-	}
-
 	SaveDisplayList();
 	glfwDestroyWindow(m_pWindow);
 }
@@ -551,24 +546,12 @@ void oglRenderer::SaveDisplayList()
 
 }
 
-void oglRenderer::BuildBuffers()
+void oglRenderer::BuildRenderers()
 {
-	const unsigned char indexBuffer[6] = { 0, 2, 1,	2, 3, 1 };
+	m_mesh.reset(new Mesh());
 
-	VertexPT verticies[] =
-	{
-		{glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec2(0)},
-		{glm::vec3(-0.5f, -0.5f, 0.0), glm::vec2(0,1)},
-		{glm::vec3(0.5f, 0.5f, 0.0), glm::vec2(1,0)},
-		{glm::vec3(0.5f, -0.5f, 0.0), glm::vec2(1)}
-	};
-
-	VertexBuffer* pSpriteVertexBuffer = new VertexBuffer(verticies, sizeof(VertexPT), 4, GL_STATIC_DRAW,indexBuffer, 6);
-
-	m_pWorldSpaceSprites.reset(new AbstractRenderer(&m_rm, pSpriteVertexBuffer));
-	m_pScreenSpaceSprites.reset(new AbstractRenderer(&m_rm, pSpriteVertexBuffer,&m_OrthoCamera));
-
-	m_vertexBuffers.push_back(pSpriteVertexBuffer);
+	m_pWorldSpaceSprites.reset(new AbstractRenderer(&m_rm, m_mesh));
+	m_pScreenSpaceSprites.reset(new AbstractRenderer(&m_rm, m_mesh, &m_OrthoCamera));
 }
 
 void oglRenderer::BuildCamera()
@@ -597,5 +580,3 @@ void oglRenderer::UpdateCamera()
 
 	glViewport(0, 0, width, height);
 }
-
-

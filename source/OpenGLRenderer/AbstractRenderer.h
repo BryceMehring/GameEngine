@@ -5,7 +5,7 @@
 #include "IRenderable.h"
 #include "ResourceManager.h"
 #include "Camera.h"
-#include "VertexBuffer.h"
+#include "Mesh.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -20,7 +20,7 @@ class AbstractRenderer
 {
 public:
 
-	AbstractRenderer(ResourceManager* pRm, VertexBuffer* pVertexBuffer, Camera* pCam = nullptr);
+	AbstractRenderer(ResourceManager* pRm, std::shared_ptr<Mesh> pMesh, Camera* pCam = nullptr);
 
 	void DrawSprite(const std::string& tech,
 					const std::string& texture,
@@ -51,7 +51,7 @@ public:
 private:
 
 	ResourceManager* m_pRM;
-	VertexBuffer* m_pVertexBuffer;
+	std::shared_ptr<Mesh> m_pMesh;
 
 	Camera* m_pCamera;
 

@@ -8,8 +8,8 @@
 #include <cassert>
 #include <algorithm>
 
-AbstractRenderer::AbstractRenderer(ResourceManager *pRm, VertexBuffer *pVertexBuffer, Camera *pCam) :
-	m_pRM(pRm), m_pVertexBuffer(pVertexBuffer), m_pCamera(pCam)
+AbstractRenderer::AbstractRenderer(ResourceManager *pRm, std::shared_ptr<Mesh> pMesh, Camera *pCam) :
+	m_pRM(pRm), m_pMesh(pMesh), m_pCamera(pCam)
 {
 }
 
@@ -70,7 +70,7 @@ void AbstractRenderer::Render()
 
 	assert(m_pCamera != nullptr);
 
-	m_pVertexBuffer->BindVAO();
+	m_pMesh->Bind();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -82,7 +82,6 @@ void AbstractRenderer::Render()
 		for(auto& techIter : layerIter.second)
 		{
 			// Apply the shader tech
-			//Shader* pShader = m_pRM->GetResource(techIter.first);
 			ApplyShader currentShader = static_cast<Shader*>(m_pRM->GetResource(techIter.first, ResourceType::Shader));
 
 			currentShader->SetMVP(m_pCamera->ViewProj());
@@ -96,7 +95,7 @@ void AbstractRenderer::Render()
 				// Render
 				for (auto& spriteIter : texIter.second)
 				{
-					spriteIter->Render(currentShader, pResource);
+					spriteIter->Render(*m_pMesh, currentShader, pResource);
 				}
 			}
 		}

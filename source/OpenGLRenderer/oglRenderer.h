@@ -164,7 +164,7 @@ private:
 	bool m_bFirstRun = true;
 	GLuint m_iClearBits;
 
-	std::vector<VertexBuffer*> m_vertexBuffers;
+	std::shared_ptr<Mesh> m_mesh;
 	std::map<int, GLFWcursor*> m_cursors;
 
 	static oglRenderer* s_pThis;
@@ -176,7 +176,7 @@ private:
 	void EnumerateDisplayAdaptors();
 	void ParseVideoSettingsFile();
 	void SaveDisplayList();
-	void BuildBuffers();
+	void BuildRenderers();
 	void BuildCamera();
 	void UpdateCamera();
 
