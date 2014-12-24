@@ -22,7 +22,6 @@ public:
 	// Gets the string rect from the specified font
 	static void GetStringRect(const char* str, const Font* fnt, float scale, FontAlignment alignment, Math::FRECT& out);
 	
-	void Setup(ApplyShader& shader, const IResource* resource) override;
 	void Render(ApplyShader& shader, const IResource* resource) override;
 
 private:

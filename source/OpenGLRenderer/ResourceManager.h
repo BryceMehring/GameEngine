@@ -6,7 +6,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
-#include <map>
+#include <unordered_map>
 #include <array>
 
 // Valid resource types
@@ -109,11 +109,13 @@ class Shader : public OpenGLResource
 {
 public:
 
-	typedef std::map<std::string,GLuint> UnifromMap;
+	typedef std::unordered_map<std::string,GLuint> UnifromMap;
 
 	Shader(GLuint i, GLuint MVP, GLuint color, UnifromMap&& uniforms);
 
 	void* QueryInterface(ResourceType type) const override;
+
+	virtual void ApplyResource(IResource* pResource);
 
 	// Sets this shader as the active shader
 	void Bind();
@@ -146,8 +148,6 @@ private:
 	GLuint m_color;
 	UnifromMap m_uniforms;
 	bool m_bUse;
-
-
 };
 
 // Defines a textured shader resource
@@ -158,6 +158,7 @@ public:
 	TexturedShader(GLuint i, GLuint MVP, GLuint color, GLuint texID, UnifromMap&& uniforms);
 
 	void* QueryInterface(ResourceType type) const override;
+	void ApplyResource(IResource* pResource) override;
 	void BindTexture(const OpenGLResource& texture) const;
 
 protected:
@@ -258,7 +259,7 @@ public:
 
 private:
 
-	typedef std::map<std::string, IResource*> ResourceMap;
+	typedef std::unordered_map<std::string, IResource*> ResourceMap;
 
 	ResourceMap m_resources;
 

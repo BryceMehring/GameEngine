@@ -402,7 +402,7 @@ void oglRenderer::ConfigureOpenGL()
 		stream << "supported ";
 #ifdef DEBUG_BUILD
 		stream << "and enabled";
-		glDebugMessageCallback(OpenGLErrorCallback,0);
+		glDebugMessageCallback(OpenGLErrorCallback, nullptr);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 #else
 		stream << "and disabled";

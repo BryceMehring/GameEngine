@@ -4,7 +4,7 @@
 #include "IRenderer.h"
 #include "PluginManager.h"
 #include "AbstractRenderer.h"
-#include "LineEngine.h"
+#include "LineRenderer.h"
 #include "ResourceManager.h"
 #include "VertexBuffer.h"
 

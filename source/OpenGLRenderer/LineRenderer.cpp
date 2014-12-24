@@ -1,4 +1,4 @@
-#include "LineEngine.h"
+#include "LineRenderer.h"
 #include "ApplyShader.h"
 #include "VertexStructures.h"
 #include <GL/glew.h>
@@ -7,10 +7,6 @@
 
 LineRenderer::LineRenderer(const glm::vec3* pArray, unsigned int uiLength, float fWidth, const glm::vec4& color, const glm::mat4& T)
 : m_line(pArray, pArray + uiLength), m_width(fWidth), m_color(color), m_transformation(T)
-{
-}
-
-void LineRenderer::Setup(ApplyShader& shader, const IResource* resource)
 {
 }
 

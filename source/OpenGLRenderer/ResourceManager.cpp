@@ -119,6 +119,10 @@ void* Shader::QueryInterface(ResourceType type) const
 	return nullptr;
 }
 
+void Shader::ApplyResource(IResource *pResource)
+{
+}
+
 void Shader::Bind()
 {
 	if(!m_bUse)
@@ -227,6 +231,18 @@ void* TexturedShader::QueryInterface(ResourceType type) const
 	return pInterface;
 }
 
+void TexturedShader::ApplyResource(IResource* pResource)
+{
+	Texture* pTexture = static_cast<Texture*>(pResource->QueryInterface(ResourceType::Texture));
+	if(pTexture != nullptr)
+	{
+		BindTexture(*pTexture);
+
+		SetValue("textureSize", glm::vec2(pTexture->GetWidth(), pTexture->GetHeight()));
+		SetValue("tileSize", glm::vec2(pTexture->GetCellsWidth(), pTexture->GetCellsHeight()));
+	}
+}
+
 void TexturedShader::BindTexture(const OpenGLResource& texture) const
 {
 	if(IsBound())
@@ -248,7 +264,7 @@ void* Font::QueryInterface(ResourceType type) const
 		return (void*)this;
 	}
 
-	return nullptr;
+	return Texture::QueryInterface(type);
 }
 
 unsigned int Font::GetLineHeight() const

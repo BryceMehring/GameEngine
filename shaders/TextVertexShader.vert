@@ -17,7 +17,7 @@ struct CharDescriptor
 uniform mat4 MVP;
 uniform mat4 transformation;
 uniform CharDescriptor charInfo;
-uniform vec2 fontSize;
+uniform vec2 textureSize;
 
 void main()
 {
@@ -26,7 +26,7 @@ void main()
 
 	vec2 uvOffset = charInfo.pos;
 	uvOffset += vertexUV * charInfo.size;
-	uvOffset /= fontSize;
+	uvOffset /= textureSize;
 
 	UV = uvOffset;
 }

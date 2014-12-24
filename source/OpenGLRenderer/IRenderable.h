@@ -6,7 +6,6 @@ class IRenderable
 public:
 
 	virtual ~IRenderable() {}
-	virtual void Setup(class ApplyShader& shader, const class IResource* resource) = 0;
 	virtual void Render(class ApplyShader& shader, const class IResource* resource) = 0;
 };
 

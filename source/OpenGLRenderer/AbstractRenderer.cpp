@@ -1,7 +1,7 @@
 #include "AbstractRenderer.h"
 #include "SpriteRenderer.h"
 #include "FontRenderer.h"
-#include "LineEngine.h"
+#include "LineRenderer.h"
 #include "VertexStructures.h"
 #include "ApplyShader.h"
 
@@ -90,13 +90,8 @@ void AbstractRenderer::Render()
 			// Loop over all sprites with the same texture
 			for(auto& texIter : techIter.second)
 			{
-				const IResource* pResource = m_pRM->GetResource(texIter.first);
-				
-				// Setup the renderer to render
-				if (!texIter.second.empty())
-				{
-					texIter.second.front()->Setup(currentShader, pResource);
-				}
+				IResource* pResource = m_pRM->GetResource(texIter.first);
+				currentShader->ApplyResource(pResource);
 
 				// Render
 				for (auto& spriteIter : texIter.second)

@@ -10,7 +10,7 @@ out vec2 UV;
 // Values that stay constant for the whole mesh.
 uniform mat4 MVP;
 uniform mat4 transformation;
-uniform vec2 animationTiles;
+uniform vec2 tileSize;
 uniform vec2 tiling;
 uniform int tileIndex;
 
@@ -19,7 +19,7 @@ void main()
 	// Output position of the vertex, in clip space
 	gl_Position = MVP * transformation * vec4(vertexPosition_modelspace,1);
 
-	vec2 uvOffset = vec2(mod(tileIndex,animationTiles.x), floor(tileIndex / animationTiles.x));
+	vec2 uvOffset = vec2(mod(tileIndex,tileSize.x), floor(tileIndex / tileSize.x));
 
-	UV = (uvOffset + vertexUV) / animationTiles * tiling;
+	UV = (uvOffset + vertexUV) / tileSize * tiling;
 }

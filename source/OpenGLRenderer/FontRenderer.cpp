@@ -4,21 +4,6 @@
 #include <glm/gtx/transform.hpp>
 #include <GL/glew.h>
 
-void FontRenderable::Setup(ApplyShader& shader, const IResource* resource)
-{
-	assert(resource != nullptr);
-
-	const Font* fnt = static_cast<const Font*>(resource->QueryInterface(ResourceType::Font));
-	assert("Invalid resource selected" && (fnt != nullptr));
-
-	if (shader.GetType() == ApplyShader::ShaderType::Textured)
-	{
-		static_cast<ApplyTexturedShader&>(shader)->BindTexture(*fnt);
-	}
-
-	shader->SetValue("fontSize", glm::vec2(fnt->GetWidth(), fnt->GetHeight()));
-}
-
 void FontRenderable::Render(ApplyShader& shader, const IResource* resource)
 {
 	assert(resource != nullptr);
