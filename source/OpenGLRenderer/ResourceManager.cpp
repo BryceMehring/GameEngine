@@ -604,11 +604,12 @@ bool ResourceManager::LoadShader(const std::string& id, const std::string& vert,
 	// Check the program
 	glGetProgramiv(programID, GL_LINK_STATUS, &result);
 	glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
-	std::vector<char> programErrorMessage(std::max(infoLogLength, int(1)));
-	glGetProgramInfoLog(programID, infoLogLength, NULL, &programErrorMessage[0]);
-
-	if (programErrorMessage.size() > 1)
+	if (infoLogLength > 0)
+	{
+		std::vector<char> programErrorMessage(infoLogLength);
+		glGetProgramInfoLog(programID, infoLogLength, NULL, &programErrorMessage[0]);
 		Log::Instance().Write(&programErrorMessage[0]);
+	}
 
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
@@ -630,24 +631,22 @@ GLuint ResourceManager::CreateGLShader(const std::string& file, GLenum type)
 		}
 	}
 
-	GLint result = GL_FALSE;
 	int infoLogLength;
-
 	GLuint shaderID = glCreateShader(type);
 
-	// Compile Vertex Shader
+	// Compile Shader
 	char const * sourcePointer = shaderCode.c_str();
 	glShaderSource(shaderID, 1, &sourcePointer, NULL);
 	glCompileShader(shaderID);
 
-	// Check Vertex Shader
-	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
+	// Check Shader
 	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-	std::vector<char> shaderErrorMessage(infoLogLength);
-	glGetShaderInfoLog(shaderID, infoLogLength, NULL, &shaderErrorMessage[0]);
-
-	if (shaderErrorMessage.size() > 1)
+	if (infoLogLength > 0)
+	{
+		std::vector<char> shaderErrorMessage(infoLogLength);
+		glGetShaderInfoLog(shaderID, infoLogLength, NULL, &shaderErrorMessage[0]);
 		Log::Instance().Write(shaderErrorMessage.data());
+	}
 
 	return shaderID;
 }
