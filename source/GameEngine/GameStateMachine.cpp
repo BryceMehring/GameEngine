@@ -29,10 +29,10 @@ void GameStateMachine::SetState(const std::string& state, Game& game)
 
 void GameStateMachine::RemoveState(Game& game)
 {
-	// If there is a state,
 	if(m_pCurrentState != nullptr)
 	{
 		m_pCurrentState->Destroy(game);
+		m_pCurrentState = nullptr;
 		game.GetPM().FreePlugin(DLLType::Game);
 	}
 }
