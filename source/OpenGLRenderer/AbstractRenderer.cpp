@@ -82,20 +82,23 @@ void AbstractRenderer::Render()
 		for(auto& techIter : layerIter.second)
 		{
 			// Apply the shader tech
-			ApplyShader currentShader = static_cast<Shader*>(m_pRM->GetResource(techIter.first, ResourceType::Shader));
-
-			currentShader->SetMVP(m_pCamera->ViewProj());
-
-			// Loop over all sprites with the same texture
-			for(auto& texIter : techIter.second)
+			IResource* pShader = m_pRM->GetResource(techIter.first, ResourceType::Shader);
+			if (pShader != nullptr)
 			{
-				IResource* pResource = m_pRM->GetResource(texIter.first);
-				currentShader->ApplyResource(pResource);
+				ApplyShader currentShader = static_cast<Shader*>(pShader);
+				currentShader->SetMVP(m_pCamera->ViewProj());
 
-				// Render
-				for (auto& spriteIter : texIter.second)
+				// Loop over all sprites with the same texture
+				for (auto& texIter : techIter.second)
 				{
-					spriteIter->Render(*m_pMesh, currentShader, pResource);
+					IResource* pResource = m_pRM->GetResource(texIter.first);
+					currentShader->ApplyResource(pResource);
+
+					// Render
+					for (auto& spriteIter : texIter.second)
+					{
+						spriteIter->Render(*m_pMesh, currentShader, pResource);
+					}
 				}
 			}
 		}
