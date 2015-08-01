@@ -17,9 +17,10 @@ public:
 	// vertexBufferLength: the number of vertices to be part of the vertex buffer
 	// usage: Specifies the usage of the vertex buffer. Can be GL_STATIC_DRAW, GL_STREAM_DRAW, or GL_DYNAMIC_DRAW
 	// pIndexBuffer: pointer to the index buffer. This pointer cannot be null
+	// indexSize: size of the underlying type of the index buffer array
 	// indexBufferLength: length of the index buffer
-	// bPT: should be true if the vertex structure uses a texture, else false
-	VertexBuffer(void* pVertexBuffer, GLuint vertexStructureSize, GLuint vertexBufferLength, GLenum usage, const unsigned char* pIndexBuffer, GLuint indexBufferLength, bool bPT = true);
+	// bTexture: should be true if the vertex structure uses a texture, else false
+	VertexBuffer(void* pVertexBuffer, GLuint vertexStructureSize, GLuint vertexBufferLength, GLenum usage, void* pIndexBuffer, GLuint indexSize, GLuint indexBufferLength, bool bTexture = true);
 	~VertexBuffer();
 
 	// Binds the vertex buffer object

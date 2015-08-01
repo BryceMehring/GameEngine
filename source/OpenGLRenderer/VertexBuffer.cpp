@@ -2,7 +2,7 @@
 
 #include <vector>
 
-VertexBuffer::VertexBuffer(void* pVertexBuffer, GLuint vertexStructureSize, GLuint vertexBufferLength, GLenum usage, const unsigned char* pIndexBuffer, GLuint indexBufferLength, bool bPT) :
+VertexBuffer::VertexBuffer(void* pVertexBuffer, GLuint vertexStructureSize, GLuint vertexBufferLength, GLenum usage, void* pIndexBuffer, GLuint indexSize, GLuint indexBufferLength, bool bTexture) :
 	m_length(vertexBufferLength), m_size(vertexStructureSize * vertexBufferLength)
 {
 	assert(pIndexBuffer != nullptr);
@@ -17,12 +17,12 @@ VertexBuffer::VertexBuffer(void* pVertexBuffer, GLuint vertexStructureSize, GLui
 
 	glGenBuffers(1, &m_indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferLength * sizeof(unsigned char), pIndexBuffer, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferLength * indexSize, pIndexBuffer, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStructureSize, 0);
 
-	if(bPT)
+	if(bTexture)
 	{
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, vertexStructureSize, reinterpret_cast<void*>(3 * sizeof(float)));

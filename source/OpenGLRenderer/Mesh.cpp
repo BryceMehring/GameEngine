@@ -1,8 +1,8 @@
 #include "Mesh.h"
 
-Mesh::Mesh() : m_mode(GL_TRIANGLES), m_count(6), m_type(GL_UNSIGNED_BYTE)
+Mesh::Mesh() : m_mode(GL_TRIANGLES), m_count(6), m_type(GL_UNSIGNED_SHORT)
 {
-	unsigned char indexBuffer[6] = { 0, 2, 1,	2, 3, 1 };
+	unsigned short indexBuffer[6] = { 0, 2, 1,	2, 3, 1 };
 	VertexPT verticies[] =
 	{
 		{glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec2(0)},
@@ -11,7 +11,7 @@ Mesh::Mesh() : m_mode(GL_TRIANGLES), m_count(6), m_type(GL_UNSIGNED_BYTE)
 		{glm::vec3(0.5f, -0.5f, 0.0), glm::vec2(1)}
 	};
 
-	m_buffer.reset(new VertexBuffer(verticies, sizeof(VertexPT), 4, GL_STATIC_DRAW, indexBuffer, 6));
+	m_buffer.reset(new VertexBuffer(verticies, sizeof(VertexPT), 4, GL_STATIC_DRAW, indexBuffer, sizeof(unsigned short), 6));
 }
 
 void Mesh::Bind()
