@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iostream>
 
-void OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+void GLAPIENTRY OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	std::ostringstream stream;
 	stream << "OpenGL Error" << std::endl << "Source: ";
