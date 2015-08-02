@@ -142,15 +142,15 @@ void Graph::GenerateMST() const
 		{
 			Node* pNeighbor = iter->GetTail();
 
-			if (pNeighbor != pCurrentVertex->GetPredecessor())
+			if (pNeighbor->GetPredecessor() == nullptr)
 			{
 				float fEdgeCost = iter->GetCost();
 				float fCurrentCost = pNeighbor->GetCost();
 
 				if (fEdgeCost < fCurrentCost)
 				{
-					pNeighbor->SetCost(fEdgeCost);
 					pNeighbor->SetLowestEdge(iter);
+					pNeighbor->SetCost(fEdgeCost);
 					fringe.Push(pNeighbor);
 				}
 			}
@@ -159,11 +159,7 @@ void Graph::GenerateMST() const
 		if (!fringe.Empty())
 		{
 			pCurrentVertex = fringe.Top();
-			if (pCurrentVertex->GetPredecessor() == nullptr && pCurrentVertex != m_nodes[0].get())
-			{
-				pCurrentVertex->SetPredecessor(pCurrentVertex->GetLowestEdge()->GetHead());
-			}
-			
+			pCurrentVertex->SetPredecessor(pCurrentVertex->GetLowestEdge()->GetHead());
 			fringe.Pop();
 		}
 	} 
