@@ -31,6 +31,7 @@ include_directories(${STB_IMAGE_INCLUDE_DIR})
 
 find_package(GLM)
 include_directories(${GLM_INCLUDE_DIR})
+add_definitions(-DGLM_FORCE_RADIANS)
 
 include_directories(${CMAKE_SOURCE_DIR}/source/common)
 include_directories(${CMAKE_SOURCE_DIR}/source/GameEngine/interfaces)
