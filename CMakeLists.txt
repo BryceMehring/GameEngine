@@ -88,7 +88,8 @@ if(ENABLE_CPACK)
 
 	if(BUILD_EXAMPLES)
 		#todo: wrap this up in a for loop
-		install(DIRECTORY ./Examples/Joystick/plugin/Joystick DESTINATION ./plugin/)
+                install(DIRECTORY ./bin/plugin/Joystick DESTINATION ./plugin/)
+                install(DIRECTORY ./bin/plugin/MinimumSpanningTree DESTINATION ./plugin/)
 
 		#find_path(EXTERNAL_PROJECT CMakeLists.txt)
 		#install(DIRECTORY ${EXTERNAL_PROJECT}/plugin/ DESTINATION ./plugin)
