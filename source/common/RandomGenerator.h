@@ -7,11 +7,11 @@
 #include <random>
 
 // Defines methods to generate random numbers
-class Random
+class RandomGenerator
 {
 public:
 
-	COMMON_API static Random& Instance();
+	COMMON_API static RandomGenerator& Instance();
 
 	// Returns a random int between [0, max]
 	COMMON_API int Generate(int max);
@@ -34,9 +34,9 @@ public:
 private:
 	std::mt19937 m_generator;
 
-	Random();
-	Random(const Random&) = delete;
-	Random& operator=(const Random&) = delete;
+	RandomGenerator();
+	RandomGenerator(const RandomGenerator&) = delete;
+	RandomGenerator& operator=(const RandomGenerator&) = delete;
 };
 
 #endif // _RANDOMGENERATOR_

@@ -4,13 +4,13 @@
 #include <algorithm>
 #include <functional>
 
-Random& Random::Instance()
+RandomGenerator& RandomGenerator::Instance()
 {
-	static Random instance;
+	static RandomGenerator instance;
 	return instance;
 }
 
-Random::Random()
+RandomGenerator::RandomGenerator()
 {
 	std::random_device r;
 	if (r.entropy() > 0.0)
@@ -26,32 +26,32 @@ Random::Random()
 	}
 }
 
-int Random::Generate(int max)
+int RandomGenerator::Generate(int max)
 {
 	return Generate(0, max);
 }
 
-float Random::Generate(float max)
+float RandomGenerator::Generate(float max)
 {
 	return Generate(0.0f, max);
 }
 
-int Random::Generate(int min, int max)
+int RandomGenerator::Generate(int min, int max)
 {
 	return std::uniform_int_distribution<int>(min, max)(m_generator);
 }
 
-float Random::Generate(float min, float max)
+float RandomGenerator::Generate(float min, float max)
 {
 	return std::uniform_real_distribution<float>(min, max)(m_generator);
 }
 
-glm::vec2 Random::GenerateVector(const glm::vec2& min, const glm::vec2& max)
+glm::vec2 RandomGenerator::GenerateVector(const glm::vec2& min, const glm::vec2& max)
 {
 	return glm::vec2(Generate(min.x, max.x), Generate(min.y, max.y));
 }
 
-glm::vec3 Random::GenerateVector(const glm::vec3& min, const glm::vec3& max)
+glm::vec3 RandomGenerator::GenerateVector(const glm::vec3& min, const glm::vec3& max)
 {
 	return glm::vec3(Generate(min.x, max.x),
 					 Generate(min.y, max.y),
