@@ -36,6 +36,7 @@ m_pMonitors(nullptr), m_iMonitorCount(0), m_iCurrentMonitor(0), m_iCurrentDispla
 
 	ParseVideoSettingsFile();
 	EnumerateDisplayAdaptors();
+	SaveDisplayList(); // TODO: Check if display mode changed, if so, then save in the destructor
 	ConfigureGLFW();
 	ConfigureOpenGL();
 	BuildRenderers();
@@ -45,7 +46,6 @@ m_pMonitors(nullptr), m_iMonitorCount(0), m_iCurrentMonitor(0), m_iCurrentDispla
 
 oglRenderer::~oglRenderer()
 {
-	SaveDisplayList();
 	glfwDestroyWindow(m_pWindow);
 }
 
@@ -223,14 +223,14 @@ bool oglRenderer::GetDisplayMode(int monitor, int i, int* width, int* height) co
 
 bool oglRenderer::GetDisplayMode(int* width, int* height, bool* vsync) const
 {
-	bool status = GetDisplayMode(m_iCurrentMonitor,m_iCurrentDisplayMode,width,height);
+	glfwGetFramebufferSize(m_pWindow, width, height);
 
 	if (vsync != nullptr)
 	{
 		*vsync = m_bVSync;
 	}
 
-	return status;
+	return true;
 }
 
 int oglRenderer::GetNumMonitors() const
@@ -557,7 +557,7 @@ void oglRenderer::BuildRenderers()
 void oglRenderer::BuildCamera()
 {
 	int width, height;
-	glfwGetFramebufferSize(m_pWindow, &width, &height);
+	GetDisplayMode(&width, &height);
 
 	m_OrthoCamera.LookAt(glm::vec3(0.0f,0.0f,2.0f));
 	m_OrthoCamera.SetLens(0.0f, (float)width, (float)height, 0.1f, 5000.0f);
@@ -567,7 +567,7 @@ void oglRenderer::BuildCamera()
 void oglRenderer::UpdateCamera()
 {
 	int width, height;
-	glfwGetFramebufferSize(m_pWindow, &width, &height);
+	GetDisplayMode(&width, &height);
 
 	m_OrthoCamera.UpdateAspectRatio((float)width, (float)height);
 	m_OrthoCamera.Update();
