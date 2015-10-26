@@ -3,7 +3,7 @@ GameEngine
 | System | Compiler | Status |
 | ------ | -------- | ------ |
 | Linux 64 bit | GCC 4.8 | [![Build Status](https://drone.io/github.com/BryceMehring/GameEngine/status.png)](https://drone.io/github.com/BryceMehring/GameEngine/latest) |
-| Windows | Visual Studio 2013 | [![Build status](https://ci.appveyor.com/api/projects/status/ctb7oafj5gsri990?svg=true)](https://ci.appveyor.com/project/BryceMehring/gameengine) |
+| Windows | Visual Studio 2015 | [![Build status](https://ci.appveyor.com/api/projects/status/ctb7oafj5gsri990?svg=true)](https://ci.appveyor.com/project/BryceMehring/gameengine) |
 
 
 #### To create projects:
