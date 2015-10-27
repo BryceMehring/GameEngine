@@ -44,7 +44,7 @@ Dependencies
 * OpenGL 3.3 hardware support
 
 #### If building in Visual Studio:
-* [dirent](http://www.softagalleria.net/dirent.php)
+* [dirent](https://github.com/tronkko/dirent)
 
 #### Linux: 
 
