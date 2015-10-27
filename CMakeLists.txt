@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(GameEngine CXX)
 
-option(BUILD_EXAMPLES "Build Examples" OFF)
+option(BUILD_EXAMPLES "Build Examples" ON)
 option(BUILD_QUADTREE "Build QuadTree" OFF)
 option(BUILD_MEMORY_MANAGER "Build Memory Manager" OFF)
 option(ENABLE_CPACK "Enable CPack" OFF)
