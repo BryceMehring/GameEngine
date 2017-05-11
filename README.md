@@ -24,7 +24,6 @@ Open CMakeLists.txt with the CMake GUI to generate projects.
 
 * When creating an out of source game plugin or running the examples, symbolic link the game plugin folder `Examples/<GameName>/plugin/<GameName>` into `GameEngine/bin/plugin/<GameName>`.
 
-==========
 How the root folder should look so that cmake should automatically detect dependencies:
 
     GameEngine/ - this is the root of the repo
