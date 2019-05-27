@@ -4,9 +4,3 @@ file(GLOB_RECURSE GUI_SOURCE
 	 ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 add_library(GUI STATIC ${GUI_SOURCE})
-  
-  
-  
-  
-  
-  

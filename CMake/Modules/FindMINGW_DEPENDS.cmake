@@ -5,5 +5,3 @@ find_path(MINGW_DEPENDS_DIR NAMES libstdc++-6.dll libgcc_s_sjlj-1.dll libwinpthr
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MINGW_DEPENDS REQUIRED_VARS MINGW_DEPENDS_DIR)
-
-mark_as_advanced(MINGW_DEPENDS_DIR)

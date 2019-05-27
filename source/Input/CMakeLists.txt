@@ -1,6 +1,7 @@
 
 add_library(input MODULE Input.h Input.cpp)
-target_link_libraries (input ${GLFW_SHARED_LIBRARY})
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries (input glfw)
 add_definitions(-DGLFW_DLL -DPLUGIN_EXPORTS)
 
 if(ENABLE_CPACK)

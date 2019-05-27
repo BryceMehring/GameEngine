@@ -16,6 +16,7 @@
 #include "IPlugin.h"
 #include <map>
 #include <memory>
+#include <string>
 
 /*
    The PluginManager manages all plugins. It will load and unload them when needed.

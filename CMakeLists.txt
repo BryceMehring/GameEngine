@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.14.4)
+
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      CACHE STRING "")
+endif()
+
 project(GameEngine CXX)
 
 option(BUILD_EXAMPLES "Build Examples" ON)
@@ -10,7 +16,6 @@ option(ENABLE_CPACK "Enable CPack" OFF)
 set(ENGINE_VERSION_MAJOR 1)
 set(ENGINE_VERSION_MINOR 0)
 
-
 include(${CMAKE_SOURCE_DIR}/CMake/VisualStudioVersionCheck.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/CompileFlags.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/ConfigurePluginExtension.cmake)
@@ -20,18 +25,14 @@ RedirectOutputTo("bin")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules")
 
-find_package(GLEW)
-include_directories(${GLEW_INCLUDE_DIR})
-
-find_package(GLFW)
-include_directories(${GLFW_INCLUDE_DIR})
-
-find_package(STB_IMAGE)
-include_directories(${STB_IMAGE_INCLUDE_DIR})
-
-find_package(GLM)
+find_path(GLM_INCLUDE_DIR glm/glm.hpp)
 include_directories(${GLM_INCLUDE_DIR})
+find_package(glm CONFIG REQUIRED)
+
 add_definitions(-DGLM_FORCE_RADIANS)
+
+find_package(STB_IMAGE REQUIRED)
+include_directories(${STB_IMAGE_INCLUDE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/source/common)
 include_directories(${CMAKE_SOURCE_DIR}/source/GameEngine/interfaces)

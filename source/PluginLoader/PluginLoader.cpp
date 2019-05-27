@@ -1,7 +1,9 @@
 #include "PluginLoader.h"
 #include "Game.h"
 #include "GUIFactory.h"
-#include <dirent.h>
+#include <filesystem>
+#include "Log.h"
+
 
 extern "C" PLUGINDECL IPlugin* CreatePlugin()
 {
@@ -84,17 +86,13 @@ void PluginLoader::ButtonCallback(UI::Button& button)
 
 void PluginLoader::LoadDirectories(std::vector<std::string>& dirList) const
 {
-	DIR *dir;
-	struct dirent *ent;
-	if ((dir = opendir("./plugin")) != NULL) {
-		/* print all the files and directories within directory */
-		while ((ent = readdir(dir)) != NULL) {
-			std::string currentDir = ent->d_name;
-			if (currentDir != "." && currentDir != ".." && currentDir != GetName())
-			{
-				dirList.push_back(ent->d_name);
-			}
+	auto pluginPath = std::filesystem::current_path() / "bin" / "plugin";
+	try {
+		for (auto& p : std::filesystem::directory_iterator(pluginPath, std::filesystem::directory_options::skip_permission_denied)) {
+			dirList.push_back(p.path().string());
 		}
-		closedir(dir);
+	}
+	catch (std::exception e) {
+		Log::Instance().Write("cannot load dir: " + pluginPath.string() + " " + std::string(e.what()));
 	}
 }

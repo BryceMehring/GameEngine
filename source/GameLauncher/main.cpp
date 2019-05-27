@@ -12,24 +12,8 @@ int main(int size, char** cmd)
 		pState = cmd[1];
 	}
 
-	try
-	{
-		Game myGame;
-		myGame.SetNextState(pState);
-		return myGame.Run();
-	}
-	catch(std::exception& error)
-	{
-		Log::Instance().Write(error.what());
-	}
-	catch(std::string msg)
-	{
-		Log::Instance().Write(msg);
-	}
-	catch(...)
-	{
-		Log::Instance().Write("Unknown error, quitting.");
-	}
+	Game myGame;
+	myGame.SetNextState(pState);
+	return myGame.Run();
 
-	return 0;
 }

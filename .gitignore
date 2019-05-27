@@ -55,6 +55,12 @@ install_manifest.txt
 *.ilk
 *.psess
 *.etl
+.vs/
+.vscode/
+x64/
+Win32/
+out/
+**/*.dir/
 
 # Packages #
 ############
