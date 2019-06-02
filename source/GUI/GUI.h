@@ -7,6 +7,8 @@
 
 #include <memory>
 
+class Game;
+
 namespace UI
 {
 
@@ -36,11 +38,12 @@ namespace UI
 		// meaning that one can reach every node in the graph
 		bool IsConnected() const;
 
-		// Updates all of the elements in the current node of the graph
-		void Update(IInput& input, double dt);
+		void Init(IInput& input);
 
 		// Renders all of the elements in the current node of the graph
 		void Render(IRenderer& renderer);
+
+		void Destroy(Game& game);
 
 	private:
 

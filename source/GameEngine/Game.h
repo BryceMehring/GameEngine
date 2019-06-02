@@ -50,9 +50,8 @@ public:
 	GAME_ENGINE_API void LoadPlugins();
 
 	// Get Functions
-	// todo: provide const overloaded versions?
-	GAME_ENGINE_API IRenderer& GetRenderer();
-	GAME_ENGINE_API IInput& GetInput();
+	GAME_ENGINE_API IRenderer& GetRenderer() const;
+	GAME_ENGINE_API IInput& GetInput() const;
 	GAME_ENGINE_API PluginManager& GetPM();
 
 	// time differential between frames in seconds
@@ -95,6 +94,8 @@ private:
 
 	void Draw();
 	void DrawFPS();
+	void buildInputListeners();
+	void handleKeyPress(int key, bool pressed);
 
 	// Prevent copying
 	Game(const Game&) = delete;

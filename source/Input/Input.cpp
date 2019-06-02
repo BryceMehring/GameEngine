@@ -30,8 +30,7 @@ void Input::KeyCallback(GLFWwindow*, int key, int scancode, int action, int mods
 {
 	if(s_pThis != nullptr)
 	{
-		s_pThis->m_iKeyDown = key;
-		s_pThis->m_iKeyAction = action;
+		s_pThis->OnKey(key, action);
 	}
 }
 
@@ -39,7 +38,7 @@ void Input::MouseCallback(GLFWwindow*, double x, double y)
 {
 	if(s_pThis != nullptr)
 	{
-		s_pThis->UpdateMouse(x,y);
+		s_pThis->OnMouseCurrsorPos(glm::vec2(x, y));
 	}
 }
 
@@ -47,8 +46,7 @@ void Input::MouseButtonCallback(GLFWwindow*, int button, int action, int mods)
 {
 	if(s_pThis != nullptr)
 	{
-		s_pThis->m_selectedPos = s_pThis->m_cursorPos;
-		s_pThis->m_MouseClickOnce[button] = action;
+		s_pThis->OnMouseButtonCallback(button, action);
 	}
 }
 
@@ -167,22 +165,76 @@ bool Input::LoadKeyBindFile(const string& file)
 	return true;
 }
 
-bool Input::KeyPress(int key, bool once) const
+void Input::clearCallbacks()
 {
-	return CheckKey(key, once, GLFW_PRESS);
+	m_keyCallback.clear();
 }
-bool Input::KeyRelease(int key, bool once) const
-{
-	return CheckKey(key, once, GLFW_RELEASE);
+
+void Input::removeCallback(const std::string& id) {
+	m_keyCallback.erase(id);
 }
-bool Input::CharKeyDown(char& out) const
+
+void Input::addKeyPressCallback(std::string&& id, const std::function<bool(int, bool)>&& callback)
 {
-	if (m_iCharKeyDown == (unsigned int)-1)
-		return false;
+	m_keyCallback.emplace(id, callback);
+}
 
-	out = m_iCharKeyDown;
+void Input::addMouseButtonCallback(std::string&& id, const std::function<bool(int, bool)>&& callback)
+{
+	m_mouseButtonCallback.emplace(id, callback);
+}
 
-	return true;
+void Input::addMouseCursorPosCallback(std::string&& id, const MOUSE_CURSOR_POS_CALLBACK_TYPE&& callback)
+{
+	m_mouseCursorPosCallback.emplace(id, callback);
+}
+
+void Input::OnAction(std::multimap<std::string, std::function<bool(int, bool)>>& callbacks, int keyOrButton, int action)
+{
+	auto callback = callbacks.begin();
+	while (callback != callbacks.end()) {
+		if (!(callback->second)(keyOrButton, action == GLFW_PRESS)) {
+			callback = callbacks.erase(callback);
+		}
+		else
+		{
+			callback++;
+		}
+	}
+}
+
+void Input::OnKey(int key, int action)
+{
+	OnAction(m_keyCallback, key, action);
+}
+
+void Input::OnMouseButtonCallback(int button, int action)
+{
+	OnAction(m_mouseButtonCallback, button, action);
+}
+
+void Input::OnMouseCurrsorPos(glm::dvec2 cursorPos)
+{
+	glm::dvec2 mouseAcceleration = cursorPos - m_oldMousePos;
+	mouseAcceleration.y = -mouseAcceleration.y;
+
+	m_oldMousePos = cursorPos;
+
+	int height;
+	glfwGetWindowSize(glfwGetCurrentContext(), nullptr, &height);
+
+	glm::dvec2 windowCursorPos(cursorPos.x, height - cursorPos.y);
+
+	auto callback = m_mouseCursorPosCallback.begin();
+	while (callback != m_mouseCursorPosCallback.end()) {
+		if (!(callback->second)(cursorPos, windowCursorPos, mouseAcceleration)) {
+			callback = m_mouseCursorPosCallback.erase(callback);
+		}
+		else
+		{
+			callback++;
+		}
+	}
 }
 
 void Input::RemapKey(int key, int newKey)
@@ -190,56 +242,14 @@ void Input::RemapKey(int key, int newKey)
 	m_keyboardMapping[newKey] = key;
 }
 
-bool Input::MouseClick(int button, bool once) const
-{
-	if (button > GLFW_MOUSE_BUTTON_LAST || button < 0)
-		return false;
-
-	return (once ? (m_MouseClickOnce[button] == GLFW_PRESS) : glfwGetMouseButton(glfwGetCurrentContext(), button) == GLFW_PRESS);
-}
-bool Input::MouseRelease(int button, bool once) const
-{
-	if (button > GLFW_MOUSE_BUTTON_LAST || button < 0)
-		return false;
-
-	return (once ? (m_MouseClickOnce[button] == GLFW_RELEASE) : glfwGetMouseButton(glfwGetCurrentContext(), button) == GLFW_RELEASE);
-}
-
-const glm::ivec2& Input::GetCursorPos() const
-{
-	return m_cursorPos;
-}
-
-void Input::SetCursorPos(glm::ivec2 pos)
-{
-	glfwSetCursorPos(glfwGetCurrentContext(), pos.x, pos.y);
-	m_fOldMousePosX = pos.x;
-	m_fOldMousePosY = pos.y;
-}
-
 bool Input::IsCursorShown() const
 {
 	return (glfwGetInputMode(glfwGetCurrentContext(), GLFW_CURSOR) == GLFW_CURSOR_NORMAL);
 }
 
-bool Input::IsCursorEntered() const
-{
-	return m_bEntered;
-}
-
 void Input::ShowCursor(bool bShow)
 {
 	glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, bShow ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-}
-
-glm::ivec2 Input::CursorAcceleration() const
-{
-	return glm::ivec2(m_iMouseAccelerationX, m_iMouseAccelerationY);
-}
-
-double Input::MouseZ() const
-{
-	return m_fYScrollOffset;
 }
 
 bool Input::GetSelectedRect(glm::ivec2& min, glm::ivec2& max)

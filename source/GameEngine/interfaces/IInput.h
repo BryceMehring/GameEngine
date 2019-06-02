@@ -4,6 +4,7 @@
 #include "IPlugin.h"
 #include <glm/vec2.hpp>
 #include <string>
+#include <functional>
 
 enum class JoystickAxes
 {
@@ -143,6 +144,8 @@ class IInput : public IPlugin
 {
 public:
 
+	using MOUSE_CURSOR_POS_CALLBACK_TYPE = std::function<bool(glm::dvec2 cursorPos, glm::dvec2 windowCursorPos, glm::dvec2 acceleration)>;
+
 	//note about the once parameter:
 	//true: only process the event once,
 	//false: returns true the entire period of the event
@@ -159,11 +162,13 @@ public:
 	*/
 	virtual bool LoadKeyBindFile(const std::string& file) = 0;
 
-	// Returns true if Key is pressed, false otherwise
-	virtual bool KeyPress(int key, bool once = true) const = 0;
+	virtual void clearCallbacks() = 0;
 
-	// Returns true if Key is released, false otherwise
-	virtual bool KeyRelease(int key, bool once = true) const = 0;
+	virtual void removeCallback(const std::string& id) = 0;
+
+	virtual void addKeyPressCallback(std::string&& id, const std::function<bool(int, bool)>&&) = 0;
+	virtual void addMouseButtonCallback(std::string&& id, const std::function<bool(int, bool)>&& callback) = 0;
+	virtual void addMouseCursorPosCallback(std::string&& id, const MOUSE_CURSOR_POS_CALLBACK_TYPE&& callback) = 0;
 
 	// Returns true if there is a character pressed, which is outputted through the parameter out
 	// note: this method should only be used for text input

@@ -10,6 +10,7 @@
 #include <array>
 #include <unordered_map>
 #include <vector>
+#include <functional>
 #include <GLFW/glfw3.h>
 
 // GLFW Input plug-in
@@ -52,11 +53,13 @@ public:
 	*/
 	bool LoadKeyBindFile(const std::string& file) override;
 
-	// Returns true if Key is pressed, false otherwise
-	bool KeyPress(int key, bool once = true) const override;
+	void clearCallbacks() override;
 
-	// Returns true if Key is released, false otherwise
-	bool KeyRelease(int key, bool once = true) const override;
+	void removeCallback(const std::string& id) override;
+
+	void addKeyPressCallback(std::string&& id, const std::function<bool(int, bool)>&& callback) override;
+	void addMouseButtonCallback(std::string&& id, const std::function<bool(int, bool)>&& callback) override;
+	void addMouseCursorPosCallback(std::string&& id, const MOUSE_CURSOR_POS_CALLBACK_TYPE&& callback) override;
 
 	// Returns true if there is a character pressed, which is outputted through the parameter out
 	// note: this method should only be used for text input
@@ -136,24 +139,13 @@ private:
 	static Input* s_pThis;
 
 	// Keyboard
-	int m_iKeyDown;
-	int m_iKeyAction;
-
-	unsigned int m_iCharKeyDown;
-
-	std::unordered_map<int, int> m_keyboardMapping;
+	std::multimap< std::string, std::function<bool(int, bool)> > m_keyCallback;
 
 	// Mouse
-	int m_iMouseAccelerationX;
-	int m_iMouseAccelerationY;
-	double m_fOldMousePosX;
-	double m_fOldMousePosY;
-	double m_fYScrollOffset;
-	bool m_bEntered;
-	std::array<int, GLFW_MOUSE_BUTTON_LAST + 1> m_MouseClickOnce;
+	std::multimap< std::string, std::function<bool(int, bool)> > m_mouseButtonCallback;
+	std::multimap< std::string, MOUSE_CURSOR_POS_CALLBACK_TYPE > m_mouseCursorPosCallback;
 
-	glm::ivec2 m_cursorPos;
-	glm::ivec2 m_selectedPos;
+	glm::dvec2 m_oldMousePos;
 
 	// Joysticks
 	std::array<float, 2> m_fJoyDeadZone;
@@ -171,6 +163,10 @@ private:
 	void Reset();
 	bool CheckKey(int key, bool once, int flag) const;
 	void UpdateMouse(double x, double y);
+	void OnAction(std::multimap< std::string, std::function<bool(int, bool)> >& callbacks, int key, int action);
+	void OnKey(int key, int action);
+	void OnMouseButtonCallback(int button, int action);
+	void OnMouseCurrsorPos(glm::dvec2);
 	void UpdateJoystick();
 };
 

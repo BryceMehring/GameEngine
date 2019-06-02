@@ -1,6 +1,9 @@
 #include "GUI.h"
 #include <stack>
 #include <set>
+#include "Game.h"
+#include "IMouseButtonListener.h"
+#include "IMousePosListener.h"
 
 namespace UI
 {
@@ -90,15 +93,34 @@ namespace UI
 		return (connectedComponents == m_nodes.size());
 	}
 
-	void GUI::Update(IInput& input, double dt)
-	{
-		if (m_uiCurrentNode != std::numeric_limits<HANDLE>::max())
-		{
-			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
+	void GUI::Init(IInput& input) {
+		input.addMouseCursorPosCallback("gui", [this](glm::dvec2 cursorPos, glm::dvec2 windowCursorPos, glm::dvec2 acceleration) -> bool {
+			if (m_uiCurrentNode != std::numeric_limits<HANDLE>::max())
 			{
-				pIter->Update(input, dt);
+				for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
+				{
+					auto mouseButtonListener = std::dynamic_pointer_cast<UI::IMousePosListener>(pIter);
+					if (mouseButtonListener) {
+						mouseButtonListener->mousePosCallback(cursorPos, windowCursorPos, acceleration);
+					}
+				}
 			}
-		}
+			return true;
+		});
+
+		input.addMouseButtonCallback("gui", [this](int key, bool pressed) -> bool {
+			if (m_uiCurrentNode != std::numeric_limits<HANDLE>::max())
+			{
+				for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
+				{
+					auto mouseButtonListener = std::dynamic_pointer_cast<UI::IMouseButtonListener>(pIter);
+					if (mouseButtonListener) {
+						mouseButtonListener->mouseButtonCallback(key, pressed);
+					}
+				}
+			}
+			return true;
+		});
 	}
 
 	void GUI::Render(IRenderer& renderer)
@@ -108,6 +130,17 @@ namespace UI
 			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
 			{
 				pIter->Render(renderer);
+			}
+		}
+	}
+
+	void UI::GUI::Destroy(::Game& game)
+	{
+		if (m_uiCurrentNode != std::numeric_limits<HANDLE>::max())
+		{
+			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
+			{
+				pIter->Destroy(game.GetInput());
 			}
 		}
 	}

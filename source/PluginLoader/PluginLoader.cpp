@@ -1,7 +1,7 @@
 #include "PluginLoader.h"
 #include "Game.h"
-#include "GUIFactory.h"
 #include <filesystem>
+#include <thread>
 #include "Log.h"
 
 
@@ -31,39 +31,32 @@ void PluginLoader::Init(Game& game)
 	{
 		using namespace std::placeholders;
 
-		auto pButton = UI::GUIFactory<UI::Button>::CreateElement(game,
+		auto pButton = std::make_shared<UI::Button>(
+			game,
 			startingPos,
 			glm::vec4(0.05f, 0.0f, 0.0f, 1.0f),
 			glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 50.0f,
 			currentDir,
-			std::bind(&PluginLoader::ButtonCallback, this, _1));
+			std::bind(&PluginLoader::ButtonCallback, this, _1)
+		);
 
 		m_gui.AddElement(m_rootNode, pButton);
 
 		startingPos.y -= 100.0f;
 	}
 	
-	game.EnableEventWaiting(true);	
+	game.EnableEventWaiting(true);
+
 }
 
 void PluginLoader::Destroy(Game& game)
 {
+	m_gui.Destroy(game);
 	game.EnableEventWaiting(false);
 }
 
 void PluginLoader::Update(Game& game)
 {
-	IInput& input = game.GetInput();
-	m_gui.Update(input, game.GetDt());
-
-	if (input.KeyPress(KEY_ESCAPE))
-	{
-		game.Quit();
-	}
-	else if (!m_buttonPressed.empty())
-	{
-		game.SetNextState(m_buttonPressed);
-	}
 }
 
 void PluginLoader::Draw(Game& game)

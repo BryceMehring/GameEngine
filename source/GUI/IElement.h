@@ -18,6 +18,7 @@ public:
 	virtual void Trigger() = 0;
 
 	virtual void Update(IInput&, double dt) = 0;
+	virtual void Destroy(IInput&) = 0;
 
 };
 

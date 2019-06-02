@@ -5,6 +5,7 @@
 #include "CommonExport.h"
 #include <string>
 #include <fstream>
+#include <iostream>
 
 class Log
 {
@@ -12,16 +13,8 @@ public:
 
 	COMMON_API static Log& Instance();
 	
-	// Write data to the log file with a timestamp
-	COMMON_API void Write(const std::string&);
-	COMMON_API void Write(const char*);
-	COMMON_API void Write(unsigned int);
-	COMMON_API void Write(unsigned long);
-	COMMON_API void Write(int);
-	COMMON_API void Write(float);
-	COMMON_API void Write(double);
-	COMMON_API void Write(char);
-	COMMON_API void Write(bool);
+	template< class T >
+	void Write(const T& data);
 
 private:
 
@@ -34,6 +27,13 @@ private:
 	~Log();
 };
 
+template< class T >
+void Log::Write(const T& data)
+{
+	double time = m_timer.GetTime();
+	std::cout << time << ": " << data << std::endl;
+	m_file << time << ": " << data << std::endl;
+}
 
 #endif // _LOG_
 

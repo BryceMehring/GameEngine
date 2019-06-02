@@ -19,6 +19,8 @@ m_pRenderer(nullptr), m_pInput(nullptr), m_bDrawFPS(false)
 {
 	LoadPlugins();
 
+	buildInputListeners();
+
 	EnableEventWaiting(false);
 
 	LoadResourceFile("base.r",*this);
@@ -77,12 +79,19 @@ void Game::LoadPlugins()
 	m_pInput = static_cast<IInput*>(pPlugin);
 }
 
-IRenderer& Game::GetRenderer()
+void Game::buildInputListeners() {
+	m_pInput->addKeyPressCallback("game", [this](int key, bool isPressed) -> bool {
+		handleKeyPress(key, isPressed);
+		return true;
+	});
+}
+
+IRenderer& Game::GetRenderer() const
 {
 	return *m_pRenderer;
 }
 
-IInput& Game::GetInput()
+IInput& Game::GetInput() const
 {
 	return *m_pInput;
 }
@@ -128,6 +137,39 @@ int Game::Run()
 	return 0;
 }
 
+void Game::handleKeyPress(int key, bool pressed) {
+	if (pressed) {
+		switch (key) {
+			case KEY_ESCAPE: {
+				if (m_StateMachine.HasState())
+				{
+					std::string pluginName = m_StateMachine.GetState().GetName();
+					if (pluginName != "PluginLoader")
+					{
+						SetNextState("PluginLoader");
+					}
+					else
+					{
+						Quit();
+					}
+				}
+				break;
+			}
+			case KEY_F5: {
+				bool bVsync;
+				m_pRenderer->GetDisplayMode(nullptr, nullptr, &bVsync);
+
+				m_pRenderer->EnableVSync(!bVsync);
+				break;
+			}
+			case KEY_F6: {
+				m_bDrawFPS = !m_bDrawFPS;
+				break;
+			}
+		}
+	}
+}
+
 void Game::Update()
 {
 	ProccessInput();
@@ -142,38 +184,12 @@ void Game::Update()
 		m_NextState.clear();
 	}
 
-	if (m_pInput->KeyPress(KEY_ESCAPE))
-	{
-		if (m_StateMachine.HasState())
-		{
-			std::string pluginName = m_StateMachine.GetState().GetName();
-			if (pluginName != "PluginLoader")
-			{
-				SetNextState("PluginLoader");
-			}
-		}
-	}
-
-	if (m_pInput->KeyPress(KEY_F5))
-	{
-		bool bVsync;
-		m_pRenderer->GetDisplayMode(nullptr, nullptr, &bVsync);
-
-		m_pRenderer->EnableVSync(!bVsync);
-	}
-
-	if (m_pInput->KeyPress(KEY_F6))
-	{
-		m_bDrawFPS = !m_bDrawFPS;
-	}
-
 	if (m_bDrawFPS)
 	{
 		UpdateFPS();
 	}
 
 	m_StateMachine.GetState().Update(*this);
-
 }
 
 void Game::UpdateFPS()

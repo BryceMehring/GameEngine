@@ -24,7 +24,7 @@ void IGrid<T>::Render(class IRenderer& renderer) const
 			glm::vec2 pos(tileSize.x * j - (m_gridSize.x / 2.0f) + (tileSize.x / 2.0f), tileSize.y * i - (m_gridSize.y / 2.0f) + (tileSize.y / 2.0f));
 			glm::mat4 transformation(glm::translate(glm::vec3(pos.x + m_center.x,pos.y + m_center.y,m_center.z)));
 			transformation = glm::scale(transformation,glm::vec3(tileSize.x,tileSize.y,1.0f));
-
+			
 			RenderTileCallback(renderer,m_tiles[index],transformation);
 
 			index++;
