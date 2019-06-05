@@ -31,29 +31,22 @@ namespace UI
 		m_callback(m_fPercentage);
 	}
 
-	void Slider::Update(IInput& input, double dt)
+	void Slider::mouseButtonCallback(int button, bool pressed)
 	{
-		glm::vec2 cursorPos = glm::vec2(input.GetCursorPos());
+		m_clicked = button == 0 && pressed;
+	}
 
-		if(input.MouseClick(0))
-		{
-			Math::FRECT R((m_end.x - m_start.x),50.0f,(m_end + m_start) * 0.5f);
-			if (R.IsPointWithin(cursorPos))
+	void Slider::mousePosCallback(glm::dvec2 cursorPos, glm::dvec2 windowCursorPos, glm::dvec2 acceleration)
+	{
+		if (m_clicked) {
+			Math::FRECT R((m_end.x - m_start.x), 50.0f, (m_end + m_start) * 0.5f);
+			if (R.IsPointWithin(windowCursorPos))
 			{
-				m_bUpdateEnable = true;
+				// Move the slider to the mouse pos
+				m_pos.x = glm::clamp(static_cast<float>(windowCursorPos.x), m_start.x, m_end.x);
+
+				Trigger();
 			}
-		}
-		else if(input.MouseRelease(0))
-		{
-			m_bUpdateEnable = false;
-		}
-
-		if(m_bUpdateEnable)
-		{
-			// Move the slider to the mouse pos
-			m_pos.x = glm::clamp(cursorPos.x, m_start.x, m_end.x);
-
-			Trigger();
 		}
 	}
 

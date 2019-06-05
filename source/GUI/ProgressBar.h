@@ -29,8 +29,10 @@ public:
 	void Deselect() override;
 	void Trigger() override;
 
-	void Update(IInput&, double dt) override;
 	void Render(IRenderer&) override;
+
+	void mouseButtonCallback(int, bool) override;
+	void mousePosCallback(glm::dvec2 cursorPos, glm::dvec2 windowCursorPos, glm::dvec2 acceleration) override;
 
 	// sets the current progress of the bar, value must be between 0 and 1, if not, the value is clamped into this range
 	void SetProgress(float);

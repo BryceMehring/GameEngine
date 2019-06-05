@@ -37,8 +37,10 @@ public:
 	void Deselect() override;
 	void Trigger() override;
 
-	void Update(class IInput&, double dt) override;
 	void Render(class IRenderer&) override;
+
+	void mouseButtonCallback(int, bool) override;
+	void mousePosCallback(glm::dvec2 cursorPos, glm::dvec2 windowCursorPos, glm::dvec2 acceleration) override;
 
 	// Returns the current value of the slider
 	float GetValue() const;
@@ -54,10 +56,12 @@ private:
 	glm::vec2 m_pos;
 	glm::vec2 m_start;
 	glm::vec2 m_end;
+	glm::dvec2 m_cursorPos;
 	float m_fPercentage;
 	float m_fMin;
 	float m_fMax;
 	int m_iPrecision;
+	bool m_clicked;
 	bool m_bEnable;
 	bool m_bUpdateEnable;
 

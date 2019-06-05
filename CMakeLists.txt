@@ -29,7 +29,8 @@ find_path(GLM_INCLUDE_DIR glm/glm.hpp)
 include_directories(${GLM_INCLUDE_DIR})
 find_package(glm CONFIG REQUIRED)
 
-add_definitions(-DGLM_FORCE_RADIANS)
+# TODO: remove deprecated DGLM_FORCE_CTOR_INIT
+add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_CTOR_INIT)
 
 find_package(STB_IMAGE REQUIRED)
 include_directories(${STB_IMAGE_INCLUDE_DIR})

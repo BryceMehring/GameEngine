@@ -44,14 +44,15 @@ void PluginLoader::Init(Game& game)
 
 		startingPos.y -= 100.0f;
 	}
-	
+
+	m_gui.Init(game.GetInput());
+
 	game.EnableEventWaiting(true);
 
 }
 
 void PluginLoader::Destroy(Game& game)
 {
-	m_gui.Destroy(game);
 	game.EnableEventWaiting(false);
 }
 
@@ -82,7 +83,8 @@ void PluginLoader::LoadDirectories(std::vector<std::string>& dirList) const
 	auto pluginPath = std::filesystem::current_path() / "bin" / "plugin";
 	try {
 		for (auto& p : std::filesystem::directory_iterator(pluginPath, std::filesystem::directory_options::skip_permission_denied)) {
-			dirList.push_back(p.path().string());
+			dirList.push_back(p.path().filename().string());
+
 		}
 	}
 	catch (std::exception e) {

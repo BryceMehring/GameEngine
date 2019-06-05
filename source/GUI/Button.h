@@ -18,17 +18,15 @@ namespace UI
 	template< class T >
 	class GUIFactory;
 
-	class Button : public IElement, public IMouseButtonListener, public IMousePosListener
+	class Button : public IElement
 	{
 	public:
 
 		typedef std::function<void(Button&)> DELEGATE;
 
-		Button(Game& game, const glm::vec4& defaultColor, const glm::vec4& hoverColor, float scale, const std::string& str, const DELEGATE& callback);
+		Button(Game& game, const glm::vec2& startingPos, const glm::vec4& defaultColor, const glm::vec4& hoverColor, float scale, const std::string& str, const DELEGATE& callback);
 
-		void Update(IInput&, double) override;
 		void Render(IRenderer&) override;
-		void Destroy(IInput&) override;
 
 		void mouseButtonCallback(int, bool) override;
 		void mousePosCallback(glm::dvec2 cursorPos, glm::dvec2 windowCursorPos, glm::dvec2 acceleration) override;

@@ -8,7 +8,6 @@ public:
 
 	virtual ~IRender() {}
 
-	//virtual IRenderType GetRenderType() const = 0;
 	virtual void Render(class IRenderer& renderer) = 0;
 };
 

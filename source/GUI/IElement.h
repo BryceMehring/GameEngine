@@ -3,11 +3,13 @@
 
 #include "IInput.h"
 #include "IRender.h"
+#include "IMouseButtonListener.h"
+#include "IMousePosListener.h"
 
 namespace UI
 {
 
-class IElement : public IRender
+class IElement : public IRender, public IMouseButtonListener, public IMousePosListener
 {
 public:
 
@@ -16,9 +18,6 @@ public:
 	virtual void Select() = 0;
 	virtual void Deselect() = 0;
 	virtual void Trigger() = 0;
-
-	virtual void Update(IInput&, double dt) = 0;
-	virtual void Destroy(IInput&) = 0;
 
 };
 

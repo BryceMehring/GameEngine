@@ -99,10 +99,7 @@ namespace UI
 			{
 				for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
 				{
-					auto mouseButtonListener = std::dynamic_pointer_cast<UI::IMousePosListener>(pIter);
-					if (mouseButtonListener) {
-						mouseButtonListener->mousePosCallback(cursorPos, windowCursorPos, acceleration);
-					}
+					pIter->mousePosCallback(cursorPos, windowCursorPos, acceleration);
 				}
 			}
 			return true;
@@ -113,10 +110,7 @@ namespace UI
 			{
 				for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
 				{
-					auto mouseButtonListener = std::dynamic_pointer_cast<UI::IMouseButtonListener>(pIter);
-					if (mouseButtonListener) {
-						mouseButtonListener->mouseButtonCallback(key, pressed);
-					}
+					pIter->mouseButtonCallback(key, pressed);
 				}
 			}
 			return true;
@@ -130,17 +124,6 @@ namespace UI
 			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
 			{
 				pIter->Render(renderer);
-			}
-		}
-	}
-
-	void UI::GUI::Destroy(::Game& game)
-	{
-		if (m_uiCurrentNode != std::numeric_limits<HANDLE>::max())
-		{
-			for (const std::shared_ptr<IElement>& pIter : m_nodes[m_uiCurrentNode].elements)
-			{
-				pIter->Destroy(game.GetInput());
 			}
 		}
 	}

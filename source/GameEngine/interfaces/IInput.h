@@ -155,13 +155,6 @@ public:
 
 	// ----- Keyboard -----
 
-	/*
-	Loads a Keybind file
-	format:
-	bind NEW_KEY OLD_KEY
-	*/
-	virtual bool LoadKeyBindFile(const std::string& file) = 0;
-
 	virtual void clearCallbacks() = 0;
 
 	virtual void removeCallback(const std::string& id) = 0;
@@ -170,47 +163,14 @@ public:
 	virtual void addMouseButtonCallback(std::string&& id, const std::function<bool(int, bool)>&& callback) = 0;
 	virtual void addMouseCursorPosCallback(std::string&& id, const MOUSE_CURSOR_POS_CALLBACK_TYPE&& callback) = 0;
 
-	// Returns true if there is a character pressed, which is outputted through the parameter out
-	// note: this method should only be used for text input
-	virtual bool CharKeyDown(char& out) const = 0;
-
-	virtual void RemapKey(int key, int newKey) = 0;
-
 	// ----- Cursor -----
-
-	// Returns true if the mouse button(0 - 7) is clicked, false otherwise
-	virtual bool MouseClick(int button, bool once = true) const = 0;
-
-	// Returns true if the mouse button(0 - 7) is released, false otherwise
-	virtual bool MouseRelease(int button, bool once = true) const = 0;
-
-	// Returns the cursor position in screen space
-	// Origin: Bottom left hand corner
-	// range: [(0, 0), (width, height)]
-	// Note: if the cursor is disabled via ShowCursor(), the cursors position will not be updated
-	virtual const glm::ivec2& GetCursorPos() const = 0;
-
-	// Moves the cursor to pos
-	virtual void SetCursorPos(glm::ivec2 pos) = 0;
 
 	// Returns true if the cursor is shown, false otherwise
 	virtual bool IsCursorShown() const = 0;
 
-	// Returns true if the cursor is within the main window
-	virtual bool IsCursorEntered() const = 0;
-
 	// Shows the cursor if bShow is true
 	// Disables the cursor if bShow is false
 	virtual void ShowCursor(bool bShow) = 0;
-
-	// Returns Cursor Acceleration
-	virtual glm::ivec2 CursorAcceleration() const = 0;
-
-	// Scroll change
-	virtual double MouseZ() const = 0;
-
-	// Returns true if user clicks, out is the current selection box
-	virtual bool GetSelectedRect(glm::ivec2& min, glm::ivec2& max) = 0;
 
 	// ----- Joysticks -----
 

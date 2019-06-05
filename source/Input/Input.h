@@ -46,13 +46,6 @@ public:
 
 	// ----- Keyboard -----
 
-	/*
-	Loads a Keybind file
-	format:
-	bind NEW_KEY OLD_KEY
-	*/
-	bool LoadKeyBindFile(const std::string& file) override;
-
 	void clearCallbacks() override;
 
 	void removeCallback(const std::string& id) override;
@@ -61,47 +54,14 @@ public:
 	void addMouseButtonCallback(std::string&& id, const std::function<bool(int, bool)>&& callback) override;
 	void addMouseCursorPosCallback(std::string&& id, const MOUSE_CURSOR_POS_CALLBACK_TYPE&& callback) override;
 
-	// Returns true if there is a character pressed, which is outputted through the parameter out
-	// note: this method should only be used for text input
-	bool CharKeyDown(char& out) const override;
-
-	void RemapKey(int key, int newKey) override;
-
 	// ----- Cursor -----
-
-	// Returns true if the mouse button(0-7) is clicked, false otherwise
-	bool MouseClick(int button, bool once = true) const override;
-
-	// Returns true if the mouse button(0-7) is released, false otherwise
-	bool MouseRelease(int button, bool once = true) const override;
-
-	// Returns the cursor position in screen space
-	// Origin: Bottom left hand corner
-	// range: [(0, 0), (width, height)]
-	// Note: if the cursor is disabled via ShowCursor(), the cursors position will not be updated
-	const glm::ivec2& GetCursorPos() const override;
-
-	// Moves the cursor to pos
-	void SetCursorPos(glm::ivec2 pos) override;
 
 	// Returns true if the cursor is shown, false otherwise
 	bool IsCursorShown() const override;
 
-	// Returns true if the cursor is within the main window
-	bool IsCursorEntered() const override;
-
 	// Shows the cursor if bShow is true
 	// Disables the cursor if bShow is false
 	void ShowCursor(bool bShow) override;
-
-	// Returns Cursor Acceleration
-	glm::ivec2 CursorAcceleration() const override;
-
-	// Scroll acceleration
-	double MouseZ() const override;
-
-	// Returns true if user clicks, out is the current selection box
-	bool GetSelectedRect(glm::ivec2& min, glm::ivec2& max) override;
 
 	// ----- Joysticks -----
 
@@ -160,9 +120,6 @@ private:
 	std::vector<unsigned char> m_joystickButtons;
 
 	// helper methods
-	void Reset();
-	bool CheckKey(int key, bool once, int flag) const;
-	void UpdateMouse(double x, double y);
 	void OnAction(std::multimap< std::string, std::function<bool(int, bool)> >& callbacks, int key, int action);
 	void OnKey(int key, int action);
 	void OnMouseButtonCallback(int button, int action);

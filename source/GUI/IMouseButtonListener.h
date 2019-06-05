@@ -5,6 +5,6 @@ namespace UI {
 	public:
 		virtual ~IMouseButtonListener() {}
 
-		virtual void mouseButtonCallback(int, bool) = 0;
+		virtual void mouseButtonCallback(int, bool) {}
 	};
 }

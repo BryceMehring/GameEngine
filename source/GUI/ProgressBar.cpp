@@ -18,13 +18,6 @@ void ProgressBar::Trigger()
 {
 }
 
-void ProgressBar::Update(class IInput&, double dt)
-{
-	if(abs(m_end.x - m_pos.x) < 0.01f || abs(m_start.x - m_pos.x) < 0.01f)
-	{
-		m_callback();
-	}
-}
 void ProgressBar::Render(IRenderer& renderer)
 {
 	glm::vec3 progStart[2] =
@@ -43,6 +36,16 @@ void ProgressBar::Render(IRenderer& renderer)
 
 	renderer.DrawLine(progStart,2,2.0f,glm::vec4(1.0f,0.0f,0.0f,1.0f));
 	renderer.DrawLine(progEnd,2,2.0f);
+}
+
+void ProgressBar::mouseButtonCallback(int key, bool pressed)
+{
+
+}
+
+void ProgressBar::mousePosCallback(glm::dvec2 cursorPos, glm::dvec2 windowCursorPos, glm::dvec2 acceleration)
+{
+
 }
 
 void ProgressBar::SetProgress(float v)

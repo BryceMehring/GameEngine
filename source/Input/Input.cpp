@@ -22,7 +22,7 @@ void Input::CharCallback(GLFWwindow*, unsigned int c)
 {
 	if(s_pThis != nullptr)
 	{
-		s_pThis->m_iCharKeyDown = c;
+		//s_pThis->m_iCharKeyDown = c;
 	}
 }
 
@@ -54,16 +54,16 @@ void Input::MouseScrollCallback(GLFWwindow*, double, double yOffset)
 {
 	if(s_pThis != nullptr)
 	{
-		s_pThis->m_fYScrollOffset = yOffset;
+		//s_pThis->m_fYScrollOffset = yOffset;
 	}
 }
 
 void Input::CursorEnterCallback(GLFWwindow*, int entered)
 {
-	s_pThis->m_bEntered = entered == GL_TRUE;
+	//s_pThis->m_bEntered = entered == GL_TRUE;
 }
 
-Input::Input() : m_bEntered(true), m_iNumJoystickAxes(0), m_pJoystickAxes(nullptr)
+Input::Input() : m_iNumJoystickAxes(0), m_pJoystickAxes(nullptr)
 {
 	s_pThis = this;
 
@@ -71,8 +71,6 @@ Input::Input() : m_bEntered(true), m_iNumJoystickAxes(0), m_pJoystickAxes(nullpt
 	{
 		iter = 0.2f;
 	}
-
-	Reset();
 
 	// Configure Keyboard and Mouse callbacks
 	GLFWwindow* currentContext = glfwGetCurrentContext();
@@ -87,12 +85,6 @@ Input::Input() : m_bEntered(true), m_iNumJoystickAxes(0), m_pJoystickAxes(nullpt
 	int width, height;
 	glfwGetWindowSize(currentContext, &width, &height);
 	glfwSetCursorPos(currentContext, width / 2, height / 2);
-
-	m_cursorPos.x = width / 2;
-	m_cursorPos.y = height / 2;
-
-	m_fOldMousePosX = width / 2.0;
-	m_fOldMousePosY = height / 2.0;
 }
 
 Input::~Input()
@@ -123,46 +115,6 @@ int Input::GetVersion() const
 
 void Input::Poll()
 {
-	Reset();
-
-	UpdateJoystick();
-}
-
-bool Input::LoadKeyBindFile(const string& file)
-{
-	ifstream inFile(file);
-	if(!inFile.is_open())
-		return false;
-
-	string line;
-	while(getline(inFile,line))
-	{
-		istringstream stream(line);
-
-		string command;
-		stream >> command;
-
-		if(!command.empty() && command[0] != '#')
-		{
-			if(command == "bind")
-			{
-				string from;
-				string to;
-
-				stream >> from;
-				stream >> to;
-
-				if(!from.empty() && !to.empty())
-				{
-					RemapKey(from[0], to[0]);
-				}
-			}
-		}
-	}
-
-	inFile.close();
-
-	return true;
 }
 
 void Input::clearCallbacks()
@@ -237,11 +189,6 @@ void Input::OnMouseCurrsorPos(glm::dvec2 cursorPos)
 	}
 }
 
-void Input::RemapKey(int key, int newKey)
-{
-	m_keyboardMapping[newKey] = key;
-}
-
 bool Input::IsCursorShown() const
 {
 	return (glfwGetInputMode(glfwGetCurrentContext(), GLFW_CURSOR) == GLFW_CURSOR_NORMAL);
@@ -250,17 +197,6 @@ bool Input::IsCursorShown() const
 void Input::ShowCursor(bool bShow)
 {
 	glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, bShow ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-}
-
-bool Input::GetSelectedRect(glm::ivec2& min, glm::ivec2& max)
-{
-	if (!MouseClick(0, false))
-		return false;
-
-	min = glm::ivec2(std::min(m_selectedPos.x, m_cursorPos.x), std::min(m_selectedPos.y, m_cursorPos.y));
-	max = glm::ivec2(std::max(m_selectedPos.x, m_cursorPos.x), std::max(m_selectedPos.y, m_cursorPos.y));
-
-	return true;
 }
 
 bool Input::IsValidJoystickConnected() const
@@ -391,59 +327,6 @@ bool Input::JoystickButtonPress(int button, bool once) const
 bool Input::JoystickButtonRelease(int button, bool once) const
 {
 	return (button < GetNumJoystickButtons() && button >= 0) && ((!once && m_joystickButtons[button] == 0) || (once && m_joystickButtons[button] == 3));
-}
-
-void Input::Reset()
-{
-	for (auto& iter : m_MouseClickOnce)
-	{
-		iter = -1;
-	}
-
-	m_iKeyAction = m_iKeyDown = -1;
-	m_iCharKeyDown = -1;
-	m_iMouseAccelerationX = m_iMouseAccelerationY = 0;
-	m_fYScrollOffset = 0.0;
-}
-
-bool Input::CheckKey(int key, bool once, int flag) const
-{
-	bool bSuccess = false;
-
-	auto iter = m_keyboardMapping.find(key);
-	if (iter != m_keyboardMapping.end())
-	{
-		key = iter->second;
-	}
-	
-	if (once)
-	{
-		bSuccess = (key == m_iKeyDown) && (m_iKeyAction == flag);
-	}
-	else
-	{
-		bSuccess = (glfwGetKey(glfwGetCurrentContext(), key) == flag);
-	}
-	
-	return bSuccess;
-}
-
-void Input::UpdateMouse(double x, double y)
-{
-	// Get cursor acceleration in world space
-	m_iMouseAccelerationX = static_cast<int>(x - m_fOldMousePosX);
-	m_iMouseAccelerationY = -static_cast<int>(y - m_fOldMousePosY);
-	m_fOldMousePosX = x;
-	m_fOldMousePosY = y;
-
-	if (IsCursorShown())
-	{
-		int height;
-		glfwGetWindowSize(glfwGetCurrentContext(), nullptr, &height);
-
-		m_cursorPos.x = static_cast<int>(x);
-		m_cursorPos.y = height - static_cast<int>(y);
-	}
 }
 
 void Input::UpdateJoystick()

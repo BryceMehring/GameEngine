@@ -43,8 +43,6 @@ namespace UI
 		// Renders all of the elements in the current node of the graph
 		void Render(IRenderer& renderer);
 
-		void Destroy(Game& game);
-
 	private:
 
 		struct Node

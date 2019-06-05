@@ -5,17 +5,13 @@
 
 namespace UI
 {
-	Button::Button(::Game& game, const glm::vec4& defaultColor,
+	Button::Button(::Game& game, const glm::vec2& pos, const glm::vec4& defaultColor,
 		const glm::vec4& hoverColor, float scale, const std::string& str, const DELEGATE& callback) :
+		m_sprite(pos), 
 		m_defaultColor(defaultColor), m_hoverColor(hoverColor), m_scale(scale),
 		m_text(str), m_callback(callback), m_bMouseHover(false), m_bSelected(false) {
 
 		game.GetRenderer().GetStringRect(m_text.c_str(), m_scale, FontAlignment::Center, m_sprite);
-	}
-
-
-	void Button::Update(::IInput& input, double)
-	{
 	}
 
 	void Button::Render(IRenderer& renderer)
